@@ -63,12 +63,12 @@ const ProductCard = ({
           
           {/* Wishlist button - Amazon/Flipkart style */}
           <button
-            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
+            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
             onClick={() => setIsFavorited(!isFavorited)}
           >
             <Heart 
               className={cn(
-                "h-4 w-4 transition-colors", 
+                "h-3 w-3 transition-colors", 
                 isFavorited && "fill-destructive text-destructive"
               )} 
             />
@@ -76,39 +76,39 @@ const ProductCard = ({
           
           {/* Discount badge - Flipkart style */}
           {salePrice && (
-            <div className="absolute bottom-0 left-0 bg-green-500 text-white px-2 py-1 text-xs font-bold">
+            <div className="absolute bottom-0 left-0 bg-green-500 text-white px-1 py-0.5 text-xs font-bold">
               {discountPercentage}% OFF
             </div>
           )}
         </div>
         
         {/* Product Info */}
-        <div className="p-3">
-          <div className="mb-1">
-            <span className="text-xs text-muted-foreground">{category}</span>
+        <div className="p-2">
+          <div className="mb-0.5">
+            <span className="text-[10px] text-muted-foreground">{category}</span>
           </div>
-          <Link to={`/product/${id}`} className="block mb-1">
-            <h3 className="font-medium text-sm line-clamp-2">{name}</h3>
+          <Link to={`/product/${id}`} className="block mb-0.5">
+            <h3 className="font-medium text-xs line-clamp-1">{name}</h3>
           </Link>
           
           {/* Rating - Flipkart style */}
           {rating > 0 && (
-            <div className="flex items-center gap-1 mb-1">
-              <div className="bg-green-600 text-white text-xs px-1.5 py-0.5 rounded flex items-center">
-                {rating.toFixed(1)} <Star className="h-3 w-3 ml-0.5 fill-white" />
+            <div className="flex items-center gap-1 mb-0.5">
+              <div className="bg-green-600 text-white text-[10px] px-1 py-0.5 rounded flex items-center">
+                {rating.toFixed(1)} <Star className="h-2 w-2 ml-0.5 fill-white" />
               </div>
-              <span className="text-xs text-muted-foreground">({reviewCount})</span>
+              <span className="text-[10px] text-muted-foreground">({reviewCount})</span>
             </div>
           )}
           
           <div className="flex items-center">
             {salePrice ? (
               <>
-                <span className="font-bold">₹{salePrice.toFixed(2)}</span>
-                <span className="ml-2 text-xs text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+                <span className="font-bold text-xs">₹{salePrice.toFixed(2)}</span>
+                <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{price.toFixed(2)}</span>
               </>
             ) : (
-              <span className="font-bold">₹{price.toFixed(2)}</span>
+              <span className="font-bold text-xs">₹{price.toFixed(2)}</span>
             )}
           </div>
         </div>
@@ -126,7 +126,7 @@ const ProductCard = ({
       >
         <div className="flex flex-col sm:flex-row">
           {/* Product Image & Badges */}
-          <div className="relative overflow-hidden sm:w-48 md:w-64">
+          <div className="relative overflow-hidden sm:w-36 md:w-48">
             <Link to={`/product/${id}`}>
               <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
                 <img
@@ -139,19 +139,19 @@ const ProductCard = ({
             </Link>
             
             {/* Badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2">
+            <div className="absolute top-2 left-2 flex flex-col gap-1">
               {isNew && (
-                <div className="category-chip bg-primary text-primary-foreground px-2 py-1">
+                <div className="category-chip bg-primary text-primary-foreground px-1.5 py-0.5 text-xs">
                   New
                 </div>
               )}
               {isTrending && (
-                <div className="category-chip bg-accent text-accent-foreground px-2 py-1">
+                <div className="category-chip bg-accent text-accent-foreground px-1.5 py-0.5 text-xs">
                   Trending
                 </div>
               )}
               {salePrice && (
-                <div className="category-chip bg-destructive text-destructive-foreground px-2 py-1">
+                <div className="category-chip bg-destructive text-destructive-foreground px-1.5 py-0.5 text-xs">
                   {discountPercentage}% Off
                 </div>
               )}
@@ -159,24 +159,24 @@ const ProductCard = ({
           </div>
           
           {/* Product Info */}
-          <div className="p-4 flex flex-col justify-between flex-grow">
+          <div className="p-3 flex flex-col justify-between flex-grow">
             <div>
-              <div className="mb-1">
-                <span className="category-chip">{category}</span>
+              <div className="mb-0.5">
+                <span className="category-chip text-xs">{category}</span>
               </div>
-              <Link to={`/product/${id}`} className="block mb-2 hover:text-primary transition-colors">
-                <h3 className="font-medium text-lg">{name}</h3>
+              <Link to={`/product/${id}`} className="block mb-1 hover:text-primary transition-colors">
+                <h3 className="font-medium text-sm line-clamp-1">{name}</h3>
               </Link>
               
               {/* Rating */}
               {rating > 0 && (
-                <div className="flex items-center gap-1 mb-3">
+                <div className="flex items-center gap-1 mb-2">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Star 
                         key={i} 
                         className={cn(
-                          "h-4 w-4", 
+                          "h-3 w-3", 
                           i < Math.floor(rating) 
                             ? "text-yellow-400 fill-yellow-400" 
                             : i < rating 
@@ -186,42 +186,42 @@ const ProductCard = ({
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-muted-foreground">({reviewCount})</span>
+                  <span className="text-xs text-muted-foreground">({reviewCount})</span>
                 </div>
               )}
               
-              <div className="flex items-center mb-3">
+              <div className="flex items-center mb-2">
                 {salePrice ? (
                   <>
-                    <span className="font-semibold text-lg">₹{salePrice.toFixed(2)}</span>
-                    <span className="ml-2 text-sm text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+                    <span className="font-semibold text-sm">₹{salePrice.toFixed(2)}</span>
+                    <span className="ml-2 text-xs text-muted-foreground line-through">₹{price.toFixed(2)}</span>
                   </>
                 ) : (
-                  <span className="font-semibold text-lg">₹{price.toFixed(2)}</span>
+                  <span className="font-semibold text-sm">₹{price.toFixed(2)}</span>
                 )}
               </div>
             </div>
             
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-1">
               <Button 
-                className="flex-grow"
+                className="flex-grow text-xs py-1 px-2 h-8"
                 onClick={(e) => {
                   e.preventDefault();
                   console.log(`Added ${name} to cart`);
                 }}
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
+                <ShoppingCart className="h-3 w-3 mr-1" />
                 Add to Cart
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                className="h-10 w-10"
+                className="h-8 w-8"
                 onClick={() => setIsFavorited(!isFavorited)}
               >
                 <Heart 
                   className={cn(
-                    "h-4 w-4 transition-colors", 
+                    "h-3 w-3 transition-colors", 
                     isFavorited && "fill-destructive text-destructive"
                   )} 
                 />
@@ -258,19 +258,19 @@ const ProductCard = ({
         </Link>
         
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
           {isNew && (
-            <div className="category-chip bg-primary text-primary-foreground px-2 py-1">
+            <div className="category-chip bg-primary text-primary-foreground px-1.5 py-0.5 text-xs">
               New
             </div>
           )}
           {isTrending && (
-            <div className="category-chip bg-accent text-accent-foreground px-2 py-1">
+            <div className="category-chip bg-accent text-accent-foreground px-1.5 py-0.5 text-xs">
               Trending
             </div>
           )}
           {salePrice && (
-            <div className="category-chip bg-destructive text-destructive-foreground px-2 py-1">
+            <div className="category-chip bg-destructive text-destructive-foreground px-1.5 py-0.5 text-xs">
               {discountPercentage}% Off
             </div>
           )}
@@ -279,19 +279,19 @@ const ProductCard = ({
         {/* Actions */}
         <div 
           className={cn(
-            "absolute right-3 top-3 flex flex-col gap-2 transition-all duration-300",
+            "absolute right-2 top-2 flex flex-col gap-1 transition-all duration-300",
             isHovered ? "opacity-100" : "opacity-0"
           )}
         >
           <Button
             variant="secondary"
             size="icon"
-            className="h-9 w-9 rounded-full shadow-subtle bg-background/80 backdrop-blur-sm"
+            className="h-7 w-7 rounded-full shadow-subtle bg-background/80 backdrop-blur-sm"
             onClick={() => setIsFavorited(!isFavorited)}
           >
             <Heart 
               className={cn(
-                "h-4 w-4 transition-colors", 
+                "h-3 w-3 transition-colors", 
                 isFavorited && "fill-destructive text-destructive"
               )} 
             />
@@ -302,41 +302,41 @@ const ProductCard = ({
         {/* Quick Add Button */}
         <div 
           className={cn(
-            "absolute inset-x-0 bottom-0 p-3 transition-all duration-300 transform",
+            "absolute inset-x-0 bottom-0 p-2 transition-all duration-300 transform",
             isHovered ? "translate-y-0" : "translate-y-full"
           )}
         >
           <Button 
-            className="w-full rounded-md shadow-subtle glass-morphism bg-background/80 backdrop-blur-sm"
+            className="w-full rounded-md shadow-subtle glass-morphism bg-background/80 backdrop-blur-sm text-xs h-8"
             onClick={(e) => {
               e.preventDefault();
               console.log(`Added ${name} to cart`);
             }}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className="h-3 w-3 mr-1" />
             Quick Add
           </Button>
         </div>
       </div>
       
       {/* Product Info */}
-      <div className="p-4">
-        <div className="mb-1">
-          <span className="category-chip">{category}</span>
+      <div className="p-2">
+        <div className="mb-0.5">
+          <span className="category-chip text-[10px]">{category}</span>
         </div>
-        <Link to={`/product/${id}`} className="block mb-2 hover:text-primary transition-colors">
-          <h3 className="font-medium line-clamp-1">{name}</h3>
+        <Link to={`/product/${id}`} className="block mb-1 hover:text-primary transition-colors">
+          <h3 className="font-medium text-xs line-clamp-1">{name}</h3>
         </Link>
         
         {/* Rating */}
         {rating > 0 && (
-          <div className="flex items-center gap-1 mb-2">
+          <div className="flex items-center gap-1 mb-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <Star 
                   key={i} 
                   className={cn(
-                    "h-3 w-3", 
+                    "h-2 w-2", 
                     i < Math.floor(rating) 
                       ? "text-yellow-400 fill-yellow-400" 
                       : i < rating 
@@ -346,18 +346,18 @@ const ProductCard = ({
                 />
               ))}
             </div>
-            <span className="text-xs text-muted-foreground">({reviewCount})</span>
+            <span className="text-[10px] text-muted-foreground">({reviewCount})</span>
           </div>
         )}
         
         <div className="flex items-center">
           {salePrice ? (
             <>
-              <span className="font-semibold">₹{salePrice.toFixed(2)}</span>
-              <span className="ml-2 text-sm text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+              <span className="font-semibold text-xs">₹{salePrice.toFixed(2)}</span>
+              <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{price.toFixed(2)}</span>
             </>
           ) : (
-            <span className="font-semibold">₹{price.toFixed(2)}</span>
+            <span className="font-semibold text-xs">₹{price.toFixed(2)}</span>
           )}
         </div>
       </div>

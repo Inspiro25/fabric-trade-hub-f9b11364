@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Grid, List, SlidersHorizontal, TrendingUp, Sparkles } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductGridProps {
   products: Product[];
@@ -43,6 +44,7 @@ const ProductGrid = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const isMobile = useIsMobile();
   
   // Calculate pagination
   const totalPages = Math.ceil(products.length / itemsPerPage);
@@ -65,14 +67,18 @@ const ProductGrid = ({
   const getGridCols = () => {
     if (viewMode === 'list') return 'grid-cols-1';
     
+    if (isMobile) {
+      return 'grid-cols-2 sm:grid-cols-3';
+    }
+    
     switch (columns) {
       case 2:
-        return 'grid-cols-1 sm:grid-cols-2';
+        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4';
       case 3:
-        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
       case 4:
       default:
-        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
     }
   };
 
@@ -90,12 +96,12 @@ const ProductGrid = ({
   };
 
   return (
-    <div className={`container mx-auto px-4 md:px-6 ${className}`}>
+    <div className={`container mx-auto px-2 md:px-4 ${className}`}>
       {(title || subtitle) && (
-        <div className={`${useAlternateLayout ? 'text-left' : 'text-center'} mb-10`}>
+        <div className={`${useAlternateLayout ? 'text-left' : 'text-center'} mb-4`}>
           {title && (
             <div className="flex items-center justify-between">
-              <h2 className="heading-lg mb-3 flex items-center">
+              <h2 className={`${isMobile ? 'text-lg' : 'heading-lg'} mb-1 flex items-center`}>
                 {getHighlightIcon()}
                 {title}
               </h2>
@@ -107,7 +113,7 @@ const ProductGrid = ({
             </div>
           )}
           {subtitle && (
-            <p className={`text-muted-foreground ${useAlternateLayout ? '' : 'max-w-2xl mx-auto'}`}>
+            <p className={`text-muted-foreground text-sm ${useAlternateLayout ? '' : 'max-w-2xl mx-auto'}`}>
               {subtitle}
             </p>
           )}
@@ -115,45 +121,45 @@ const ProductGrid = ({
       )}
       
       {showFilters && (
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <Card className="w-full sm:w-auto">
-            <CardContent className="p-3 flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="text-sm font-medium">Filters</span>
+            <CardContent className="p-2 flex items-center gap-1">
+              <SlidersHorizontal className="h-3 w-3" />
+              <span className="text-xs font-medium">Filters</span>
             </CardContent>
           </Card>
           
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-1 ml-auto">
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'outline'}
               size="icon"
-              className="h-9 w-9"
+              className="h-7 w-7"
               onClick={() => setViewMode('grid')}
             >
-              <Grid className="h-4 w-4" />
+              <Grid className="h-3 w-3" />
               <span className="sr-only">Grid view</span>
             </Button>
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'outline'}
               size="icon"
-              className="h-9 w-9"
+              className="h-7 w-7"
               onClick={() => setViewMode('list')}
             >
-              <List className="h-4 w-4" />
+              <List className="h-3 w-3" />
               <span className="sr-only">List view</span>
             </Button>
           </div>
         </div>
       )}
       
-      <div className={`grid ${getGridCols()} gap-6 md:gap-8`}>
+      <div className={`grid ${getGridCols()} gap-2 md:gap-4`}>
         {displayedProducts.map((product, index) => (
           <div 
             key={product.id} 
             className={`transition-all duration-500 ${
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             } ${viewMode === 'list' ? 'col-span-full' : ''}`}
-            style={{ transitionDelay: `${index * 100}ms` }}
+            style={{ transitionDelay: `${index * 50}ms` }}
           >
             <ProductCard
               id={product.id}
@@ -173,7 +179,7 @@ const ProductGrid = ({
       </div>
       
       {showPagination && totalPages > 1 && (
-        <div className="mt-10">
+        <div className="mt-6">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
