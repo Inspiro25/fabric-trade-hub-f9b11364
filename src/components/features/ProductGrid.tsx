@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Grid, List, SlidersHorizontal } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, TrendingUp, Sparkles } from 'lucide-react';
 
 interface ProductGridProps {
   products: Product[];
@@ -25,6 +25,7 @@ interface ProductGridProps {
   itemsPerPage?: number;
   showFilters?: boolean;
   useAlternateLayout?: boolean;
+  highlightType?: 'new' | 'trending' | 'sale' | null;
 }
 
 const ProductGrid = ({
@@ -37,6 +38,7 @@ const ProductGrid = ({
   itemsPerPage = 12,
   showFilters = false,
   useAlternateLayout = false,
+  highlightType = null,
 }: ProductGridProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,13 +76,29 @@ const ProductGrid = ({
     }
   };
 
+  const getHighlightIcon = () => {
+    switch (highlightType) {
+      case 'new':
+        return <Sparkles className="h-4 w-4 mr-2" />;
+      case 'trending':
+        return <TrendingUp className="h-4 w-4 mr-2" />;
+      case 'sale':
+        return <Badge variant="destructive" className="mr-2">SALE</Badge>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className={`container mx-auto px-4 md:px-6 ${className}`}>
       {(title || subtitle) && (
         <div className={`${useAlternateLayout ? 'text-left' : 'text-center'} mb-10`}>
           {title && (
             <div className="flex items-center justify-between">
-              <h2 className="heading-lg mb-3">{title}</h2>
+              <h2 className="heading-lg mb-3 flex items-center">
+                {getHighlightIcon()}
+                {title}
+              </h2>
               {useAlternateLayout && products.length > 0 && (
                 <Badge variant="outline" className="font-normal">
                   {products.length} products
