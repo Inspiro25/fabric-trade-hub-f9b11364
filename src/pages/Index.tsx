@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -6,29 +5,9 @@ import Hero from '@/components/features/Hero';
 import ProductGrid from '@/components/features/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  Truck, 
-  CreditCard, 
-  RotateCcw, 
-  ShieldCheck 
-} from 'lucide-react';
-import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { 
-  getNewArrivals, 
-  getTrendingProducts,
-  getAllCategories,
-  getTopRatedProducts,
-  getDiscountedProducts,
-  getBestSellingProducts
-} from '@/lib/products';
-
+import { ArrowRight, Truck, CreditCard, RotateCcw, ShieldCheck } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { getNewArrivals, getTrendingProducts, getAllCategories, getTopRatedProducts, getDiscountedProducts, getBestSellingProducts } from '@/lib/products';
 const Index = () => {
   const newArrivals = getNewArrivals();
   const trendingProducts = getTrendingProducts();
@@ -43,15 +22,15 @@ const Index = () => {
       const id = window.location.hash.replace('#', '');
       const element = document.getElementById(id);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        element.scrollIntoView({
+          behavior: 'smooth'
+        });
       }
     } else {
       window.scrollTo(0, 0);
     }
   }, []);
-
-  return (
-    <div className="animate-page-transition">
+  return <div className="animate-page-transition">
       <Navbar />
       
       <main>
@@ -62,23 +41,14 @@ const Index = () => {
           <div className="container mx-auto px-4 md:px-6">
             <Carousel className="mx-auto max-w-5xl">
               <CarouselContent>
-                {categories.map((category) => (
-                  <CarouselItem key={category} className="basis-1/2 sm:basis-1/3 md:basis-1/5">
-                    <Link 
-                      to={`/category/${category.toLowerCase()}`}
-                      className="flex flex-col items-center gap-2 p-4 text-center hover:text-primary transition-colors"
-                    >
+                {categories.map(category => <CarouselItem key={category} className="basis-1/2 sm:basis-1/3 md:basis-1/5">
+                    <Link to={`/category/${category.toLowerCase()}`} className="flex flex-col items-center gap-2 p-4 text-center hover:text-primary transition-colors">
                       <div className="w-20 h-20 rounded-full bg-background shadow-subtle flex items-center justify-center mb-2">
-                        <img 
-                          src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`}
-                          alt={category}
-                          className="w-full h-full object-cover rounded-full"
-                        />
+                        <img src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`} alt={category} className="w-full h-full object-cover rounded-full" />
                       </div>
                       <span className="text-sm font-medium">{category}</span>
                     </Link>
-                  </CarouselItem>
-                ))}
+                  </CarouselItem>)}
               </CarouselContent>
               <CarouselPrevious className="left-0" />
               <CarouselNext className="right-0" />
@@ -88,11 +58,7 @@ const Index = () => {
         
         {/* New Arrivals Section */}
         <section id="new-arrivals" className="py-20">
-          <ProductGrid 
-            products={newArrivals}
-            title="New Arrivals"
-            subtitle="Discover our latest additions to elevate your wardrobe"
-          />
+          <ProductGrid products={newArrivals} title="New Arrivals" subtitle="Discover our latest additions to elevate your wardrobe" />
           
           <div className="flex justify-center mt-10">
             <Button variant="outline" size="lg" asChild>
@@ -116,11 +82,7 @@ const Index = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
               <div>
-                <img 
-                  src="https://images.unsplash.com/photo-1475180098004-ca77a66827be?q=80&w=1974" 
-                  alt="Deal of the Day" 
-                  className="rounded-lg object-cover w-full h-[500px]"
-                />
+                <img src="https://images.unsplash.com/photo-1475180098004-ca77a66827be?q=80&w=1974" alt="Deal of the Day" className="rounded-lg object-cover w-full h-[500px]" />
               </div>
               <div className="p-6 md:p-10">
                 <span className="badge bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-medium mb-4 inline-block">
@@ -155,51 +117,11 @@ const Index = () => {
         
         {/* Best Sellers Section */}
         <section className="py-20">
-          <ProductGrid 
-            products={bestSellers}
-            title="Best Sellers"
-            subtitle="Our most popular styles loved by customers"
-          />
+          <ProductGrid products={bestSellers} title="Best Sellers" subtitle="Our most popular styles loved by customers" />
         </section>
         
         {/* Trust Badges */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 mb-4">
-                  <Truck className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-medium mb-2">Free Shipping</h3>
-                <p className="text-sm text-muted-foreground">On all orders over $50</p>
-              </div>
-              
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 mb-4">
-                  <CreditCard className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-medium mb-2">Secure Payment</h3>
-                <p className="text-sm text-muted-foreground">100% secure payment</p>
-              </div>
-              
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 mb-4">
-                  <RotateCcw className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-medium mb-2">Easy Returns</h3>
-                <p className="text-sm text-muted-foreground">30 day return policy</p>
-              </div>
-              
-              <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 mb-4">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-medium mb-2">Quality Support</h3>
-                <p className="text-sm text-muted-foreground">24/7 customer support</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        
         
         {/* Feature Banner */}
         <section className="bg-accent py-20">
@@ -219,11 +141,7 @@ const Index = () => {
                 </Button>
               </div>
               <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=2072" 
-                  alt="Premium Clothing" 
-                  className="rounded-lg shadow-elevated object-cover h-[500px] w-full"
-                />
+                <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=2072" alt="Premium Clothing" className="rounded-lg shadow-elevated object-cover h-[500px] w-full" />
                 <div className="absolute -bottom-6 -left-6 p-6 glass-morphism rounded-lg shadow-elevated max-w-xs">
                   <p className="font-medium mb-1">Sustainable Materials</p>
                   <p className="text-sm text-muted-foreground">
@@ -237,11 +155,7 @@ const Index = () => {
         
         {/* Top Rated Products */}
         <section className="py-20">
-          <ProductGrid 
-            products={topRatedProducts}
-            title="Top Rated Products"
-            subtitle="Highly rated by our satisfied customers"
-          />
+          <ProductGrid products={topRatedProducts} title="Top Rated Products" subtitle="Highly rated by our satisfied customers" />
         </section>
         
         {/* Categories Section */}
@@ -255,48 +169,30 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((category, index) => (
-                <div key={category} className="relative overflow-hidden rounded-lg group h-[300px]">
-                  <img 
-                    src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`}
-                    alt={category} 
-                    className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
-                  />
+              {categories.map((category, index) => <div key={category} className="relative overflow-hidden rounded-lg group h-[300px]">
+                  <img src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`} alt={category} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-6">
                     <h3 className="text-xl font-semibold text-white mb-2">{category}</h3>
-                    <Button 
-                      variant="outline" 
-                      className="w-fit bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
-                      asChild
-                    >
+                    <Button variant="outline" className="w-fit bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20" asChild>
                       <Link to={`/category/${category.toLowerCase()}`}>
                         Explore
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
         </section>
         
         {/* Discounted Products */}
         <section className="py-20">
-          <ProductGrid 
-            products={discountedProducts}
-            title="On Sale"
-            subtitle="Great styles at discounted prices"
-          />
+          <ProductGrid products={discountedProducts} title="On Sale" subtitle="Great styles at discounted prices" />
         </section>
         
         {/* Trending Section */}
         <section id="trending" className="py-20 bg-muted/50">
-          <ProductGrid 
-            products={trendingProducts}
-            title="Trending Now"
-            subtitle="The most popular styles that everyone's talking about"
-          />
+          <ProductGrid products={trendingProducts} title="Trending Now" subtitle="The most popular styles that everyone's talking about" />
           
           <div className="flex justify-center mt-10">
             <Button variant="outline" size="lg" asChild>
@@ -311,11 +207,7 @@ const Index = () => {
         {/* Join Banner */}
         <section className="py-20 relative overflow-hidden">
           <div className="absolute inset-0 z-0">
-            <img 
-              src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=3271" 
-              alt="Join Background" 
-              className="w-full h-full object-cover"
-            />
+            <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=3271" alt="Join Background" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/50" />
           </div>
           
@@ -327,11 +219,7 @@ const Index = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex h-12 w-full rounded-md border border-white/20 bg-white/10 backdrop-blur-sm px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+                <input type="email" placeholder="Enter your email" className="flex h-12 w-full rounded-md border border-white/20 bg-white/10 backdrop-blur-sm px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary" />
                 <Button size="lg" className="h-12">Subscribe</Button>
               </div>
               
@@ -344,8 +232,6 @@ const Index = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Index;

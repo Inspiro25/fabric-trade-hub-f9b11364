@@ -1,16 +1,13 @@
-
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 const Footer = () => {
-  return (
-    <footer className="bg-secondary/50 pt-16 pb-8 border-t border-border">
+  return <footer className="bg-secondary/50 pt-16 pb-8 border-t border-border">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12">
           <div className="md:col-span-4">
-            <Link to="/" className="text-2xl font-bold block mb-4">CLOTHVIBE</Link>
+            <Link to="/" className="text-2xl font-bold block mb-4">VYOMA CLOTHING</Link>
             <p className="text-muted-foreground mb-6 max-w-md">
               Discover the latest fashion trends with our curated collection of premium clothing. 
               For both customers and resellers, we make fashion accessible.
@@ -145,9 +142,7 @@ const Footer = () => {
         
         <div className="border-t border-border pt-8 mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div className="text-sm text-muted-foreground order-2 md:order-1 text-center md:text-left">
-              © 2023 ClothVibe. All rights reserved.
-            </div>
+            <div className="text-sm text-muted-foreground order-2 md:order-1 text-center md:text-left">© 2025 Vyoma Enterprises. All rights reserved.</div>
             <div className="flex flex-wrap justify-center md:justify-end space-x-4 order-1 md:order-2 mb-4 md:mb-0">
               <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Privacy Policy
@@ -162,8 +157,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
