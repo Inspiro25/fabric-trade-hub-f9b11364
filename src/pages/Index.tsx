@@ -124,34 +124,7 @@ const Index = () => {
         
         
         {/* Feature Banner */}
-        <section className="bg-accent py-20">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-              <div>
-                <span className="category-chip mb-4">Premium Quality</span>
-                <h2 className="heading-lg mb-4">Crafted with Excellence</h2>
-                <p className="body-md text-muted-foreground mb-6">
-                  Our commitment to quality is evident in every stitch. We source the finest materials and partner with skilled artisans to create pieces that are not only stylish but built to last.
-                </p>
-                <Button asChild>
-                  <Link to="/about">
-                    Our Story
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="relative">
-                <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=2072" alt="Premium Clothing" className="rounded-lg shadow-elevated object-cover h-[500px] w-full" />
-                <div className="absolute -bottom-6 -left-6 p-6 glass-morphism rounded-lg shadow-elevated max-w-xs">
-                  <p className="font-medium mb-1">Sustainable Materials</p>
-                  <p className="text-sm text-muted-foreground">
-                    We prioritize sustainability in our production process, using eco-friendly materials wherever possible.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        
         
         {/* Top Rated Products */}
         <section className="py-20">

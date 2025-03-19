@@ -56,10 +56,7 @@ const Navbar = () => {
             </Button>
             
             {/* Mobile Menu Toggle */}
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              <span className="sr-only">Menu</span>
-            </Button>
+            
           </div>
         </div>
       </div>
