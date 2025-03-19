@@ -6,7 +6,7 @@ declare global {
 }
 
 export interface RazorpayOptions {
-  key: string;
+  key?: string; // Make key optional since we're providing it internally
   amount: number; // in paise/cents
   currency: string;
   name: string;
