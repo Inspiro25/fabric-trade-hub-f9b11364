@@ -1,4 +1,3 @@
-
 declare global {
   interface Window {
     Razorpay: any;
@@ -6,7 +5,7 @@ declare global {
 }
 
 export interface RazorpayOptions {
-  key?: string; // Make key optional since we're providing it internally
+  key?: string; // Optional since we set it internally
   amount: number; // in paise/cents
   currency: string;
   name: string;
@@ -35,9 +34,10 @@ export interface RazorpayResponse {
   razorpay_signature?: string;
 }
 
-// Replace this with your actual Razorpay key
-const RAZORPAY_KEY = "rzp_test_your_key_here";
+// Hardcoded Razorpay test key
+const RAZORPAY_KEY = "rzp_test_IjKEAJBp5g3Axr";
 
+// Load Razorpay script dynamically
 export const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -45,9 +45,9 @@ export const loadRazorpayScript = (): Promise<boolean> => {
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.defer = true;
     script.onload = () => resolve(true);
     script.onerror = () => {
       console.error("Failed to load Razorpay SDK");
@@ -57,29 +57,31 @@ export const loadRazorpayScript = (): Promise<boolean> => {
   });
 };
 
-export const initializeRazorpay = async (options: RazorpayOptions): Promise<void> => {
+// Initialize Razorpay and return response
+export const initializeRazorpay = async (options: RazorpayOptions): Promise<RazorpayResponse | null> => {
   const scriptLoaded = await loadRazorpayScript();
   
   if (!scriptLoaded) {
     throw new Error("Razorpay SDK failed to load");
   }
 
-  const razorpay = new window.Razorpay({
-    ...options,
-    key: RAZORPAY_KEY,
-    handler: (response: RazorpayResponse) => {
-      if (options.handler) {
-        options.handler(response);
-      }
-    },
-    modal: {
-      ondismiss: () => {
-        if (options.modal?.ondismiss) {
-          options.modal.ondismiss();
-        }
+  return new Promise((resolve, reject) => {
+    const razorpay = new window.Razorpay({
+      ...options,
+      key: RAZORPAY_KEY,
+      handler: (response: RazorpayResponse) => {
+        if (options.handler) options.handler(response);
+        resolve(response);
       },
-    },
-  });
+      modal: {
+        ondismiss: () => {
+          console.warn("Payment modal closed by user");
+          if (options.modal?.ondismiss) options.modal.ondismiss();
+          resolve(null);
+        },
+      },
+    });
 
-  razorpay.open();
+    razorpay.open();
+  });
 };
