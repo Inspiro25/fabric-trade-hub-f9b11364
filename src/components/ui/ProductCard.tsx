@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardProps {
   id: string;
@@ -35,12 +36,85 @@ const ProductCard = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleImageLoad = () => {
     setIsLoading(false);
   };
 
   const discountPercentage = salePrice ? Math.round(((price - salePrice) / price) * 100) : 0;
+
+  // Mobile-friendly card (Flipkart/Amazon style)
+  if (isMobile) {
+    return (
+      <div className="product-card-container animate-fade-in border rounded-lg overflow-hidden bg-white">
+        {/* Product Image & Badges */}
+        <div className="relative">
+          <Link to={`/product/${id}`}>
+            <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
+              <img
+                src={image}
+                alt={name}
+                className="w-full h-full object-cover"
+                onLoad={handleImageLoad}
+              />
+            </div>
+          </Link>
+          
+          {/* Wishlist button - Amazon/Flipkart style */}
+          <button
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
+            onClick={() => setIsFavorited(!isFavorited)}
+          >
+            <Heart 
+              className={cn(
+                "h-4 w-4 transition-colors", 
+                isFavorited && "fill-destructive text-destructive"
+              )} 
+            />
+          </button>
+          
+          {/* Discount badge - Flipkart style */}
+          {salePrice && (
+            <div className="absolute bottom-0 left-0 bg-green-500 text-white px-2 py-1 text-xs font-bold">
+              {discountPercentage}% OFF
+            </div>
+          )}
+        </div>
+        
+        {/* Product Info */}
+        <div className="p-3">
+          <div className="mb-1">
+            <span className="text-xs text-muted-foreground">{category}</span>
+          </div>
+          <Link to={`/product/${id}`} className="block mb-1">
+            <h3 className="font-medium text-sm line-clamp-2">{name}</h3>
+          </Link>
+          
+          {/* Rating - Flipkart style */}
+          {rating > 0 && (
+            <div className="flex items-center gap-1 mb-1">
+              <div className="bg-green-600 text-white text-xs px-1.5 py-0.5 rounded flex items-center">
+                {rating.toFixed(1)} <Star className="h-3 w-3 ml-0.5 fill-white" />
+              </div>
+              <span className="text-xs text-muted-foreground">({reviewCount})</span>
+            </div>
+          )}
+          
+          <div className="flex items-center">
+            {salePrice ? (
+              <>
+                <span className="font-bold">₹{salePrice.toFixed(2)}</span>
+                <span className="ml-2 text-xs text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="font-bold">₹{price.toFixed(2)}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Horizontal layout for list view
   if (layout === 'horizontal') {
@@ -119,11 +193,11 @@ const ProductCard = ({
               <div className="flex items-center mb-3">
                 {salePrice ? (
                   <>
-                    <span className="font-semibold text-lg">${salePrice.toFixed(2)}</span>
-                    <span className="ml-2 text-sm text-muted-foreground line-through">${price.toFixed(2)}</span>
+                    <span className="font-semibold text-lg">₹{salePrice.toFixed(2)}</span>
+                    <span className="ml-2 text-sm text-muted-foreground line-through">₹{price.toFixed(2)}</span>
                   </>
                 ) : (
-                  <span className="font-semibold text-lg">${price.toFixed(2)}</span>
+                  <span className="font-semibold text-lg">₹{price.toFixed(2)}</span>
                 )}
               </div>
             </div>
@@ -279,11 +353,11 @@ const ProductCard = ({
         <div className="flex items-center">
           {salePrice ? (
             <>
-              <span className="font-semibold">${salePrice.toFixed(2)}</span>
-              <span className="ml-2 text-sm text-muted-foreground line-through">${price.toFixed(2)}</span>
+              <span className="font-semibold">₹{salePrice.toFixed(2)}</span>
+              <span className="ml-2 text-sm text-muted-foreground line-through">₹{price.toFixed(2)}</span>
             </>
           ) : (
-            <span className="font-semibold">${price.toFixed(2)}</span>
+            <span className="font-semibold">₹{price.toFixed(2)}</span>
           )}
         </div>
       </div>

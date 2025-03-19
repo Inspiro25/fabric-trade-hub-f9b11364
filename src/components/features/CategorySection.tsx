@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { getAllCategories } from '@/lib/products';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface CategorySectionProps {
   className?: string;
@@ -10,6 +11,32 @@ interface CategorySectionProps {
 
 const CategorySection = ({ className = '' }: CategorySectionProps) => {
   const categories = getAllCategories();
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <ScrollArea className="w-full" orientation="horizontal">
+        <div className="flex space-x-2 py-4 px-4 border-b bg-white">
+          {categories.map((category) => (
+            <Link 
+              key={category} 
+              to={`/category/${category.toLowerCase()}`}
+              className="flex flex-col items-center min-w-[70px] group"
+            >
+              <div className="w-12 h-12 rounded-full mb-2 overflow-hidden">
+                <img
+                  src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`}
+                  alt={category}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300"
+                />
+              </div>
+              <span className="text-xs text-center line-clamp-1">{category}</span>
+            </Link>
+          ))}
+        </div>
+      </ScrollArea>
+    );
+  }
 
   return (
     <section className={`py-10 ${className}`}>
@@ -22,18 +49,16 @@ const CategorySection = ({ className = '' }: CategorySectionProps) => {
               to={`/category/${category.toLowerCase()}`}
               className="group"
             >
-              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                <CardContent className="p-4 flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-muted/50 mb-3 overflow-hidden">
-                    <img
-                      src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`}
-                      alt={category}
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300"
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-center">{category}</span>
-                </CardContent>
-              </Card>
+              <div className="border-0 shadow-sm hover:shadow-md transition-shadow overflow-hidden rounded-lg flex flex-col items-center p-4">
+                <div className="w-16 h-16 rounded-full bg-muted/50 mb-3 overflow-hidden">
+                  <img
+                    src={`https://source.unsplash.com/featured/?${category.toLowerCase()},fashion`}
+                    alt={category}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-300"
+                  />
+                </div>
+                <span className="text-sm font-medium text-center">{category}</span>
+              </div>
             </Link>
           ))}
         </div>
