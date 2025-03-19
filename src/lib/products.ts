@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -169,6 +168,161 @@ export const products: Product[] = [
     reviewCount: 64,
     stock: 15,
     tags: ["sunglasses", "accessories", "summer"]
+  },
+  {
+    id: "p9",
+    name: "Women's Floral Maxi Dress",
+    description: "Elegant floral maxi dress perfect for summer occasions. Features a flattering silhouette with adjustable straps and a flowing skirt that moves beautifully with you.",
+    price: 89.99,
+    salePrice: 69.99,
+    images: [
+      "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=2080",
+      "https://images.unsplash.com/photo-1586062129117-08db958f3515?q=80&w=2071",
+      "https://images.unsplash.com/photo-1577447181665-009d53bd8d15?q=80&w=1974"
+    ],
+    category: "Dresses",
+    colors: ["Floral Print", "Blue", "Pink"],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    isNew: true,
+    rating: 4.7,
+    reviewCount: 52,
+    stock: 25,
+    tags: ["dress", "summer", "floral", "women"]
+  },
+  {
+    id: "p10",
+    name: "Men's Leather Jacket",
+    description: "Premium leather jacket with a modern cut and comfortable fit. Features multiple pockets, sturdy zippers, and a quilted lining for extra warmth.",
+    price: 199.99,
+    images: [
+      "https://images.unsplash.com/photo-1521223890158-f9f7c3d5d504?q=80&w=1992",
+      "https://images.unsplash.com/photo-1553143802-91ca2ee83d82?q=80&w=2010",
+      "https://images.unsplash.com/photo-1546257056-04ced1d6d76c?q=80&w=1974"
+    ],
+    category: "Jackets",
+    colors: ["Black", "Brown"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isTrending: true,
+    rating: 4.9,
+    reviewCount: 78,
+    stock: 15,
+    tags: ["leather", "jacket", "winter", "men"]
+  },
+  {
+    id: "p11",
+    name: "Athletic Running Shoes",
+    description: "Lightweight, breathable running shoes with responsive cushioning and excellent traction. Designed for both casual joggers and serious runners.",
+    price: 119.99,
+    salePrice: 99.99,
+    images: [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070",
+      "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1974",
+      "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=1925"
+    ],
+    category: "Shoes",
+    colors: ["Red/White", "Black/Blue", "Gray/Green"],
+    sizes: ["7", "8", "9", "10", "11", "12"],
+    isNew: true,
+    rating: 4.6,
+    reviewCount: 115,
+    stock: 45,
+    tags: ["shoes", "running", "athletic", "sports"]
+  },
+  {
+    id: "p12",
+    name: "Women's Cropped Cardigan",
+    description: "Soft, lightweight cardigan perfect for layering. Features a cropped length, button-up front, and ribbed cuffs for a comfortable fit.",
+    price: 49.99,
+    images: [
+      "https://images.unsplash.com/photo-1553754538-466add009c05?q=80&w=1936",
+      "https://images.unsplash.com/photo-1524041255072-7dd0e30feba1?q=80&w=1780",
+      "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?q=80&w=1934"
+    ],
+    category: "Sweaters",
+    colors: ["Cream", "Light Pink", "Sage Green"],
+    sizes: ["XS", "S", "M", "L"],
+    rating: 4.3,
+    reviewCount: 67,
+    stock: 30,
+    tags: ["cardigan", "sweater", "women", "knitwear"]
+  },
+  {
+    id: "p13",
+    name: "Distressed Boyfriend Jeans",
+    description: "Relaxed-fit jeans with a slightly slouchy silhouette and distressed details. Made from high-quality denim with just the right amount of stretch.",
+    price: 84.99,
+    salePrice: 69.99,
+    images: [
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1974",
+      "https://images.unsplash.com/photo-1582418702059-97ebafb35d09?q=80&w=1975",
+      "https://images.unsplash.com/photo-1604176424472-9d7a8f8eb344?q=80&w=1974"
+    ],
+    category: "Jeans",
+    colors: ["Light Wash", "Medium Wash"],
+    sizes: ["24", "26", "28", "30", "32"],
+    isNew: true,
+    rating: 4.5,
+    reviewCount: 92,
+    stock: 35,
+    tags: ["jeans", "distressed", "denim", "women"]
+  },
+  {
+    id: "p14",
+    name: "Men's Polo Shirt",
+    description: "Classic polo shirt made from breathable cotton piqué. Features a ribbed collar, button placket, and subtle embroidered logo.",
+    price: 44.99,
+    images: [
+      "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=1974",
+      "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?q=80&w=1951",
+      "https://images.unsplash.com/photo-1571455786673-9d9d6c194f90?q=80&w=1974"
+    ],
+    category: "Polo Shirts",
+    colors: ["Navy", "White", "Light Blue", "Black"],
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    isTrending: true,
+    rating: 4.4,
+    reviewCount: 108,
+    stock: 50,
+    tags: ["polo", "casual", "men"]
+  },
+  {
+    id: "p15",
+    name: "Quilted Puffer Vest",
+    description: "Lightweight yet warm puffer vest with quilted design. Perfect for layering in cooler weather, featuring side pockets and a stand collar.",
+    price: 69.99,
+    salePrice: 54.99,
+    images: [
+      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1936",
+      "https://images.unsplash.com/photo-1608744882201-39d87a0e56da?q=80&w=1974",
+      "https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?q=80&w=1972"
+    ],
+    category: "Outerwear",
+    colors: ["Black", "Navy", "Olive"],
+    sizes: ["S", "M", "L", "XL"],
+    rating: 4.6,
+    reviewCount: 72,
+    stock: 25,
+    tags: ["vest", "puffer", "outerwear", "winter"]
+  },
+  {
+    id: "p16",
+    name: "Women's Yoga Leggings",
+    description: "High-waisted compression leggings made from moisture-wicking fabric. Features a hidden pocket in the waistband and four-way stretch for maximum comfort.",
+    price: 59.99,
+    images: [
+      "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=2069",
+      "https://images.unsplash.com/photo-1516902663522-75d87bf6a94e?q=80&w=1974",
+      "https://images.unsplash.com/photo-1547086293-3b69a50579ed?q=80&w=1974"
+    ],
+    category: "Activewear",
+    colors: ["Black", "Heather Gray", "Navy"],
+    sizes: ["XS", "S", "M", "L", "XL"],
+    isNew: true,
+    isTrending: true,
+    rating: 4.8,
+    reviewCount: 156,
+    stock: 40,
+    tags: ["yoga", "leggings", "activewear", "women"]
   }
 ];
 
@@ -183,11 +337,11 @@ export const getRelatedProducts = (currentProductId: string, category: string): 
 };
 
 export const getNewArrivals = (): Product[] => {
-  return products.filter(product => product.isNew).slice(0, 4);
+  return products.filter(product => product.isNew).slice(0, 8);
 };
 
 export const getTrendingProducts = (): Product[] => {
-  return products.filter(product => product.isTrending).slice(0, 4);
+  return products.filter(product => product.isTrending).slice(0, 8);
 };
 
 export const getProductsByCategory = (category: string): Product[] => {
@@ -197,4 +351,32 @@ export const getProductsByCategory = (category: string): Product[] => {
 export const getAllCategories = (): string[] => {
   const categories = new Set(products.map(product => product.category));
   return Array.from(categories);
+};
+
+export const getTopRatedProducts = (): Product[] => {
+  return [...products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+};
+
+export const getDiscountedProducts = (): Product[] => {
+  return products.filter(product => product.salePrice !== undefined).slice(0, 8);
+};
+
+export const getProductsByTags = (tag: string): Product[] => {
+  return products.filter(product => product.tags.includes(tag)).slice(0, 8);
+};
+
+export const getBestSellingProducts = (): Product[] => {
+  return [...products]
+    .sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount))
+    .slice(0, 8);
+};
+
+export const searchProducts = (query: string): Product[] => {
+  const lowercaseQuery = query.toLowerCase();
+  return products.filter(product => 
+    product.name.toLowerCase().includes(lowercaseQuery) || 
+    product.description.toLowerCase().includes(lowercaseQuery) ||
+    product.category.toLowerCase().includes(lowercaseQuery) ||
+    product.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery))
+  );
 };

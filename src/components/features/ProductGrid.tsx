@@ -2,6 +2,18 @@
 import { useState, useEffect } from 'react';
 import ProductCard from '@/components/ui/ProductCard';
 import { Product } from '@/lib/products';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from '@/components/ui/pagination';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Grid, List, SlidersHorizontal } from 'lucide-react';
 
 interface ProductGridProps {
   products: Product[];
@@ -9,6 +21,10 @@ interface ProductGridProps {
   subtitle?: string;
   columns?: 2 | 3 | 4;
   className?: string;
+  showPagination?: boolean;
+  itemsPerPage?: number;
+  showFilters?: boolean;
+  useAlternateLayout?: boolean;
 }
 
 const ProductGrid = ({
@@ -17,8 +33,19 @@ const ProductGrid = ({
   subtitle,
   columns = 4,
   className = '',
+  showPagination = false,
+  itemsPerPage = 12,
+  showFilters = false,
+  useAlternateLayout = false,
 }: ProductGridProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const displayedProducts = products.slice(startIdx, startIdx + itemsPerPage);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -28,7 +55,14 @@ const ProductGrid = ({
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    // Reset to page 1 when products change
+    setCurrentPage(1);
+  }, [products]);
+
   const getGridCols = () => {
+    if (viewMode === 'list') return 'grid-cols-1';
+    
     switch (columns) {
       case 2:
         return 'grid-cols-1 sm:grid-cols-2';
@@ -43,19 +77,64 @@ const ProductGrid = ({
   return (
     <div className={`container mx-auto px-4 md:px-6 ${className}`}>
       {(title || subtitle) && (
-        <div className="text-center mb-10">
-          {title && <h2 className="heading-lg mb-3">{title}</h2>}
-          {subtitle && <p className="text-muted-foreground max-w-2xl mx-auto">{subtitle}</p>}
+        <div className={`${useAlternateLayout ? 'text-left' : 'text-center'} mb-10`}>
+          {title && (
+            <div className="flex items-center justify-between">
+              <h2 className="heading-lg mb-3">{title}</h2>
+              {useAlternateLayout && products.length > 0 && (
+                <Badge variant="outline" className="font-normal">
+                  {products.length} products
+                </Badge>
+              )}
+            </div>
+          )}
+          {subtitle && (
+            <p className={`text-muted-foreground ${useAlternateLayout ? '' : 'max-w-2xl mx-auto'}`}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+      )}
+      
+      {showFilters && (
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Card className="w-full sm:w-auto">
+            <CardContent className="p-3 flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="text-sm font-medium">Filters</span>
+            </CardContent>
+          </Card>
+          
+          <div className="flex items-center gap-2 ml-auto">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'outline'}
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="h-4 w-4" />
+              <span className="sr-only">Grid view</span>
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'outline'}
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+              <span className="sr-only">List view</span>
+            </Button>
+          </div>
         </div>
       )}
       
       <div className={`grid ${getGridCols()} gap-6 md:gap-8`}>
-        {products.map((product, index) => (
+        {displayedProducts.map((product, index) => (
           <div 
             key={product.id} 
             className={`transition-all duration-500 ${
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            }`}
+            } ${viewMode === 'list' ? 'col-span-full' : ''}`}
             style={{ transitionDelay: `${index * 100}ms` }}
           >
             <ProductCard
@@ -67,10 +146,46 @@ const ProductGrid = ({
               category={product.category}
               isNew={product.isNew}
               isTrending={product.isTrending}
+              layout={viewMode === 'list' ? 'horizontal' : 'vertical'}
+              rating={product.rating}
+              reviewCount={product.reviewCount}
             />
           </div>
         ))}
       </div>
+      
+      {showPagination && totalPages > 1 && (
+        <div className="mt-10">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+              
+              {[...Array(totalPages)].map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink 
+                    isActive={currentPage === i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };
