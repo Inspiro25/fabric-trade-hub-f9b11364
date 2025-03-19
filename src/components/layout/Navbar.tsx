@@ -54,13 +54,7 @@ const Navbar = () => {
             </Button>
             
             <Button variant="ghost" size="icon" className="relative" asChild>
-              <Link to="/cart">
-                <ShoppingCart className="h-5 w-5" />
-                <span className="sr-only">Cart</span>
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs h-5 w-5 flex items-center justify-center rounded-full">
-                  3
-                </span>
-              </Link>
+              
             </Button>
             
             {/* Mobile Menu Toggle */}
