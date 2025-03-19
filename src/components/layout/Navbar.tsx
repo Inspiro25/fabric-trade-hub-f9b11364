@@ -46,10 +46,7 @@ const Navbar = () => {
           {/* Actions */}
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" className="relative" asChild>
-              <Link to="/search">
-                <Search className="h-5 w-5" />
-                <span className="sr-only">Search</span>
-              </Link>
+              
             </Button>
             
             <Button variant="ghost" size="icon" className="relative" asChild>
