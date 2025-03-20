@@ -77,24 +77,17 @@ const Cart = () => {
               {/* Cart Items */}
               <div className="lg:col-span-2">
                 <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                  <div className="flex items-center justify-between pb-4 border-b border-border">
-                    <h2 className="font-medium">Product</h2>
-                    <div className="flex items-center">
-                      <span className="w-24 text-center">Quantity</span>
-                      <span className="w-24 text-right">Total</span>
-                      <span className="w-10"></span>
-                    </div>
-                  </div>
+                  
                   
                   <ul className="divide-y divide-border">
-                    {cartItems.map((item, index) => <li key={`${item.id}-${item.size}-${item.color}`} className="py-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                    {cartItems.map((item, index) => <li key={`${item.id}-${item.size}-${item.color}`} className="flex flex-col sm:flex-row sm:items-center gap-4 py-0 bg-gray-50">
                         <div className="flex-shrink-0">
                           <Link to={`/product/${item.id}`}>
                             <img src={item.product.images[0]} alt={item.product.name} className="w-24 h-24 object-cover rounded-md" />
                           </Link>
                         </div>
                         
-                        <div className="flex-grow">
+                        <div className="flex-grow bg-slate-50">
                           <Link to={`/product/${item.id}`} className="font-medium hover:text-primary transition-colors">
                             {item.product.name}
                           </Link>
