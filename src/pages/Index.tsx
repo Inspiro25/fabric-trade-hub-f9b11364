@@ -57,7 +57,7 @@ const Index = () => {
         </section>
         
         {/* New Arrivals Section */}
-        <section id="new-arrivals" className="py-20">
+        <section id="new-arrivals" className="py-[10px]">
           <ProductGrid products={newArrivals} title="New Arrivals" subtitle="Discover our latest additions to elevate your wardrobe" />
           
           <div className="flex justify-center mt-10">
@@ -71,7 +71,7 @@ const Index = () => {
         </section>
         
         {/* Deal of the Day */}
-        <section className="py-16 bg-accent/20">
+        <section className="bg-accent/20 py-[10px]">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-10">
               <h2 className="heading-lg mb-3">Deal of the Day</h2>
@@ -116,7 +116,7 @@ const Index = () => {
         </section>
         
         {/* Best Sellers Section */}
-        <section className="py-20">
+        <section className="py-[10px]">
           <ProductGrid products={bestSellers} title="Best Sellers" subtitle="Our most popular styles loved by customers" />
         </section>
         
@@ -127,12 +127,12 @@ const Index = () => {
         
         
         {/* Top Rated Products */}
-        <section className="py-20">
+        <section className="py-[20px]">
           <ProductGrid products={topRatedProducts} title="Top Rated Products" subtitle="Highly rated by our satisfied customers" />
         </section>
         
         {/* Categories Section */}
-        <section id="categories" className="py-20 bg-muted/50">
+        <section id="categories" className="bg-muted/50 py-[15px]">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-10">
               <h2 className="heading-lg mb-3">Shop by Category</h2>
@@ -159,12 +159,12 @@ const Index = () => {
         </section>
         
         {/* Discounted Products */}
-        <section className="py-20">
+        <section className="py-[15px]">
           <ProductGrid products={discountedProducts} title="On Sale" subtitle="Great styles at discounted prices" />
         </section>
         
         {/* Trending Section */}
-        <section id="trending" className="py-20 bg-muted/50">
+        <section id="trending" className="bg-muted/50 py-[15px]">
           <ProductGrid products={trendingProducts} title="Trending Now" subtitle="The most popular styles that everyone's talking about" />
           
           <div className="flex justify-center mt-10">
