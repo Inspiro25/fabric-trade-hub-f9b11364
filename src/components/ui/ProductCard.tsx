@@ -5,6 +5,8 @@ import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { toast } from "sonner";
 
 interface ProductCardProps {
   id: string;
@@ -35,11 +37,28 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
   const isMobile = useIsMobile();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const isFavorited = isInWishlist(id);
 
   const handleImageLoad = () => {
     setIsLoading(false);
+  };
+
+  const toggleWishlist = () => {
+    if (isFavorited) {
+      removeFromWishlist(id);
+      toast.info("Removed from wishlist");
+    } else {
+      addToWishlist(id);
+      toast.success("Added to wishlist");
+    }
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log(`Added ${name} to cart`);
+    toast.success(`Added ${name} to cart`);
   };
 
   const discountPercentage = salePrice ? Math.round(((price - salePrice) / price) * 100) : 0;
@@ -64,7 +83,7 @@ const ProductCard = ({
           {/* Wishlist button - Amazon/Flipkart style */}
           <button
             className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
-            onClick={() => setIsFavorited(!isFavorited)}
+            onClick={toggleWishlist}
           >
             <Heart 
               className={cn(
@@ -287,7 +306,7 @@ const ProductCard = ({
             variant="secondary"
             size="icon"
             className="h-7 w-7 rounded-full shadow-subtle bg-background/80 backdrop-blur-sm"
-            onClick={() => setIsFavorited(!isFavorited)}
+            onClick={toggleWishlist}
           >
             <Heart 
               className={cn(
@@ -308,10 +327,7 @@ const ProductCard = ({
         >
           <Button 
             className="w-full rounded-md shadow-subtle glass-morphism bg-background/80 backdrop-blur-sm text-xs h-8"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log(`Added ${name} to cart`);
-            }}
+            onClick={handleAddToCart}
           >
             <ShoppingCart className="h-3 w-3 mr-1" />
             Quick Add
