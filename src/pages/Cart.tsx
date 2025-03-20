@@ -60,9 +60,9 @@ const Cart = () => {
   return <div className="animate-page-transition">
       <Navbar />
       
-      <main className="pt-24 pb-20 py-[20px]">
+      <main className="pt-24 pb-20 py-0">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="heading-lg mb-8 text-center text-sm">Your Shopping Cart</h1>
+          <h1 className="heading-lg mb-8 text-sm text-center">Your Shopping Cart</h1>
           
           {cartItems.length === 0 ? <div className="text-center py-16">
               <div className="flex justify-center mb-6">
@@ -135,7 +135,7 @@ const Cart = () => {
               
               {/* Order Summary */}
               <div className={`transition-all duration-500 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                <div className="rounded-lg p-6 border border-border py-0 bg-amber-500">
+                <div className="rounded-lg p-6 border border-border bg-amber-500 py-[10px]">
                   <h2 className="font-medium text-lg mb-4">Order Summary</h2>
                   
                   <div className="space-y-3 mb-6">
