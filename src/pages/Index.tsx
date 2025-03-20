@@ -178,30 +178,7 @@ const Index = () => {
         </section>
         
         {/* Join Banner */}
-        <section className="py-20 relative overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=3271" alt="Join Background" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/50" />
-          </div>
-          
-          <div className="container mx-auto px-4 md:px-6 relative z-10">
-            <div className="max-w-3xl mx-auto text-center text-white">
-              <h2 className="heading-lg mb-4">Join Our Community</h2>
-              <p className="body-md mb-8">
-                Sign up to receive early access to new arrivals, exclusive offers, and styling tips tailored to your preferences.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <input type="email" placeholder="Enter your email" className="flex h-12 w-full rounded-md border border-white/20 bg-white/10 backdrop-blur-sm px-3 py-2 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary" />
-                <Button size="lg" className="h-12">Subscribe</Button>
-              </div>
-              
-              <p className="text-sm mt-4 text-white/60">
-                By subscribing, you agree to our Privacy Policy and consent to receive updates from our company.
-              </p>
-            </div>
-          </div>
-        </section>
+        
       </main>
       
       <Footer />

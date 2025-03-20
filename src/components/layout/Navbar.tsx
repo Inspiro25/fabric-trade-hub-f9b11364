@@ -1,18 +1,15 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search, User, Menu, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
-
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -24,7 +21,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -35,7 +31,6 @@ const Navbar = () => {
       document.body.style.overflow = 'auto';
     };
   }, [mobileMenuOpen]);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -50,30 +45,15 @@ const Navbar = () => {
   if (isMobile) {
     return null;
   }
-
-  return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-morphism py-3 shadow-subtle' : 'bg-transparent py-5'}`}>
+  return <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-morphism py-3 shadow-subtle' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold transition-transform hover:scale-105">
-            KUTUKU
-          </Link>
+          <Link to="/" className="text-xl font-bold transition-transform hover:scale-105">VYOMAKART</Link>
 
           {/* Desktop Search */}
           <form onSubmit={handleSearch} className="relative flex-grow max-w-xl mx-8">
-            <Input
-              type="text"
-              placeholder="Search products..."
-              className="pr-10 rounded-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button 
-              type="submit" 
-              size="icon" 
-              variant="ghost" 
-              className="absolute right-0 top-0 h-full"
-            >
+            <Input type="text" placeholder="Search products..." className="pr-10 rounded-full" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+            <Button type="submit" size="icon" variant="ghost" className="absolute right-0 top-0 h-full">
               <Search className="h-4 w-4" />
             </Button>
           </form>
@@ -103,8 +83,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Navbar;
