@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ProductGrid from '@/components/features/ProductGrid';
-import { getAllProducts } from '@/lib/products';
+import { products } from '@/lib/products';
 
 const Search = () => {
   const navigate = useNavigate();
@@ -14,11 +14,11 @@ const Search = () => {
   const initialQuery = queryParams.get('q') || '';
   
   const [query, setQuery] = useState(initialQuery);
-  const [searchResults, setSearchResults] = useState(getAllProducts());
+  const [searchResults, setSearchResults] = useState(products);
   
   useEffect(() => {
     if (query) {
-      const filteredProducts = getAllProducts().filter(product => {
+      const filteredProducts = products.filter(product => {
         return (
           product.name.toLowerCase().includes(query.toLowerCase()) ||
           product.category.toLowerCase().includes(query.toLowerCase())

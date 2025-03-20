@@ -6,16 +6,15 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import ProductGrid from '@/components/features/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getAllProducts } from '@/lib/products';
+import { products } from '@/lib/products';
 
 const Wishlist = () => {
   const { wishlist } = useWishlist();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const allProducts = getAllProducts();
   
   // Filter products that are in the wishlist
-  const wishlistProducts = allProducts.filter(product => wishlist.includes(product.id));
+  const wishlistProducts = products.filter(product => wishlist.includes(product.id));
 
   useEffect(() => {
     window.scrollTo(0, 0);

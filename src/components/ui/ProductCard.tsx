@@ -236,7 +236,7 @@ const ProductCard = ({
                 variant="outline"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => setIsFavorited(!isFavorited)}
+                onClick={toggleWishlist}
               >
                 <Heart 
                   className={cn(
