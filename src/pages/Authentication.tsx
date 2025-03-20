@@ -66,12 +66,12 @@ const Authentication = () => {
   return <div className="animate-page-transition">
       <Navbar />
       
-      <main className="pt-24 pb-20">
+      <main className="pt-24 pb-20 py-0">
         <div className="container mx-auto px-4 md:px-6">
           <div className={`max-w-md mx-auto transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            <h1 className="heading-lg mb-6 text-center">Welcome to Vyoma</h1>
+            <h1 className="heading-lg mb-6 text-center text-xl">VyomaKart</h1>
             
-            <div className="bg-card rounded-lg border border-border p-6 shadow-subtle">
+            <div className="bg-card rounded-lg border border-border p-6 shadow-subtle py-[50px]">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="w-full mb-6">
                   <TabsTrigger value="login" className="flex-1">Sign In</TabsTrigger>

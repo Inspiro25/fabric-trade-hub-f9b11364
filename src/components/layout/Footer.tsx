@@ -1,58 +1,14 @@
-
 import { Link } from 'react-router-dom';
 import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 const Footer = () => {
   const isMobile = useIsMobile();
-
   if (isMobile) {
-    return (
-      <footer className="bg-background border-t py-6 pb-20">
-        <div className="container mx-auto px-4">
-          {/* Newsletter Signup */}
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold mb-3">Stay updated</h3>
-            <div className="flex gap-2">
-              <Input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="text-xs h-9" 
-              />
-              <Button size="sm" className="h-9">Subscribe</Button>
-            </div>
-          </div>
-          
-          {/* Social Icons */}
-          <div className="flex justify-center space-x-4 mb-6">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Instagram size={18} />
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Facebook size={18} />
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Twitter size={18} />
-            </a>
-          </div>
-          
-          {/* Copyright */}
-          <div className="text-center text-xs text-muted-foreground">
-            <p>© 2024 Vyoma. All rights reserved.</p>
-            <div className="flex justify-center space-x-3 mt-2">
-              <Link to="/terms" className="hover:underline">Terms</Link>
-              <Link to="/privacy" className="hover:underline">Privacy</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    );
+    return;
   }
-
-  return (
-    <footer className="bg-background border-t py-12">
+  return <footer className="bg-background border-t py-12">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
@@ -135,8 +91,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
