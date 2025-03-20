@@ -55,7 +55,7 @@ const Search = () => {
               placeholder="Search products..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pr-8 bg-muted/50"
+              className="pr-8 bg-muted/50 rounded-full"
               autoFocus
             />
             {query && (
@@ -82,7 +82,7 @@ const Search = () => {
               <div className="mb-4 text-sm text-muted-foreground">
                 Found {searchResults.length} results for "{query}"
               </div>
-              <ProductGrid products={searchResults} />
+              <ProductGrid products={searchResults} columns="grid-cols-2" />
             </>
           ) : (
             <div className="text-center py-12">

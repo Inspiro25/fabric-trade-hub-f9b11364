@@ -62,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				kutuku: {
+					primary: '#FE7235',
+					secondary: '#FF9D6C',
+					light: '#FFF0EA',
+					dark: '#212121',
+					gray: '#F6F6F6',
+					muted: '#9E9E9E'
 				}
 			},
 			borderRadius: {

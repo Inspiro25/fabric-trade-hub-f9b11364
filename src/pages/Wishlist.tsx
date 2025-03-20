@@ -42,6 +42,7 @@ const Wishlist = () => {
             products={wishlistProducts} 
             title={isMobile ? "" : "Items you've saved"} 
             subtitle={isMobile ? "" : "Products you've added to your wishlist"} 
+            columns={isMobile ? "grid-cols-2" : undefined}
           />
         ) : (
           <div className="text-center py-12">

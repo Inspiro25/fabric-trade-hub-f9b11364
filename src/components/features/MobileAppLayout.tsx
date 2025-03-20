@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Search, ShoppingBag, User, Heart } from 'lucide-react';
+import { Home, Search, ShoppingBag, Heart, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +37,7 @@ const MobileAppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         {children}
       </main>
 
-      {/* Bottom navigation bar - Flipkart/Amazon style */}
+      {/* Bottom navigation bar - Kutuku style */}
       <div className="fixed bottom-0 left-0 right-0 bg-background shadow-lg border-t z-50">
         <div className="grid grid-cols-5 h-16">
           <MobileNavItem 
