@@ -28,7 +28,7 @@ const MobileAppLayout: React.FC<{
   const pathname = location.pathname;
   return <div className="flex flex-col min-h-screen">
       {/* Content area */}
-      <main className="flex-1 pb-16 py-[96px]">
+      <main className="flex-1 pb-16 py-0">
         {children}
       </main>
 
