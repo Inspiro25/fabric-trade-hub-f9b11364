@@ -13,6 +13,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Authentication from "./pages/Authentication";
 import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import Search from "./pages/Search";
 import Wishlist from "./pages/Wishlist";
 import Notifications from "./pages/Notifications";
@@ -51,6 +52,7 @@ const AppContent = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/auth" element={<Authentication />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/search" element={<Search />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/notifications" element={<Notifications />} />
@@ -74,6 +76,7 @@ const AppContent = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/auth" element={<Authentication />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/search" element={<Search />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/notifications" element={<Notifications />} />
