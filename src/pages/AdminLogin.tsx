@@ -63,7 +63,6 @@ const AdminLogin = () => {
       }
 
       // If not found in hard-coded credentials, check against shops from the database
-      // First, try to get the shop directly by shopId
       const shops = await fetchShops();
       const shop = shops.find(s => s.shopId === data.shopId);
       
@@ -71,7 +70,8 @@ const AdminLogin = () => {
         console.log("Found shop:", shop);
         // Verify the password - note we're now directly checking the password field
         if (shop.password === data.password) {
-          sessionStorage.setItem('adminShopId', data.shopId);
+          // Store the UUID id in session storage, not the shopId
+          sessionStorage.setItem('adminShopId', shop.id);
           toast({
             title: "Login successful",
             description: "Welcome to your admin panel",
