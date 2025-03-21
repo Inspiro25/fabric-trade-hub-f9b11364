@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { MapPin, Search, CheckCircle, Star } from 'lucide-react';
-// Import mockShops instead of shops from lib/shops
 import { Shop, mockShops, fetchShops } from '@/lib/shops';
 
 const Shops = () => {
@@ -37,14 +36,12 @@ const Shops = () => {
 
   return (
     <div className="pb-10">
-      {/* Compact Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-3">
           <h1 className="text-sm font-medium">Shops</h1>
         </div>
       </div>
       
-      {/* Search Bar */}
       <div className="container mx-auto px-4 py-6">
         <Input 
           type="text"
@@ -55,7 +52,6 @@ const Shops = () => {
         />
       </div>
       
-      {/* Shop List */}
       <div className="container mx-auto px-4">
         {isLoading ? (
           <div className="text-center py-10">Loading shops...</div>

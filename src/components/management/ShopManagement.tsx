@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,7 +60,6 @@ const ShopManagement: React.FC = () => {
 
   const handleAddShop = async (data: ShopFormValues) => {
     try {
-      // Ensure all required properties are included with non-optional values
       const newShopData: Omit<Shop, "id"> = {
         name: data.name,
         description: data.description,
@@ -247,7 +245,6 @@ const ShopManagement: React.FC = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Add Shop Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -266,7 +263,6 @@ const ShopManagement: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Shop Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -286,7 +282,6 @@ const ShopManagement: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog 
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
