@@ -88,7 +88,7 @@ const ManagementShopPerformance = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-2 md:p-8 pt-4 md:pt-6 overflow-x-hidden">
+    <div className="flex-1 space-y-4 p-2 md:p-8 pt-4 md:pt-6 max-w-full overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
         <div className="flex items-center gap-2">
           <Button 
@@ -267,7 +267,7 @@ const ManagementShopPerformance = () => {
                     </TabsContent>
                     
                     <TabsContent value="sales" className="p-2 pt-0">
-                      <div className="h-60 md:h-72 mt-2 overflow-x-auto">
+                      <div className="h-60 md:h-72 mt-2 w-full overflow-hidden">
                         <ResponsiveContainer width="100%" height="100%">
                           <RechartsBarChart
                             data={monthlySales}
