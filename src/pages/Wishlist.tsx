@@ -1,40 +1,71 @@
-// Import mockProducts instead of products from lib/products
-import { Product, mockProducts } from '@/lib/products';
+
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { Product } from '@/lib/products';
+import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/ui/ProductCard';
+import EmptyWishlist from '@/components/cart/EmptyWishlist';
+import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const { wishlist } = useWishlist();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Load wishlist items from local storage or default to an empty array
-    const storedWishlist = localStorage.getItem('wishlist');
-    const initialWishlist = storedWishlist ? JSON.parse(storedWishlist) : [];
+    // Simulate loading delay for smoother transitions
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 300);
 
-    // For demonstration purposes, let's filter mock products based on IDs in the wishlist
-    const productsInWishlist = mockProducts.filter(product => initialWishlist.includes(product.id));
-    setWishlistItems(productsInWishlist);
-  }, []);
+    // Load wishlist items from API or mock data
+    import('@/lib/products').then(({ mockProducts }) => {
+      const productsInWishlist = mockProducts.filter(product => 
+        wishlist.includes(product.id)
+      );
+      setWishlistItems(productsInWishlist);
+    });
+
+    return () => clearTimeout(timer);
+  }, [wishlist]);
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
+    <div className="container mx-auto px-4 py-6 max-w-5xl">
+      <div className="flex items-center mb-6">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          asChild 
+          className="mr-2 h-8 w-8"
+        >
+          <Link to="/" aria-label="Back to shopping">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <h1 className="text-xl font-semibold">My Wishlist</h1>
+      </div>
 
       {wishlistItems.length === 0 ? (
-        <div className="text-center">
-          <Heart className="mx-auto h-10 w-10 text-gray-400 mb-4" />
-          <p className="text-gray-500">Your wishlist is currently empty.</p>
-          <Link to="/" className="text-blue-600 hover:underline">
-            Discover Products
-          </Link>
+        <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <EmptyWishlist />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {wishlistItems.map((product) => (
-            <ProductCard key={product.id} product={product} variant="compact" />
-          ))}
+        <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+            <div className="border-b border-gray-100 p-3">
+              <p className="text-sm font-medium">
+                {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved
+              </p>
+            </div>
+            <div className={`grid ${isMobile ? 'grid-cols-2 gap-3 p-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6'}`}>
+              {wishlistItems.map((product) => (
+                <ProductCard key={product.id} product={product} variant="compact" />
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
