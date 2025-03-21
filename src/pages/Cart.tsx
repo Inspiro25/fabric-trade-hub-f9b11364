@@ -18,8 +18,6 @@ const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useIsMobile();
-  const { wishlist, removeFromWishlist } = useWishlist();
-  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   
   const subtotal = getCartTotal();
   const total = subtotal - (subtotal * 0.1) + (subtotal > 100 ? 0 : 10);
@@ -32,22 +30,6 @@ const Cart = () => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
-
-  // Load wishlist products
-  useEffect(() => {
-    // Fetch product details for wishlist items
-    const fetchWishlistProducts = async () => {
-      // For now we'll use a placeholder approach since wishlist isn't integrated with database yet
-      setWishlistProducts([]);
-    };
-    
-    fetchWishlistProducts();
-  }, [wishlist]);
-
-  const handleMoveToCart = (product: Product) => {
-    // This would need to be implemented when wishlist is integrated with database
-    toast.info(`This feature will be implemented with wishlist database integration`);
-  };
 
   if (isLoading) {
     return (
@@ -82,11 +64,7 @@ const Cart = () => {
                   isLoaded={isLoaded}
                 />
                 
-                <WishlistSection 
-                  wishlistProducts={wishlistProducts}
-                  handleMoveToCart={handleMoveToCart}
-                  isLoaded={isLoaded}
-                />
+                <WishlistSection isLoaded={isLoaded} />
               </div>
               
               <OrderSummary 
