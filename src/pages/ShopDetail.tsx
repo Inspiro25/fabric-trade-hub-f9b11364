@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
-import { allProducts } from '@/lib/products';
+import { products } from '@/lib/products';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,7 +22,7 @@ const ShopDetail = () => {
   
   const shopProducts = useMemo(() => {
     if (!id) return [];
-    return getShopProducts(id, allProducts);
+    return getShopProducts(id, products);
   }, [id]);
 
   if (!shop) {
