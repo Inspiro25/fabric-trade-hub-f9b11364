@@ -17,15 +17,18 @@ import {
   HelpCircle,
   Settings,
   Store,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Switch } from "@/components/ui/switch";
 
 const SettingsMenu = () => {
   const { currentUser, logout } = useAuth();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   
   const menuItems = [
     {
@@ -112,6 +115,19 @@ const SettingsMenu = () => {
                 {item.name}
               </Link>
             ))}
+            
+            <div className="flex items-center justify-between px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div className="flex items-center gap-3">
+                <span className="text-gray-500 dark:text-gray-400">
+                  {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
+                </span>
+                Dark Mode
+              </div>
+              <Switch 
+                checked={isDarkMode} 
+                onCheckedChange={toggleDarkMode}
+              />
+            </div>
           </div>
           
           <Separator className="my-2 dark:bg-gray-700" />
