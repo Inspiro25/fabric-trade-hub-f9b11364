@@ -14,8 +14,8 @@ const NotificationBadge = ({ className = "" }: NotificationBadgeProps) => {
     <Link to="/notifications" className={`relative text-gray-700 ${className}`}>
       <Bell size={20} />
       {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-          {unreadCount > 9 ? '9+' : unreadCount}
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] min-w-[16px] h-[16px] flex items-center justify-center rounded-full font-medium">
+          {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
     </Link>

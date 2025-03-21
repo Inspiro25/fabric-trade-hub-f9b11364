@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ArrowLeft, Check, Trash2 } from 'lucide-react';
+import { Bell, ArrowLeft, Check, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -65,27 +65,42 @@ const NotificationItem = ({ notification }: { notification: Notification }) => {
   
   return (
     <div 
-      className={`p-4 cursor-pointer ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
+      className={`px-4 py-3.5 cursor-pointer transition-colors duration-200 ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
       onClick={handleClick}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start gap-3">
+        {!notification.read && (
+          <div className="h-2.5 w-2.5 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
+        )}
+        {notification.read && (
+          <div className="h-2.5 w-2.5 mt-1.5 flex-shrink-0"></div>
+        )}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             {getNotificationIcon(notification.type)}
-            <h3 className={`text-sm font-medium ${notification.read ? 'text-gray-900' : 'text-black'}`}>
+            <h3 className={`text-sm font-semibold ${notification.read ? 'text-gray-800' : 'text-black'}`}>
               {notification.title}
             </h3>
           </div>
-          <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+          <p className="text-sm text-gray-600 mb-1.5 leading-snug">{notification.message}</p>
           <span className="text-xs text-gray-500">{formatTimestamp(notification.timestamp)}</span>
         </div>
-        {!notification.read && (
-          <div className="h-2 w-2 bg-blue-500 rounded-full mt-1"></div>
-        )}
       </div>
     </div>
   );
 };
+
+const EmptyNotifications = () => (
+  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+    <div className="bg-gray-100 p-5 rounded-full mb-5">
+      <Bell className="h-8 w-8 text-gray-400" />
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Notifications</h3>
+    <p className="text-sm text-gray-600 max-w-md">
+      When you get notifications, they'll show up here.
+    </p>
+  </div>
+);
 
 const Notifications = () => {
   const { notifications, unreadCount, markAllAsRead, clearNotifications } = useNotifications();
@@ -97,81 +112,80 @@ const Notifications = () => {
   
   return (
     <div className="pb-16 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
+      {/* Header - Apple style */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 py-3 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9" 
+              className="h-9 w-9 rounded-full" 
               onClick={() => navigate(-1)}
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </Button>
-            <h1 className="text-lg font-bold">Notifications</h1>
+            <h1 className="text-xl font-semibold">Notifications</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-sm font-medium text-kutuku-primary"
-              onClick={markAllAsRead}
-            >
-              <Check size={16} className="mr-1" />
-              Mark all read
-            </Button>
-            
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-9 w-9 text-gray-500"
-                >
-                  <Trash2 size={18} />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Clear all notifications?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. All notifications will be permanently removed.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={clearNotifications}>
-                    Clear all
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          
+          {notifications.length > 0 && (
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-sm font-medium text-blue-600 rounded-full"
+                onClick={markAllAsRead}
+              >
+                Mark All
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-full text-gray-500"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear All Notifications?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. All notifications will be permanently removed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="gap-2">
+                    <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={clearNotifications} 
+                      className="bg-red-500 hover:bg-red-600 rounded-full"
+                    >
+                      Clear All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
         </div>
       </div>
       
       {/* Main Content */}
       <main className="py-4 px-4">
         {notifications.length > 0 ? (
-          <Card className="overflow-hidden">
-            {notifications.map((notification, index) => (
-              <React.Fragment key={notification.id}>
-                <NotificationItem notification={notification} />
-                {index < notifications.length - 1 && <Separator />}
-              </React.Fragment>
-            ))}
+          <Card className="overflow-hidden rounded-xl shadow-sm border-gray-100 animate-fade-in">
+            <div className="p-0.5">
+              {notifications.map((notification, index) => (
+                <React.Fragment key={notification.id}>
+                  <NotificationItem notification={notification} />
+                  {index < notifications.length - 1 && <Separator className="mx-4" />}
+                </React.Fragment>
+              ))}
+            </div>
           </Card>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-            <div className="bg-gray-100 p-4 rounded-full mb-4">
-              <Bell className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
-            <p className="text-sm text-gray-600 max-w-md">
-              You don't have any notifications yet. We'll notify you about orders, promotions, and updates.
-            </p>
-          </div>
+          <EmptyNotifications />
         )}
       </main>
     </div>
