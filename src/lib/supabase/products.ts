@@ -219,13 +219,17 @@ export const fetchCategories = async () => {
     // @ts-ignore - TypeScript doesn't recognize 'categories' table in Supabase client type
     const { data, error } = await supabase
       .from('categories')
-      .select('*');
+      .select('id, name, description, image');
       
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
     
     return data || [];
   } catch (error) {
     console.error('Error fetching categories:', error);
+    // Fallback to fetching from local categories if available
     return [];
   }
 };

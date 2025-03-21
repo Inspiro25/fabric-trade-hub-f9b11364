@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Product, createProduct, updateProduct } from '@/lib/products';
 import { Save, X, Plus, Minus } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchCategories } from '@/lib/supabase/products';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Validation schema
 const formSchema = z.object({
@@ -49,6 +52,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
   const [newSize, setNewSize] = useState('');
   const [newTag, setNewTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -62,6 +67,23 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       mainImage: product?.images[0] || '',
     },
   });
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+        toast.error('Failed to load categories');
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -203,7 +225,22 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter product category" {...field} />
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        disabled={isLoadingCategories}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -295,9 +332,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => {
-                      setAdditionalImages([...additionalImages, '']);
-                    }}
+                    onClick={addImageUrl}
                   >
                     <Plus className="h-3.5 w-3.5 mr-1" />
                     Add Image
@@ -309,20 +344,13 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     <Input 
                       placeholder="https://example.com/image.jpg" 
                       value={url}
-                      onChange={(e) => {
-                        const updatedImages = [...additionalImages];
-                        updatedImages[index] = e.target.value;
-                        setAdditionalImages(updatedImages);
-                      }}
+                      onChange={(e) => updateImageUrl(index, e.target.value)}
                     />
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="icon" 
-                      onClick={() => {
-                        const updatedImages = additionalImages.filter((_, i) => i !== index);
-                        setAdditionalImages(updatedImages);
-                      }}
+                      onClick={() => removeImageUrl(index)}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -344,12 +372,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="icon" 
-                    onClick={() => {
-                      if (newColor && !colors.includes(newColor)) {
-                        setColors([...colors, newColor]);
-                        setNewColor('');
-                      }
-                    }}
+                    onClick={addColor}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -360,9 +383,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                       {color}
                       <button
                         type="button"
-                        onClick={() => {
-                          setColors(colors.filter(c => c !== color));
-                        }}
+                        onClick={() => removeColor(color)}
                         className="ml-1 text-gray-500 hover:text-red-500"
                       >
                         <X className="h-3 w-3" />
@@ -384,12 +405,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="icon" 
-                    onClick={() => {
-                      if (newSize && !sizes.includes(newSize)) {
-                        setSizes([...sizes, newSize]);
-                        setNewSize('');
-                      }
-                    }}
+                    onClick={addSize}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -400,9 +416,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                       {size}
                       <button
                         type="button"
-                        onClick={() => {
-                          setSizes(sizes.filter(s => s !== size));
-                        }}
+                        onClick={() => removeSize(size)}
                         className="ml-1 text-gray-500 hover:text-red-500"
                       >
                         <X className="h-3 w-3" />
@@ -424,12 +438,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="icon" 
-                    onClick={() => {
-                      if (newTag && !tags.includes(newTag)) {
-                        setTags([...tags, newTag]);
-                        setNewTag('');
-                      }
-                    }}
+                    onClick={addTag}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -440,9 +449,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                       {tag}
                       <button
                         type="button"
-                        onClick={() => {
-                          setTags(tags.filter(t => t !== tag));
-                        }}
+                        onClick={() => removeTag(tag)}
                         className="ml-1 text-gray-500 hover:text-red-500"
                       >
                         <X className="h-3 w-3" />
@@ -473,4 +480,3 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
 };
 
 export default ProductEditor;
-
