@@ -24,7 +24,10 @@ const MobileNavItem = ({
       isActive ? "text-kutuku-primary" : "text-gray-500"
     )}
   >
-    <div className="mb-1 flex items-center justify-center">
+    <div className={cn(
+      "mb-1 flex items-center justify-center transition-transform",
+      isActive ? "scale-110" : ""
+    )}>
       {icon}
     </div>
     <span>{label}</span>
