@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -10,8 +10,21 @@ interface WishlistSectionProps {
 }
 
 const WishlistSection: React.FC<WishlistSectionProps> = ({ className = "" }) => {
-  const { wishlist } = useWishlist();
+  const { wishlist, isLoading } = useWishlist();
   const wishlistCount = wishlist.length;
+  
+  if (isLoading) {
+    return (
+      <Button 
+        variant="ghost" 
+        size="icon"
+        className={`relative text-gray-700 ${className}`}
+        disabled
+      >
+        <Loader2 className="w-4 h-4 animate-spin" />
+      </Button>
+    );
+  }
   
   return (
     <Button 

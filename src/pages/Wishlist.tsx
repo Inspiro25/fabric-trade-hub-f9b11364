@@ -1,18 +1,19 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Product } from '@/lib/products';
 import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/ui/ProductCard';
 import EmptyWishlist from '@/components/cart/EmptyWishlist';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { wishlist } = useWishlist();
+  const { wishlist, isLoading } = useWishlist();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -21,16 +22,61 @@ const Wishlist = () => {
       setIsLoaded(true);
     }, 300);
 
-    // Load wishlist items from API or mock data
-    import('@/lib/products').then(({ mockProducts }) => {
-      const productsInWishlist = mockProducts.filter(product => 
-        wishlist.includes(product.id)
-      );
-      setWishlistItems(productsInWishlist);
-    });
+    // Load wishlist items from Supabase
+    const fetchWishlistItems = async () => {
+      if (wishlist.length === 0) {
+        setWishlistItems([]);
+        return;
+      }
 
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .in('id', wishlist);
+        
+        if (error) {
+          console.error('Error fetching wishlist products:', error);
+          // Fallback to mock data
+          import('@/lib/products').then(({ mockProducts }) => {
+            const productsInWishlist = mockProducts.filter(product => 
+              wishlist.includes(product.id)
+            );
+            setWishlistItems(productsInWishlist);
+          });
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          setWishlistItems(data as unknown as Product[]);
+        } else {
+          // Fallback if no products found
+          setWishlistItems([]);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        // Fallback to mock data
+        import('@/lib/products').then(({ mockProducts }) => {
+          const productsInWishlist = mockProducts.filter(product => 
+            wishlist.includes(product.id)
+          );
+          setWishlistItems(productsInWishlist);
+        });
+      }
+    };
+
+    fetchWishlistItems();
     return () => clearTimeout(timer);
   }, [wishlist]);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-muted-foreground">Loading your wishlist...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-5xl">
