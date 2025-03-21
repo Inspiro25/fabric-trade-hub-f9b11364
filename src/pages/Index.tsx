@@ -4,7 +4,6 @@ import { useHomeData } from '@/hooks/use-home-data';
 import AppHeader from '@/components/features/AppHeader';
 import HeroBanner from '@/components/features/HeroBanner';
 import HomeCategories from '@/components/features/HomeCategories';
-import NotificationTest from '@/components/features/NotificationTest';
 import SectionLoading from '@/components/ui/SectionLoading';
 
 // Lazy loading of sections to improve initial load performance
@@ -47,7 +46,7 @@ const Index = () => {
   }
 
   return (
-    <div className="pb-16 bg-gray-50">
+    <div className="pb-16 bg-gray-50 dark:bg-gray-900">
       {/* App Header */}
       <AppHeader />
       
@@ -109,8 +108,7 @@ const Index = () => {
         )}
       </main>
       
-      {/* Notification Test Component (only for development) */}
-      <NotificationTest />
+      {/* NotificationTest component removed */}
     </div>
   );
 };
