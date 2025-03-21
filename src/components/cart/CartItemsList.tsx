@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 interface CartItemsListProps {
   cartItems: CartItemType[];
@@ -32,16 +33,23 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
           <CardTitle className="text-base font-medium text-gray-800">Items in Your Cart ({cartItems.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ul className="divide-y divide-gray-100">
-            {cartItems.map((item) => (
-              <CartItem 
-                key={`${item.id}-${item.size}-${item.color}`}
-                item={item}
-                updateQuantity={updateQuantity}
-                removeFromCart={removeFromCart}
-              />
-            ))}
-          </ul>
+          {cartItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-kutuku-primary mb-4" />
+              <p className="text-muted-foreground">Loading your cart items...</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {cartItems.map((item) => (
+                <CartItem 
+                  key={`${item.id}-${item.size}-${item.color}`}
+                  item={item}
+                  updateQuantity={updateQuantity}
+                  removeFromCart={removeFromCart}
+                />
+              ))}
+            </ul>
+          )}
         </CardContent>
         <CardFooter className="p-3 bg-gray-50 flex justify-between">
           <Button variant="outline" size="sm" asChild>

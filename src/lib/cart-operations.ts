@@ -9,6 +9,8 @@ import {
   updateCartItemQuantity 
 } from '@/lib/supabase/cart';
 
+const STORAGE_KEY = 'guest_cart';
+
 /**
  * Provides all cart manipulation operations
  */
@@ -117,6 +119,9 @@ export const useCartOperations = (
       if (currentUser) {
         // Clear from Supabase using the helper function
         await clearUserCart(currentUser.uid);
+      } else {
+        // Clear from localStorage
+        localStorage.removeItem(STORAGE_KEY);
       }
       
       setCartItems([]);
@@ -127,10 +132,49 @@ export const useCartOperations = (
     }
   };
 
+  // Migrate guest cart to user cart
+  const migrateGuestCartToUser = async () => {
+    // Check if we have a guest cart to migrate
+    const guestCart = localStorage.getItem(STORAGE_KEY);
+    
+    if (!currentUser || !guestCart) {
+      return;
+    }
+    
+    try {
+      const guestCartItems = JSON.parse(guestCart) as CartItem[];
+      
+      if (guestCartItems.length === 0) {
+        return;
+      }
+      
+      // For each item in the guest cart, add it to the user's cart in Supabase
+      for (const item of guestCartItems) {
+        await upsertCartItem({
+          user_id: currentUser.uid,
+          product_id: item.id,
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size
+        });
+      }
+      
+      // Clear the guest cart
+      localStorage.removeItem(STORAGE_KEY);
+      
+      // Reload the cart from Supabase (this will happen automatically via the useEffect in useCartStorage)
+      toast.success('Your cart has been migrated to your account');
+    } catch (error) {
+      console.error('Error migrating cart:', error);
+      throw error;
+    }
+  };
+
   return {
     addToCart,
     removeFromCart,
     updateQuantity,
-    clearCart
+    clearCart,
+    migrateGuestCartToUser
   };
 };

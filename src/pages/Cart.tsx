@@ -12,9 +12,10 @@ import EmptyCart from '@/components/cart/EmptyCart';
 import CartItemsList from '@/components/cart/CartItemsList';
 import WishlistSection from '@/components/cart/WishlistSection';
 import OrderSummary from '@/components/cart/OrderSummary';
+import { Loader2 } from 'lucide-react';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useIsMobile();
   const { wishlist, removeFromWishlist } = useWishlist();
@@ -47,6 +48,19 @@ const Cart = () => {
     // This would need to be implemented when wishlist is integrated with database
     toast.info(`This feature will be implemented with wishlist database integration`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="animate-page-transition min-h-screen bg-gray-50 flex items-center justify-center">
+        <Navbar />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-kutuku-primary mx-auto" />
+          <p className="mt-4 text-muted-foreground">Loading your cart...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="animate-page-transition min-h-screen bg-gray-50">

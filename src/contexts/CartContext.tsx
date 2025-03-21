@@ -1,10 +1,11 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/products';
 import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
+import { toast } from 'sonner';
 
 export interface CartItem {
   id: string;
@@ -23,14 +24,44 @@ interface CartContextType {
   getCartTotal: () => number;
   getCartCount: () => number;
   isInCart: (productId: string, color?: string, size?: string) => boolean;
+  isLoading: boolean;
+  migrateCartToUser: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Use the cart storage hook to manage cart data
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
-  const { addToCart, removeFromCart, updateQuantity, clearCart } = useCartOperations(cartItems, setCartItems, currentUser);
+  
+  // Use the cart operations hook to handle cart actions
+  const { addToCart, removeFromCart, updateQuantity, clearCart, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
+
+  // Mark initialization complete after first load
+  useEffect(() => {
+    if (!isLoading && !isInitialized) {
+      setIsInitialized(true);
+    }
+  }, [isLoading, isInitialized]);
+
+  // Migrate guest cart to user cart when user logs in
+  useEffect(() => {
+    const migrateCart = async () => {
+      if (currentUser && isInitialized && !isLoading) {
+        try {
+          await migrateGuestCartToUser();
+        } catch (error) {
+          console.error('Failed to migrate cart:', error);
+          toast.error('Failed to migrate your cart to your account');
+        }
+      }
+    };
+    
+    migrateCart();
+  }, [currentUser, isInitialized, isLoading]);
 
   // Wrapper functions to provide consistent API
   const getCartTotalWrapper = () => getCartTotal(cartItems);
@@ -45,7 +76,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearCart,
     getCartTotal: getCartTotalWrapper,
     getCartCount: getCartCountWrapper,
-    isInCart: isInCartWrapper
+    isInCart: isInCartWrapper,
+    isLoading,
+    migrateCartToUser: migrateGuestCartToUser
   };
 
   return (

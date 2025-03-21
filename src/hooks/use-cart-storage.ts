@@ -11,12 +11,15 @@ import {
 } from '@/lib/supabase/cart';
 import { toast } from 'sonner';
 
+const STORAGE_KEY = 'guest_cart';
+
 /**
  * Hook to manage cart storage operations (localStorage and Supabase)
  */
 export const useCartStorage = (currentUser: any | null) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [previousAuthState, setPreviousAuthState] = useState<boolean>(!!currentUser);
 
   // Fetch cart from database when user logs in or out
   useEffect(() => {
@@ -37,6 +40,11 @@ export const useCartStorage = (currentUser: any | null) => {
                   .select('*')
                   .eq('id', item.product_id)
                   .single();
+
+                if (!productData) {
+                  console.warn(`Product not found for ID: ${item.product_id}`);
+                  return null;
+                }
 
                 // Convert Supabase product data format to our Product type
                 const product = {
@@ -68,15 +76,24 @@ export const useCartStorage = (currentUser: any | null) => {
               })
             );
 
-            setCartItems(cartWithProducts);
+            // Filter out any null items (products that weren't found)
+            const validCartItems = cartWithProducts.filter(item => item !== null) as CartItem[];
+            setCartItems(validCartItems);
           } else {
             setCartItems([]);
           }
         } else {
           // If user is not logged in, use localStorage
-          const savedCart = localStorage.getItem('cart');
+          const savedCart = localStorage.getItem(STORAGE_KEY);
           if (savedCart) {
-            setCartItems(JSON.parse(savedCart));
+            try {
+              const parsedCart = JSON.parse(savedCart);
+              setCartItems(parsedCart);
+            } catch (error) {
+              console.error('Error parsing cart from localStorage:', error);
+              localStorage.removeItem(STORAGE_KEY);
+              setCartItems([]);
+            }
           } else {
             setCartItems([]);
           }
@@ -86,22 +103,30 @@ export const useCartStorage = (currentUser: any | null) => {
         toast.error('Failed to load your cart');
         
         // Fallback to localStorage if there's an error
-        const savedCart = localStorage.getItem('cart');
+        const savedCart = localStorage.getItem(STORAGE_KEY);
         if (savedCart) {
-          setCartItems(JSON.parse(savedCart));
+          try {
+            setCartItems(JSON.parse(savedCart));
+          } catch (e) {
+            localStorage.removeItem(STORAGE_KEY);
+            setCartItems([]);
+          }
         }
       } finally {
         setIsLoading(false);
+        // Update previous auth state
+        setPreviousAuthState(!!currentUser);
       }
     };
 
+    // Only fetch cart items if auth state changed or on initial load
     fetchCartItems();
   }, [currentUser]);
 
   // Save to localStorage whenever cartItems changes if user is not logged in
   useEffect(() => {
     if (!currentUser && !isLoading) {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
     }
   }, [cartItems, currentUser, isLoading]);
 
