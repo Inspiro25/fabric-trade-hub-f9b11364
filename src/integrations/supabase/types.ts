@@ -9,7 +9,134 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          description: string | null
+          id: string
+          image: string | null
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          image?: string | null
+          name: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          image?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category_id: string | null
+          colors: string[] | null
+          description: string | null
+          id: string
+          images: string[] | null
+          is_new: boolean | null
+          is_trending: boolean | null
+          name: string
+          price: number
+          rating: number | null
+          review_count: number | null
+          sale_price: number | null
+          shop_id: string | null
+          sizes: string[] | null
+          stock: number | null
+          tags: string[] | null
+        }
+        Insert: {
+          category_id?: string | null
+          colors?: string[] | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_new?: boolean | null
+          is_trending?: boolean | null
+          name: string
+          price: number
+          rating?: number | null
+          review_count?: number | null
+          sale_price?: number | null
+          shop_id?: string | null
+          sizes?: string[] | null
+          stock?: number | null
+          tags?: string[] | null
+        }
+        Update: {
+          category_id?: string | null
+          colors?: string[] | null
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          is_new?: boolean | null
+          is_trending?: boolean | null
+          name?: string
+          price?: number
+          rating?: number | null
+          review_count?: number | null
+          sale_price?: number | null
+          shop_id?: string | null
+          sizes?: string[] | null
+          stock?: number | null
+          tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shops: {
+        Row: {
+          address: string | null
+          cover_image: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_verified: boolean | null
+          logo: string | null
+          name: string
+          rating: number | null
+          review_count: number | null
+          shop_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_verified?: boolean | null
+          logo?: string | null
+          name: string
+          rating?: number | null
+          review_count?: number | null
+          shop_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          cover_image?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_verified?: boolean | null
+          logo?: string | null
+          name?: string
+          rating?: number | null
+          review_count?: number | null
+          shop_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
