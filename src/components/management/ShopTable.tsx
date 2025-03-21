@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Shop } from '@/lib/shops';
-import { Check, Edit, Trash, X } from 'lucide-react';
+import { Check, Edit, Trash, X, Star, MapPin, ShoppingBag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface ShopTableProps {
   shops: Shop[];
@@ -18,83 +20,115 @@ const ShopTable: React.FC<ShopTableProps> = ({
   onDelete,
 }) => {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Shop Name</TableHead>
-          <TableHead>Address</TableHead>
-          <TableHead>Rating</TableHead>
-          <TableHead>Reviews</TableHead>
-          <TableHead>Verified</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {isLoading ? (
+    <div className="rounded-md border overflow-hidden">
+      <Table>
+        <TableHeader className="bg-gray-50">
           <TableRow>
-            <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
-              Loading shops...
-            </TableCell>
+            <TableHead className="font-semibold">Shop Name</TableHead>
+            <TableHead className="font-semibold">Address</TableHead>
+            <TableHead className="font-semibold">Reviews</TableHead>
+            <TableHead className="font-semibold">Status</TableHead>
+            <TableHead className="font-semibold">Actions</TableHead>
           </TableRow>
-        ) : shops.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
-              No shops found
-            </TableCell>
-          </TableRow>
-        ) : (
-          shops.map((shop) => (
-            <TableRow key={shop.id}>
-              <TableCell className="font-medium">
-                <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 rounded-full bg-gray-100 overflow-hidden">
-                    <img 
-                      src={shop.logo}
-                      alt={shop.name}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder.svg';
-                      }}
-                    />
-                  </div>
-                  <span>{shop.name}</span>
-                </div>
-              </TableCell>
-              <TableCell className="max-w-[200px] truncate">
-                {shop.address}
-              </TableCell>
-              <TableCell>{shop.rating.toFixed(1)}</TableCell>
-              <TableCell>{shop.reviewCount}</TableCell>
-              <TableCell>
-                {shop.isVerified ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : (
-                  <X className="h-4 w-4 text-red-500" />
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => onEdit(shop)}
-                  >
-                    <Edit className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={() => onDelete(shop.id)}
-                  >
-                    <Trash className="h-3.5 w-3.5" />
-                  </Button>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <span>Loading shops...</span>
                 </div>
               </TableCell>
             </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
+          ) : shops.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <ShoppingBag className="h-10 w-10 text-muted-foreground opacity-40" />
+                  <span>No shops found</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            shops.map((shop) => (
+              <TableRow key={shop.id} className="hover:bg-gray-50 transition-colors">
+                <TableCell className="font-medium">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-full bg-gray-100 overflow-hidden shadow-sm">
+                      <img 
+                        src={shop.logo}
+                        alt={shop.name}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{shop.name}</span>
+                      <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                        {shop.description ? shop.description.substring(0, 50) + (shop.description.length > 50 ? '...' : '') : ''}
+                      </span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center text-sm">
+                    <MapPin className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                    <span className="max-w-[180px] truncate" title={shop.address}>
+                      {shop.address}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <Star className="h-3.5 w-3.5 text-yellow-500 mr-1" />
+                    <span>{shop.rating.toFixed(1)}</span>
+                    <span className="text-muted-foreground text-xs ml-1">({shop.reviewCount})</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {shop.isVerified ? (
+                    <Badge variant="outline" className="bg-green-50 border-green-200 text-green-600 flex items-center gap-1 font-normal">
+                      <Check className="h-3 w-3" />
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-amber-50 border-amber-200 text-amber-600 flex items-center gap-1 font-normal">
+                      <X className="h-3 w-3" />
+                      Unverified
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onEdit(shop)}
+                      className="h-8 px-2 text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      <Edit className="h-3.5 w-3.5 mr-1" />
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onDelete(shop.id)}
+                      className="h-8 px-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                    >
+                      <Trash className="h-3.5 w-3.5 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
