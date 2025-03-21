@@ -1,405 +1,427 @@
-import React, { useState, useEffect } from 'react';
-import { Product, mockProducts } from '@/lib/products';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Search as SearchIcon, Sliders, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ui/ProductCard';
-import { Search as SearchIcon, Sliders, ArrowLeft, X, History, Tag, SlidersHorizontal, Filter } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { Textarea } from '@/components/ui/textarea';
-import { getAllCategories } from '@/lib/products';
-
-const SEARCH_HISTORY_KEY = 'search_history';
+import { getAllProducts, getAllCategories, Product } from '@/lib/products';
 
 const Search = () => {
-  // Get query params
+  // Query parameters
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const queryTerm = queryParams.get('q') || '';
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-
+  const queryParams = new URLSearchParams(location.search);
+  const searchQuery = queryParams.get('q') || '';
+  
   // State
-  const [searchTerm, setSearchTerm] = useState(queryTerm);
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [activeFilters, setActiveFilters] = useState<{
-    categories: string[];
-    priceRange: [number, number];
-    sortBy: string;
-  }>({
-    categories: [],
-    priceRange: [0, 1000],
-    sortBy: 'relevance'
+  const [isLoading, setIsLoading] = useState(true);
+  const [query, setQuery] = useState(searchQuery);
+  const [filter, setFilter] = useState({
+    category: queryParams.get('category') || 'all',
+    priceRange: queryParams.get('price') || 'all',
+    sort: queryParams.get('sort') || 'relevance',
+    inStock: queryParams.get('inStock') === 'true',
+    onSale: queryParams.get('onSale') === 'true'
   });
-
-  // Get all categories for filter options
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Fetch products and categories on mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
-        const allCategories = await getAllCategories();
-        setCategories(allCategories);
+        const [productsData, categoriesData] = await Promise.all([
+          getAllProducts(),
+          getAllCategories()
+        ]);
+        
+        setProducts(productsData);
+        setCategories(categoriesData);
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        setCategories([]);
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    fetchCategories();
+    fetchData();
   }, []);
-
-  // Load search history from localStorage
-  useEffect(() => {
-    const history = localStorage.getItem(SEARCH_HISTORY_KEY);
-    if (history) {
-      setSearchHistory(JSON.parse(history));
+  
+  // Apply filters to products
+  const filteredProducts = useMemo(() => {
+    if (!products.length) return [];
+    
+    let filtered = [...products];
+    
+    // Search query filter
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(lowerQuery) || 
+        product.description.toLowerCase().includes(lowerQuery) ||
+        product.category.toLowerCase().includes(lowerQuery) ||
+        (product.tags && product.tags.some(tag => tag.toLowerCase().includes(lowerQuery)))
+      );
     }
-  }, []);
-
-  // Initial search when page loads
-  useEffect(() => {
-    if (queryTerm) {
-      performSearch(queryTerm);
-    } else {
-      setSearchResults(mockProducts);
+    
+    // Category filter
+    if (filter.category && filter.category !== 'all') {
+      filtered = filtered.filter(product => 
+        product.category.toLowerCase() === filter.category.toLowerCase()
+      );
     }
-  }, [queryTerm]);
-
-  // Apply filters whenever they change
-  useEffect(() => {
-    applyFilters();
-  }, [activeFilters]);
-  const performSearch = (term: string) => {
-    setIsSearching(true);
-    setSearchTerm(term);
-
-    // Update URL if needed
-    if (term !== queryTerm) {
-      navigate(`/search${term ? `?q=${encodeURIComponent(term)}` : ''}`, {
-        replace: true
+    
+    // Price range filter
+    if (filter.priceRange && filter.priceRange !== 'all') {
+      const [min, max] = filter.priceRange.split('-').map(Number);
+      filtered = filtered.filter(product => {
+        const price = product.salePrice || product.price;
+        if (!max) {
+          return price >= min;
+        }
+        return price >= min && price <= max;
       });
     }
-
-    // Add to search history
-    if (term.trim() !== '') {
-      const updatedHistory = [term, ...searchHistory.filter(item => item !== term)].slice(0, 10); // Keep only 10 most recent searches
-
-      setSearchHistory(updatedHistory);
-      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updatedHistory));
+    
+    // In stock filter
+    if (filter.inStock) {
+      filtered = filtered.filter(product => product.stock > 0);
     }
-    let results = term.trim() === '' ? mockProducts : mockProducts.filter(product => product.name.toLowerCase().includes(term.toLowerCase()) || product.description.toLowerCase().includes(term.toLowerCase()) || product.category.toLowerCase().includes(term.toLowerCase()) || product.tags.some(tag => tag.toLowerCase().includes(term.toLowerCase())));
-
-    // Apply any active filters to the results
-    applyFilters(results);
-    setIsSearching(false);
-  };
-  const applyFilters = (results = searchResults) => {
-    let filteredResults = results.length ? [...results] : searchTerm.trim() === '' ? [...mockProducts] : [];
-
-    // Filter by categories
-    if (activeFilters.categories.length > 0) {
-      filteredResults = filteredResults.filter(product => activeFilters.categories.includes(product.category));
+    
+    // On sale filter
+    if (filter.onSale) {
+      filtered = filtered.filter(product => !!product.salePrice);
     }
-
-    // Filter by price range
-    filteredResults = filteredResults.filter(product => {
-      const effectivePrice = product.salePrice || product.price;
-      return effectivePrice >= activeFilters.priceRange[0] && effectivePrice <= activeFilters.priceRange[1];
-    });
-
-    // Sort products
-    switch (activeFilters.sortBy) {
+    
+    // Sort results
+    switch(filter.sort) {
       case 'price-low':
-        filteredResults.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
+        filtered.sort((a, b) => {
+          const priceA = a.salePrice || a.price;
+          const priceB = b.salePrice || b.price;
+          return priceA - priceB;
+        });
         break;
       case 'price-high':
-        filteredResults.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
-        break;
-      case 'newest':
-        filteredResults.sort((a, b) => a.isNew ? -1 : b.isNew ? 1 : 0);
+        filtered.sort((a, b) => {
+          const priceA = a.salePrice || a.price;
+          const priceB = b.salePrice || b.price;
+          return priceB - priceA;
+        });
         break;
       case 'rating':
-        filteredResults.sort((a, b) => b.rating - a.rating);
+        filtered.sort((a, b) => b.rating - a.rating);
         break;
-      // 'relevance' is default, no sorting needed for simple search
+      case 'newest':
+        filtered.sort((a, b) => {
+          if (a.isNew && !b.isNew) return -1;
+          if (!a.isNew && b.isNew) return 1;
+          return 0;
+        });
+        break;
+      default: // relevance or fallback
+        // Keep original order for relevance (it's already sorted by search match)
+        break;
     }
-    setSearchResults(filteredResults);
-  };
+    
+    return filtered;
+  }, [products, searchQuery, filter]);
+  
+  // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    performSearch(searchTerm);
+    // Update query parameters
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (filter.category !== 'all') params.set('category', filter.category);
+    if (filter.priceRange !== 'all') params.set('price', filter.priceRange);
+    if (filter.sort !== 'relevance') params.set('sort', filter.sort);
+    if (filter.inStock) params.set('inStock', 'true');
+    if (filter.onSale) params.set('onSale', 'true');
+    
+    // Navigate with new search params
+    navigate(`/search?${params.toString()}`);
+    
+    // Close filters on mobile after search
+    setShowFilters(false);
   };
-  const clearSearch = () => {
-    setSearchTerm('');
-    performSearch('');
-    setShowHistory(false);
-  };
-  const selectHistoryItem = (term: string) => {
-    setSearchTerm(term);
-    performSearch(term);
-    setShowHistory(false);
-  };
-  const clearHistory = () => {
-    setSearchHistory([]);
-    localStorage.removeItem(SEARCH_HISTORY_KEY);
-    toast({
-      title: "Search history cleared",
-      description: "Your search history has been removed"
-    });
-  };
-  const toggleCategoryFilter = (category: string) => {
-    setActiveFilters(prev => {
-      const isSelected = prev.categories.includes(category);
-      return {
-        ...prev,
-        categories: isSelected ? prev.categories.filter(c => c !== category) : [...prev.categories, category]
-      };
-    });
-  };
-  const handlePriceRangeChange = (min: number, max: number) => {
-    setActiveFilters(prev => ({
-      ...prev,
-      priceRange: [min, max]
-    }));
-  };
-  const handleSortChange = (value: string) => {
-    setActiveFilters(prev => ({
-      ...prev,
-      sortBy: value
-    }));
-  };
+  
+  // Clear all filters
   const clearFilters = () => {
-    setActiveFilters({
-      categories: [],
-      priceRange: [0, 1000],
-      sortBy: 'relevance'
+    setFilter({
+      category: 'all',
+      priceRange: 'all',
+      sort: 'relevance',
+      inStock: false,
+      onSale: false
     });
-    toast({
-      title: "Filters cleared",
-      description: "All filters have been reset to default"
-    });
+    
+    // Only keep the search query
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    navigate(`/search?${params.toString()}`);
   };
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (activeFilters.categories.length > 0) count++;
-    if (activeFilters.priceRange[0] > 0 || activeFilters.priceRange[1] < 1000) count++;
-    if (activeFilters.sortBy !== 'relevance') count++;
-    return count;
-  };
-  return <div className="min-h-screen bg-gray-50">
-      {/* Search Header */}
-      <div className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
+  
+  return (
+    <div className="min-h-screen bg-gray-50 pb-16">
+      {/* Header */}
+      <header className="bg-white px-4 py-3 sticky top-0 z-10 shadow-sm">
         <div className="flex items-center gap-3">
-          <Link to="/" className="text-gray-700">
-            <ArrowLeft size={22} />
-          </Link>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           
-          <div className="relative flex-1">
-            <form onSubmit={handleSearch} className="relative">
-              <div className="relative flex items-center">
-                <Input type="text" placeholder="Search for products, brands..." value={searchTerm} onChange={e => {
-                setSearchTerm(e.target.value);
-                setShowHistory(e.target.value.length > 0);
-              }} autoComplete="off" onFocus={() => setShowHistory(searchTerm.length > 0 && searchHistory.length > 0)} className="kutuku-searchbar pr-10 pl-9 h-10 py-[15px]" />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                  <SearchIcon className="h-4 w-4 text-gray-400" />
-                </div>
-                
-                {searchTerm && <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-5 text-gray-400">
-                    <X size={16} />
-                  </button>}
-              </div>
-            </form>
+          <form onSubmit={handleSearch} className="flex-1 relative">
+            <Input
+              type="text"
+              placeholder="Search products, brands..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full rounded-full"
+            />
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <SearchIcon className="h-4 w-4 text-gray-400" />
+            </div>
+            {query && (
+              <button 
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                onClick={() => setQuery('')}
+              >
+                <X className="h-4 w-4 text-gray-400" />
+              </button>
+            )}
+          </form>
+          
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setShowFilters(!showFilters)}
+            className={showFilters ? "text-primary" : ""}
+          >
+            <Sliders className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        {/* Filters bar - Mobile */}
+        {showFilters && (
+          <div className="pt-3 pb-2 border-t mt-2 overflow-x-auto whitespace-nowrap -mx-4 px-4">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={filter.category === 'all' ? "default" : "outline"}
+                onClick={() => setFilter({...filter, category: 'all'})}
+                className="rounded-full"
+              >
+                All
+              </Button>
+              
+              {categories.map(category => (
+                <Button
+                  key={category}
+                  size="sm"
+                  variant={filter.category === category.toLowerCase() ? "default" : "outline"}
+                  onClick={() => setFilter({...filter, category: category.toLowerCase()})}
+                  className="rounded-full"
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </header>
+      
+      <div className="flex">
+        {/* Filters sidebar - Desktop */}
+        {showFilters && (
+          <aside className="w-64 bg-white p-4 border-r min-h-screen sticky top-16">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-medium">Filters</h2>
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                Clear All
+              </Button>
+            </div>
             
-            {/* Search History Dropdown */}
-            {showHistory && searchHistory.length > 0 && <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg mt-1 z-20 max-h-60 overflow-y-auto">
-                <div className="flex items-center justify-between p-2 border-b">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <History size={14} className="mr-1" /> Recent searches
+            {/* Category filter */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2">Category</h3>
+              <RadioGroup 
+                value={filter.category} 
+                onValueChange={(value) => setFilter({...filter, category: value})}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="category-all" />
+                    <Label htmlFor="category-all">All Categories</Label>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={clearHistory} className="text-xs">
-                    Clear all
+                  
+                  {categories.map(category => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <RadioGroupItem 
+                        value={category.toLowerCase()} 
+                        id={`category-${category.toLowerCase()}`} 
+                      />
+                      <Label htmlFor={`category-${category.toLowerCase()}`}>{category}</Label>
+                    </div>
+                  ))}
+                </div>
+              </RadioGroup>
+            </div>
+            
+            {/* Price filter */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2">Price Range</h3>
+              <RadioGroup 
+                value={filter.priceRange} 
+                onValueChange={(value) => setFilter({...filter, priceRange: value})}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="all" id="price-all" />
+                    <Label htmlFor="price-all">All Prices</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="0-500" id="price-0-500" />
+                    <Label htmlFor="price-0-500">Under ₹500</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="500-1000" id="price-500-1000" />
+                    <Label htmlFor="price-500-1000">₹500 - ₹1,000</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="1000-2000" id="price-1000-2000" />
+                    <Label htmlFor="price-1000-2000">₹1,000 - ₹2,000</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="2000-5000" id="price-2000-5000" />
+                    <Label htmlFor="price-2000-5000">₹2,000 - ₹5,000</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="5000" id="price-5000" />
+                    <Label htmlFor="price-5000">Above ₹5,000</Label>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            {/* Sort filter */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2">Sort By</h3>
+              <RadioGroup 
+                value={filter.sort} 
+                onValueChange={(value) => setFilter({...filter, sort: value})}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="relevance" id="sort-relevance" />
+                    <Label htmlFor="sort-relevance">Relevance</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="price-low" id="sort-price-low" />
+                    <Label htmlFor="sort-price-low">Price: Low to High</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="price-high" id="sort-price-high" />
+                    <Label htmlFor="sort-price-high">Price: High to Low</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="rating" id="sort-rating" />
+                    <Label htmlFor="sort-rating">Highest Rated</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="newest" id="sort-newest" />
+                    <Label htmlFor="sort-newest">Newest First</Label>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            {/* Other filters */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="in-stock" 
+                  checked={filter.inStock}
+                  onCheckedChange={(checked) => 
+                    setFilter({...filter, inStock: checked as boolean})
+                  }
+                />
+                <Label htmlFor="in-stock">In Stock</Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="on-sale" 
+                  checked={filter.onSale}
+                  onCheckedChange={(checked) => 
+                    setFilter({...filter, onSale: checked as boolean})
+                  }
+                />
+                <Label htmlFor="on-sale">On Sale</Label>
+              </div>
+            </div>
+            
+            <div className="mt-6">
+              <Button className="w-full" onClick={handleSearch}>
+                Apply Filters
+              </Button>
+            </div>
+          </aside>
+        )}
+        
+        {/* Main content */}
+        <main className={`flex-1 p-4 ${showFilters ? '' : 'w-full'}`}>
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-white rounded-lg p-3 animate-pulse">
+                  <div className="bg-gray-200 h-40 rounded-md mb-3"></div>
+                  <div className="bg-gray-200 h-4 rounded mb-2 w-3/4"></div>
+                  <div className="bg-gray-200 h-4 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">
+                  {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'}
+                  {searchQuery ? ` for "${searchQuery}"` : ''}
+                </p>
+              </div>
+              
+              {filteredProducts.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      variant="default"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10">
+                  <h3 className="text-lg font-medium mb-2">No products found</h3>
+                  <p className="text-gray-500 mb-6">
+                    We couldn't find any products matching your criteria.
+                  </p>
+                  <Button onClick={clearFilters}>
+                    Clear Filters
                   </Button>
                 </div>
-                <ul>
-                  {searchHistory.map((item, index) => <li key={index}>
-                      <button className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center" onClick={() => selectHistoryItem(item)}>
-                        <History size={14} className="mr-2 text-gray-400" />
-                        <span className="line-clamp-1">{item}</span>
-                      </button>
-                    </li>)}
-                </ul>
-              </div>}
-          </div>
-          
-          {/* Filter Button */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative text-gray-700">
-                <Filter size={20} />
-                {getActiveFilterCount() > 0 && <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                    {getActiveFilterCount()}
-                  </span>}
-              </Button>
-            </SheetTrigger>
-            
-        <SheetContent side="right" className="w-[320px] sm:w-[400px]">
-          <SheetHeader>
-            <SheetTitle>Filters & Sort</SheetTitle>
-          </SheetHeader>
-          
-          <div className="mt-6 flex flex-col gap-6">
-            {/* Sort Options */}
-            <div>
-              <h3 className="font-medium mb-2">Sort By</h3>
-              <Select value={activeFilters.sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select sort option" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Separator />
-            
-            {/* Price Range */}
-            <div>
-              <h3 className="font-medium mb-3">Price Range</h3>
-              <div className="flex gap-4 items-center">
-                <div className="flex-1">
-                  <Label htmlFor="min-price">Min ($)</Label>
-                  <Input id="min-price" type="number" min={0} max={activeFilters.priceRange[1]} value={activeFilters.priceRange[0]} onChange={e => handlePriceRangeChange(Number(e.target.value), activeFilters.priceRange[1])} className="mt-1" />
-                </div>
-                <div className="flex-1">
-                  <Label htmlFor="max-price">Max ($)</Label>
-                  <Input id="max-price" type="number" min={activeFilters.priceRange[0]} max={1000} value={activeFilters.priceRange[1]} onChange={e => handlePriceRangeChange(activeFilters.priceRange[0], Number(e.target.value))} className="mt-1" />
-                </div>
-              </div>
-            </div>
-            
-            <Separator />
-            
-            {/* Categories */}
-            <div>
-              <h3 className="font-medium mb-3">Categories</h3>
-              <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
-                {categories.map(category => (
-                  <div key={category} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={`category-${category}`} 
-                      checked={activeFilters.categories.includes(category)} 
-                      onCheckedChange={() => toggleCategoryFilter(category)} 
-                    />
-                    <Label htmlFor={`category-${category}`} className="text-sm cursor-pointer">
-                      {category}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          <SheetFooter className="mt-6 gap-2 sm:justify-between">
-            <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto">
-              Clear Filters
-            </Button>
-            <SheetClose asChild>
-              <Button className="w-full sm:w-auto">Apply Filters</Button>
-            </SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      
-      </Sheet>
-        </div>
+              )}
+            </>
+          )}
+        </main>
       </div>
-
-      {/* Active Filters */}
-      {getActiveFilterCount() > 0 && <div className="bg-white border-t border-gray-100 px-4 py-2 overflow-x-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 whitespace-nowrap">Active filters:</span>
-            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
-              {activeFilters.categories.map(category => <Badge key={category} variant="outline" className="whitespace-nowrap">
-                  {category}
-                  <button className="ml-1" onClick={() => toggleCategoryFilter(category)}>
-                    <X size={14} />
-                  </button>
-                </Badge>)}
-              
-              {(activeFilters.priceRange[0] > 0 || activeFilters.priceRange[1] < 1000) && <Badge variant="outline" className="whitespace-nowrap">
-                  ${activeFilters.priceRange[0]} - ${activeFilters.priceRange[1]}
-                  <button className="ml-1" onClick={() => handlePriceRangeChange(0, 1000)}>
-                    <X size={14} />
-                  </button>
-                </Badge>}
-              
-              {activeFilters.sortBy !== 'relevance' && <Badge variant="outline" className="whitespace-nowrap">
-                  Sort: {activeFilters.sortBy.replace('-', ' ')}
-                  <button className="ml-1" onClick={() => handleSortChange('relevance')}>
-                    <X size={14} />
-                  </button>
-                </Badge>}
-            </div>
-          </div>
-        </div>}
-
-      {/* Search Content */}
-      <div className="p-4">
-        {isSearching ? <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-pulse-subtle mb-4">Searching...</div>
-          </div> : searchResults.length === 0 ? <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mb-4 text-gray-400">
-              <SearchIcon size={48} />
-            </div>
-            <h3 className="text-lg font-medium mb-2">No results found</h3>
-            <p className="text-gray-500 max-w-xs mb-4">
-              We couldn't find any products matching your search. Try different keywords or adjust your filters.
-            </p>
-            {activeFilters.categories.length > 0 && <Button variant="outline" onClick={clearFilters} className="mt-2">
-                Clear Filters
-              </Button>}
-          </div> : <>
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-gray-500">
-                {searchResults.length} {searchResults.length === 1 ? 'result' : 'results'} found
-                {searchTerm ? ` for "${searchTerm}"` : ''}
-              </p>
-              
-              <Select value={activeFilters.sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger className="w-[140px] h-8 text-xs">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {searchResults.map(product => <ProductCard key={product.id} product={product} variant="compact" gridCols={2} />)}
-            </div>
-          </>}
-      </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Search;
