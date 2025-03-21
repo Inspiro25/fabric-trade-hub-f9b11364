@@ -33,6 +33,7 @@ const Search = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
   const [activeFilters, setActiveFilters] = useState<{
     categories: string[];
     priceRange: [number, number];
@@ -44,7 +45,19 @@ const Search = () => {
   });
 
   // Get all categories for filter options
-  const allCategories = getAllCategories();
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const allCategories = await getAllCategories();
+        setCategories(allCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
 
   // Load search history from localStorage
   useEffect(() => {
@@ -240,72 +253,80 @@ const Search = () => {
                   </span>}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[320px] sm:w-[400px]">
-              <SheetHeader>
-                <SheetTitle>Filters & Sort</SheetTitle>
-              </SheetHeader>
-              
-              <div className="mt-6 flex flex-col gap-6">
-                {/* Sort Options */}
-                <div>
-                  <h3 className="font-medium mb-2">Sort By</h3>
-                  <Select value={activeFilters.sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sort option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="relevance">Relevance</SelectItem>
-                      <SelectItem value="price-low">Price: Low to High</SelectItem>
-                      <SelectItem value="price-high">Price: High to Low</SelectItem>
-                      <SelectItem value="newest">Newest First</SelectItem>
-                      <SelectItem value="rating">Highest Rated</SelectItem>
-                    </SelectContent>
-                  </Select>
+            
+        <SheetContent side="right" className="w-[320px] sm:w-[400px]">
+          <SheetHeader>
+            <SheetTitle>Filters & Sort</SheetTitle>
+          </SheetHeader>
+          
+          <div className="mt-6 flex flex-col gap-6">
+            {/* Sort Options */}
+            <div>
+              <h3 className="font-medium mb-2">Sort By</h3>
+              <Select value={activeFilters.sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sort option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">Relevance</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Separator />
+            
+            {/* Price Range */}
+            <div>
+              <h3 className="font-medium mb-3">Price Range</h3>
+              <div className="flex gap-4 items-center">
+                <div className="flex-1">
+                  <Label htmlFor="min-price">Min ($)</Label>
+                  <Input id="min-price" type="number" min={0} max={activeFilters.priceRange[1]} value={activeFilters.priceRange[0]} onChange={e => handlePriceRangeChange(Number(e.target.value), activeFilters.priceRange[1])} className="mt-1" />
                 </div>
-                
-                <Separator />
-                
-                {/* Price Range */}
-                <div>
-                  <h3 className="font-medium mb-3">Price Range</h3>
-                  <div className="flex gap-4 items-center">
-                    <div className="flex-1">
-                      <Label htmlFor="min-price">Min ($)</Label>
-                      <Input id="min-price" type="number" min={0} max={activeFilters.priceRange[1]} value={activeFilters.priceRange[0]} onChange={e => handlePriceRangeChange(Number(e.target.value), activeFilters.priceRange[1])} className="mt-1" />
-                    </div>
-                    <div className="flex-1">
-                      <Label htmlFor="max-price">Max ($)</Label>
-                      <Input id="max-price" type="number" min={activeFilters.priceRange[0]} max={1000} value={activeFilters.priceRange[1]} onChange={e => handlePriceRangeChange(activeFilters.priceRange[0], Number(e.target.value))} className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                {/* Categories */}
-                <div>
-                  <h3 className="font-medium mb-3">Categories</h3>
-                  <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
-                    {allCategories.map(category => <div key={category} className="flex items-center space-x-2">
-                        <Checkbox id={`category-${category}`} checked={activeFilters.categories.includes(category)} onCheckedChange={() => toggleCategoryFilter(category)} />
-                        <Label htmlFor={`category-${category}`} className="text-sm cursor-pointer">
-                          {category}
-                        </Label>
-                      </div>)}
-                  </div>
+                <div className="flex-1">
+                  <Label htmlFor="max-price">Max ($)</Label>
+                  <Input id="max-price" type="number" min={activeFilters.priceRange[0]} max={1000} value={activeFilters.priceRange[1]} onChange={e => handlePriceRangeChange(activeFilters.priceRange[0], Number(e.target.value))} className="mt-1" />
                 </div>
               </div>
-              
-              <SheetFooter className="mt-6 gap-2 sm:justify-between">
-                <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto">
-                  Clear Filters
-                </Button>
-                <SheetClose asChild>
-                  <Button className="w-full sm:w-auto">Apply Filters</Button>
-                </SheetClose>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
+            </div>
+            
+            <Separator />
+            
+            {/* Categories */}
+            <div>
+              <h3 className="font-medium mb-3">Categories</h3>
+              <div className="grid grid-cols-1 gap-2 max-h-[200px] overflow-y-auto pr-2">
+                {categories.map(category => (
+                  <div key={category} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`category-${category}`} 
+                      checked={activeFilters.categories.includes(category)} 
+                      onCheckedChange={() => toggleCategoryFilter(category)} 
+                    />
+                    <Label htmlFor={`category-${category}`} className="text-sm cursor-pointer">
+                      {category}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <SheetFooter className="mt-6 gap-2 sm:justify-between">
+            <Button variant="outline" onClick={clearFilters} className="w-full sm:w-auto">
+              Clear Filters
+            </Button>
+            <SheetClose asChild>
+              <Button className="w-full sm:w-auto">Apply Filters</Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      
+      </Sheet>
         </div>
       </div>
 

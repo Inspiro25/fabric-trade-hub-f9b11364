@@ -29,13 +29,15 @@ const ShopDetail = () => {
       
       setIsLoading(true);
       try {
+        // Get shop data and resolve the Promise
         const shopData = await getShopById(id);
         if (shopData) {
           setShop(shopData);
           
-          // Fetch products for this shop
+          // Fetch products for this shop and resolve the Promise
           const productsData = await getShopProducts(id);
-          setShopProducts(productsData);
+          const resolvedProducts = Array.isArray(productsData) ? productsData : await productsData;
+          setShopProducts(resolvedProducts);
         }
       } catch (error) {
         console.error('Error fetching shop data:', error);

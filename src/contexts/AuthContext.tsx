@@ -127,10 +127,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const userCredential: UserCredential = await loginWithEmail(email, password);
+      const userCredential = await loginWithEmail(email, password);
       
       // Fetch user profile after login
-      await fetchUserProfile(userCredential.user.uid);
+      await fetchUserProfile(userCredential.uid);
       
       toast({
         title: "Login Successful",
@@ -152,7 +152,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const userCredential: UserCredential = await registerWithEmail(email, password);
+      const userCredential = await registerWithEmail(email, password);
       
       // Create user profile in database
       const newUser: UserProfile = {
@@ -160,7 +160,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email: email,
       };
       
-      await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
+      await setDoc(doc(db, 'users', userCredential.uid), newUser);
       setUserProfile(newUser);
       
       toast({
@@ -183,18 +183,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const loginWithGoogleProvider = async () => {
     try {
       setLoading(true);
-      const userCredential: UserCredential = await loginWithGoogle();
+      const userCredential = await loginWithGoogle();
       
       // Check if user profile exists, create if not
-      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      const userDoc = await getDoc(doc(db, 'users', userCredential.uid));
       
       if (!userDoc.exists()) {
         const newUser: UserProfile = {
-          displayName: userCredential.user.displayName || 'Google User',
-          email: userCredential.user.email || '',
+          displayName: userCredential.displayName || 'Google User',
+          email: userCredential.email || '',
         };
         
-        await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
+        await setDoc(doc(db, 'users', userCredential.uid), newUser);
         setUserProfile(newUser);
       } else {
         setUserProfile(userDoc.data() as UserProfile);
@@ -220,18 +220,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const loginWithFacebookProvider = async () => {
     try {
       setLoading(true);
-      const userCredential: UserCredential = await loginWithFacebook();
+      const userCredential = await loginWithFacebook();
       
       // Check if user profile exists, create if not
-      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      const userDoc = await getDoc(doc(db, 'users', userCredential.uid));
       
       if (!userDoc.exists()) {
         const newUser: UserProfile = {
-          displayName: userCredential.user.displayName || 'Facebook User',
-          email: userCredential.user.email || '',
+          displayName: userCredential.displayName || 'Facebook User',
+          email: userCredential.email || '',
         };
         
-        await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
+        await setDoc(doc(db, 'users', userCredential.uid), newUser);
         setUserProfile(newUser);
       } else {
         setUserProfile(userDoc.data() as UserProfile);

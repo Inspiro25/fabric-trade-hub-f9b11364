@@ -1,3 +1,4 @@
+
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
@@ -53,22 +54,22 @@ const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
 // Authentication functions
-export const registerWithEmail = async (email: string, password: string): Promise<User> => {
+export const registerWithEmail = async (email: string, password: string) => {
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   return userCredential.user;
 };
 
-export const loginWithEmail = async (email: string, password: string): Promise<User> => {
+export const loginWithEmail = async (email: string, password: string) => {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
   return userCredential.user;
 };
 
-export const loginWithGoogle = async (): Promise<User> => {
+export const loginWithGoogle = async () => {
   const userCredential = await signInWithPopup(auth, googleProvider);
   return userCredential.user;
 };
 
-export const loginWithFacebook = async (): Promise<User> => {
+export const loginWithFacebook = async () => {
   const userCredential = await signInWithPopup(auth, facebookProvider);
   return userCredential.user;
 };

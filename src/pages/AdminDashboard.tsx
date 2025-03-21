@@ -42,7 +42,9 @@ const AdminDashboard = () => {
         
         // Fetch shop products
         const productsData = await getShopProducts(adminShopId);
-        setShopProducts(productsData);
+        // Convert the Promise to an array of Products
+        const resolvedProducts = Array.isArray(productsData) ? productsData : await productsData;
+        setShopProducts(resolvedProducts);
       } catch (error) {
         console.error("Error fetching shop data:", error);
       } finally {
