@@ -18,6 +18,7 @@ const AdminDashboard = () => {
   const [shop, setShop] = useState<any>(null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("products");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,24 +72,24 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Admin Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-3 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/">
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Back to Site
+                  <span className="hidden sm:inline">Back to Site</span>
                 </Link>
               </Button>
             </div>
             
             <div className="flex items-center">
-              <div className="mr-3 text-sm font-medium hidden md:block">
+              <div className="mr-2 text-sm font-medium hidden md:block">
                 {shop.name} Admin
               </div>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-1" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -96,9 +97,9 @@ const AdminDashboard = () => {
       </header>
       
       {/* Admin Content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center mb-6">
-          <div className="flex-shrink-0 h-12 w-12 rounded-full overflow-hidden border-2 border-white bg-white shadow-sm">
+      <div className="container mx-auto px-3 py-4 md:py-6">
+        <div className="flex items-center mb-4 md:mb-6">
+          <div className="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden border-2 border-white bg-white shadow-sm">
             <img 
               src={shop.logo} 
               alt={`${shop.name} logo`}
@@ -106,13 +107,28 @@ const AdminDashboard = () => {
             />
           </div>
           <div className="ml-3">
-            <h1 className="text-xl font-bold">{shop.name}</h1>
-            <p className="text-sm text-gray-500">Shop Admin Dashboard</p>
+            <h1 className="text-lg md:text-xl font-bold">{shop.name}</h1>
+            <p className="text-xs md:text-sm text-gray-500">Shop Admin Dashboard</p>
           </div>
         </div>
         
-        <Tabs defaultValue="products" className="w-full">
-          <TabsList className="mb-6">
+        {/* Mobile Tab Selection */}
+        <div className="md:hidden mb-4">
+          <select 
+            className="w-full rounded-md border border-gray-300 py-2 px-3"
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+          >
+            <option value="products">Products</option>
+            <option value="offers">Offers</option>
+            <option value="shop">Shop Details</option>
+            <option value="settings">Settings</option>
+          </select>
+        </div>
+        
+        {/* Desktop and Mobile Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-6 hidden md:flex overflow-x-auto">
             <TabsTrigger value="products" className="flex items-center">
               <Package className="h-4 w-4 mr-2" />
               Products
