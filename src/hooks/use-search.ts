@@ -92,28 +92,67 @@ export const useSearch = (query: string) => {
       setError(null);
 
       try {
+        // Fetch products
         const productsResponse = await fetch(`/api/products?q=${query}`);
+        
+        // Check if the response is HTML instead of JSON (error page)
+        const contentType = productsResponse.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('Server returned HTML instead of JSON. API endpoint might be unavailable.');
+        }
+        
         if (!productsResponse.ok) {
           throw new Error(`Failed to fetch products: ${productsResponse.status}`);
         }
+        
         const productsData = await productsResponse.json();
         setProducts(productsData);
 
-        const categoriesResponse = await fetch('/api/categories');
-        if (!categoriesResponse.ok) {
-          throw new Error(`Failed to fetch categories: ${categoriesResponse.status}`);
+        // Fetch categories with better error handling
+        try {
+          const categoriesResponse = await fetch('/api/categories');
+          
+          // Check if the response is HTML
+          const catContentType = categoriesResponse.headers.get('content-type');
+          if (catContentType && catContentType.includes('text/html')) {
+            console.error('Categories API returned HTML instead of JSON');
+            setCategories([]);
+          } else if (categoriesResponse.ok) {
+            const categoriesData = await categoriesResponse.json();
+            setCategories(categoriesData);
+          } else {
+            console.error(`Failed to fetch categories: ${categoriesResponse.status}`);
+            setCategories([]);
+          }
+        } catch (catErr) {
+          console.error('Error fetching categories:', catErr);
+          setCategories([]);
         }
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData);
 
-        const shopsResponse = await fetch('/api/shops');
-        if (!shopsResponse.ok) {
-          throw new Error(`Failed to fetch shops: ${shopsResponse.status}`);
+        // Fetch shops with better error handling
+        try {
+          const shopsResponse = await fetch('/api/shops');
+          
+          // Check if the response is HTML
+          const shopContentType = shopsResponse.headers.get('content-type');
+          if (shopContentType && shopContentType.includes('text/html')) {
+            console.error('Shops API returned HTML instead of JSON');
+            setShops([]);
+          } else if (shopsResponse.ok) {
+            const shopsData = await shopsResponse.json();
+            setShops(shopsData);
+          } else {
+            console.error(`Failed to fetch shops: ${shopsResponse.status}`);
+            setShops([]);
+          }
+        } catch (shopErr) {
+          console.error('Error fetching shops:', shopErr);
+          setShops([]);
         }
-        const shopsData = await shopsResponse.json();
-        setShops(shopsData);
       } catch (err: any) {
+        console.error('Search error:', err);
         setError(err.message || 'Failed to fetch data');
+        setProducts([]); // Set empty array on error
       } finally {
         setLoading(false);
       }

@@ -34,11 +34,21 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   }
   
   if (error) {
-    return <div className="text-red-500 py-8">Error: {error}</div>;
+    return (
+      <div className="text-red-500 py-8 text-center">
+        <p className="mb-2 font-semibold">Error: {error}</p>
+        <p className="text-sm">Please try refreshing the page or try again later.</p>
+      </div>
+    );
   }
   
   if (products.length === 0) {
-    return <div className="text-gray-500 py-8">No products found matching your search criteria.</div>;
+    return (
+      <div className="text-gray-500 py-8 text-center">
+        <p className="mb-2">No products found matching your search criteria.</p>
+        <p className="text-sm">Try adjusting your filters or search for something else.</p>
+      </div>
+    );
   }
   
   return (
