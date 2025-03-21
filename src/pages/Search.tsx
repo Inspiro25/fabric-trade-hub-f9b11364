@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
@@ -82,9 +83,10 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, CheckCircleIcon, Copy, Filter, Heart, Loader2, MoreVertical, Plus, Search as SearchIcon, Share2, ShoppingCart, SortAsc, SortDesc, X } from 'lucide-react';
 import { addDays, format } from "date-fns"
-import { Product as SearchProduct } from '@/lib/types/product';
+import { Product as ImportedProduct } from '@/lib/types/product';
 
-interface Product {
+// Rename the local interface to avoid conflicts with the imported Product type
+interface SearchPageProduct {
   id: string;
   name: string;
   description: string;
@@ -100,6 +102,28 @@ interface Product {
   category_id: string | null;
   shop_id: string | null;
 }
+
+// Helper function to convert SearchPageProduct to ImportedProduct
+const convertToImportedProduct = (product: SearchPageProduct): ImportedProduct => {
+  return {
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    salePrice: product.sale_price || undefined,
+    images: product.images,
+    category: product.category_id || "uncategorized",
+    colors: product.colors || [],
+    sizes: product.sizes || [],
+    isNew: product.is_new,
+    isTrending: product.is_trending,
+    rating: product.rating,
+    reviewCount: product.review_count,
+    stock: 10, // Default value for stock
+    tags: [], // Default empty tags
+    shopId: product.shop_id
+  };
+};
 
 interface Category {
   id: string;
@@ -136,7 +160,7 @@ const Search = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get('q') || '';
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<SearchPageProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -157,14 +181,14 @@ const Search = () => {
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<SearchPageProduct | null>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
   const [isCopied, setIsCopied] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date())
 
-  const handleAddToCart = async (product: SearchProduct) => {
+  const handleAddToCart = async (product: SearchPageProduct) => {
     if (!currentUser) {
       setSelectedProduct(product);
       setIsDialogOpen(true);
@@ -173,7 +197,9 @@ const Search = () => {
 
     setIsAddingToCart(product.id);
     try {
-      await addToCart(product, 1, product.colors ? product.colors[0] : null, product.sizes ? product.sizes[0] : null);
+      // Convert to imported Product type before passing to addToCart
+      const convertedProduct = convertToImportedProduct(product);
+      await addToCart(convertedProduct, 1, convertedProduct.colors[0] || null, convertedProduct.sizes[0] || null);
       toast({
         title: "Success",
         description: `${product.name} added to cart.`,
@@ -189,7 +215,7 @@ const Search = () => {
     }
   };
 
-  const handleAddToWishlist = async (product: SearchProduct) => {
+  const handleAddToWishlist = async (product: SearchPageProduct) => {
     if (!currentUser) {
       setSelectedProduct(product);
       setIsDialogOpen(true);
@@ -198,7 +224,9 @@ const Search = () => {
 
     setIsAddingToWishlist(product.id);
     try {
-      await addToWishlist(product);
+      // Convert to imported Product type before passing to addToWishlist
+      const convertedProduct = convertToImportedProduct(product);
+      await addToWishlist(convertedProduct);
       toast({
         title: "Success",
         description: `${product.name} added to wishlist.`,
@@ -214,7 +242,7 @@ const Search = () => {
     }
   };
 
-  const handleShareProduct = (product: Product) => {
+  const handleShareProduct = (product: SearchPageProduct) => {
     const productLink = `${window.location.origin}/product/${product.id}`;
     setShareableLink(productLink);
     setIsShareDialogOpen(true);

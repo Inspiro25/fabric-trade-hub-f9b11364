@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { Product, fetchProducts, getAllCategories } from '@/lib/products';
 import { useState, useMemo } from 'react';
@@ -31,8 +30,11 @@ export function useShopSearch(searchQuery: string, initialFilters: Partial<Searc
         return await fetchProducts();
       } catch (error) {
         console.error('Error fetching products:', error);
-        if (error instanceof Error && error.message.includes('<!DOCTYPE')) {
-          throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+        if (error instanceof Error) {
+          const errorMessage = error.message;
+          if (errorMessage.includes('<!DOCTYPE') || errorMessage.includes('<html')) {
+            throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+          }
         }
         throw error;
       }
@@ -50,8 +52,11 @@ export function useShopSearch(searchQuery: string, initialFilters: Partial<Searc
         return await getAllCategories();
       } catch (error) {
         console.error('Error fetching categories:', error);
-        if (error instanceof Error && error.message.includes('<!DOCTYPE')) {
-          throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+        if (error instanceof Error) {
+          const errorMessage = error.message;
+          if (errorMessage.includes('<!DOCTYPE') || errorMessage.includes('<html')) {
+            throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+          }
         }
         throw error;
       }
