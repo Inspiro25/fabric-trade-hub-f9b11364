@@ -196,7 +196,7 @@ const Search = () => {
                 <Input type="text" placeholder="Search for products, brands..." value={searchTerm} onChange={e => {
                 setSearchTerm(e.target.value);
                 setShowHistory(e.target.value.length > 0);
-              }} autoComplete="off" onFocus={() => setShowHistory(searchTerm.length > 0 && searchHistory.length > 0)} className="kutuku-searchbar pr-10 pl-9 h-10 py-[10px]" />
+              }} autoComplete="off" onFocus={() => setShowHistory(searchTerm.length > 0 && searchHistory.length > 0)} className="kutuku-searchbar pr-10 pl-9 h-10 py-[15px]" />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
                   <SearchIcon className="h-4 w-4 text-gray-400" />
                 </div>
