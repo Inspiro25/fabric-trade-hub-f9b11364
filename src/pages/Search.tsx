@@ -7,7 +7,7 @@ import ProductCard from '@/components/ui/ProductCard';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { getAllProducts, getAllCategories, Product } from '@/lib/products';
+import { fetchProducts, getAllCategories, Product } from '@/lib/products';
 
 const Search = () => {
   // Query parameters
@@ -34,10 +34,8 @@ const Search = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsData, categoriesData] = await Promise.all([
-          getAllProducts(),
-          getAllCategories()
-        ]);
+        const productsData = await fetchProducts();
+        const categoriesData = await getAllCategories();
         
         setProducts(productsData);
         setCategories(categoriesData);
