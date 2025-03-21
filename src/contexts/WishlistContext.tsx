@@ -31,19 +31,25 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setIsLoading(true);
       try {
         if (currentUser) {
-          const { data, error } = await supabase
-            .from('user_wishlists')
-            .select('product_id')
-            .eq('user_id', currentUser.uid);
-          
-          if (error) {
-            console.error('Error fetching wishlist:', error);
+          try {
+            const { data, error } = await supabase
+              .from('user_wishlists')
+              .select('product_id')
+              .eq('user_id', currentUser.uid);
+            
+            if (error) {
+              console.error('Error fetching wishlist from Supabase:', error);
+              const savedWishlist = localStorage.getItem('wishlist');
+              setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
+            } else {
+              const productIds = data.map(item => item.product_id);
+              setWishlist(productIds);
+              localStorage.setItem('wishlist', JSON.stringify(productIds));
+            }
+          } catch (supabaseError) {
+            console.error('Exception in Supabase wishlist fetch:', supabaseError);
             const savedWishlist = localStorage.getItem('wishlist');
             setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
-          } else {
-            const productIds = data.map(item => item.product_id);
-            setWishlist(productIds);
-            localStorage.setItem('wishlist', JSON.stringify(productIds));
           }
         } else {
           const savedWishlist = localStorage.getItem('wishlist');
@@ -70,13 +76,19 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (wishlist.includes(product.id)) return;
       
       if (currentUser) {
-        const { error } = await supabase.from('user_wishlists').insert({
-          user_id: currentUser.uid,
-          product_id: product.id
-        });
-        
-        if (error) {
-          console.error('Error adding to wishlist:', error);
+        try {
+          const { error } = await supabase.from('user_wishlists').insert({
+            user_id: currentUser.uid,
+            product_id: product.id
+          });
+          
+          if (error) {
+            console.error('Error adding to wishlist:', error);
+            toast.error('Failed to add to wishlist');
+            return;
+          }
+        } catch (supabaseError) {
+          console.error('Exception in Supabase add to wishlist:', supabaseError);
           toast.error('Failed to add to wishlist');
           return;
         }
@@ -93,14 +105,20 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const removeFromWishlist = async (productId: string) => {
     try {
       if (currentUser) {
-        const { error } = await supabase
-          .from('user_wishlists')
-          .delete()
-          .eq('user_id', currentUser.uid)
-          .eq('product_id', productId);
-        
-        if (error) {
-          console.error('Error removing from wishlist:', error);
+        try {
+          const { error } = await supabase
+            .from('user_wishlists')
+            .delete()
+            .eq('user_id', currentUser.uid)
+            .eq('product_id', productId);
+          
+          if (error) {
+            console.error('Error removing from wishlist:', error);
+            toast.error('Failed to remove from wishlist');
+            return;
+          }
+        } catch (supabaseError) {
+          console.error('Exception in Supabase remove from wishlist:', supabaseError);
           toast.error('Failed to remove from wishlist');
           return;
         }

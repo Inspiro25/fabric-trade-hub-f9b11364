@@ -26,15 +26,39 @@ export function useShopSearch(searchQuery: string, initialFilters: Partial<Searc
   // Fetch products
   const productsQuery = useQuery({
     queryKey: ['products'],
-    queryFn: fetchProducts,
+    queryFn: async () => {
+      try {
+        return await fetchProducts();
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        if (error instanceof Error && error.message.includes('<!DOCTYPE')) {
+          throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+        }
+        throw error;
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Fetch categories
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
-    queryFn: getAllCategories,
+    queryFn: async () => {
+      try {
+        return await getAllCategories();
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        if (error instanceof Error && error.message.includes('<!DOCTYPE')) {
+          throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+        }
+        throw error;
+      }
+    },
     staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Apply filters to products

@@ -13,9 +13,20 @@ export const useDashboardAnalytics = () => {
     refetch
   } = useQuery({
     queryKey: ['dashboardAnalytics'],
-    queryFn: fetchDashboardAnalytics,
+    queryFn: async () => {
+      try {
+        return await fetchDashboardAnalytics();
+      } catch (error) {
+        console.error('Error fetching dashboard analytics:', error);
+        if (error instanceof Error && error.message.includes('<!DOCTYPE')) {
+          throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
+        }
+        throw error;
+      }
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   // Return the query results
