@@ -32,12 +32,7 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories }) => {
 
   const getCategoryImage = (category: string) => {
     // Always use the fallback image if available
-    if (CategoryFallbackImages[category]) {
-      return CategoryFallbackImages[category];
-    }
-    
-    // If no direct fallback exists, try with a generic image for the category
-    return `https://source.unsplash.com/300x300/?${encodeURIComponent(category.toLowerCase())},fashion`;
+    return CategoryFallbackImages[category] || `https://via.placeholder.com/100x100.png?text=${encodeURIComponent(category)}`;
   };
 
   return (
