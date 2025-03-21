@@ -8,19 +8,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Percent, Tag, Clock, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { mockProducts } from '@/lib/products';
 import ProductCard from '@/components/ui/ProductCard';
 import { Offer, getActiveOffers } from '@/lib/supabase/offers';
 import { useQuery } from '@tanstack/react-query';
-
-// Filter some mock products as featured offers
-const featuredProducts = mockProducts
-  .filter((product) => product.salePrice)
-  .slice(0, 8);
+import { fetchProducts } from '@/lib/products/base';
+import { Product } from '@/lib/types/product';
 
 const Offers = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useIsMobile();
+  const [discountedProducts, setDiscountedProducts] = useState<Product[]>([]);
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -34,6 +31,22 @@ const Offers = () => {
     queryKey: ['offers'],
     queryFn: getActiveOffers,
   });
+
+  // Fetch products when component mounts
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const products = await fetchProducts();
+        // Filter products with sale price for the featured deals section
+        const discounted = products.filter(product => product.salePrice).slice(0, 8);
+        setDiscountedProducts(discounted);
+      } catch (error) {
+        console.error("Error loading products:", error);
+      }
+    };
+    
+    loadProducts();
+  }, []);
   
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -62,11 +75,17 @@ const Offers = () => {
                 {/* Featured deals section */}
                 <section className="mb-8">
                   <h2 className="text-xl font-semibold mb-4">Featured Deals</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {featuredProducts.slice(0, 4).map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
+                  {discountedProducts.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {discountedProducts.slice(0, 4).map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-10">
+                      <p className="text-muted-foreground">No featured deals available at the moment.</p>
+                    </div>
+                  )}
                 </section>
                 
                 {/* Promo cards */}
@@ -160,11 +179,17 @@ const Offers = () => {
               </TabsContent>
               
               <TabsContent value="deals">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {featuredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+                {discountedProducts.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {discountedProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10">
+                    <p className="text-muted-foreground">No deals available at the moment.</p>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="coupons">
