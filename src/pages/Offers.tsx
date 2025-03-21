@@ -76,11 +76,12 @@ const Offers = () => {
           
           <div className="mb-8">
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="mb-6 w-full justify-start overflow-x-auto rounded-xl p-1 no-scrollbar">
-                <TabsTrigger value="all" className="rounded-lg">All Offers</TabsTrigger>
-                <TabsTrigger value="deals" className="rounded-lg">Deals</TabsTrigger>
-                <TabsTrigger value="coupons" className="rounded-lg">Coupons</TabsTrigger>
-                <TabsTrigger value="clearance" className="rounded-lg">Clearance</TabsTrigger>
+              {/* Modified TabsList to ensure tabs fit on mobile without horizontal scroll */}
+              <TabsList className="mb-6 w-full grid grid-cols-4 p-1 rounded-xl">
+                <TabsTrigger value="all" className="rounded-lg text-xs md:text-sm">All</TabsTrigger>
+                <TabsTrigger value="deals" className="rounded-lg text-xs md:text-sm">Deals</TabsTrigger>
+                <TabsTrigger value="coupons" className="rounded-lg text-xs md:text-sm">Coupons</TabsTrigger>
+                <TabsTrigger value="clearance" className="rounded-lg text-xs md:text-sm">Clearance</TabsTrigger>
               </TabsList>
               
               <TabsContent value="all" className="space-y-8">
@@ -225,6 +226,7 @@ const Offers = () => {
                 </section>
               </TabsContent>
               
+              {/* The rest of the TabsContent sections remain with the same functionality */}
               <TabsContent value="deals">
                 {discountedProducts.length > 0 ? (
                   <div className={`grid grid-cols-2 ${isMobile ? 'gap-3' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
