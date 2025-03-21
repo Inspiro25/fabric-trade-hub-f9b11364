@@ -18,6 +18,9 @@ import { lazy, Suspense } from "react";
 import MobileAppLayout from "./components/features/MobileAppLayout";
 import { useIsMobile } from "./hooks/use-mobile";
 
+// Import the CategorySection component for category routes
+import CategorySection from "./components/features/CategorySection";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -39,6 +42,8 @@ const AppContent = () => {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/search" element={<Search />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            {/* Add a route for categories */}
+            <Route path="/category/:categoryName" element={<CategorySection />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </MobileAppLayout>
@@ -51,6 +56,8 @@ const AppContent = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/search" element={<Search />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          {/* Add a route for categories */}
+          <Route path="/category/:categoryName" element={<CategorySection />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}
