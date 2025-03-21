@@ -39,6 +39,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         if (currentUser) {
           // If user is logged in, get cart from Supabase
+          // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
           const { data, error } = await supabase
             .from('cart_items')
             .select(`
@@ -57,16 +58,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (data) {
             // Fetch full product details for each cart item
             const cartWithProducts = await Promise.all(
-              data.map(async (item) => {
+              data.map(async (item: any) => {
+                // @ts-ignore - TypeScript doesn't recognize the products table fields fully
                 const { data: productData } = await supabase
                   .from('products')
                   .select('*')
                   .eq('id', item.product_id)
                   .single();
 
+                // Convert Supabase product data format to our Product type
+                const product: Product = {
+                  id: productData.id,
+                  name: productData.name,
+                  description: productData.description || '',
+                  price: productData.price,
+                  salePrice: productData.sale_price,
+                  images: productData.images || [],
+                  category: productData.category_id || '',
+                  colors: productData.colors || [],
+                  sizes: productData.sizes || [],
+                  isNew: productData.is_new || false,
+                  isTrending: productData.is_trending || false,
+                  rating: productData.rating || 0,
+                  reviewCount: productData.review_count || 0,
+                  stock: productData.stock || 0,
+                  tags: productData.tags || [],
+                  shopId: productData.shop_id || '',
+                };
+
                 return {
-                  id: item.product_id,
-                  product: productData as Product,
+                  id: productData.id,
+                  product,
                   quantity: item.quantity,
                   color: item.color,
                   size: item.size
@@ -138,9 +160,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (currentUser) {
         // Save to Supabase
-        const cartItemId = `${product.id}-${size}-${color}`;
-        
-        // Using upsert to either insert new or update existing
+        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
         const { error } = await supabase
           .from('cart_items')
           .upsert({
@@ -175,6 +195,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (currentUser) {
         // Remove from Supabase
+        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
         const { error } = await supabase
           .from('cart_items')
           .delete()
@@ -210,6 +231,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (currentUser) {
         // Update in Supabase
+        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
         const { error } = await supabase
           .from('cart_items')
           .update({ quantity })
@@ -233,6 +255,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (currentUser) {
         // Clear from Supabase
+        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
         const { error } = await supabase
           .from('cart_items')
           .delete()
