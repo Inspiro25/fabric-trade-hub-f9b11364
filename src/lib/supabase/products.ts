@@ -5,7 +5,7 @@ import { Product } from "@/lib/products";
 // Function to fetch all products from Supabase
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'products' table in Supabase client type
     const { data: products, error } = await supabase
       .from('products')
       .select('*');
@@ -44,7 +44,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 // Get product by ID
 export const getProductById = async (id: string): Promise<Product | undefined> => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'products' table in Supabase client type
     const { data: product, error } = await supabase
       .from('products')
       .select('*')
@@ -85,7 +85,7 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 // Get products by shop ID
 export const getShopProducts = async (shopId: string): Promise<Product[]> => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'products' table in Supabase client type
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
@@ -125,7 +125,7 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
 // Create a new product
 export const createProduct = async (productData: Omit<Product, 'id'>): Promise<string | null> => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'products' table in Supabase client type
     const { data, error } = await supabase
       .from('products')
       .insert({
@@ -161,7 +161,7 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
 // Update a product
 export const updateProduct = async (id: string, productData: Partial<Product>): Promise<boolean> => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'products' table in Supabase client type
     const { error } = await supabase
       .from('products')
       .update({
@@ -195,7 +195,7 @@ export const updateProduct = async (id: string, productData: Partial<Product>): 
 // Delete a product
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'products' table in Supabase client type
     const { error } = await supabase
       .from('products')
       .delete()
@@ -216,7 +216,7 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
 // Fetch categories
 export const fetchCategories = async () => {
   try {
-    // @ts-ignore - Bypassing TypeScript's type checking for Supabase client
+    // @ts-ignore - TypeScript doesn't recognize 'categories' table in Supabase client type
     const { data, error } = await supabase
       .from('categories')
       .select('*');
