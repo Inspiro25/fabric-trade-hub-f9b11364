@@ -1,57 +1,63 @@
 
-import { useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useWishlist } from '@/contexts/WishlistContext';
-import ProductGrid from '@/components/features/ProductGrid';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { products } from '@/lib/products';
+import ProductCard from '@/components/ui/ProductCard';
+import { Button } from '@/components/ui/button';
+import { Heart, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Wishlist = () => {
-  const { wishlist } = useWishlist();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { wishlist, toggleWishlist } = useWishlist();
   
-  // Filter products that are in the wishlist
-  const wishlistProducts = products.filter(product => wishlist.includes(product.id));
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // Filter products to show only those in wishlist
+  const wishlistItems = products.filter(product => wishlist.includes(product.id));
 
   return (
-    <div className="animate-page-transition pb-16 md:pb-0">
-      {/* Mobile Header */}
-      {isMobile && (
-        <div className="sticky top-0 z-10 bg-background border-b px-4 py-3 flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Link to="/" className="mr-3">
+              <ArrowLeft size={22} />
+            </Link>
+            <h1 className="text-lg font-medium">My Wishlist</h1>
+          </div>
+          <Link to="/cart">
+            <ShoppingBag size={22} />
+          </Link>
+        </div>
+      </div>
+
+      {/* Wishlist Content */}
+      {wishlistItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="mb-4 text-gray-400">
+            <Heart size={48} />
+          </div>
+          <h3 className="text-lg font-medium mb-2">Your wishlist is empty</h3>
+          <p className="text-gray-500 max-w-xs mb-6">
+            Save your favorite items to your wishlist and they'll appear here
+          </p>
+          <Button asChild>
+            <Link to="/">Explore Products</Link>
           </Button>
-          <h1 className="text-lg font-medium ml-2">My Wishlist</h1>
+        </div>
+      ) : (
+        <div className="p-4">
+          <div className="grid grid-cols-2 gap-3">
+            {wishlistItems.map(product => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                variant="compact" 
+                gridCols={2} 
+              />
+            ))}
+          </div>
         </div>
       )}
-
-      <div className="container mx-auto px-4 py-6">
-        {!isMobile && (
-          <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
-        )}
-
-        {wishlistProducts.length > 0 ? (
-          <ProductGrid 
-            products={wishlistProducts} 
-            title={isMobile ? "" : "Items you've saved"} 
-            subtitle={isMobile ? "" : "Products you've added to your wishlist"} 
-            columns={isMobile ? "grid-cols-2" : undefined}
-          />
-        ) : (
-          <div className="text-center py-12">
-            <h2 className="text-xl font-medium mb-4">Your wishlist is empty</h2>
-            <p className="text-muted-foreground mb-6">Save items you like to your wishlist and they will appear here</p>
-            <Button onClick={() => navigate('/')}>Continue Shopping</Button>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

@@ -1,92 +1,94 @@
-import { useState, useEffect } from 'react';
-import { Search as SearchIcon, X, ArrowLeft } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+import { products } from '@/lib/products';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import ProductGrid from '@/components/features/ProductGrid';
-import { products } from '@/lib/products';
-const Search = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const initialQuery = queryParams.get('q') || '';
-  const [query, setQuery] = useState(initialQuery);
-  const [searchResults, setSearchResults] = useState(products);
-  useEffect(() => {
-    if (query) {
-      const filteredProducts = products.filter(product => {
-        return product.name.toLowerCase().includes(query.toLowerCase()) || product.category.toLowerCase().includes(query.toLowerCase());
-      });
-      setSearchResults(filteredProducts);
+import ProductCard from '@/components/ui/ProductCard';
+import { Search as SearchIcon, Sliders, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-      // Update URL with search query
-      const params = new URLSearchParams();
-      params.set('q', query);
-      navigate(`/search?${params.toString()}`, {
-        replace: true
-      });
-    } else {
-      setSearchResults([]);
-      navigate('/search', {
-        replace: true
-      });
+const Search = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState(products);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setSearchResults(products);
+      return;
     }
-  }, [query, navigate]);
-  const handleClear = () => {
-    setQuery('');
-  };
-  return <div className="animate-page-transition pb-16 md:pb-0">
+
+    const filteredResults = products.filter(
+      product => 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setSearchResults(filteredResults);
+  }, [searchTerm]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       {/* Search Header */}
-      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-sky-500">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+      <div className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-gray-700">
+            <ArrowLeft size={22} />
+          </Link>
           
           <div className="relative flex-1">
-            <Input type="text" placeholder="Search products..." value={query} onChange={e => setQuery(e.target.value)} className="pr-8 bg-muted/50 rounded-full" autoFocus />
-            {query && <button className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={handleClear}>
-                <X className="h-4 w-4" />
-              </button>}
+            <Input
+              type="text"
+              placeholder="Search for products, brands..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="kutuku-searchbar pr-10 pl-9 py-2.5 h-10"
+            />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           </div>
           
-          <Button variant="ghost" size="sm">
-            <SearchIcon className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="text-gray-700">
+            <Sliders size={20} />
           </Button>
         </div>
       </div>
-      
-      <div className="container mx-auto px-4 py-6">
-        {/* Search Results */}
-        {query ? searchResults.length > 0 ? <>
-              <div className="mb-4 text-sm text-muted-foreground">
-                Found {searchResults.length} results for "{query}"
-              </div>
-              <ProductGrid products={searchResults} columns="grid-cols-2" />
-            </> : <div className="text-center py-12">
-              <h2 className="text-xl font-medium mb-4">No results found</h2>
-              <p className="text-muted-foreground mb-6">Try using different keywords or browse our categories</p>
-              <Button onClick={() => navigate('/')}>Browse Categories</Button>
-            </div> : <div className="space-y-6">
-            <div className="border-b pb-4">
-              <h3 className="font-medium mb-2">Popular Searches</h3>
-              <div className="flex flex-wrap gap-2">
-                {['T-shirt', 'Jeans', 'Dress', 'Shoes', 'Jacket'].map(term => <button key={term} onClick={() => setQuery(term)} className="px-3 py-1 rounded-full text-sm bg-orange-600 hover:bg-orange-500 text-gray-50">
-                    {term}
-                  </button>)}
-              </div>
+
+      {/* Search Content */}
+      <div className="p-4">
+        {searchResults.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="mb-4 text-gray-400">
+              <SearchIcon size={48} />
+            </div>
+            <h3 className="text-lg font-medium mb-2">No results found</h3>
+            <p className="text-gray-500 max-w-xs">
+              We couldn't find any products matching your search. Try different keywords.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4">
+              <p className="text-sm text-gray-500">
+                {searchResults.length} {searchResults.length === 1 ? 'result' : 'results'} found
+              </p>
             </div>
             
-            <div>
-              <h3 className="font-medium mb-2">Browse Categories</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {['Men', 'Women', 'Kids', 'Accessories', 'Footwear', 'Beauty'].map(category => <button key={category} onClick={() => setQuery(category)} className="p-3 border rounded-lg text-left flex items-center bg-lime-400 hover:bg-lime-300">
-                    <span>{category}</span>
-                  </button>)}
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              {searchResults.map(product => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  variant="compact" 
+                  gridCols={2} 
+                />
+              ))}
             </div>
-          </div>}
+          </>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Search;
