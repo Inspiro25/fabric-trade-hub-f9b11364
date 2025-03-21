@@ -591,9 +591,12 @@ export type Database = {
           is_verified: boolean | null
           logo: string | null
           name: string
+          owner_email: string | null
+          owner_name: string | null
           rating: number | null
           review_count: number | null
           shop_id: string | null
+          status: string | null
         }
         Insert: {
           address?: string | null
@@ -604,9 +607,12 @@ export type Database = {
           is_verified?: boolean | null
           logo?: string | null
           name: string
+          owner_email?: string | null
+          owner_name?: string | null
           rating?: number | null
           review_count?: number | null
           shop_id?: string | null
+          status?: string | null
         }
         Update: {
           address?: string | null
@@ -617,9 +623,12 @@ export type Database = {
           is_verified?: boolean | null
           logo?: string | null
           name?: string
+          owner_email?: string | null
+          owner_name?: string | null
           rating?: number | null
           review_count?: number | null
           shop_id?: string | null
+          status?: string | null
         }
         Relationships: []
       }

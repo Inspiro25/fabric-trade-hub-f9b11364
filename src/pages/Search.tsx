@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
@@ -12,6 +11,8 @@ import { useShopSearch } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/ui/ProductCard';
+
+type SortOption = 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest';
 
 const Search = () => {
   // Query parameters
