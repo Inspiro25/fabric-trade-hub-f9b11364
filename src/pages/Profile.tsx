@@ -115,10 +115,17 @@ const ProfilePage = () => {
             <p className="text-gray-500">Login to view your profile, manage orders, and track your purchases</p>
             
             <div className="w-full space-y-4 mt-4">
-              <Button className="w-full" onClick={() => navigate('/auth')}>
+              <Button 
+                className="w-full" 
+                onClick={() => navigate('/auth')}
+              >
                 Sign In
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/auth?register=true')}>
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={() => navigate('/auth?register=true')}
+              >
                 Create Account
               </Button>
             </div>
