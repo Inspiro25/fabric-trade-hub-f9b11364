@@ -686,4 +686,7 @@ export const getProductsByTags = async (tag: string): Promise<Product[]> => {
     // Fallback to local data
     return products.filter(product => product.tags.includes(tag)).slice(0, 8);
   } catch (error) {
-    console.error(`Error fetching products
+    console.error(`Error fetching products with tag ${tag}:`, error);
+    return products.filter(product => product.tags.includes(tag)).slice(0, 8);
+  }
+};

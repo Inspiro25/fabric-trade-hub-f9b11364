@@ -1,4 +1,3 @@
-
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
@@ -12,6 +11,27 @@ import {
   updateProfile,
   User
 } from 'firebase/auth';
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
+  limit,
+  arrayUnion,
+  arrayRemove,
+  Timestamp,
+  serverTimestamp
+} from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Your Firebase configuration
 // Replace these with your actual Firebase config values
@@ -76,3 +96,31 @@ export const getCurrentUser = (): User | null => {
 };
 
 export { auth };
+
+// Firestore exports
+const db = getFirestore(app);
+
+export { 
+  db, 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
+  limit,
+  arrayUnion,
+  arrayRemove,
+  Timestamp,
+  serverTimestamp
+};
+
+// Storage exports
+const storage = getStorage(app);
+export { storage, ref, uploadBytes, getDownloadURL };
