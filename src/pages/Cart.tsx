@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Minus, Plus, X, ShoppingCart, ArrowRight, Heart } from 'lucide-react';
 import { toast } from 'sonner';
-import { Product, mockProducts } from '@/lib/products';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCart } from '@/contexts/CartContext';
 import { 
   Card,
   CardContent,
@@ -19,41 +19,10 @@ import {
 } from '@/components/ui/card';
 import CartToCheckout from '@/components/features/CartToCheckout';
 import ProductCard from '@/components/ui/ProductCard';
-
-// Mock cart items for demonstration
-const initialCartItems = [
-  {
-    id: mockProducts[0].id,
-    product: mockProducts[0],
-    quantity: 1,
-    color: mockProducts[0].colors[0],
-    size: mockProducts[0].sizes[1]
-  }, 
-  {
-    id: mockProducts[1].id,
-    product: mockProducts[1],
-    quantity: 2,
-    color: mockProducts[1].colors[1],
-    size: mockProducts[1].sizes[2]
-  },
-  {
-    id: mockProducts[2].id,
-    product: mockProducts[2],
-    quantity: 1,
-    color: mockProducts[2].colors[0],
-    size: mockProducts[2].sizes[0]
-  },
-  {
-    id: mockProducts[3].id,
-    product: mockProducts[3],
-    quantity: 3,
-    color: mockProducts[3].colors[1],
-    size: mockProducts[3].sizes[1]
-  }
-];
+import { Product } from '@/lib/products';
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const { cartItems, removeFromCart, updateQuantity } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -76,25 +45,14 @@ const Cart = () => {
 
   // Load wishlist products
   useEffect(() => {
-    // Filter mockProducts based on wishlist IDs
-    const productsInWishlist = mockProducts.filter(product => 
-      wishlist.includes(product.id)
-    );
-    setWishlistProducts(productsInWishlist);
+    // Fetch product details for wishlist items
+    const fetchWishlistProducts = async () => {
+      // For now we'll use a placeholder approach since wishlist isn't integrated with database yet
+      setWishlistProducts([]);
+    };
+    
+    fetchWishlistProducts();
   }, [wishlist]);
-
-  const updateQuantity = (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems(prev => prev.map(item => item.id === itemId ? {
-      ...item,
-      quantity: newQuantity
-    } : item));
-  };
-
-  const removeItem = (itemId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId));
-    toast.success('Item removed from cart');
-  };
 
   const applyPromoCode = () => {
     if (promoCode.toLowerCase() === 'discount10') {
@@ -106,25 +64,8 @@ const Cart = () => {
   };
 
   const handleMoveToCart = (product: Product) => {
-    // Check if product already in cart
-    const isInCart = cartItems.some(item => item.id === product.id);
-    
-    if (!isInCart) {
-      // Add to cart with default first color and size
-      const newItem = {
-        id: product.id,
-        product: product,
-        quantity: 1,
-        color: product.colors[0],
-        size: product.sizes[0]
-      };
-      
-      setCartItems(prev => [...prev, newItem]);
-      removeFromWishlist(product.id);
-      toast.success(`${product.name} moved to cart`);
-    } else {
-      toast.info(`${product.name} is already in your cart`);
-    }
+    // This would need to be implemented when wishlist is integrated with database
+    toast.info(`This feature will be implemented with wishlist database integration`);
   };
 
   return (
@@ -188,7 +129,7 @@ const Cart = () => {
                                 <button 
                                   type="button" 
                                   className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                                  onClick={() => updateQuantity(item.id, item.quantity - 1)} 
+                                  onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity - 1)} 
                                   disabled={item.quantity <= 1}
                                 >
                                   <Minus className="w-2.5 h-2.5" />
@@ -198,7 +139,7 @@ const Cart = () => {
                                 <button 
                                   type="button" 
                                   className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity + 1)}
                                 >
                                   <Plus className="w-2.5 h-2.5" />
                                   <span className="sr-only">Increase quantity</span>
@@ -212,7 +153,7 @@ const Cart = () => {
                               <button 
                                 type="button" 
                                 className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-red-50"
-                                onClick={() => removeItem(item.id)}
+                                onClick={() => removeFromCart(`${item.id}-${item.size}-${item.color}`)}
                               >
                                 <X className="w-3 h-3" />
                                 <span className="sr-only">Remove item</span>
