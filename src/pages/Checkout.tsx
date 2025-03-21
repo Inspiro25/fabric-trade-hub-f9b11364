@@ -135,7 +135,7 @@ const Checkout = () => {
                       <h2 className="text-xs font-semibold flex items-center gap-1 text-purple-700 mb-2">
                         <User className="h-3 w-3" /> Billing Information
                       </h2>
-                      <form onSubmit={handleContinueToPayment} className="space-y-2">
+                      <form className="space-y-2">
                         <div className="grid grid-cols-2 gap-2">
                           <div className="space-y-1">
                             <Label htmlFor="name" className="text-[10px] font-medium text-gray-700">Full Name</Label>
@@ -229,15 +229,6 @@ const Checkout = () => {
                             />
                           </div>
                         </div>
-                        
-                        <div className="pt-2">
-                          <Button 
-                            type="submit"
-                            className="w-full h-8 text-xs bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
-                          >
-                            Continue to Payment
-                          </Button>
-                        </div>
                       </form>
                     </div>
                   </>
@@ -324,6 +315,18 @@ const Checkout = () => {
                     <span>Total</span>
                     <span className="text-purple-600">₹{cart.total.toFixed(2)}</span>
                   </div>
+                  
+                  {!paymentStep && (
+                    <div className="pt-2">
+                      <Button 
+                        type="button"
+                        onClick={handleContinueToPayment}
+                        className="w-full h-8 text-xs bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
+                      >
+                        Continue to Payment
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Order Security Details */}
