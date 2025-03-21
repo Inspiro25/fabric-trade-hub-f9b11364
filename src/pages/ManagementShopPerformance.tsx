@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,15 +31,28 @@ import {
 } from 'recharts';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
 
 const ManagementShopPerformance = () => {
   const navigate = useNavigate();
-  const { analytics, isLoading } = useDashboardAnalytics();
+  const { analytics, isLoading, isError, error } = useDashboardAnalytics();
   const [timeFilter, setTimeFilter] = useState('month');
   const [shopFilter, setShopFilter] = useState('all');
 
   // Colors for charts
   const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe'];
+  
+  // Show error toast if data fetching fails
+  useEffect(() => {
+    if (isError && error instanceof Error) {
+      console.error('Error fetching dashboard analytics:', error);
+      toast({
+        title: "Error fetching analytics",
+        description: "Could not load shop performance data. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  }, [isError, error]);
 
   // Additional shop metrics
   const getShopMetrics = (shop) => {

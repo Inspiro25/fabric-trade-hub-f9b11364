@@ -1,388 +1,717 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { useShopSearch, SortOption } from '@/hooks/use-shop-search';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Slider } from "@/components/ui/slider"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { toast } from "@/hooks/use-toast"
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useToast } from '@/hooks/use-toast';
-import ProductCard from '@/components/ui/ProductCard';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+import { CalendarIcon, CheckCircledIcon, Copy, Filter, Heart, Loader2, MoreVertical, Plus, Search as SearchIcon, Share2, ShoppingCart, SortAsc, SortDesc, X } from 'lucide-react';
+import { addDays, format } from "date-fns"
+
+// Define the type for the product
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  images: string[];
+  rating: number;
+  review_count: number;
+  is_new: boolean;
+  is_trending: boolean;
+  sale_price: number | null;
+  colors: string[] | null;
+  sizes: string[] | null;
+  category_id: string | null;
+  shop_id: string | null;
+}
+
+// Define the type for the category
+interface Category {
+  id: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+}
+
+// Define the type for the shop
+interface Shop {
+  id: string;
+  name: string;
+  description: string | null;
+  logo: string | null;
+  cover_image: string | null;
+  rating: number | null;
+  review_count: number | null;
+  is_verified: boolean | null;
+  address: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+  shop_id: string | null;
+  status: string | null;
+}
+
+// Define the type for the filter
+interface FilterOption {
+  label: string;
+  value: string;
+}
+
+// Define the type for the sort option
+type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating';
 
 const Search = () => {
-  // Query parameters
-  const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
-  const searchQuery = queryParams.get('q') || '';
-  const { toast } = useToast();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const query = searchParams.get('q') || '';
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedShop, setSelectedShop] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
+  const [rating, setRating] = useState<number | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
+  const { addItem: addItemToCart } = useCart();
+  const { addItem: addItemToWishlist } = useWishlist();
+  const { isLoggedIn } = useAuth();
   const isMobile = useIsMobile();
-  
-  // State
-  const [query, setQuery] = useState(searchQuery);
-  const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobile ? 'grid' : 'grid');
-  
-  // Validate the sort parameter against allowed values
-  const isValidSortOption = (value: string): value is SortOption => {
-    return ['relevance', 'price-low', 'price-high', 'rating', 'newest'].includes(value);
-  };
-  
-  // Initialize filter states from URL
-  const sortParam = queryParams.get('sort') || 'relevance';
-  const validatedSortValue: SortOption = isValidSortOption(sortParam) ? sortParam as SortOption : 'relevance';
-  
-  const initialFilters = {
-    category: queryParams.get('category') || 'all',
-    priceRange: queryParams.get('price') || 'all',
-    sort: validatedSortValue,
-    inStock: queryParams.get('inStock') === 'true',
-    onSale: queryParams.get('onSale') === 'true'
-  };
-  
-  // Use the custom hook for search functionality
-  const { 
-    products: filteredProducts, 
-    categories,
-    isLoading,
-    filters,
-    setFilters,
-    clearFilters
-  } = useShopSearch(searchQuery, initialFilters);
-  
-  // Handle search submission
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Update query parameters
-    const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (filters.category !== 'all') params.set('category', filters.category);
-    if (filters.priceRange !== 'all') params.set('price', filters.priceRange);
-    if (filters.sort !== 'relevance') params.set('sort', filters.sort);
-    if (filters.inStock) params.set('inStock', 'true');
-    if (filters.onSale) params.set('onSale', 'true');
-    
-    // Navigate with new search params
-    navigate(`/search?${params.toString()}`);
-    
-    // Close filters on mobile after search
-    setShowFilters(false);
-    
-    // Show toast notification
-    toast({
-      title: "Search updated",
-      description: `Found ${filteredProducts.length} products for "${query}"`,
-    });
-  };
-  
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16">
-      {/* Header - Added more spacing at the top */}
-      <header className="bg-white dark:bg-gray-800 px-3 py-3 sticky top-0 z-30 shadow-sm">
-        <div className="flex items-center gap-2 mt-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          
-          <form onSubmit={handleSearch} className="flex-1 relative">
-            <Input
-              type="text"
-              placeholder="Search products..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-8 pr-8 py-1.5 h-9 w-full rounded-full text-sm bg-gray-50 dark:bg-gray-700 border-gray-200"
-            />
-            <div className="absolute left-2.5 top-1/2 transform -translate-y-1/2">
-              <SearchIcon className="h-3.5 w-3.5 text-gray-400" />
-            </div>
-            {query && (
-              <button 
-                type="button"
-                className="absolute right-2.5 top-1/2 transform -translate-y-1/2"
-                onClick={() => setQuery('')}
-              >
-                <X className="h-3.5 w-3.5 text-gray-400" />
-              </button>
-            )}
-          </form>
-          
-          <Button 
-            variant={showFilters ? "secondary" : "ghost"}
-            size="icon"
-            className={`h-8 w-8 flex-shrink-0 ${showFilters ? "text-kutuku-primary bg-kutuku-light" : ""}`}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
-        
-        {!showFilters && categories && categories.length > 0 && (
-          <div className="pt-3 overflow-x-auto whitespace-nowrap -mx-3 px-3 scrollbar-hide">
-            <div className="flex gap-1.5 pb-1">
-              <Button
-                size="sm"
-                variant={filters.category === 'all' ? "default" : "outline"}
-                onClick={() => setFilters({...filters, category: 'all'})}
-                className="rounded-full h-7 text-xs px-3 py-0 bg-kutuku-primary hover:bg-kutuku-secondary"
-              >
-                All
-              </Button>
-              
-              {categories.map(category => (
-                <Button
-                  key={category}
-                  size="sm"
-                  variant={filters.category === category.toLowerCase() ? "default" : "outline"}
-                  onClick={() => setFilters({...filters, category: category.toLowerCase()})}
-                  className="rounded-full h-7 text-xs px-3 py-0 flex-shrink-0 bg-kutuku-primary hover:bg-kutuku-secondary"
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-      </header>
-      
-      <div className="flex flex-col lg:flex-row">
-        {showFilters && (
-          <aside className={`${isMobile ? 'fixed inset-0 z-20 bg-black/60' : 'w-64 sticky top-[61px]'}`}>
-            <div 
-              className={`
-                ${isMobile ? 'absolute bottom-0 left-0 right-0 rounded-t-xl max-h-[85vh] overflow-y-auto' : 'min-h-[calc(100vh-61px)]'} 
-                bg-white dark:bg-gray-800 p-4 border-r animate-slide-in-right
-              `}
-            >
-              <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-10 pb-2 border-b">
-                <h2 className="font-medium text-base">Filters</h2>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 text-xs">
-                    Clear All
-                  </Button>
-                  {isMobile && (
-                    <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)} className="h-8 text-xs">
-                      <X className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Category filter */}
-              <div className="mb-5">
-                <h3 className="text-sm font-medium mb-2">Category</h3>
-                <RadioGroup 
-                  value={filters.category} 
-                  onValueChange={(value) => setFilters({...filters, category: value})}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="category-all" className="h-4 w-4" />
-                    <Label htmlFor="category-all" className="text-sm">All Categories</Label>
-                  </div>
-                  
-                  {categories?.map(category => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <RadioGroupItem 
-                        value={category.toLowerCase()} 
-                        id={`category-${category.toLowerCase()}`}
-                        className="h-4 w-4" 
-                      />
-                      <Label htmlFor={`category-${category.toLowerCase()}`} className="text-sm">{category}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-              
-              {/* Price filter */}
-              <div className="mb-5">
-                <h3 className="text-sm font-medium mb-2">Price Range</h3>
-                <RadioGroup 
-                  value={filters.priceRange} 
-                  onValueChange={(value) => setFilters({...filters, priceRange: value})}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="all" id="price-all" className="h-4 w-4" />
-                    <Label htmlFor="price-all" className="text-sm">All Prices</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="0-500" id="price-0-500" className="h-4 w-4" />
-                    <Label htmlFor="price-0-500" className="text-sm">Under ₹500</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="500-1000" id="price-500-1000" className="h-4 w-4" />
-                    <Label htmlFor="price-500-1000" className="text-sm">₹500 - ₹1,000</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="1000-2000" id="price-1000-2000" className="h-4 w-4" />
-                    <Label htmlFor="price-1000-2000" className="text-sm">₹1,000 - ₹2,000</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="2000-5000" id="price-2000-5000" className="h-4 w-4" />
-                    <Label htmlFor="price-2000-5000" className="text-sm">₹2,000 - ₹5,000</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="5000" id="price-5000" className="h-4 w-4" />
-                    <Label htmlFor="price-5000" className="text-sm">Above ₹5,000</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* Sort filter */}
-              <div className="mb-5">
-                <h3 className="text-sm font-medium mb-2">Sort By</h3>
-                <RadioGroup 
-                  value={filters.sort} 
-                  onValueChange={(value) => setFilters({...filters, sort: value})}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="relevance" id="sort-relevance" className="h-4 w-4" />
-                    <Label htmlFor="sort-relevance" className="text-sm">Relevance</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="price-low" id="sort-price-low" className="h-4 w-4" />
-                    <Label htmlFor="sort-price-low" className="text-sm">Price: Low to High</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="price-high" id="sort-price-high" className="h-4 w-4" />
-                    <Label htmlFor="sort-price-high" className="text-sm">Price: High to Low</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="rating" id="sort-rating" className="h-4 w-4" />
-                    <Label htmlFor="sort-rating" className="text-sm">Highest Rated</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="newest" id="sort-newest" className="h-4 w-4" />
-                    <Label htmlFor="sort-newest" className="text-sm">Newest First</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              
-              {/* Other filters */}
-              <div className="space-y-3 mb-5">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="in-stock" 
-                    checked={filters.inStock}
-                    onCheckedChange={(checked) => 
-                      setFilters({...filters, inStock: checked as boolean})
-                    }
-                    className="h-4 w-4 rounded-sm"
-                  />
-                  <Label htmlFor="in-stock" className="text-sm">In Stock</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="on-sale" 
-                    checked={filters.onSale}
-                    onCheckedChange={(checked) => 
-                      setFilters({...filters, onSale: checked as boolean})
-                    }
-                    className="h-4 w-4 rounded-sm"
-                  />
-                  <Label htmlFor="on-sale" className="text-sm">On Sale</Label>
-                </div>
-              </div>
-              
-              <div className="sticky bottom-0 pt-2 pb-4 bg-white border-t">
-                <Button 
-                  className="w-full text-sm rounded-full bg-kutuku-primary hover:bg-kutuku-secondary" 
-                  onClick={handleSearch}
-                >
-                  Apply Filters
-                </Button>
-              </div>
+  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [shareableLink, setShareableLink] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(new Date())
 
-              {isMobile && (
-                <div className="h-safe-area-bottom" />
-              )}
-            </div>
-          </aside>
-        )}
-        
-        {/* Main content */}
-        <main className={`flex-1 p-3 ${showFilters && !isMobile ? 'ml-64' : ''}`}>
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-xs text-gray-500">
-              {isLoading ? 'Loading...' : (
+  const handleAddToCart = async (product: Product) => {
+    if (!isLoggedIn) {
+      setSelectedProduct(product);
+      setIsDialogOpen(true);
+      return;
+    }
+
+    setIsAddingToCart(product.id);
+    try {
+      await addItemToCart(product, 1, product.colors ? product.colors[0] : null, product.sizes ? product.sizes[0] : null);
+      toast({
+        title: "Success",
+        description: `${product.name} added to cart.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add item to cart.",
+      });
+    } finally {
+      setIsAddingToCart(null);
+    }
+  };
+
+  const handleAddToWishlist = async (product: Product) => {
+    if (!isLoggedIn) {
+      setSelectedProduct(product);
+      setIsDialogOpen(true);
+      return;
+    }
+
+    setIsAddingToWishlist(product.id);
+    try {
+      await addItemToWishlist(product);
+      toast({
+        title: "Success",
+        description: `${product.name} added to wishlist.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add item to wishlist.",
+      });
+    } finally {
+      setIsAddingToWishlist(null);
+    }
+  };
+
+  const handleShareProduct = (product: Product) => {
+    const productLink = `${window.location.origin}/product/${product.id}`;
+    setShareableLink(productLink);
+    setIsShareDialogOpen(true);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareableLink);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch products based on the search query
+        const productsResponse = await fetch(`/api/products?q=${query}`);
+        if (!productsResponse.ok) {
+          throw new Error(`Failed to fetch products: ${productsResponse.status}`);
+        }
+        const productsData = await productsResponse.json();
+        setProducts(productsData);
+
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/categories');
+        if (!categoriesResponse.ok) {
+          throw new Error(`Failed to fetch categories: ${categoriesResponse.status}`);
+        }
+        const categoriesData = await categoriesResponse.json();
+        setCategories(categoriesData);
+
+        // Fetch shops
+        const shopsResponse = await fetch('/api/shops');
+        if (!shopsResponse.ok) {
+          throw new Error(`Failed to fetch shops: ${shopsResponse.status}`);
+        }
+        const shopsData = await shopsResponse.json();
+        setShops(shopsData);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [query]);
+
+  const filteredProducts = products.filter(product => {
+    if (selectedCategory && product.category_id !== selectedCategory) {
+      return false;
+    }
+    if (selectedShop && product.shop_id !== selectedShop) {
+      return false;
+    }
+    if (product.price < priceRange[0] || product.price > priceRange[1]) {
+      return false;
+    }
+    if (rating && product.rating !== rating) {
+      return false;
+    }
+    return true;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortOption) {
+      case 'newest':
+        return 0;
+      case 'price-asc':
+        return a.price - b.price;
+      case 'price-desc':
+        return b.price - a.price;
+      case 'rating':
+        return (b.rating || 0) - (a.rating || 0);
+      default:
+        return 0;
+    }
+  });
+
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category);
+  };
+
+  const handleShopChange = (shop: string | null) => {
+    setSelectedShop(shop);
+  };
+
+  const handlePriceRangeChange = (value: number[]) => {
+    setPriceRange(value);
+  };
+
+  const handleRatingChange = (rating: number | null) => {
+    setRating(rating);
+  };
+
+  const handleSortChange = (value: string) => {
+    setSortOption(value as SortOption);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory(null);
+    setSelectedShop(null);
+    setPriceRange([0, 1000]);
+    setRating(null);
+  };
+
+  const filterOptions: FilterOption[] = [
+    { label: 'Category', value: 'category' },
+    { label: 'Shop', value: 'shop' },
+    { label: 'Price', value: 'price' },
+    { label: 'Rating', value: 'rating' },
+  ];
+
+  const sortOptions: FilterOption[] = [
+    { label: 'Newest', value: 'newest' },
+    { label: 'Price: Low to High', value: 'price-asc' },
+    { label: 'Price: High to Low', value: 'price-desc' },
+    { label: 'Rating', value: 'rating' },
+  ];
+
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Search Results for "{query}"</h1>
+        <div className="flex items-center space-x-2">
+          {isMobile ? (
+            <>
+              <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="sm:hidden">
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                    <SheetDescription>
+                      Apply filters to refine your search results.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="grid gap-4 py-4">
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          {categories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="shop">Shop</Label>
+                      <Select value={selectedShop || 'all'} onValueChange={handleShopChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All Shops" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Shops</SelectItem>
+                          {shops.map(shop => (
+                            <SelectItem key={shop.id} value={shop.id}>{shop.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Price Range (${priceRange[0]} - ${priceRange[1]})</Label>
+                      <Slider
+                        defaultValue={priceRange}
+                        max={1000}
+                        step={10}
+                        onValueChange={handlePriceRangeChange}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="rating">Rating</Label>
+                      <Select value={rating ? rating.toString() : 'all'} onValueChange={(value) => handleRatingChange(value === 'all' ? null : parseInt(value))}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All Ratings" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Ratings</SelectItem>
+                          <SelectItem value="5">5 Stars</SelectItem>
+                          <SelectItem value="4">4 Stars & Up</SelectItem>
+                          <SelectItem value="3">3 Stars & Up</SelectItem>
+                          <SelectItem value="2">2 Stars & Up</SelectItem>
+                          <SelectItem value="1">1 Star & Up</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="secondary" onClick={clearFilters}>Clear Filters</Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <Sheet open={mobileSortOpen} onOpenChange={setMobileSortOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <SortAsc className="mr-2 h-4 w-4" />
+                    Sort
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="sm:hidden">
+                  <SheetHeader>
+                    <SheetTitle>Sort</SheetTitle>
+                    <SheetDescription>
+                      Sort the search results based on your preference.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="grid gap-4 py-4">
+                    <div>
+                      <Label htmlFor="sort">Sort By</Label>
+                      <Select value={sortOption} onValueChange={handleSortChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Relevance" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="newest">Newest</SelectItem>
+                          <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                          <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                          <SelectItem value="rating">Rating</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Filters</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Label htmlFor="category">Category</Label>
+                    <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Categories" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map(category => (
+                          <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Label htmlFor="shop">Shop</Label>
+                    <Select value={selectedShop || 'all'} onValueChange={handleShopChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Shops" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Shops</SelectItem>
+                        {shops.map(shop => (
+                          <SelectItem key={shop.id} value={shop.id}>{shop.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Label>Price Range (${priceRange[0]} - ${priceRange[1]})</Label>
+                    <Slider
+                      defaultValue={priceRange}
+                      max={1000}
+                      step={10}
+                      onValueChange={handlePriceRangeChange}
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Label htmlFor="rating">Rating</Label>
+                    <Select value={rating ? rating.toString() : 'all'} onValueChange={(value) => handleRatingChange(value === 'all' ? null : parseInt(value))}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Ratings" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Ratings</SelectItem>
+                        <SelectItem value="5">5 Stars</SelectItem>
+                        <SelectItem value="4">4 Stars & Up</SelectItem>
+                        <SelectItem value="3">3 Stars & Up</SelectItem>
+                        <SelectItem value="2">2 Stars & Up</SelectItem>
+                        <SelectItem value="1">1 Star & Up</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Button variant="secondary" onClick={clearFilters}>Clear Filters</Button>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <SortAsc className="mr-2 h-4 w-4" />
+                    Sort
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Select value={sortOption} onValueChange={handleSortChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Relevance" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Newest</SelectItem>
+                        <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                        <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                        <SelectItem value="rating">Rating</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Loading products...
+        </div>
+      ) : error ? (
+        <div className="text-red-500">Error: {error}</div>
+      ) : sortedProducts.length === 0 ? (
+        <div className="text-gray-500">No products found matching your search criteria.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {sortedProducts.map(product => (
+            <Card key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="relative">
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+                {product.is_new && (
+                  <Badge className="absolute top-2 left-2 bg-blue-500 text-white">New</Badge>
+                )}
+                {product.is_trending && (
+                  <Badge className="absolute top-2 right-2 bg-green-500 text-white">Trending</Badge>
+                )}
+              </div>
+              <CardContent className="p-4">
+                <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                <p className="text-gray-600 mb-2">{product.description.substring(0, 50)}...</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    {product.sale_price !== null ? (
+                      <>
+                        <span className="text-red-500 line-through">${product.price}</span>
+                        <span className="text-xl font-bold ml-2">${product.sale_price}</span>
+                      </>
+                    ) : (
+                      <span className="text-xl font-bold">${product.price}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <svg
+                      className="w-4 h-4 text-yellow-500 mr-1"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 1l2.939 4.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                    <span>{product.rating} ({product.review_count})</span>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-4">
+                  <Button
+                    size="sm"
+                    onClick={() => handleAddToCart(product)}
+                    disabled={isAddingToCart === product.id}
+                  >
+                    {isAddingToCart === product.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Add to Cart
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleAddToWishlist(product)}
+                    disabled={isAddingToWishlist === product.id}
+                  >
+                    {isAddingToWishlist === product.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Adding...
+                      </>
+                    ) : (
+                      <>
+                        <Heart className="mr-2 h-4 w-4" />
+                        Wishlist
+                      </>
+                    )}
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleShareProduct(product)}>
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Share
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Authentication Required</DialogTitle>
+            <DialogDescription>
+              You need to be logged in to add items to the cart.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" onClick={() => {
+              setIsDialogOpen(false);
+              navigate('/auth');
+            }}>
+              Go to Authentication
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Share Product</DialogTitle>
+            <DialogDescription>
+              Share this product with your friends.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2">
+            <Input type="text" value={shareableLink} readOnly className="flex-1" />
+            <Button variant="secondary" size="sm" onClick={copyToClipboard} disabled={isCopied}>
+              {isCopied ? (
                 <>
-                  {filteredProducts.length} {filteredProducts.length === 1 ? 'result' : 'results'}
-                  {searchQuery ? ` for "${searchQuery}"` : ''}
+                  <CheckCircledIcon className="mr-2 h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy
                 </>
               )}
-            </p>
-            
-            {/* View mode toggle - hidden on mobile */}
-            {!isMobile && (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant={viewMode === 'grid' ? "secondary" : "outline"}
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid className="h-3.5 w-3.5" />
-                  <span className="sr-only">Grid view</span>
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? "secondary" : "outline"}
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-3.5 w-3.5" />
-                  <span className="sr-only">List view</span>
-                </Button>
-              </div>
-            )}
+            </Button>
           </div>
-          
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="border-none shadow-sm rounded-xl overflow-hidden">
-                  <div className="bg-gray-200 dark:bg-gray-700 h-32 animate-pulse"></div>
-                  <CardContent className="p-2">
-                    <div className="bg-gray-200 dark:bg-gray-700 h-3 rounded mb-2 w-3/4 animate-pulse"></div>
-                    <div className="bg-gray-200 dark:bg-gray-700 h-3 rounded w-1/2 animate-pulse"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className={`grid ${viewMode === 'list' ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'} gap-3`}>
-              {filteredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  variant="default"
-                  layout={viewMode === 'list' ? 'horizontal' : 'vertical'}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-              <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <h3 className="text-lg font-medium mb-2">No products found</h3>
-              <p className="text-sm text-gray-500 mb-4">
-                We couldn't find any products matching your criteria.
-              </p>
-              <Button 
-                onClick={clearFilters} 
-                className="text-sm rounded-full bg-kutuku-primary hover:bg-kutuku-secondary"
-              >
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </main>
-      </div>
+          <DialogFooter>
+            <Button type="button" onClick={() => setIsShareDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
