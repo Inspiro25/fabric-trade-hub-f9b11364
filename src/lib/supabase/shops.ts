@@ -5,7 +5,6 @@ import { Shop } from "@/lib/shops/types";
 // Function to fetch all shops from Supabase
 export const fetchShops = async (): Promise<Shop[]> => {
   try {
-    // @ts-ignore - TypeScript doesn't recognize 'shops' table in Supabase client type
     const { data: shops, error } = await supabase
       .from('shops')
       .select('*');
@@ -30,6 +29,9 @@ export const fetchShops = async (): Promise<Shop[]> => {
       isVerified: shop?.is_verified || false,
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
+      ownerName: shop?.owner_name || '',
+      ownerEmail: shop?.owner_email || '',
+      status: shop?.status || 'pending'
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -40,7 +42,6 @@ export const fetchShops = async (): Promise<Shop[]> => {
 // Function to get a shop by ID
 export const getShopById = async (id: string): Promise<Shop | undefined> => {
   try {
-    // @ts-ignore - TypeScript doesn't recognize 'shops' table in Supabase client type
     const { data: shop, error } = await supabase
       .from('shops')
       .select('*')
@@ -67,6 +68,9 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       isVerified: shop?.is_verified || false,
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
+      ownerName: shop?.owner_name || '',
+      ownerEmail: shop?.owner_email || '',
+      status: shop?.status || 'pending'
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
@@ -77,7 +81,6 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
 // Function to update a shop
 export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<boolean> => {
   try {
-    // @ts-ignore - TypeScript doesn't recognize 'shops' table in Supabase client type
     const { error } = await supabase
       .from('shops')
       .update({
@@ -87,6 +90,9 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
         cover_image: shopData.coverImage,
         address: shopData.address,
         is_verified: shopData.isVerified,
+        owner_name: shopData.ownerName,
+        owner_email: shopData.ownerEmail,
+        status: shopData.status
       } as any)
       .eq('id', id);
     
@@ -108,7 +114,6 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
     // Generate a simple shop ID
     const shopId = shopData.shopId || `shop-${Math.floor(Math.random() * 10000)}`;
     
-    // @ts-ignore - TypeScript doesn't recognize 'shops' table in Supabase client type
     const { data, error } = await supabase
       .from('shops')
       .insert({
@@ -119,6 +124,9 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         address: shopData.address,
         is_verified: shopData.isVerified,
         shop_id: shopId,
+        owner_name: shopData.ownerName,
+        owner_email: shopData.ownerEmail,
+        status: shopData.status || 'pending'
       } as any)
       .select()
       .single();
@@ -144,7 +152,6 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
 // Function to delete a shop
 export const deleteShop = async (id: string): Promise<boolean> => {
   try {
-    // @ts-ignore - TypeScript doesn't recognize 'shops' table in Supabase client type
     const { error } = await supabase
       .from('shops')
       .delete()

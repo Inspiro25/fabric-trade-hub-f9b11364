@@ -304,6 +304,84 @@ export type Database = {
           },
         ]
       }
+      platform_analytics: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          new_shops: number | null
+          new_users: number | null
+          total_orders: number | null
+          total_revenue: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          new_shops?: number | null
+          new_users?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          new_shops?: number | null
+          new_users?: number | null
+          total_orders?: number | null
+          total_revenue?: number | null
+        }
+        Relationships: []
+      }
+      product_analytics: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          product_id: string
+          purchases: number | null
+          revenue: number | null
+          shop_id: string
+          views: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          product_id: string
+          purchases?: number | null
+          revenue?: number | null
+          shop_id: string
+          views?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          product_id?: string
+          purchases?: number | null
+          revenue?: number | null
+          shop_id?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_analytics_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_analytics_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_reviews: {
         Row: {
           comment: string | null
@@ -455,6 +533,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "products_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_analytics: {
+        Row: {
+          conversion_rate: number | null
+          created_at: string | null
+          date: string
+          id: string
+          orders: number | null
+          revenue: number | null
+          shop_id: string
+          visitors: number | null
+        }
+        Insert: {
+          conversion_rate?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          orders?: number | null
+          revenue?: number | null
+          shop_id: string
+          visitors?: number | null
+        }
+        Update: {
+          conversion_rate?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          orders?: number | null
+          revenue?: number | null
+          shop_id?: string
+          visitors?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_analytics_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"

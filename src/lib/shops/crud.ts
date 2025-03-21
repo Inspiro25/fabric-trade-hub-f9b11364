@@ -70,6 +70,10 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
       if (shopIndex !== -1) {
         shops[shopIndex] = { ...shops[shopIndex], ...shopData };
       }
+      
+      // Update analytics if needed
+      await updateShopAnalytics(id);
+      
       return true;
     }
     
@@ -93,6 +97,13 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
       
       // Update local cache
       shops.push(newShop);
+      
+      // Create initial analytics record
+      await createInitialShopAnalytics(shopId);
+      
+      // Update platform analytics for new shop
+      await updatePlatformAnalyticsForNewShop();
+      
       return shopId;
     }
     
@@ -121,5 +132,95 @@ export const deleteShop = async (id: string): Promise<boolean> => {
   } catch (error) {
     console.error('Error deleting shop:', error);
     return false;
+  }
+};
+
+// Create initial analytics record for a new shop
+const createInitialShopAnalytics = async (shopId: string): Promise<void> => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Initial analytics record with zero values
+    const { error } = await supabase
+      .from('shop_analytics')
+      .insert({
+        shop_id: shopId,
+        date: today,
+        revenue: 0,
+        orders: 0,
+        visitors: 0,
+        conversion_rate: 0
+      });
+    
+    if (error) {
+      console.error('Error creating initial shop analytics:', error);
+    }
+  } catch (error) {
+    console.error('Error in createInitialShopAnalytics:', error);
+  }
+};
+
+// Update platform analytics when a new shop is created
+const updatePlatformAnalyticsForNewShop = async (): Promise<void> => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check if we have a record for today
+    const { data: existingRecord, error: queryError } = await supabase
+      .from('platform_analytics')
+      .select('id, new_shops')
+      .eq('date', today)
+      .maybeSingle();
+    
+    if (queryError) {
+      console.error('Error querying platform analytics:', queryError);
+      return;
+    }
+    
+    if (existingRecord) {
+      // Update existing record
+      const { error: updateError } = await supabase
+        .from('platform_analytics')
+        .update({
+          new_shops: (existingRecord.new_shops || 0) + 1
+        })
+        .eq('id', existingRecord.id);
+      
+      if (updateError) {
+        console.error('Error updating platform analytics:', updateError);
+      }
+    } else {
+      // Create new record for today
+      const { error: insertError } = await supabase
+        .from('platform_analytics')
+        .insert({
+          date: today,
+          new_shops: 1,
+          total_revenue: 0,
+          total_orders: 0,
+          new_users: 0
+        });
+      
+      if (insertError) {
+        console.error('Error inserting platform analytics:', insertError);
+      }
+    }
+  } catch (error) {
+    console.error('Error in updatePlatformAnalyticsForNewShop:', error);
+  }
+};
+
+// Update shop analytics after shop update
+const updateShopAnalytics = async (shopId: string): Promise<void> => {
+  try {
+    // This is a placeholder for actual analytics updates
+    // In a real app, you might want to update analytics based on shop activity
+    console.log(`Shop ${shopId} analytics should be updated here`);
+  } catch (error) {
+    console.error('Error in updateShopAnalytics:', error);
   }
 };

@@ -5,32 +5,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, AreaChart, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ArrowUpRight, DollarSign, ShoppingCart, Store, Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-// Mock data for charts
-const salesData = [
-  { month: 'Jan', totalSales: 6500, totalOrders: 120 },
-  { month: 'Feb', totalSales: 8900, totalOrders: 150 },
-  { month: 'Mar', totalSales: 7200, totalOrders: 135 },
-  { month: 'Apr', totalSales: 9800, totalOrders: 170 },
-  { month: 'May', totalSales: 11300, totalOrders: 190 },
-  { month: 'Jun', totalSales: 10500, totalOrders: 180 },
-];
-
-const shopsData = [
-  { name: 'Electronics Hub', sales: 28500, orders: 450, profit: 9800 },
-  { name: 'Fashion Trends', sales: 19200, orders: 380, profit: 6400 },
-  { name: 'Home Essentials', sales: 15800, orders: 320, profit: 5300 },
-];
+import { useDashboardAnalytics } from '@/hooks/use-dashboard-analytics';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const ManagementDashboard = () => {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('overview');
+  const { analytics, isLoading, refetch, seedData } = useDashboardAnalytics();
+  const { toast } = useToast();
+
+  const handleRefresh = () => {
+    toast({
+      title: "Refreshing data",
+      description: "Dashboard data is being updated...",
+    });
+    refetch();
+  };
 
   return (
     <div className="flex-1 space-y-4 p-3 md:p-8 pt-4 md:pt-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isLoading}
+          >
+            Refresh
+          </Button>
+          {import.meta.env.DEV && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={seedData} 
+              disabled={isLoading}
+            >
+              Seed Data
+            </Button>
+          )}
           <span className="text-xs md:text-sm text-muted-foreground">
             Last updated: {new Date().toLocaleDateString()}
           </span>
@@ -45,7 +60,9 @@ const ManagementDashboard = () => {
             <DollarSign className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-lg md:text-2xl font-bold">$54,200</div>
+            <div className="text-lg md:text-2xl font-bold">
+              ${isLoading ? '...' : analytics?.totalRevenue.toLocaleString()}
+            </div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               <span className="text-green-500 flex items-center">
                 +12.5% <ArrowUpRight className="h-2 w-2 md:h-3 md:w-3 ml-1" />
@@ -60,7 +77,9 @@ const ManagementDashboard = () => {
             <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-lg md:text-2xl font-bold">1,150</div>
+            <div className="text-lg md:text-2xl font-bold">
+              {isLoading ? '...' : analytics?.totalOrders.toLocaleString()}
+            </div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               <span className="text-green-500 flex items-center">
                 +8.2% <ArrowUpRight className="h-2 w-2 md:h-3 md:w-3 ml-1" />
@@ -75,7 +94,9 @@ const ManagementDashboard = () => {
             <Store className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-lg md:text-2xl font-bold">3</div>
+            <div className="text-lg md:text-2xl font-bold">
+              {isLoading ? '...' : analytics?.totalShops}
+            </div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               <span className="text-purple-500 flex items-center">
                 +1 <ArrowUpRight className="h-2 w-2 md:h-3 md:w-3 ml-1" />
@@ -90,7 +111,9 @@ const ManagementDashboard = () => {
             <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="text-lg md:text-2xl font-bold">573</div>
+            <div className="text-lg md:text-2xl font-bold">
+              {isLoading ? '...' : analytics?.totalUsers}
+            </div>
             <p className="text-[10px] md:text-xs text-muted-foreground">
               <span className="text-green-500 flex items-center">
                 +32 <ArrowUpRight className="h-2 w-2 md:h-3 md:w-3 ml-1" />
@@ -118,7 +141,7 @@ const ManagementDashboard = () => {
             <CardContent className="h-64 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={salesData}
+                  data={analytics?.monthlySalesData}
                   margin={{ 
                     top: 20, 
                     right: isMobile ? 10 : 30, 
@@ -161,7 +184,7 @@ const ManagementDashboard = () => {
             <CardContent className="h-64 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={salesData}
+                  data={analytics?.monthlySalesData}
                   margin={{ 
                     top: 20, 
                     right: isMobile ? 10 : 30, 
@@ -187,7 +210,7 @@ const ManagementDashboard = () => {
         
         <TabsContent value="shops" className="space-y-4">
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {shopsData.map((shop) => (
+            {analytics?.shopPerformance.map((shop) => (
               <Card key={shop.name}>
                 <CardHeader className="pb-2 md:pb-4">
                   <CardTitle className="text-base md:text-lg">{shop.name}</CardTitle>

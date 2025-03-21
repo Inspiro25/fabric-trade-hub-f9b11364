@@ -11,5 +11,8 @@ export interface Shop {
   productIds: string[];
   isVerified: boolean;
   createdAt: string;
-  shopId?: string; // Added for admin access
+  shopId?: string; // For admin access
+  ownerName?: string; // Owner name
+  ownerEmail?: string; // Owner email
+  status?: 'pending' | 'active' | 'suspended'; // Shop status
 }
