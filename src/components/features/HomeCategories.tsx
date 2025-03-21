@@ -6,15 +6,21 @@ interface HomeCategoriesProps {
   categories: string[];
 }
 
+// Updated with more reliable image URLs
 const CategoryFallbackImages: Record<string, string> = {
-  'Men': 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=500&auto=format&fit=crop&q=60',
-  'Women': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop&q=60',
-  'Kids': 'https://images.unsplash.com/photo-1543702303-111dc7087e2b?w=500&auto=format&fit=crop&q=60',
-  'Footwear': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=60',
-  'Accessories': 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=500&auto=format&fit=crop&q=60',
-  'Beauty': 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&auto=format&fit=crop&q=60',
-  'Sportswear': 'https://images.unsplash.com/photo-1483721310020-03333e577078?w=500&auto=format&fit=crop&q=60',
-  'Home': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500&auto=format&fit=crop&q=60',
+  'Men': 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=300&auto=format&fit=crop&q=80',
+  'Women': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&auto=format&fit=crop&q=80',
+  'Kids': 'https://images.unsplash.com/photo-1543702303-111dc7087e2b?w=300&auto=format&fit=crop&q=80',
+  'Footwear': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&auto=format&fit=crop&q=80',
+  'Accessories': 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=300&auto=format&fit=crop&q=80',
+  'Beauty': 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&auto=format&fit=crop&q=80',
+  'Sportswear': 'https://images.unsplash.com/photo-1483721310020-03333e577078?w=300&auto=format&fit=crop&q=80',
+  'Home': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=300&auto=format&fit=crop&q=80',
+  // Add more fallback images for any additional categories
+  'Ethnic Wear': 'https://images.unsplash.com/photo-1583391733956-3772df1a232f?w=300&auto=format&fit=crop&q=80',
+  'Western Wear': 'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=300&auto=format&fit=crop&q=80',
+  'Watches': 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=300&auto=format&fit=crop&q=80',
+  'Jewelry': 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=300&auto=format&fit=crop&q=80',
 };
 
 const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories }) => {
@@ -25,13 +31,13 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories }) => {
   };
 
   const getCategoryImage = (category: string) => {
-    // If we have a fallback image for this category and either an error occurred or we want to prioritize the fallback
+    // Always use the fallback image if available
     if (CategoryFallbackImages[category]) {
       return CategoryFallbackImages[category];
     }
     
-    // Use Unsplash with a specific query that works better for fashion categories
-    return `https://source.unsplash.com/300x300/?${category.toLowerCase()},fashion`;
+    // If no direct fallback exists, try with a generic image for the category
+    return `https://source.unsplash.com/300x300/?${encodeURIComponent(category.toLowerCase())},fashion`;
   };
 
   return (
