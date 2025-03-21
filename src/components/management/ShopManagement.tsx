@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +9,7 @@ import ShopTabContent from './ShopTabContent';
 import ShopDialogs from './ShopDialogs';
 import { ShopFormValues } from './ShopForm';
 import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/supabase/shops';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();
@@ -24,15 +24,14 @@ const ShopManagement: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [shopToEdit, setShopToEdit] = useState<Shop | null>(null);
   const [activeTab, setActiveTab] = useState('all');
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadShops();
     
-    // Check if we should open the add shop dialog automatically
     const shouldOpenAddDialog = sessionStorage.getItem('openAddShopDialog');
     if (shouldOpenAddDialog === 'true') {
       setIsAddDialogOpen(true);
-      // Clear the flag to prevent reopening on refresh
       sessionStorage.removeItem('openAddShopDialog');
     }
   }, []);
@@ -85,7 +84,7 @@ const ShopManagement: React.FC = () => {
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
         status: data.status,
-        password: data.password, // Store password for shop admin login
+        password: data.password,
       };
       
       const shopId = await createShop(newShopData);
@@ -122,7 +121,6 @@ const ShopManagement: React.FC = () => {
     if (!shopToEdit) return;
     
     try {
-      // Only update password if a new one is provided
       const updateData: Partial<Shop> = {
         ...data,
         rating: shopToEdit.rating,
@@ -131,7 +129,6 @@ const ShopManagement: React.FC = () => {
         createdAt: shopToEdit.createdAt,
       };
       
-      // If password field is empty, remove it from the update data
       if (!data.password) {
         delete updateData.password;
       }
@@ -197,18 +194,19 @@ const ShopManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <ShopManagementHeader onAddShop={() => setIsAddDialogOpen(true)} />
+    <div className="flex-1 space-y-4 p-3 md:p-8 pt-6 max-w-full overflow-hidden">
+      <ShopManagementHeader onAddShop={() => setIsAddDialogOpen(true)} isMobile={isMobile} />
       
       <ShopFilters
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        isMobile={isMobile}
       />
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsContent value="all">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-hidden">
+        <TabsContent value="all" className="w-full overflow-hidden">
           <ShopTabContent
             title="All Shops"
             description="Manage all shops registered on the platform"
@@ -217,10 +215,11 @@ const ShopManagement: React.FC = () => {
             onEdit={handleEdit}
             onDelete={confirmDelete}
             tabValue="all"
+            isMobile={isMobile}
           />
         </TabsContent>
         
-        <TabsContent value="verified">
+        <TabsContent value="verified" className="w-full overflow-hidden">
           <ShopTabContent
             title="Verified Shops"
             description="Shops that have been verified by administrators"
@@ -230,10 +229,11 @@ const ShopManagement: React.FC = () => {
             onDelete={confirmDelete}
             tabValue="verified"
             filterCondition={(shop) => shop.isVerified}
+            isMobile={isMobile}
           />
         </TabsContent>
         
-        <TabsContent value="unverified">
+        <TabsContent value="unverified" className="w-full overflow-hidden">
           <ShopTabContent
             title="Unverified Shops"
             description="Shops pending verification by administrators"
@@ -243,6 +243,7 @@ const ShopManagement: React.FC = () => {
             onDelete={confirmDelete}
             tabValue="unverified"
             filterCondition={(shop) => !shop.isVerified}
+            isMobile={isMobile}
           />
         </TabsContent>
       </Tabs>
@@ -258,6 +259,7 @@ const ShopManagement: React.FC = () => {
         handleAddShop={handleAddShop}
         handleEditShop={handleEditShop}
         handleDeleteShop={handleDeleteShop}
+        isMobile={isMobile}
       />
     </div>
   );

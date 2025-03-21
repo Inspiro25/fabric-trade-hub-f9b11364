@@ -1,28 +1,31 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Store, PlusCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface ShopManagementHeaderProps {
   onAddShop: () => void;
+  isMobile?: boolean;
 }
 
-const ShopManagementHeader: React.FC<ShopManagementHeaderProps> = ({ onAddShop }) => {
+const ShopManagementHeader: React.FC<ShopManagementHeaderProps> = ({ 
+  onAddShop,
+  isMobile = false 
+}) => {
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Shop Management</h2>
-        <p className="text-muted-foreground mt-1">
-          Manage shops registered on the platform
+        <h2 className="text-xl md:text-3xl font-bold tracking-tight">Shop Management</h2>
+        <p className="text-sm text-muted-foreground">
+          Manage shop listings, verify new shops, and handle shop information
         </p>
       </div>
       <Button 
-        className="mt-4 md:mt-0 bg-purple-600 hover:bg-purple-700" 
         onClick={onAddShop}
-        size="lg"
+        className={isMobile ? "w-full justify-center mt-2" : ""}
       >
-        <PlusCircle className="mr-2 h-5 w-5" />
-        Add New Shop
+        <Plus className="mr-2 h-4 w-4" />
+        Add Shop
       </Button>
     </div>
   );

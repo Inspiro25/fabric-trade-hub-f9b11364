@@ -3,11 +3,6 @@ import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { DialogFooter } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -15,8 +10,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Shop } from '@/lib/shops/types';
 import {
   Select,
   SelectContent,
@@ -24,86 +22,90 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Shop } from '@/lib/shops';
+import { Checkbox } from '@/components/ui/checkbox';
 
-// Form schema for shop creation/editing
-export const shopFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  address: z.string().min(5, "Address must be at least 5 characters"),
-  logo: z.string().url("Must be a valid URL").or(z.string().length(0)).default(''),
-  coverImage: z.string().url("Must be a valid URL").or(z.string().length(0)).default(''),
+// Schema for form validation
+const formSchema = z.object({
+  name: z.string().min(2, 'Shop name must be at least 2 characters'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  address: z.string().min(5, 'Address must be at least 5 characters'),
+  logo: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  coverImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   isVerified: z.boolean().default(false),
-  ownerName: z.string().min(2, "Owner name must be at least 2 characters"),
-  ownerEmail: z.string().email("Must be a valid email address"),
+  shopId: z.string().min(4, 'Shop ID must be at least 4 characters'),
+  ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
+  ownerEmail: z.string().email('Must be a valid email'),
   status: z.enum(['pending', 'active', 'suspended']).default('pending'),
-  shopId: z.string().min(4, "Shop ID must be at least 4 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
 });
 
-export type ShopFormValues = z.infer<typeof shopFormSchema>;
+export type ShopFormValues = z.infer<typeof formSchema>;
 
 interface ShopFormProps {
-  initialData?: Shop | null;
-  onSubmit: (data: ShopFormValues) => void;
+  shop?: Shop;
+  onSubmit: (data: ShopFormValues) => Promise<void>;
   onCancel: () => void;
-  formTitle: string;
-  submitLabel: string;
+  isMobile?: boolean;
 }
 
-const ShopForm: React.FC<ShopFormProps> = ({
-  initialData,
-  onSubmit,
+export const ShopForm: React.FC<ShopFormProps> = ({ 
+  shop, 
+  onSubmit, 
   onCancel,
-  formTitle,
-  submitLabel,
+  isMobile = false
 }) => {
   const form = useForm<ShopFormValues>({
-    resolver: zodResolver(shopFormSchema),
-    defaultValues: initialData ? {
-      name: initialData.name,
-      description: initialData.description,
-      address: initialData.address,
-      logo: initialData.logo,
-      coverImage: initialData.coverImage,
-      isVerified: initialData.isVerified,
-      ownerName: initialData.ownerName || '',
-      ownerEmail: initialData.ownerEmail || '',
-      status: (initialData.status as any) || 'pending',
-      shopId: initialData.shopId || '',
-      password: '', // We don't display the existing password for security reasons
-    } : {
-      name: '',
-      description: '',
-      address: '',
-      logo: '/placeholder.svg',
-      coverImage: '/placeholder.svg',
-      isVerified: false,
-      ownerName: '',
-      ownerEmail: '',
-      status: 'pending',
-      shopId: `shop-${Math.floor(Math.random() * 10000)}`,
-      password: '',
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: shop?.name || '',
+      description: shop?.description || '',
+      address: shop?.address || '',
+      logo: shop?.logo || '',
+      coverImage: shop?.coverImage || '',
+      isVerified: shop?.isVerified || false,
+      shopId: shop?.shopId || '',
+      ownerName: shop?.ownerName || '',
+      ownerEmail: shop?.ownerEmail || '',
+      status: shop?.status || 'pending',
+      password: '',  // Don't pre-fill password
     },
   });
+
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Shop Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter shop name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
+        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Shop Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter shop name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="shopId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Shop ID (for login)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter unique shop ID" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
           name="description"
@@ -111,17 +113,13 @@ const ShopForm: React.FC<ShopFormProps> = ({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Enter shop description" 
-                  className="min-h-[100px]" 
-                  {...field} 
-                />
+                <Textarea placeholder="Enter shop description" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="address"
@@ -135,8 +133,38 @@ const ShopForm: React.FC<ShopFormProps> = ({
             </FormItem>
           )}
         />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
+          <FormField
+            control={form.control}
+            name="ownerName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Owner Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter owner name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="ownerEmail"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Owner Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter owner email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
           <FormField
             control={form.control}
             name="logo"
@@ -150,7 +178,7 @@ const ShopForm: React.FC<ShopFormProps> = ({
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="coverImage"
@@ -165,111 +193,49 @@ const ShopForm: React.FC<ShopFormProps> = ({
             )}
           />
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
           <FormField
             control={form.control}
-            name="ownerName"
+            name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Owner Name</FormLabel>
+                <FormLabel>{shop ? 'New Password (leave empty to keep current)' : 'Password'}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter owner name" {...field} />
+                  <Input type="password" placeholder={shop ? "Enter new password (optional)" : "Enter password"} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
-            name="ownerEmail"
+            name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Owner Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter owner email" type="email" {...field} />
-                </FormControl>
+                <FormLabel>Status</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="shopId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Shop ID</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Enter shop ID for login" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormDescription>
-                  Used for admin login to the shop portal
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{initialData ? 'New Password' : 'Password'}</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="password" 
-                    placeholder={initialData ? "Enter new password (leave empty to keep current)" : "Enter shop password"}
-                    {...field} 
-                  />
-                </FormControl>
-                {initialData && (
-                  <FormDescription>
-                    Leave empty to keep the current password
-                  </FormDescription>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Shop Status</FormLabel>
-              <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select shop status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Controls how this shop appears on the platform
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
         <FormField
           control={form.control}
           name="isVerified"
@@ -283,23 +249,23 @@ const ShopForm: React.FC<ShopFormProps> = ({
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>Verified Shop</FormLabel>
-                <FormDescription>
-                  Mark as a verified shop on the platform
-                </FormDescription>
+                <p className="text-sm text-muted-foreground">
+                  Mark this shop as verified by the platform
+                </p>
               </div>
             </FormItem>
           )}
         />
-        
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button type="submit">{submitLabel}</Button>
-        </DialogFooter>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : shop ? 'Update Shop' : 'Create Shop'}
+          </Button>
+        </div>
       </form>
     </Form>
   );
 };
-
-export default ShopForm;

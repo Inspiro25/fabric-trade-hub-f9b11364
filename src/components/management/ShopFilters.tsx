@@ -7,37 +7,42 @@ import { Search } from 'lucide-react';
 interface ShopFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  activeTab?: string;
-  setActiveTab?: (tab: string) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  isMobile?: boolean;
 }
 
 const ShopFilters: React.FC<ShopFiltersProps> = ({
   searchQuery,
   setSearchQuery,
-  activeTab = 'all',
-  setActiveTab = () => {},
+  activeTab,
+  setActiveTab,
+  isMobile = false
 }) => {
   return (
-    <>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className={isMobile ? "w-full overflow-x-auto" : ""}
+      >
+        <TabsList className={isMobile ? "w-full grid grid-cols-3" : ""}>
           <TabsTrigger value="all">All Shops</TabsTrigger>
-          <TabsTrigger value="verified">Verified Shops</TabsTrigger>
-          <TabsTrigger value="unverified">Unverified Shops</TabsTrigger>
+          <TabsTrigger value="verified">Verified</TabsTrigger>
+          <TabsTrigger value="unverified">Unverified</TabsTrigger>
         </TabsList>
-        
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input 
-            type="search" 
-            placeholder="Search shops..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1" 
-          />
-        </div>
       </Tabs>
-    </>
+      
+      <div className={`relative ${isMobile ? "w-full" : "w-[280px]"}`}>
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search shops..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+    </div>
   );
 };
 

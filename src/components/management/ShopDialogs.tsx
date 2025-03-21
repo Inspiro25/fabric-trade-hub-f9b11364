@@ -1,21 +1,31 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ShopForm, { ShopFormValues } from './ShopForm';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Shop } from '@/lib/shops/types';
+import { ShopForm, ShopFormValues } from './ShopForm';
 
 interface ShopDialogsProps {
   isAddDialogOpen: boolean;
-  setIsAddDialogOpen: (open: boolean) => void;
+  setIsAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isEditDialogOpen: boolean;
-  setIsEditDialogOpen: (open: boolean) => void;
+  setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   showDeleteDialog: boolean;
-  setShowDeleteDialog: (show: boolean) => void;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   shopToEdit: Shop | null;
   handleAddShop: (data: ShopFormValues) => Promise<void>;
   handleEditShop: (data: ShopFormValues) => Promise<void>;
   handleDeleteShop: () => Promise<void>;
+  isMobile?: boolean;
 }
 
 const ShopDialogs: React.FC<ShopDialogsProps> = ({
@@ -29,53 +39,61 @@ const ShopDialogs: React.FC<ShopDialogsProps> = ({
   handleAddShop,
   handleEditShop,
   handleDeleteShop,
+  isMobile = false
 }) => {
   return (
     <>
+      {/* Add Shop Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className={isMobile ? "w-[95vw] max-w-md p-4 max-h-[85vh] overflow-y-auto" : ""}>
           <DialogHeader>
             <DialogTitle>Add New Shop</DialogTitle>
-            <DialogDescription>
-              Add a new shop to the platform. Fill out all fields to continue.
-            </DialogDescription>
           </DialogHeader>
-          
-          <ShopForm 
+          <ShopForm
             onSubmit={handleAddShop}
             onCancel={() => setIsAddDialogOpen(false)}
-            formTitle="Add New Shop"
-            submitLabel="Create Shop"
+            isMobile={isMobile}
           />
         </DialogContent>
       </Dialog>
-      
+
+      {/* Edit Shop Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className={isMobile ? "w-[95vw] max-w-md p-4 max-h-[85vh] overflow-y-auto" : ""}>
           <DialogHeader>
             <DialogTitle>Edit Shop</DialogTitle>
-            <DialogDescription>
-              Update shop information. Fill out all fields to continue.
-            </DialogDescription>
           </DialogHeader>
-          
-          <ShopForm 
-            initialData={shopToEdit}
-            onSubmit={handleEditShop}
-            onCancel={() => setIsEditDialogOpen(false)}
-            formTitle="Edit Shop"
-            submitLabel="Update Shop"
-          />
+          {shopToEdit && (
+            <ShopForm
+              shop={shopToEdit}
+              onSubmit={handleEditShop}
+              onCancel={() => setIsEditDialogOpen(false)}
+              isMobile={isMobile}
+            />
+          )}
         </DialogContent>
       </Dialog>
-      
-      <DeleteConfirmationDialog 
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDeleteShop}
-        title="Confirm Deletion"
-        description="Are you sure you want to delete this shop? This action cannot be undone."
-      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className={isMobile ? "w-[95vw] max-w-md p-4" : ""}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this shop? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteShop}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
