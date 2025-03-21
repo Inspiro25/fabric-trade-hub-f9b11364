@@ -19,7 +19,8 @@ const Index = () => {
     topRatedProducts, 
     discountedProducts,
     isLoading, 
-    dataLoaded 
+    dataLoaded,
+    hasErrors
   } = useHomeData();
 
   useEffect(() => {
@@ -37,11 +38,19 @@ const Index = () => {
     }
   }, []);
 
-  // Show optimized loading state
+  // If there are errors, still render the basic UI with available data
+  if (hasErrors) {
+    console.error("Some queries encountered errors but we'll show what we can");
+  }
+
+  // Show optimized loading state - but with a fallback to display at least something
   if (isLoading && !dataLoaded.categories) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-kutuku-primary"></div>
+      <div className="min-h-screen">
+        <AppHeader />
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-kutuku-primary"></div>
+        </div>
       </div>
     );
   }
@@ -54,9 +63,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="pb-4">
         {/* Hero Banner Carousel */}
-        <Suspense fallback={<SectionLoading />}>
-          <HeroBanner />
-        </Suspense>
+        <HeroBanner />
         
         {/* Categories - will always show first because we load them first */}
         {dataLoaded.categories && <HomeCategories categories={categories} />}
@@ -67,7 +74,7 @@ const Index = () => {
         </Suspense>
         
         {/* New Arrivals Section - progressive loading */}
-        {dataLoaded.newArrivals && (
+        {dataLoaded.newArrivals && newArrivals.length > 0 && (
           <Suspense fallback={<SectionLoading />}>
             <ProductSection 
               title="New Arrivals"
@@ -78,7 +85,7 @@ const Index = () => {
         )}
         
         {/* Best Sellers Section - progressive loading */}
-        {dataLoaded.bestSellers && (
+        {dataLoaded.bestSellers && bestSellers.length > 0 && (
           <Suspense fallback={<SectionLoading />}>
             <ProductSection 
               title="Best Sellers"
@@ -89,7 +96,7 @@ const Index = () => {
         )}
         
         {/* Top Rated Products - lazy loaded */}
-        {dataLoaded.topRated && (
+        {dataLoaded.topRated && topRatedProducts.length > 0 && (
           <Suspense fallback={<SectionLoading />}>
             <ProductSection 
               title="Top Rated"
@@ -100,7 +107,7 @@ const Index = () => {
         )}
         
         {/* Discounted Products - lazy loaded */}
-        {dataLoaded.discounted && (
+        {dataLoaded.discounted && discountedProducts.length > 0 && (
           <Suspense fallback={<SectionLoading />}>
             <ProductSection 
               title="On Sale"
