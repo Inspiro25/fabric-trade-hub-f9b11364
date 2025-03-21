@@ -1,9 +1,9 @@
-
 import { User, UserCredential } from 'firebase/auth';
 import { db, doc, setDoc, getDoc, loginWithEmail, loginWithGoogle, loginWithFacebook, registerWithEmail, logoutUser, resetPassword } from '@/lib/firebase';
 import { UserProfile } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { formatPreferences } from '@/utils/dataHelpers';
 
 // Fetch user profile from Supabase
 export const fetchUserProfile = async (uid: string, currentUser: User | null): Promise<UserProfile | null> => {
@@ -47,7 +47,7 @@ export const fetchUserProfile = async (uid: string, currentUser: User | null): P
         email: userProfile.email,
         phone: userProfile.phone || undefined,
         address: userProfile.address || undefined,
-        preferences: userProfile.preferences || undefined,
+        preferences: formatPreferences(userProfile.preferences),
         avatarUrl: userProfile.avatar_url || undefined
       };
     }
@@ -65,7 +65,7 @@ export const fetchUserProfile = async (uid: string, currentUser: User | null): P
         email: userProfile?.email || (currentUser?.email || ''),
         phone: userProfile?.phone || undefined,
         address: userProfile?.address || undefined,
-        preferences: userProfile?.preferences || undefined,
+        preferences: formatPreferences(userProfile?.preferences),
         avatarUrl: userProfile?.avatar_url || undefined,
         savedAddresses: addresses.map(addr => ({
           id: addr.id,
@@ -106,7 +106,7 @@ export const updateUserProfile = async (
       email: data.email,
       phone: data.phone,
       address: data.address,
-      preferences: data.preferences,
+      preferences: data.preferences ? JSON.stringify(data.preferences) : undefined,
       avatar_url: data.avatarUrl
     };
     
