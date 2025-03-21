@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getShopById } from '@/lib/shops';
 import { getShopProducts } from '@/lib/shops';
 import { Product } from '@/lib/products';
-import { Store, Package, LogOut, Plus, Settings, ChevronLeft } from 'lucide-react';
+import { Store, Package, LogOut, Plus, Settings, ChevronLeft, Percent } from 'lucide-react';
 import ShopDetailsEditor from '@/components/admin/ShopDetailsEditor';
 import ProductsManager from '@/components/admin/ProductsManager';
+import OffersManager from '@/components/admin/OffersManager';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ const AdminDashboard = () => {
         
         setShop(shopData);
         
-        // Fetch shop products - now calling with only one argument which is valid after our fix
+        // Fetch shop products
         const productsData = await getShopProducts(adminShopId);
         setShopProducts(productsData);
       } catch (error) {
@@ -115,6 +117,10 @@ const AdminDashboard = () => {
               <Package className="h-4 w-4 mr-2" />
               Products
             </TabsTrigger>
+            <TabsTrigger value="offers" className="flex items-center">
+              <Percent className="h-4 w-4 mr-2" />
+              Offers
+            </TabsTrigger>
             <TabsTrigger value="shop" className="flex items-center">
               <Store className="h-4 w-4 mr-2" />
               Shop Details
@@ -127,6 +133,10 @@ const AdminDashboard = () => {
           
           <TabsContent value="products">
             <ProductsManager shopId={shop.id} products={shopProducts} />
+          </TabsContent>
+          
+          <TabsContent value="offers">
+            <OffersManager shopId={shop.id} />
           </TabsContent>
           
           <TabsContent value="shop">

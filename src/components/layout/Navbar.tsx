@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Store, Menu, X, Heart } from 'lucide-react';
+import { ShoppingCart, Search, Store, Menu, X, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
@@ -87,9 +87,9 @@ const Navbar = () => {
           {/* Desktop Actions */}
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" className="relative" asChild>
-              <Link to="/wishlist">
-                <Heart className="h-5 w-5" />
-                <span className="sr-only">Wishlist</span>
+              <Link to="/offers">
+                <Percent className="h-5 w-5" />
+                <span className="sr-only">Offers</span>
               </Link>
             </Button>
 

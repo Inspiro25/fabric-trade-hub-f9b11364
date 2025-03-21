@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import Search from "./pages/Search";
 import Wishlist from "./pages/Wishlist";
+import Offers from "./pages/Offers";
 import Notifications from "./pages/Notifications";
 import Orders from "./pages/Orders";
 import Tracking from "./pages/Tracking";
@@ -58,6 +60,7 @@ const AppContent = () => {
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="/search" element={<Search />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/offers" element={<Offers />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/tracking/:id" element={<Tracking />} />
@@ -85,6 +88,7 @@ const AppContent = () => {
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
           <Route path="/search" element={<Search />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/offers" element={<Offers />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/tracking/:id" element={<Tracking />} />

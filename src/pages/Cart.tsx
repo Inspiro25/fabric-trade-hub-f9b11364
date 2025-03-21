@@ -1,13 +1,15 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, X, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Minus, Plus, X, ShoppingCart, ArrowRight, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { Product, mockProducts } from '@/lib/products';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { 
   Card,
   CardContent,
@@ -16,6 +18,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import CartToCheckout from '@/components/features/CartToCheckout';
+import ProductCard from '@/components/ui/ProductCard';
 
 // Mock cart items for demonstration
 const initialCartItems = [
@@ -55,6 +58,8 @@ const Cart = () => {
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useIsMobile();
+  const { wishlist, removeFromWishlist } = useWishlist();
+  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   
   const subtotal = cartItems.reduce((total, item) => total + (item.product.salePrice || item.product.price) * item.quantity, 0);
   const discount = isPromoApplied ? subtotal * 0.1 : 0; // 10% discount for demo
@@ -68,6 +73,15 @@ const Cart = () => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Load wishlist products
+  useEffect(() => {
+    // Filter mockProducts based on wishlist IDs
+    const productsInWishlist = mockProducts.filter(product => 
+      wishlist.includes(product.id)
+    );
+    setWishlistProducts(productsInWishlist);
+  }, [wishlist]);
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -88,6 +102,28 @@ const Cart = () => {
       toast.success('Promo code applied successfully!');
     } else {
       toast.error('Invalid promo code');
+    }
+  };
+
+  const handleMoveToCart = (product: Product) => {
+    // Check if product already in cart
+    const isInCart = cartItems.some(item => item.id === product.id);
+    
+    if (!isInCart) {
+      // Add to cart with default first color and size
+      const newItem = {
+        id: product.id,
+        product: product,
+        quantity: 1,
+        color: product.colors[0],
+        size: product.sizes[0]
+      };
+      
+      setCartItems(prev => [...prev, newItem]);
+      removeFromWishlist(product.id);
+      toast.success(`${product.name} moved to cart`);
+    } else {
+      toast.info(`${product.name} is already in your cart`);
     }
   };
 
@@ -195,6 +231,41 @@ const Cart = () => {
                     </CardFooter>
                   </Card>
                 </div>
+                
+                {/* Wishlist Section */}
+                <div className={`transition-all duration-500 delay-150 mt-4 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+                  <Card className="overflow-hidden border-none shadow-md">
+                    <CardHeader className="bg-gradient-to-r from-[#FFF0EA] to-[#FFEDDE] p-3">
+                      <CardTitle className="text-base font-medium text-gray-800 flex items-center">
+                        <Heart className="w-4 h-4 mr-2 text-red-500" />
+                        Your Wishlist ({wishlistProducts.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3">
+                      {wishlistProducts.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-muted-foreground">Your wishlist is empty</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                          {wishlistProducts.map((product) => (
+                            <div key={product.id} className="relative group">
+                              <ProductCard product={product} variant="compact" />
+                              <Button 
+                                size="sm" 
+                                className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 text-xs bg-kutuku-primary hover:bg-kutuku-secondary"
+                                onClick={() => handleMoveToCart(product)}
+                              >
+                                <ShoppingCart className="w-3 h-3 mr-1" />
+                                Add to Cart
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
               
               {/* Order Summary */}
@@ -296,4 +367,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
