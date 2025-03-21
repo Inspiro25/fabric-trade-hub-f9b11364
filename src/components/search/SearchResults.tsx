@@ -1,9 +1,17 @@
-
 import React from 'react';
 import { Loader2, RefreshCw, ListFilter, Grid, LayoutGrid } from 'lucide-react';
 import SearchProductCard, { SearchPageProduct } from './SearchProductCard';
 import { Button } from '@/components/ui/button';
-import { Pagination } from '@/components/ui/pagination';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationFirst,
+  PaginationLast,
+} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -95,7 +103,6 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     );
   }
   
-  // Calculate total pages
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   
   return (
@@ -165,33 +172,33 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       {totalPages > 1 && (
         <div className="flex justify-center pt-6">
           <Pagination>
-            <Pagination.Content>
-              <Pagination.Item>
-                <Pagination.First onClick={() => onPageChange(1)} />
-              </Pagination.Item>
-              <Pagination.Item>
-                <Pagination.Previous onClick={() => onPageChange(Math.max(1, currentPage - 1))} />
-              </Pagination.Item>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationFirst onClick={() => onPageChange(1)} />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationPrevious onClick={() => onPageChange(Math.max(1, currentPage - 1))} />
+              </PaginationItem>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 const pageNum = i + 1;
                 return (
-                  <Pagination.Item key={pageNum}>
-                    <Pagination.Link 
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink 
                       isActive={pageNum === currentPage}
                       onClick={() => onPageChange(pageNum)}
                     >
                       {pageNum}
-                    </Pagination.Link>
-                  </Pagination.Item>
+                    </PaginationLink>
+                  </PaginationItem>
                 );
               })}
-              <Pagination.Item>
-                <Pagination.Next onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} />
-              </Pagination.Item>
-              <Pagination.Item>
-                <Pagination.Last onClick={() => onPageChange(totalPages)} />
-              </Pagination.Item>
-            </Pagination.Content>
+              <PaginationItem>
+                <PaginationNext onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLast onClick={() => onPageChange(totalPages)} />
+              </PaginationItem>
+            </PaginationContent>
           </Pagination>
         </div>
       )}
