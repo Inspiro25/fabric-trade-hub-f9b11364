@@ -84,20 +84,12 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
         "partner-request"
       );
       
-      if (notificationSent) {
-        toast({
-          title: "Request Submitted",
-          description: "Your partner request has been successfully submitted. Our team will contact you soon.",
-        });
-        form.reset();
-        onSuccess();
-      } else {
-        toast({
-          title: "Partial Success",
-          description: "Your request was saved but we couldn't notify our team. We'll still review your application.",
-        });
-        onSuccess();
-      }
+      toast({
+        title: "Request Submitted",
+        description: "Your partner request has been successfully submitted. Our team will contact you soon.",
+      });
+      form.reset();
+      onSuccess();
     } catch (error) {
       console.error("Error sending partner request:", error);
       toast({

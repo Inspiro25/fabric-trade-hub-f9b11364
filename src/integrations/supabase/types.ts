@@ -304,6 +304,36 @@ export type Database = {
           },
         ]
       }
+      partner_requests: {
+        Row: {
+          business_name: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          mobile_number: string
+          status: string
+        }
+        Insert: {
+          business_name: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          mobile_number: string
+          status?: string
+        }
+        Update: {
+          business_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          mobile_number?: string
+          status?: string
+        }
+        Relationships: []
+      }
       platform_analytics: {
         Row: {
           created_at: string | null
