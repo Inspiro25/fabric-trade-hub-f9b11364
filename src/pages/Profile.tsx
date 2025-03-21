@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft, User, Camera } from 'lucide-react';
+import { ArrowLeft, User, Camera, Store } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Profile = () => {
@@ -62,6 +62,18 @@ const Profile = () => {
           </div>
           <h2 className="text-lg font-medium">{currentUser?.displayName || "Guest User"}</h2>
           <p className="text-sm text-gray-500">{currentUser?.email || ""}</p>
+        </div>
+        
+        {/* Shop Login Button */}
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            className="w-full flex justify-center items-center gap-2" 
+            onClick={() => navigate('/admin/login')}
+          >
+            <Store size={16} />
+            Shop Login
+          </Button>
         </div>
         
         <Card>

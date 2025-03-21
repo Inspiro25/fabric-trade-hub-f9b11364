@@ -16,6 +16,7 @@ import {
   Heart,
   HelpCircle,
   Settings,
+  Store,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -54,6 +55,11 @@ const SettingsMenu = () => {
       name: 'Settings',
       icon: <Settings size={16} />,
       link: '/settings',
+    },
+    {
+      name: 'Shop Login',
+      icon: <Store size={16} />,
+      link: '/admin/login',
     },
   ];
 
