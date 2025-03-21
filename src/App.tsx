@@ -18,6 +18,9 @@ import Wishlist from "./pages/Wishlist";
 import Notifications from "./pages/Notifications";
 import Orders from "./pages/Orders";
 import Tracking from "./pages/Tracking";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import Help from "./pages/Help";
 import { lazy, Suspense } from "react";
 import MobileAppLayout from "./components/features/MobileAppLayout";
 import { useIsMobile } from "./hooks/use-mobile";
@@ -49,6 +52,9 @@ const AppContent = () => {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/tracking/:id" element={<Tracking />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/help" element={<Help />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
             <Route path="*" element={<NotFound />} />
@@ -66,6 +72,9 @@ const AppContent = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/tracking/:id" element={<Tracking />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/help" element={<Help />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
           <Route path="*" element={<NotFound />} />
