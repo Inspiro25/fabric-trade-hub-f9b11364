@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -16,7 +15,6 @@ const Checkout = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Mock cart data - In a real app, this would come from a cart context/store
   const [cart] = useState({
     items: [
       { id: 'p1', name: 'Premium Cotton T-Shirt', quantity: 2, price: 29.99 },
@@ -79,26 +77,41 @@ const Checkout = () => {
       paymentButton.id = 'razorpay-container';
       document.body.appendChild(paymentButton);
       
-      const root = document.getElementById('razorpay-container');
-      if (root) {
-        const btn = document.createElement('button');
-        btn.id = 'razorpay-btn';
-        btn.style.display = 'none';
-        root.appendChild(btn);
-        
-        const button = new PaymentButton({
-          amount: cart.total,
-          onSuccess: handlePaymentSuccess,
-          customerInfo: {
+      const PaymentButtonProps = {
+        amount: cart.total,
+        onSuccess: handlePaymentSuccess,
+        customerInfo: {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          phone: customerInfo.phone
+        }
+      };
+      
+      import('@/lib/razorpay').then(({ initializeRazorpay }) => {
+        initializeRazorpay({
+          amount: cart.total * 100, // Convert to paise
+          currency: 'INR',
+          name: 'Fashion Store',
+          description: 'Payment for your order',
+          image: '/logo.png',
+          prefill: {
             name: customerInfo.name,
             email: customerInfo.email,
-            phone: customerInfo.phone
-          }
+            contact: customerInfo.phone,
+          },
+          theme: {
+            color: '#3B82F6',
+          },
+          handler: (response) => {
+            handlePaymentSuccess(response);
+          },
+          modal: {
+            ondismiss: () => {
+              toast("Payment cancelled");
+            },
+          },
         });
-        
-        // Trigger the payment
-        button.props.onClick();
-      }
+      });
     });
   };
   
