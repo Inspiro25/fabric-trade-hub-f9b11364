@@ -22,7 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from '@/contexts/AuthContext';
 
 const SettingsMenu = () => {
-  const { user, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   
   const menuItems = [
     {
@@ -66,9 +66,9 @@ const SettingsMenu = () => {
       <SheetTrigger asChild>
         <button className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
           <Avatar className="h-7 w-7">
-            <AvatarImage src={user?.photoURL || ""} alt="Profile" />
+            <AvatarImage src={currentUser?.photoURL || ""} alt="Profile" />
             <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
-              {user?.displayName?.[0] || user?.email?.[0] || "U"}
+              {currentUser?.displayName?.[0] || currentUser?.email?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
         </button>
@@ -80,14 +80,14 @@ const SettingsMenu = () => {
           </SheetHeader>
           <div className="flex items-center gap-3">
             <Avatar className="h-11 w-11 border-2 border-white">
-              <AvatarImage src={user?.photoURL || ""} alt="Profile" />
+              <AvatarImage src={currentUser?.photoURL || ""} alt="Profile" />
               <AvatarFallback className="bg-blue-100 text-blue-600">
-                {user?.displayName?.[0] || user?.email?.[0] || "U"}
+                {currentUser?.displayName?.[0] || currentUser?.email?.[0] || "U"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">{user?.displayName || "Guest User"}</p>
-              <p className="text-xs text-gray-500">{user?.email || "Not signed in"}</p>
+              <p className="text-sm font-medium">{currentUser?.displayName || "Guest User"}</p>
+              <p className="text-xs text-gray-500">{currentUser?.email || "Not signed in"}</p>
             </div>
           </div>
         </div>
