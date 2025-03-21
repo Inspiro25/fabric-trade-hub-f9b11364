@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 const ManagementDashboard = () => {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState('overview');
-  const { analytics, isLoading, refetch, seedData } = useDashboardAnalytics();
+  const { analytics, isLoading, refetch } = useDashboardAnalytics();
   const { toast } = useToast();
 
   const handleRefresh = () => {
@@ -36,16 +35,6 @@ const ManagementDashboard = () => {
           >
             Refresh
           </Button>
-          {import.meta.env.DEV && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={seedData} 
-              disabled={isLoading}
-            >
-              Seed Data
-            </Button>
-          )}
           <span className="text-xs md:text-sm text-muted-foreground">
             Last updated: {new Date().toLocaleDateString()}
           </span>
@@ -246,3 +235,4 @@ const ManagementDashboard = () => {
 };
 
 export default ManagementDashboard;
+

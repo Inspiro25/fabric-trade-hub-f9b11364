@@ -136,12 +136,6 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
       return null;
     }
     
-    // In a real app, you would save these credentials securely and send them to the shop owner
-    console.info('New shop created with credentials:', {
-      shopId: shopId,
-      password: `password${Math.floor(Math.random() * 10000)}` // This is just for demo
-    });
-    
     return data?.id || null;
   } catch (error) {
     console.error('Error creating shop:', error);

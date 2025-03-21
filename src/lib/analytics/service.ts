@@ -144,79 +144,19 @@ export const fetchDashboardAnalytics = async (): Promise<DashboardAnalytics> => 
       totalOrders: latestPlatformData.total_orders || 0,
       totalShops: shopCount || 0,
       totalUsers: userCount || 0,
-      monthlySalesData: formattedMonthlySales.length ? formattedMonthlySales : generateMockMonthlySalesData(),
-      shopPerformance: shopPerformance.length ? shopPerformance : generateMockShopPerformance()
+      monthlySalesData: formattedMonthlySales,
+      shopPerformance: shopPerformance
     };
   } catch (error) {
     console.error('Error in fetchDashboardAnalytics:', error);
-    // Return mock data as fallback
+    // Return minimal data as fallback
     return {
-      totalRevenue: 54200,
-      totalOrders: 1150,
-      totalShops: 3,
-      totalUsers: 573,
-      monthlySalesData: generateMockMonthlySalesData(),
-      shopPerformance: generateMockShopPerformance()
+      totalRevenue: 0,
+      totalOrders: 0,
+      totalShops: 0,
+      totalUsers: 0,
+      monthlySalesData: [],
+      shopPerformance: []
     };
-  }
-};
-
-// Generate mock monthly sales data for fallback
-const generateMockMonthlySalesData = (): MonthlySalesData[] => {
-  return [
-    { month: 'Jan', totalSales: 6500, totalOrders: 120 },
-    { month: 'Feb', totalSales: 8900, totalOrders: 150 },
-    { month: 'Mar', totalSales: 7200, totalOrders: 135 },
-    { month: 'Apr', totalSales: 9800, totalOrders: 170 },
-    { month: 'May', totalSales: 11300, totalOrders: 190 },
-    { month: 'Jun', totalSales: 10500, totalOrders: 180 },
-  ];
-};
-
-// Generate mock shop performance data for fallback
-const generateMockShopPerformance = (): ShopPerformance[] => {
-  return [
-    { name: 'Electronics Hub', sales: 28500, orders: 450, profit: 9800 },
-    { name: 'Fashion Trends', sales: 19200, orders: 380, profit: 6400 },
-    { name: 'Home Essentials', sales: 15800, orders: 320, profit: 5300 },
-  ];
-};
-
-// Function to seed initial analytics data (for testing/development)
-export const seedAnalyticsData = async (): Promise<void> => {
-  try {
-    // Check if we already have platform analytics data
-    const { count } = await supabase
-      .from('platform_analytics')
-      .select('*', { count: 'exact', head: true });
-    
-    // Only seed if we don't have any data
-    if (count === 0) {
-      // Generate 6 months of platform data
-      const platformData = Array.from({ length: 6 }).map((_, index) => {
-        const date = new Date();
-        date.setMonth(date.getMonth() - (5 - index));
-        
-        return {
-          date: date.toISOString().split('T')[0],
-          total_revenue: 5000 + Math.floor(Math.random() * 7000),
-          total_orders: 100 + Math.floor(Math.random() * 100),
-          new_users: 20 + Math.floor(Math.random() * 50),
-          new_shops: Math.floor(Math.random() * 3)
-        };
-      });
-      
-      const { error: platformError } = await supabase
-        .from('platform_analytics')
-        .insert(platformData);
-      
-      if (platformError) {
-        console.error('Error seeding platform analytics:', platformError);
-      }
-      
-      console.log('Seeded platform analytics data');
-    }
-  } catch (error) {
-    console.error('Error in seedAnalyticsData:', error);
   }
 };
