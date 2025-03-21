@@ -38,6 +38,12 @@ import ShopDetail from "./pages/ShopDetail";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 
+// Import new management components
+import ManagementLogin from "./pages/ManagementLogin";
+import DashboardLayout from "./components/management/DashboardLayout";
+import ManagementDashboard from "./pages/ManagementDashboard";
+import ManagementShops from "./pages/ManagementShops";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -72,9 +78,18 @@ const AppContent = () => {
             <Route path="/shop/:id" element={<ShopDetail />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
-            {/* Add new admin routes */}
+            {/* Add admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            {/* Add management portal routes */}
+            <Route path="/management/login" element={<ManagementLogin />} />
+            <Route path="/management" element={<DashboardLayout />}>
+              <Route path="dashboard" element={<ManagementDashboard />} />
+              <Route path="shops" element={<ManagementShops />} />
+              <Route path="analytics" element={<ManagementDashboard />} />
+              <Route path="users" element={<ManagementDashboard />} />
+              <Route path="settings" element={<ManagementDashboard />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </MobileAppLayout>
@@ -100,9 +115,18 @@ const AppContent = () => {
           <Route path="/shop/:id" element={<ShopDetail />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
-          {/* Add new admin routes */}
+          {/* Add admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          {/* Add management portal routes */}
+          <Route path="/management/login" element={<ManagementLogin />} />
+          <Route path="/management" element={<DashboardLayout />}>
+            <Route path="dashboard" element={<ManagementDashboard />} />
+            <Route path="shops" element={<ManagementShops />} />
+            <Route path="analytics" element={<ManagementDashboard />} />
+            <Route path="users" element={<ManagementDashboard />} />
+            <Route path="settings" element={<ManagementDashboard />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}
