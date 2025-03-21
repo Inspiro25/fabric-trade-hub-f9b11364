@@ -10,13 +10,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Store } from 'lucide-react';
-import { fetchShops } from '@/lib/shops';
+import { fetchShops, getShopById } from '@/lib/supabase/shops';
 import PartnerRequestDialog from '@/components/management/PartnerRequestDialog';
 
 // Validation schema
 const formSchema = z.object({
   shopId: z.string().min(1, "Shop ID is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,6 +32,7 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isPartnerDialogOpen, setIsPartnerDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -42,35 +43,15 @@ const AdminLogin = () => {
   });
 
   const onSubmit = async (data: FormValues) => {
-    // First check against hard-coded credentials
-    const validCredentials = ADMIN_CREDENTIALS.find(
-      cred => cred.shopId === data.shopId && cred.password === data.password
-    );
-
-    if (validCredentials) {
-      // Store the shop ID in session storage for admin session
-      sessionStorage.setItem('adminShopId', data.shopId);
-      toast({
-        title: "Login successful",
-        description: "Welcome to your admin panel",
-        duration: 3000,
-      });
-      navigate('/admin/dashboard');
-      return;
-    }
-
-    // If not found in hard-coded credentials, check against shops from the database
+    setIsLoading(true);
     try {
-      const shops = await fetchShops();
-      const validShop = shops.find(shop => 
-        shop.shopId === data.shopId && 
-        // Check if shop has a password stored, otherwise use the legacy fallback
-        (shop.password 
-          ? shop.password === data.password 
-          : `password${data.shopId.split('-')[1]}` === data.password)
+      // First check against hard-coded credentials
+      const validCredentials = ADMIN_CREDENTIALS.find(
+        cred => cred.shopId === data.shopId && cred.password === data.password
       );
-      
-      if (validShop) {
+
+      if (validCredentials) {
+        // Store the shop ID in session storage for admin session
         sessionStorage.setItem('adminShopId', data.shopId);
         toast({
           title: "Login successful",
@@ -78,8 +59,32 @@ const AdminLogin = () => {
           duration: 3000,
         });
         navigate('/admin/dashboard');
+        return;
+      }
+
+      // If not found in hard-coded credentials, check against shops from the database
+      // First, try to get the shop directly by shopId
+      const shops = await fetchShops();
+      const shop = shops.find(s => s.shopId === data.shopId);
+      
+      if (shop) {
+        console.log("Found shop:", shop);
+        // Verify the password - note we're now directly checking the password field
+        if (shop.password === data.password) {
+          sessionStorage.setItem('adminShopId', data.shopId);
+          toast({
+            title: "Login successful",
+            description: "Welcome to your admin panel",
+            duration: 3000,
+          });
+          navigate('/admin/dashboard');
+        } else {
+          // Password doesn't match
+          throw new Error('Invalid credentials');
+        }
       } else {
-        throw new Error('Invalid credentials');
+        // Shop not found
+        throw new Error('Shop not found');
       }
     } catch (error) {
       console.error('Login failed:', error);
@@ -89,6 +94,8 @@ const AdminLogin = () => {
         variant: "destructive",
         duration: 3000,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -154,9 +161,9 @@ const AdminLogin = () => {
                 )}
               />
               
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 <Lock className="mr-2 h-4 w-4" />
-                Login
+                {isLoading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
           </Form>
