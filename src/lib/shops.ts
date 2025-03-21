@@ -194,7 +194,8 @@ export const deleteShop = async (id: string): Promise<boolean> => {
 };
 
 // Function to get products for a shop
-export const getShopProducts = async (shopId: string, allProducts: Product[]): Promise<Product[]> => {
+// Modified to make the second parameter optional
+export const getShopProducts = async (shopId: string, allProducts?: Product[]): Promise<Product[]> => {
   try {
     const shop = await getShopById(shopId);
     if (!shop) return [];
@@ -226,15 +227,24 @@ export const getShopProducts = async (shopId: string, allProducts: Product[]): P
       });
     }
     
-    // Fallback to mock data if no products in database
-    return allProducts.filter(product => shop.productIds.includes(product.id));
+    // If allProducts was provided, use it for the fallback
+    if (allProducts && shop.productIds) {
+      return allProducts.filter(product => shop.productIds.includes(product.id));
+    }
+    
+    // Otherwise just return an empty array
+    return [];
   } catch (error) {
     console.error(`Error fetching products for shop ${shopId}:`, error);
     
-    // Fallback to local data
-    const shop = shops.find(s => s.id === shopId);
-    if (!shop) return [];
+    // Fallback to filtering by productIds if allProducts was provided
+    if (allProducts) {
+      const shop = shops.find(s => s.id === shopId);
+      if (shop && shop.productIds) {
+        return allProducts.filter(product => shop.productIds.includes(product.id));
+      }
+    }
     
-    return allProducts.filter(product => shop.productIds.includes(product.id));
+    return [];
   }
 };

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
@@ -34,10 +33,9 @@ const ShopDetail = () => {
         if (shopData) {
           setShop(shopData);
           
-          // Fetch products for this shop and resolve the Promise
+          // Fetch products for this shop - now calling with only one argument which is valid after our fix
           const productsData = await getShopProducts(id);
-          const resolvedProducts = Array.isArray(productsData) ? productsData : await productsData;
-          setShopProducts(resolvedProducts);
+          setShopProducts(productsData);
         }
       } catch (error) {
         console.error('Error fetching shop data:', error);
@@ -288,3 +286,4 @@ const ShopDetail = () => {
 };
 
 export default ShopDetail;
+

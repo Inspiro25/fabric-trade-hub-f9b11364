@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -40,11 +39,9 @@ const AdminDashboard = () => {
         
         setShop(shopData);
         
-        // Fetch shop products
+        // Fetch shop products - now calling with only one argument which is valid after our fix
         const productsData = await getShopProducts(adminShopId);
-        // Convert the Promise to an array of Products
-        const resolvedProducts = Array.isArray(productsData) ? productsData : await productsData;
-        setShopProducts(resolvedProducts);
+        setShopProducts(productsData);
       } catch (error) {
         console.error("Error fetching shop data:", error);
       } finally {
