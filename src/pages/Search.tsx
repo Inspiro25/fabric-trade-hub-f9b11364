@@ -40,7 +40,7 @@ const Search = () => {
   const initialFilters = {
     category: queryParams.get('category') || 'all',
     priceRange: queryParams.get('price') || 'all',
-    sort: isValidSortOption(sortParam) ? sortParam : 'relevance',
+    sort: isValidSortOption(sortParam) ? sortParam : 'relevance' as SortOption,
     inStock: queryParams.get('inStock') === 'true',
     onSale: queryParams.get('onSale') === 'true'
   };
