@@ -82,6 +82,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { CalendarIcon, CheckCircleIcon, Copy, Filter, Heart, Loader2, MoreVertical, Plus, Search as SearchIcon, Share2, ShoppingCart, SortAsc, SortDesc, X } from 'lucide-react';
 import { addDays, format } from "date-fns"
+import { Product as SearchProduct } from '@/lib/types/product';
 
 interface Product {
   id: string;
@@ -163,7 +164,7 @@ const Search = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(new Date())
 
-  const handleAddToCart = async (product: Product) => {
+  const handleAddToCart = async (product: SearchProduct) => {
     if (!currentUser) {
       setSelectedProduct(product);
       setIsDialogOpen(true);
@@ -188,7 +189,7 @@ const Search = () => {
     }
   };
 
-  const handleAddToWishlist = async (product: Product) => {
+  const handleAddToWishlist = async (product: SearchProduct) => {
     if (!currentUser) {
       setSelectedProduct(product);
       setIsDialogOpen(true);

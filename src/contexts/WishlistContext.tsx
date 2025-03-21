@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -8,11 +9,11 @@ import {
   removeFromWishlist as removeFromWishlistService,
   isInWishlist as checkIsInWishlist
 } from '@/services/wishlistService';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/types/product';
 
 interface WishlistContextType {
   wishlist: string[];
-  addToWishlist: (product: Product) => Promise<void>;
+  addToWishlist: (product: Product | any) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   isLoading: boolean;
@@ -64,7 +65,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  const addToWishlist = async (product: Product) => {
+  const addToWishlist = async (product: Product | any) => {
     try {
       if (wishlist.includes(product.id)) return;
       
