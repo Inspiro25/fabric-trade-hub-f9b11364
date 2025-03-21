@@ -90,8 +90,8 @@ export const fetchShops = async (): Promise<Shop[]> => {
   }
 };
 
-// Temporary local reference to shops
-let shops: Shop[] = [...mockShops];
+// Temporary local reference to shops - also export for direct access
+export let shops: Shop[] = [...mockShops];
 
 // Initialize shops from database
 (async () => {

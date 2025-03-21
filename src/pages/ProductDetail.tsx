@@ -19,13 +19,13 @@ import {
   StarHalf
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getProductById, getRelatedProducts } from '@/lib/products';
+import { getProductById, getRelatedProducts, Product } from '@/lib/products';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const product = id ? getProductById(id) : undefined;
-  const relatedProducts = product ? getRelatedProducts(product.id, product.category) : [];
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
@@ -33,29 +33,62 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    if (!product) {
-      // Product not found, redirect to 404
-      navigate('/not-found');
-      return;
-    }
+    const fetchProductData = async () => {
+      if (!id) {
+        navigate('/not-found');
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
+        const productData = await getProductById(id);
+        if (!productData) {
+          // Product not found, redirect to 404
+          navigate('/not-found');
+          return;
+        }
+        
+        setProduct(productData);
+        
+        // Initialize state with product data
+        setMainImage(productData.images[0]);
+        setSelectedColor(productData.colors[0]);
+        setSelectedSize(productData.sizes[0]);
+        
+        // Fetch related products
+        const relatedProductsData = await getRelatedProducts(productData.id, productData.category);
+        setRelatedProducts(relatedProductsData);
+        
+        // Simulate loading
+        const timer = setTimeout(() => {
+          setIsLoaded(true);
+          setIsLoading(false);
+        }, 100);
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+        
+        return () => clearTimeout(timer);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        setIsLoading(false);
+        navigate('/not-found');
+      }
+    };
     
-    // Initialize state with product data
-    setMainImage(product.images[0]);
-    setSelectedColor(product.colors[0]);
-    setSelectedSize(product.sizes[0]);
-    
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-    
-    // Scroll to top
-    window.scrollTo(0, 0);
-    
-    return () => clearTimeout(timer);
-  }, [product, navigate]);
+    fetchProductData();
+  }, [id, navigate]);
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   
   if (!product) {
     return null; // Will redirect in useEffect

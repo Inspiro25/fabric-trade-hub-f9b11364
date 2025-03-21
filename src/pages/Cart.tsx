@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Minus, Plus, X, ShoppingCart, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { products } from '@/lib/products';
+import { Product, mockProducts } from '@/lib/products';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Card,
@@ -21,32 +20,32 @@ import CartToCheckout from '@/components/features/CartToCheckout';
 // Mock cart items for demonstration
 const initialCartItems = [
   {
-    id: products[0].id,
-    product: products[0],
+    id: mockProducts[0].id,
+    product: mockProducts[0],
     quantity: 1,
-    color: products[0].colors[0],
-    size: products[0].sizes[1]
+    color: mockProducts[0].colors[0],
+    size: mockProducts[0].sizes[1]
   }, 
   {
-    id: products[1].id,
-    product: products[1],
+    id: mockProducts[1].id,
+    product: mockProducts[1],
     quantity: 2,
-    color: products[1].colors[1],
-    size: products[1].sizes[2]
+    color: mockProducts[1].colors[1],
+    size: mockProducts[1].sizes[2]
   },
   {
-    id: products[2].id,
-    product: products[2],
+    id: mockProducts[2].id,
+    product: mockProducts[2],
     quantity: 1,
-    color: products[2].colors[0],
-    size: products[2].sizes[0]
+    color: mockProducts[2].colors[0],
+    size: mockProducts[2].sizes[0]
   },
   {
-    id: products[3].id,
-    product: products[3],
+    id: mockProducts[3].id,
+    product: mockProducts[3],
     quantity: 3,
-    color: products[3].colors[1],
-    size: products[3].sizes[1]
+    color: mockProducts[3].colors[1],
+    size: mockProducts[3].sizes[1]
   }
 ];
 
@@ -297,3 +296,4 @@ const Cart = () => {
 };
 
 export default Cart;
+

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { products, Product } from '@/lib/products';
+import { Product, mockProducts } from '@/lib/products';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ui/ProductCard';
@@ -14,7 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/components/ui/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { getAllCategories } from '@/lib/products';
+
 const SEARCH_HISTORY_KEY = 'search_history';
+
 const Search = () => {
   // Get query params
   const location = useLocation();
@@ -57,7 +59,7 @@ const Search = () => {
     if (queryTerm) {
       performSearch(queryTerm);
     } else {
-      setSearchResults(products);
+      setSearchResults(mockProducts);
     }
   }, [queryTerm]);
 
@@ -83,14 +85,14 @@ const Search = () => {
       setSearchHistory(updatedHistory);
       localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updatedHistory));
     }
-    let results = term.trim() === '' ? products : products.filter(product => product.name.toLowerCase().includes(term.toLowerCase()) || product.description.toLowerCase().includes(term.toLowerCase()) || product.category.toLowerCase().includes(term.toLowerCase()) || product.tags.some(tag => tag.toLowerCase().includes(term.toLowerCase())));
+    let results = term.trim() === '' ? mockProducts : mockProducts.filter(product => product.name.toLowerCase().includes(term.toLowerCase()) || product.description.toLowerCase().includes(term.toLowerCase()) || product.category.toLowerCase().includes(term.toLowerCase()) || product.tags.some(tag => tag.toLowerCase().includes(term.toLowerCase())));
 
     // Apply any active filters to the results
     applyFilters(results);
     setIsSearching(false);
   };
   const applyFilters = (results = searchResults) => {
-    let filteredResults = results.length ? [...results] : searchTerm.trim() === '' ? [...products] : [];
+    let filteredResults = results.length ? [...results] : searchTerm.trim() === '' ? [...mockProducts] : [];
 
     // Filter by categories
     if (activeFilters.categories.length > 0) {

@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User } from 'firebase/auth';
+import { User, UserCredential } from 'firebase/auth';
 import { db, doc, setDoc, getDoc, auth, loginWithEmail, loginWithGoogle, loginWithFacebook, registerWithEmail, logoutUser, resetPassword } from '@/lib/firebase';
 import { toast } from '@/components/ui/use-toast';
 
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const userCredential = await loginWithEmail(email, password);
+      const userCredential: UserCredential = await loginWithEmail(email, password);
       
       // Fetch user profile after login
       await fetchUserProfile(userCredential.user.uid);
@@ -152,7 +152,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const userCredential = await registerWithEmail(email, password);
+      const userCredential: UserCredential = await registerWithEmail(email, password);
       
       // Create user profile in database
       const newUser: UserProfile = {
@@ -183,7 +183,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const loginWithGoogleProvider = async () => {
     try {
       setLoading(true);
-      const userCredential = await loginWithGoogle();
+      const userCredential: UserCredential = await loginWithGoogle();
       
       // Check if user profile exists, create if not
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const loginWithFacebookProvider = async () => {
     try {
       setLoading(true);
-      const userCredential = await loginWithFacebook();
+      const userCredential: UserCredential = await loginWithFacebook();
       
       // Check if user profile exists, create if not
       const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));

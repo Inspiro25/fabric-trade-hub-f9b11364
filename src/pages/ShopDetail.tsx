@@ -1,8 +1,8 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
-import { products } from '@/lib/products';
+import { Product } from '@/lib/products';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,32 +12,52 @@ import { formatDistanceToNow } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { Shop } from '@/lib/shops';
 
 const ShopDetail = () => {
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
   const { toast } = useToast();
   const [isFollowing, setIsFollowing] = useState(false);
-  
-  const shop = useMemo(() => {
-    if (!id) return null;
-    return getShopById(id);
-  }, [id]);
-  
-  const shopProducts = useMemo(() => {
-    if (!id) return [];
-    return getShopProducts(id, products);
-  }, [id]);
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [shopProducts, setShopProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchShopData = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      try {
+        const shopData = await getShopById(id);
+        if (shopData) {
+          setShop(shopData);
+          
+          // Fetch products for this shop
+          const productsData = await getShopProducts(id);
+          setShopProducts(productsData);
+        }
+      } catch (error) {
+        console.error('Error fetching shop data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchShopData();
+  }, [id]);
+  
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
-    toast({
-      title: isFollowing ? "Unfollowed shop" : "Following shop",
-      description: isFollowing 
-        ? `You are no longer following ${shop?.name}`
-        : `You are now following ${shop?.name}`,
-      duration: 3000,
-    });
+    if (shop) {
+      toast({
+        title: isFollowing ? "Unfollowed shop" : "Following shop",
+        description: isFollowing 
+          ? `You are no longer following ${shop.name}`
+          : `You are now following ${shop.name}`,
+        duration: 3000,
+      });
+    }
   };
 
   const handleShare = async () => {
@@ -69,6 +89,14 @@ const ShopDetail = () => {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!shop) {
     return (

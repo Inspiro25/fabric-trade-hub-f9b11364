@@ -1,4 +1,3 @@
-
 import { db, collection, getDocs, getDoc, doc, query, where, addDoc, updateDoc, deleteDoc } from '@/lib/firebase';
 
 export interface Product {
@@ -331,8 +330,8 @@ export const mockProducts: Product[] = [
   }
 ];
 
-// Local state to store products
-let products: Product[] = [...mockProducts];
+// Local state to store products - also export for components that need direct access
+export let products: Product[] = [...mockProducts];
 
 // Function to fetch all products from Firestore
 export const fetchProducts = async (): Promise<Product[]> => {

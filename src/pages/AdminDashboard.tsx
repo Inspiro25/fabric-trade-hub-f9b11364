@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getShopById } from '@/lib/shops';
 import { getShopProducts } from '@/lib/shops';
-import { products } from '@/lib/products';
+import { Product } from '@/lib/products';
 import { Store, Package, LogOut, Plus, Settings, ChevronLeft } from 'lucide-react';
 import ShopDetailsEditor from '@/components/admin/ShopDetailsEditor';
 import ProductsManager from '@/components/admin/ProductsManager';
@@ -15,37 +15,52 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [shopId, setShopId] = useState<string | null>(null);
   const [shop, setShop] = useState<any>(null);
-  const [shopProducts, setShopProducts] = useState<any[]>([]);
+  const [shopProducts, setShopProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const adminShopId = sessionStorage.getItem('adminShopId');
+    const fetchData = async () => {
+      // Check if user is logged in
+      const adminShopId = sessionStorage.getItem('adminShopId');
+      
+      if (!adminShopId) {
+        navigate('/admin/login');
+        return;
+      }
+      
+      setShopId(adminShopId);
+      
+      try {
+        // Fetch shop data
+        const shopData = await getShopById(adminShopId);
+        if (!shopData) {
+          navigate('/admin/login');
+          return;
+        }
+        
+        setShop(shopData);
+        
+        // Fetch shop products
+        const productsData = await getShopProducts(adminShopId);
+        setShopProducts(productsData);
+      } catch (error) {
+        console.error("Error fetching shop data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    if (!adminShopId) {
-      navigate('/admin/login');
-      return;
-    }
-    
-    setShopId(adminShopId);
-    
-    // Fetch shop data
-    const shopData = getShopById(adminShopId);
-    if (!shopData) {
-      navigate('/admin/login');
-      return;
-    }
-    
-    setShop(shopData);
-    
-    // Fetch shop products
-    const productsData = getShopProducts(adminShopId, products);
-    setShopProducts(productsData);
+    fetchData();
   }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('adminShopId');
     navigate('/admin/login');
   };
+
+  if (isLoading) {
+    return <div className="container mx-auto p-4">Loading...</div>;
+  }
 
   if (!shop) {
     return <div className="container mx-auto p-4">Loading...</div>;

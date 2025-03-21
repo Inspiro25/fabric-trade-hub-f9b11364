@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -70,10 +69,12 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
     try {
       // Convert string values to numbers
       const formattedData = {
-        ...data,
+        name: data.name,
+        description: data.description,
         price: Number(data.price),
         salePrice: data.salePrice && data.salePrice !== '' ? Number(data.salePrice) : undefined,
         stock: Number(data.stock),
+        category: data.category,
         shopId,
         images: [data.mainImage, ...additionalImages.filter(img => img.trim() !== '')],
         colors,
@@ -119,7 +120,6 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
     }
   };
 
-  // Helper functions for managing arrays
   const addColor = () => {
     if (newColor && !colors.includes(newColor)) {
       setColors([...colors, newColor]);
@@ -473,3 +473,4 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
 };
 
 export default ProductEditor;
+

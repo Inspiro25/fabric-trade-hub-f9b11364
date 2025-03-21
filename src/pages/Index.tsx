@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search } from 'lucide-react';
-import { getNewArrivals, getTrendingProducts, getAllCategories, getTopRatedProducts, getDiscountedProducts, getBestSellingProducts } from '@/lib/products';
+import { getNewArrivals, getTrendingProducts, getAllCategories, getTopRatedProducts, getDiscountedProducts, getBestSellingProducts, Product } from '@/lib/products';
 import ProductCard from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -10,14 +10,49 @@ import NotificationBadge from '@/components/features/NotificationBadge';
 import NotificationTest from '@/components/features/NotificationTest';
 
 const Index = () => {
-  const newArrivals = getNewArrivals();
-  const trendingProducts = getTrendingProducts();
-  const topRatedProducts = getTopRatedProducts();
-  const discountedProducts = getDiscountedProducts();
-  const bestSellers = getBestSellingProducts();
-  const categories = getAllCategories();
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [topRatedProducts, setTopRatedProducts] = useState<Product[]>([]);
+  const [discountedProducts, setDiscountedProducts] = useState<Product[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch all data in parallel
+        const [
+          newArrivalsData, 
+          trendingData, 
+          topRatedData, 
+          discountedData, 
+          bestSellersData,
+          categoriesData
+        ] = await Promise.all([
+          getNewArrivals(),
+          getTrendingProducts(),
+          getTopRatedProducts(),
+          getDiscountedProducts(),
+          getBestSellingProducts(),
+          getAllCategories()
+        ]);
+        
+        setNewArrivals(newArrivalsData);
+        setTrendingProducts(trendingData);
+        setTopRatedProducts(topRatedData);
+        setDiscountedProducts(discountedData);
+        setBestSellers(bestSellersData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+
     if (window.location.hash) {
       const id = window.location.hash.replace('#', '');
       const element = document.getElementById(id);
@@ -30,6 +65,15 @@ const Index = () => {
       window.scrollTo(0, 0);
     }
   }, []);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-16 bg-gray-50">
