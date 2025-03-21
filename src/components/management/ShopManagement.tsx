@@ -1,17 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { createShop, deleteShop, fetchShops, Shop, updateShop } from '@/lib/shops';
+import { TabsContent } from '@/components/ui/tabs';
+import { createShop, deleteShop, fetchShops, updateShop } from '@/lib/shops';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Search } from 'lucide-react';
-import ShopTable from './ShopTable';
-import ShopForm, { ShopFormValues } from './ShopForm';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { Shop } from '@/lib/shops/types';
 import { useNotifications } from '@/contexts/NotificationContext';
+import ShopManagementHeader from './ShopManagementHeader';
+import ShopFilters from './ShopFilters';
+import ShopTabContent from './ShopTabContent';
+import ShopDialogs from './ShopDialogs';
+import { ShopFormValues } from './ShopForm';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();
@@ -173,133 +171,62 @@ const ShopManagement: React.FC = () => {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Shop Management</h2>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add New Shop
-        </Button>
-      </div>
+      <ShopManagementHeader onAddShop={() => setIsAddDialogOpen(true)} />
       
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">All Shops</TabsTrigger>
-          <TabsTrigger value="verified">Verified Shops</TabsTrigger>
-          <TabsTrigger value="unverified">Unverified Shops</TabsTrigger>
-        </TabsList>
-        
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input 
-            type="search" 
-            placeholder="Search shops..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1" 
-          />
-        </div>
-        
-        <TabsContent value="all">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Shops</CardTitle>
-              <CardDescription>
-                Manage all shops registered on the platform
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ShopTable 
-                shops={filteredShops}
-                isLoading={isLoading}
-                onEdit={handleEdit}
-                onDelete={confirmDelete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="verified">
-          <Card>
-            <CardHeader>
-              <CardTitle>Verified Shops</CardTitle>
-              <CardDescription>
-                Shops that have been verified by administrators
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ShopTable 
-                shops={filteredShops.filter(shop => shop.isVerified)}
-                isLoading={isLoading}
-                onEdit={handleEdit}
-                onDelete={confirmDelete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="unverified">
-          <Card>
-            <CardHeader>
-              <CardTitle>Unverified Shops</CardTitle>
-              <CardDescription>
-                Shops pending verification by administrators
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ShopTable 
-                shops={filteredShops.filter(shop => !shop.isVerified)}
-                isLoading={isLoading}
-                onEdit={handleEdit}
-                onDelete={confirmDelete}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <ShopFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
       
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add New Shop</DialogTitle>
-            <DialogDescription>
-              Add a new shop to the platform. Fill out all fields to continue.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <ShopForm 
-            onSubmit={handleAddShop}
-            onCancel={() => setIsAddDialogOpen(false)}
-            formTitle="Add New Shop"
-            submitLabel="Create Shop"
-          />
-        </DialogContent>
-      </Dialog>
+      <TabsContent value="all">
+        <ShopTabContent
+          title="All Shops"
+          description="Manage all shops registered on the platform"
+          shops={filteredShops}
+          isLoading={isLoading}
+          onEdit={handleEdit}
+          onDelete={confirmDelete}
+          tabValue="all"
+        />
+      </TabsContent>
       
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Edit Shop</DialogTitle>
-            <DialogDescription>
-              Update shop information. Fill out all fields to continue.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <ShopForm 
-            initialData={shopToEdit}
-            onSubmit={handleEditShop}
-            onCancel={() => setIsEditDialogOpen(false)}
-            formTitle="Edit Shop"
-            submitLabel="Update Shop"
-          />
-        </DialogContent>
-      </Dialog>
+      <TabsContent value="verified">
+        <ShopTabContent
+          title="Verified Shops"
+          description="Shops that have been verified by administrators"
+          shops={filteredShops}
+          isLoading={isLoading}
+          onEdit={handleEdit}
+          onDelete={confirmDelete}
+          tabValue="verified"
+          filterCondition={(shop) => shop.isVerified}
+        />
+      </TabsContent>
       
-      <DeleteConfirmationDialog 
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onConfirm={handleDeleteShop}
-        title="Confirm Deletion"
-        description="Are you sure you want to delete this shop? This action cannot be undone."
+      <TabsContent value="unverified">
+        <ShopTabContent
+          title="Unverified Shops"
+          description="Shops pending verification by administrators"
+          shops={filteredShops}
+          isLoading={isLoading}
+          onEdit={handleEdit}
+          onDelete={confirmDelete}
+          tabValue="unverified"
+          filterCondition={(shop) => !shop.isVerified}
+        />
+      </TabsContent>
+      
+      <ShopDialogs
+        isAddDialogOpen={isAddDialogOpen}
+        setIsAddDialogOpen={setIsAddDialogOpen}
+        isEditDialogOpen={isEditDialogOpen}
+        setIsEditDialogOpen={setIsEditDialogOpen}
+        showDeleteDialog={showDeleteDialog}
+        setShowDeleteDialog={setShowDeleteDialog}
+        shopToEdit={shopToEdit}
+        handleAddShop={handleAddShop}
+        handleEditShop={handleEditShop}
+        handleDeleteShop={handleDeleteShop}
       />
     </div>
   );
