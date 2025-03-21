@@ -14,10 +14,12 @@ export const fetchShops = async (): Promise<Shop[]> => {
       throw error;
     }
     
+    if (!shops) return [];
+    
     return shops.map(shop => ({
-      id: shop.id,
-      name: shop.name,
-      description: shop.description,
+      id: shop.id || '',
+      name: shop.name || '',
+      description: shop.description || '',
       logo: shop.logo || '/placeholder.svg',
       coverImage: shop.cover_image || '/placeholder.svg',
       address: shop.address || '',
@@ -25,8 +27,8 @@ export const fetchShops = async (): Promise<Shop[]> => {
       reviewCount: shop.review_count || 0,
       productIds: [], // We'll fetch products separately
       isVerified: shop.is_verified || false,
-      createdAt: shop.created_at,
-      shopId: shop.shop_id,
+      createdAt: shop.created_at || '',
+      shopId: shop.shop_id || '',
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -48,10 +50,12 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       return undefined;
     }
     
+    if (!shop) return undefined;
+    
     return {
-      id: shop.id,
-      name: shop.name,
-      description: shop.description,
+      id: shop.id || '',
+      name: shop.name || '',
+      description: shop.description || '',
       logo: shop.logo || '/placeholder.svg',
       coverImage: shop.cover_image || '/placeholder.svg',
       address: shop.address || '',
@@ -59,8 +63,8 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       reviewCount: shop.review_count || 0,
       productIds: [], // We'll fetch products separately
       isVerified: shop.is_verified || false,
-      createdAt: shop.created_at,
-      shopId: shop.shop_id,
+      createdAt: shop.created_at || '',
+      shopId: shop.shop_id || '',
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
@@ -80,7 +84,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
         cover_image: shopData.coverImage,
         address: shopData.address,
         is_verified: shopData.isVerified,
-      })
+      } as any)
       .eq('id', id);
     
     if (error) {
@@ -99,7 +103,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
 export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | null> => {
   try {
     // Generate a simple shop ID
-    const shopId = `shop-${Math.floor(Math.random() * 10000)}`;
+    const shopId = shopData.shopId || `shop-${Math.floor(Math.random() * 10000)}`;
     
     const { data, error } = await supabase
       .from('shops')
@@ -111,7 +115,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         address: shopData.address,
         is_verified: shopData.isVerified,
         shop_id: shopId,
-      })
+      } as any)
       .select()
       .single();
     
@@ -126,7 +130,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
       password: `password${Math.floor(Math.random() * 10000)}` // This is just for demo
     });
     
-    return data.id;
+    return data?.id || null;
   } catch (error) {
     console.error('Error creating shop:', error);
     return null;

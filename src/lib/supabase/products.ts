@@ -7,25 +7,23 @@ export const fetchProducts = async (): Promise<Product[]> => {
   try {
     const { data: products, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        shops(*),
-        categories(*)
-      `);
+      .select('*');
     
     if (error) {
       console.error('Error fetching products:', error);
       throw error;
     }
     
+    if (!products) return [];
+    
     return products.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
+      id: product.id || '',
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
       salePrice: product.sale_price,
       images: product.images || [],
-      category: product.categories?.name || '',
+      category: product.category_id || '',
       colors: product.colors || [],
       sizes: product.sizes || [],
       isNew: product.is_new || false,
@@ -34,7 +32,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
       reviewCount: product.review_count || 0,
       stock: product.stock || 0,
       tags: product.tags || [],
-      shopId: product.shop_id,
+      shopId: product.shop_id || '',
     }));
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -47,11 +45,7 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
   try {
     const { data: product, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        shops(*),
-        categories(*)
-      `)
+      .select('*')
       .eq('id', id)
       .single();
     
@@ -60,14 +54,16 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
       return undefined;
     }
     
+    if (!product) return undefined;
+    
     return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
+      id: product.id || '',
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
       salePrice: product.sale_price,
       images: product.images || [],
-      category: product.categories?.name || '',
+      category: product.category_id || '',
       colors: product.colors || [],
       sizes: product.sizes || [],
       isNew: product.is_new || false,
@@ -76,7 +72,7 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
       reviewCount: product.review_count || 0,
       stock: product.stock || 0,
       tags: product.tags || [],
-      shopId: product.shop_id,
+      shopId: product.shop_id || '',
     };
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);
@@ -89,10 +85,7 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
   try {
     const { data: products, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        categories(*)
-      `)
+      .select('*')
       .eq('shop_id', shopId);
     
     if (error) {
@@ -100,14 +93,16 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
       return [];
     }
     
+    if (!products) return [];
+    
     return products.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
+      id: product.id || '',
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
       salePrice: product.sale_price,
       images: product.images || [],
-      category: product.categories?.name || '',
+      category: product.category_id || '',
       colors: product.colors || [],
       sizes: product.sizes || [],
       isNew: product.is_new || false,
@@ -116,7 +111,7 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
       reviewCount: product.review_count || 0,
       stock: product.stock || 0,
       tags: product.tags || [],
-      shopId: product.shop_id,
+      shopId: product.shop_id || '',
     }));
   } catch (error) {
     console.error(`Error fetching products for shop ${shopId}:`, error);
@@ -135,7 +130,7 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
         price: productData.price,
         sale_price: productData.salePrice,
         images: productData.images,
-        category_id: productData.category, // Assuming category is the category ID
+        category_id: productData.category,
         shop_id: productData.shopId,
         colors: productData.colors,
         sizes: productData.sizes,
@@ -143,7 +138,7 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
         is_trending: productData.isTrending,
         stock: productData.stock,
         tags: productData.tags,
-      })
+      } as any)
       .select()
       .single();
     
@@ -152,7 +147,7 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
       return null;
     }
     
-    return data.id;
+    return data?.id || null;
   } catch (error) {
     console.error('Error creating product:', error);
     return null;
@@ -170,14 +165,14 @@ export const updateProduct = async (id: string, productData: Partial<Product>): 
         price: productData.price,
         sale_price: productData.salePrice,
         images: productData.images,
-        category_id: productData.category, // Assuming category is the category ID
+        category_id: productData.category,
         colors: productData.colors,
         sizes: productData.sizes,
         is_new: productData.isNew,
         is_trending: productData.isTrending,
         stock: productData.stock,
         tags: productData.tags,
-      })
+      } as any)
       .eq('id', id);
     
     if (error) {
@@ -221,7 +216,7 @@ export const fetchCategories = async () => {
       
     if (error) throw error;
     
-    return data;
+    return data || [];
   } catch (error) {
     console.error('Error fetching categories:', error);
     return [];
