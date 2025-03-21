@@ -8,7 +8,7 @@ import { Heart, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Wishlist = () => {
-  const { wishlist, toggleWishlist } = useWishlist();
+  const { wishlist } = useWishlist();
   
   // Filter products to show only those in wishlist
   const wishlistItems = products.filter(product => wishlist.includes(product.id));
@@ -51,8 +51,6 @@ const Wishlist = () => {
               <ProductCard 
                 key={product.id} 
                 product={product} 
-                variant="compact" 
-                gridCols={2} 
               />
             ))}
           </div>

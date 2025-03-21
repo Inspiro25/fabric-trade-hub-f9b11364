@@ -7,19 +7,23 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { toast } from "sonner";
+import { Product } from '@/lib/products';
 
 interface ProductCardProps {
-  id: string;
-  name: string;
-  price: number;
+  id?: string;
+  name?: string;
+  price?: number;
   salePrice?: number;
-  image: string;
-  category: string;
+  image?: string;
+  category?: string;
   isNew?: boolean;
   isTrending?: boolean;
   layout?: 'vertical' | 'horizontal';
   rating?: number;
   reviewCount?: number;
+  product?: Product; // Add product prop
+  variant?: string;
+  gridCols?: number;
 }
 
 const ProductCard = ({
@@ -34,12 +38,25 @@ const ProductCard = ({
   layout = 'vertical',
   rating = 0,
   reviewCount = 0,
+  product,
 }: ProductCardProps) => {
+  // If a product object is provided, use its properties
+  const productId = product?.id || id || '';
+  const productName = product?.name || name || '';
+  const productPrice = product?.price || price || 0;
+  const productSalePrice = product?.salePrice || salePrice;
+  const productImage = product?.images?.[0] || image || '';
+  const productCategory = product?.category || category || '';
+  const productIsNew = product?.isNew || isNew;
+  const productIsTrending = product?.isTrending || isTrending;
+  const productRating = product?.rating || rating;
+  const productReviewCount = product?.reviewCount || reviewCount;
+
   const [isLoading, setIsLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const isMobile = useIsMobile();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const isFavorited = isInWishlist(id);
+  const isFavorited = isInWishlist(productId);
 
   const handleImageLoad = () => {
     setIsLoading(false);
@@ -47,21 +64,21 @@ const ProductCard = ({
 
   const toggleWishlist = () => {
     if (isFavorited) {
-      removeFromWishlist(id);
+      removeFromWishlist(productId);
       toast.info("Removed from wishlist");
     } else {
-      addToWishlist(id);
+      addToWishlist(productId);
       toast.success("Added to wishlist");
     }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log(`Added ${name} to cart`);
-    toast.success(`Added ${name} to cart`);
+    console.log(`Added ${productName} to cart`);
+    toast.success(`Added ${productName} to cart`);
   };
 
-  const discountPercentage = salePrice ? Math.round(((price - salePrice) / price) * 100) : 0;
+  const discountPercentage = productSalePrice ? Math.round(((productPrice - productSalePrice) / productPrice) * 100) : 0;
 
   // Mobile-friendly card (Flipkart/Amazon style)
   if (isMobile) {
@@ -69,11 +86,11 @@ const ProductCard = ({
       <div className="product-card-container animate-fade-in border rounded-lg overflow-hidden bg-white">
         {/* Product Image & Badges */}
         <div className="relative">
-          <Link to={`/product/${id}`}>
+          <Link to={`/product/${productId}`}>
             <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
               <img
-                src={image}
-                alt={name}
+                src={productImage}
+                alt={productName}
                 className="w-full h-full object-cover"
                 onLoad={handleImageLoad}
               />
@@ -94,7 +111,7 @@ const ProductCard = ({
           </button>
           
           {/* Discount badge - Flipkart style */}
-          {salePrice && (
+          {productSalePrice && (
             <div className="absolute bottom-0 left-0 bg-green-500 text-white px-1 py-0.5 text-xs font-bold">
               {discountPercentage}% OFF
             </div>
@@ -104,30 +121,30 @@ const ProductCard = ({
         {/* Product Info */}
         <div className="p-2">
           <div className="mb-0.5">
-            <span className="text-[10px] text-muted-foreground">{category}</span>
+            <span className="text-[10px] text-muted-foreground">{productCategory}</span>
           </div>
-          <Link to={`/product/${id}`} className="block mb-0.5">
-            <h3 className="font-medium text-xs line-clamp-1">{name}</h3>
+          <Link to={`/product/${productId}`} className="block mb-0.5">
+            <h3 className="font-medium text-xs line-clamp-1">{productName}</h3>
           </Link>
           
           {/* Rating - Flipkart style */}
-          {rating > 0 && (
+          {productRating > 0 && (
             <div className="flex items-center gap-1 mb-0.5">
               <div className="bg-green-600 text-white text-[10px] px-1 py-0.5 rounded flex items-center">
-                {rating.toFixed(1)} <Star className="h-2 w-2 ml-0.5 fill-white" />
+                {productRating.toFixed(1)} <Star className="h-2 w-2 ml-0.5 fill-white" />
               </div>
-              <span className="text-[10px] text-muted-foreground">({reviewCount})</span>
+              <span className="text-[10px] text-muted-foreground">({productReviewCount})</span>
             </div>
           )}
           
           <div className="flex items-center">
-            {salePrice ? (
+            {productSalePrice ? (
               <>
-                <span className="font-bold text-xs">₹{salePrice.toFixed(2)}</span>
-                <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+                <span className="font-bold text-xs">₹{productSalePrice.toFixed(2)}</span>
+                <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{productPrice.toFixed(2)}</span>
               </>
             ) : (
-              <span className="font-bold text-xs">₹{price.toFixed(2)}</span>
+              <span className="font-bold text-xs">₹{productPrice.toFixed(2)}</span>
             )}
           </div>
         </div>
@@ -146,11 +163,11 @@ const ProductCard = ({
         <div className="flex flex-col sm:flex-row">
           {/* Product Image & Badges */}
           <div className="relative overflow-hidden sm:w-36 md:w-48">
-            <Link to={`/product/${id}`}>
+            <Link to={`/product/${productId}`}>
               <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
                 <img
-                  src={image}
-                  alt={name}
+                  src={productImage}
+                  alt={productName}
                   className="w-full h-full object-cover"
                   onLoad={handleImageLoad}
                 />
@@ -159,17 +176,17 @@ const ProductCard = ({
             
             {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1">
-              {isNew && (
+              {productIsNew && (
                 <div className="category-chip bg-primary text-primary-foreground px-1.5 py-0.5 text-xs">
                   New
                 </div>
               )}
-              {isTrending && (
+              {productIsTrending && (
                 <div className="category-chip bg-accent text-accent-foreground px-1.5 py-0.5 text-xs">
                   Trending
                 </div>
               )}
-              {salePrice && (
+              {productSalePrice && (
                 <div className="category-chip bg-destructive text-destructive-foreground px-1.5 py-0.5 text-xs">
                   {discountPercentage}% Off
                 </div>
@@ -181,14 +198,14 @@ const ProductCard = ({
           <div className="p-3 flex flex-col justify-between flex-grow">
             <div>
               <div className="mb-0.5">
-                <span className="category-chip text-xs">{category}</span>
+                <span className="category-chip text-xs">{productCategory}</span>
               </div>
-              <Link to={`/product/${id}`} className="block mb-1 hover:text-primary transition-colors">
-                <h3 className="font-medium text-sm line-clamp-1">{name}</h3>
+              <Link to={`/product/${productId}`} className="block mb-1 hover:text-primary transition-colors">
+                <h3 className="font-medium text-sm line-clamp-1">{productName}</h3>
               </Link>
               
               {/* Rating */}
-              {rating > 0 && (
+              {productRating > 0 && (
                 <div className="flex items-center gap-1 mb-2">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
@@ -196,27 +213,27 @@ const ProductCard = ({
                         key={i} 
                         className={cn(
                           "h-3 w-3", 
-                          i < Math.floor(rating) 
+                          i < Math.floor(productRating) 
                             ? "text-yellow-400 fill-yellow-400" 
-                            : i < rating 
+                            : i < productRating 
                               ? "text-yellow-400 fill-yellow-400" 
                               : "text-gray-300"
                         )}
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-muted-foreground">({reviewCount})</span>
+                  <span className="text-xs text-muted-foreground">({productReviewCount})</span>
                 </div>
               )}
               
               <div className="flex items-center mb-2">
-                {salePrice ? (
+                {productSalePrice ? (
                   <>
-                    <span className="font-semibold text-sm">₹{salePrice.toFixed(2)}</span>
-                    <span className="ml-2 text-xs text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+                    <span className="font-semibold text-sm">₹{productSalePrice.toFixed(2)}</span>
+                    <span className="ml-2 text-xs text-muted-foreground line-through">₹{productPrice.toFixed(2)}</span>
                   </>
                 ) : (
-                  <span className="font-semibold text-sm">₹{price.toFixed(2)}</span>
+                  <span className="font-semibold text-sm">₹{productPrice.toFixed(2)}</span>
                 )}
               </div>
             </div>
@@ -226,7 +243,7 @@ const ProductCard = ({
                 className="flex-grow text-xs py-1 px-2 h-8"
                 onClick={(e) => {
                   e.preventDefault();
-                  console.log(`Added ${name} to cart`);
+                  console.log(`Added ${productName} to cart`);
                 }}
               >
                 <ShoppingCart className="h-3 w-3 mr-1" />
@@ -262,11 +279,11 @@ const ProductCard = ({
     >
       {/* Product Image & Badges */}
       <div className="relative overflow-hidden aspect-[3/4]">
-        <Link to={`/product/${id}`}>
+        <Link to={`/product/${productId}`}>
           <div className={cn("w-full h-full", isLoading && "image-loading")}>
             <img
-              src={image}
-              alt={name}
+              src={productImage}
+              alt={productName}
               className={cn(
                 "w-full h-full object-cover transition-transform duration-400 ease-apple",
                 isHovered && "scale-105"
@@ -278,17 +295,17 @@ const ProductCard = ({
         
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {isNew && (
+          {productIsNew && (
             <div className="category-chip bg-primary text-primary-foreground px-1.5 py-0.5 text-xs">
               New
             </div>
           )}
-          {isTrending && (
+          {productIsTrending && (
             <div className="category-chip bg-accent text-accent-foreground px-1.5 py-0.5 text-xs">
               Trending
             </div>
           )}
-          {salePrice && (
+          {productSalePrice && (
             <div className="category-chip bg-destructive text-destructive-foreground px-1.5 py-0.5 text-xs">
               {discountPercentage}% Off
             </div>
@@ -338,14 +355,14 @@ const ProductCard = ({
       {/* Product Info */}
       <div className="p-2">
         <div className="mb-0.5">
-          <span className="category-chip text-[10px]">{category}</span>
+          <span className="category-chip text-[10px]">{productCategory}</span>
         </div>
-        <Link to={`/product/${id}`} className="block mb-1 hover:text-primary transition-colors">
-          <h3 className="font-medium text-xs line-clamp-1">{name}</h3>
+        <Link to={`/product/${productId}`} className="block mb-1 hover:text-primary transition-colors">
+          <h3 className="font-medium text-xs line-clamp-1">{productName}</h3>
         </Link>
         
         {/* Rating */}
-        {rating > 0 && (
+        {productRating > 0 && (
           <div className="flex items-center gap-1 mb-1">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
@@ -353,27 +370,27 @@ const ProductCard = ({
                   key={i} 
                   className={cn(
                     "h-2 w-2", 
-                    i < Math.floor(rating) 
+                    i < Math.floor(productRating) 
                       ? "text-yellow-400 fill-yellow-400" 
-                      : i < rating 
+                      : i < productRating 
                         ? "text-yellow-400 fill-yellow-400" 
                         : "text-gray-300"
                   )}
                 />
               ))}
             </div>
-            <span className="text-[10px] text-muted-foreground">({reviewCount})</span>
+            <span className="text-[10px] text-muted-foreground">({productReviewCount})</span>
           </div>
         )}
         
         <div className="flex items-center">
-          {salePrice ? (
+          {productSalePrice ? (
             <>
-              <span className="font-semibold text-xs">₹{salePrice.toFixed(2)}</span>
-              <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{price.toFixed(2)}</span>
+              <span className="font-semibold text-xs">₹{productSalePrice.toFixed(2)}</span>
+              <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{productPrice.toFixed(2)}</span>
             </>
           ) : (
-            <span className="font-semibold text-xs">₹{price.toFixed(2)}</span>
+            <span className="font-semibold text-xs">₹{productPrice.toFixed(2)}</span>
           )}
         </div>
       </div>
