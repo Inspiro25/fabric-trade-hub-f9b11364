@@ -31,7 +31,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       shopId: shop?.shop_id || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      status: shop?.status || 'pending'
+      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending'
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -70,7 +70,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       shopId: shop?.shop_id || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      status: shop?.status || 'pending'
+      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending'
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
@@ -32,7 +33,7 @@ const Search = () => {
   const initialFilters = {
     category: queryParams.get('category') || 'all',
     priceRange: queryParams.get('price') || 'all',
-    sort: (queryParams.get('sort') as 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest') || 'relevance',
+    sort: (queryParams.get('sort') as SortOption) || 'relevance',
     inStock: queryParams.get('inStock') === 'true',
     onSale: queryParams.get('onSale') === 'true'
   };
