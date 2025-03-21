@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Store } from 'lucide-react';
+import { Lock, Store, HandshakeIcon } from 'lucide-react';
 import { fetchShops } from '@/lib/shops';
+import PartnerRequestDialog from '@/components/management/PartnerRequestDialog';
 
 // Validation schema
 const formSchema = z.object({
@@ -30,6 +31,7 @@ const ADMIN_CREDENTIALS = [
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isPartnerDialogOpen, setIsPartnerDialogOpen] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -90,6 +92,19 @@ const AdminLogin = () => {
     navigate('/management/login');
   };
 
+  const handlePartnerRequest = () => {
+    setIsPartnerDialogOpen(true);
+  };
+
+  const handlePartnerRequestSuccess = () => {
+    setIsPartnerDialogOpen(false);
+    toast({
+      title: "Request submitted",
+      description: "Thank you for your interest. Our team will contact you soon.",
+      duration: 5000,
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-10 max-w-md">
       <Card className="w-full">
@@ -143,7 +158,33 @@ const AdminLogin = () => {
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <p className="text-sm text-gray-500 text-center w-full">
+          <Button 
+            variant="outline" 
+            className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
+            onClick={handlePartnerRequest}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="mr-2"
+            >
+              <path d="M16.5 6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path>
+              <rect width="6" height="6" x="15" y="3" rx="2"></rect>
+              <path d="M10 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0v0"></path>
+              <path d="M10 14a4 4 0 0 0-4 4"></path>
+              <path d="M16 14a4 4 0 0 0-4 4"></path>
+              <path d="M15 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0v0"></path>
+            </svg>
+            Partner with Us
+          </Button>
+          <p className="text-sm text-gray-500 text-center w-full mt-2">
             Contact support if you've lost your credentials
           </p>
           <Button 
@@ -155,6 +196,12 @@ const AdminLogin = () => {
           </Button>
         </CardFooter>
       </Card>
+      
+      <PartnerRequestDialog 
+        open={isPartnerDialogOpen} 
+        onOpenChange={setIsPartnerDialogOpen}
+        onSuccess={handlePartnerRequestSuccess} 
+      />
     </div>
   );
 };
