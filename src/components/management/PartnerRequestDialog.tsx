@@ -59,6 +59,8 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
 
   const onSubmit = async (data: FormValues) => {
     try {
+      console.log("Submitting partner request:", data);
+      
       // Store in database
       const requestId = await createPartnerRequest({
         businessName: data.businessName,
@@ -66,6 +68,8 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
         mobileNumber: data.mobileNumber,
         email: data.email,
       });
+      
+      console.log("Request ID from createPartnerRequest:", requestId);
       
       if (!requestId) {
         toast({
@@ -83,6 +87,8 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
         `${data.businessName} (${data.contactName}) wants to partner with us. Mobile: ${data.mobileNumber}, Email: ${data.email}`,
         "partner-request"
       );
+      
+      console.log("Notification sent:", notificationSent);
       
       toast({
         title: "Request Submitted",

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
@@ -123,7 +122,6 @@ const Search = () => {
           </Button>
         </div>
         
-        {/* Category Pills - Horizontal scrollable with better alignment */}
         {!showFilters && categories && categories.length > 0 && (
           <div className="pt-3 overflow-x-auto whitespace-nowrap -mx-3 px-3 scrollbar-hide">
             <div className="flex gap-1.5 pb-1">
@@ -153,7 +151,6 @@ const Search = () => {
       </header>
       
       <div className="flex flex-col lg:flex-row">
-        {/* Filters sidebar - Fixed alignment issues */}
         {showFilters && (
           <aside className={`${isMobile ? 'fixed inset-0 z-20 bg-black/60' : 'w-64 sticky top-[61px]'}`}>
             <div 
