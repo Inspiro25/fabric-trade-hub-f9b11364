@@ -65,16 +65,23 @@ const Navbar = () => {
 
           {/* Desktop Search */}
           <form onSubmit={handleSearch} className="relative flex-grow max-w-xl mx-8">
-            <Input
-              type="text"
-              placeholder="Search products, brands, categories..."
-              className="pr-10 rounded-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button type="submit" size="icon" variant="ghost" className="absolute right-0 top-0 h-full">
-              <Search className="h-4 w-4" />
-            </Button>
+            <div className="relative flex items-center">
+              <Input
+                type="text"
+                placeholder="Search products, brands, categories..."
+                className="pr-10 rounded-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button 
+                type="submit" 
+                size="icon" 
+                variant="ghost" 
+                className="absolute right-0 top-0 h-full flex items-center justify-center"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
           </form>
 
           {/* Desktop Actions */}
