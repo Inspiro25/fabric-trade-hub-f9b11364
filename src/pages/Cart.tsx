@@ -50,7 +50,10 @@ const Cart = () => {
       
       <main className="pt-16 pb-20">
         <div className="container mx-auto px-2 max-w-7xl">
-          <h1 className="text-xl md:text-2xl font-bold text-center mb-4">Your Shopping Cart</h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl md:text-2xl font-bold">Your Shopping Cart</h1>
+            <WishlistSection />
+          </div>
           
           {cartItems.length === 0 ? (
             <EmptyCart />
@@ -63,8 +66,6 @@ const Cart = () => {
                   removeFromCart={removeFromCart}
                   isLoaded={isLoaded}
                 />
-                
-                <WishlistSection isLoaded={isLoaded} />
               </div>
               
               <OrderSummary 
