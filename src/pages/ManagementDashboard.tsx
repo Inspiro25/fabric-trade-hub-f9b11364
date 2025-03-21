@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, AreaChart, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ArrowUpRight, DollarSign, ShoppingCart, Store, Users } from 'lucide-react';
+import { ArrowUpRight, DollarSign, ShoppingCart, Store, Users, PlusCircle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDashboardAnalytics } from '@/hooks/use-dashboard-analytics';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const ManagementDashboard = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const { analytics, isLoading, refetch } = useDashboardAnalytics();
   const { toast } = useToast();
@@ -20,6 +22,11 @@ const ManagementDashboard = () => {
       description: "Dashboard data is being updated...",
     });
     refetch();
+  };
+
+  const navigateToAddShop = () => {
+    navigate('/management/shops');
+    sessionStorage.setItem('openAddShopDialog', 'true');
   };
 
   return (
@@ -39,6 +46,17 @@ const ManagementDashboard = () => {
             Last updated: {new Date().toLocaleDateString()}
           </span>
         </div>
+      </div>
+      
+      {/* Quick Actions */}
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+        <Card className="p-4 border-dashed border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer" onClick={navigateToAddShop}>
+          <div className="flex flex-col items-center justify-center text-center h-24">
+            <PlusCircle className="h-8 w-8 text-purple-500 mb-2" />
+            <h3 className="font-medium">Add New Shop</h3>
+            <p className="text-xs text-muted-foreground">Register a new merchant</p>
+          </div>
+        </Card>
       </div>
       
       {/* Overview Cards */}
@@ -235,4 +253,3 @@ const ManagementDashboard = () => {
 };
 
 export default ManagementDashboard;
-

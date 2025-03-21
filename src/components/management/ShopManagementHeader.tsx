@@ -17,11 +17,12 @@ const ShopManagementHeader: React.FC<ShopManagementHeaderProps> = ({ onAddShop }
         </p>
       </div>
       <Button 
-        className="mt-4 md:mt-0" 
+        className="mt-4 md:mt-0 bg-purple-600 hover:bg-purple-700" 
         onClick={onAddShop}
+        size="lg"
       >
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Add Shop
+        <PlusCircle className="mr-2 h-5 w-5" />
+        Add New Shop
       </Button>
     </div>
   );

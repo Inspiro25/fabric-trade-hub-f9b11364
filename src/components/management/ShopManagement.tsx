@@ -27,6 +27,14 @@ const ShopManagement: React.FC = () => {
 
   useEffect(() => {
     loadShops();
+    
+    // Check if we should open the add shop dialog automatically
+    const shouldOpenAddDialog = sessionStorage.getItem('openAddShopDialog');
+    if (shouldOpenAddDialog === 'true') {
+      setIsAddDialogOpen(true);
+      // Clear the flag to prevent reopening on refresh
+      sessionStorage.removeItem('openAddShopDialog');
+    }
   }, []);
 
   useEffect(() => {
