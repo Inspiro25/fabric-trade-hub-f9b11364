@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +8,7 @@ import ShopFilters from './ShopFilters';
 import ShopTabContent from './ShopTabContent';
 import ShopDialogs from './ShopDialogs';
 import { ShopFormValues } from './ShopForm';
-import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/supabase/shops';
+import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/shops/crud';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();

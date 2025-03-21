@@ -12,7 +12,7 @@ export const getShopProducts = async (shopId: string, allProducts?: Product[]): 
     // Get products from Supabase
     const products = await supabaseGetShopProducts(shopId);
     
-    if (products.length > 0) {
+    if (products && products.length > 0) {
       return products;
     }
     
