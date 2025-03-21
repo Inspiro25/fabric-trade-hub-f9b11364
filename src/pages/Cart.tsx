@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -22,7 +21,7 @@ import ProductCard from '@/components/ui/ProductCard';
 import { Product } from '@/lib/products';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -30,10 +29,11 @@ const Cart = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   
-  const subtotal = cartItems.reduce((total, item) => total + (item.product.salePrice || item.product.price) * item.quantity, 0);
+  const subtotal = getCartTotal();
   const discount = isPromoApplied ? subtotal * 0.1 : 0; // 10% discount for demo
   const shipping = subtotal > 100 ? 0 : 10;
   const total = subtotal - discount + shipping;
+  const itemCount = getCartCount();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -89,7 +89,6 @@ const Cart = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Cart Items */}
               <div className="lg:col-span-2">
                 <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                   <Card className="overflow-hidden border-none shadow-md">
@@ -173,7 +172,6 @@ const Cart = () => {
                   </Card>
                 </div>
                 
-                {/* Wishlist Section */}
                 <div className={`transition-all duration-500 delay-150 mt-4 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                   <Card className="overflow-hidden border-none shadow-md">
                     <CardHeader className="bg-gradient-to-r from-[#FFF0EA] to-[#FFEDDE] p-3">
@@ -209,7 +207,6 @@ const Cart = () => {
                 </div>
               </div>
               
-              {/* Order Summary */}
               <div className={`transition-all duration-500 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                 <Card className="border-none shadow-md overflow-hidden sticky top-20">
                   <CardHeader className="bg-gradient-to-r from-[#FFF0EA] to-[#FFEDDE] p-3">
@@ -242,7 +239,6 @@ const Cart = () => {
                       </div>
                     </div>
                     
-                    {/* Promo Code */}
                     <div className="mb-4">
                       <label htmlFor="promo-code" className="block text-xs font-medium mb-1">
                         Promo Code
@@ -298,7 +294,7 @@ const Cart = () => {
       {cartItems.length > 0 && isMobile && (
         <CartToCheckout
           total={total}
-          itemCount={cartItems.reduce((count, item) => count + item.quantity, 0)}
+          itemCount={itemCount}
         />
       )}
       
