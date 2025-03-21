@@ -24,7 +24,7 @@ const MobileNavItem = ({
       isActive ? "text-kutuku-primary" : "text-gray-500"
     )}
   >
-    <div className="mb-1">
+    <div className="mb-1 flex items-center justify-center">
       {icon}
     </div>
     <span>{label}</span>
@@ -59,7 +59,7 @@ const MobileAppLayout: React.FC<{
             to="/search" 
             icon={<Search size={20} />} 
             label="Search" 
-            isActive={pathname === '/search'} 
+            isActive={pathname.includes('/search')} 
           />
           <MobileNavItem 
             to="/cart" 

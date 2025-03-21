@@ -245,29 +245,33 @@ const Search = () => {
           
           <div className="relative flex-1">
             <form onSubmit={handleSearch} className="relative">
-              <Input
-                type="text"
-                placeholder="Search for products, brands..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setShowHistory(e.target.value.length > 0);
-                }}
-                className="kutuku-searchbar pr-10 pl-9 py-2.5 h-10"
-                autoComplete="off"
-                onFocus={() => setShowHistory(searchTerm.length > 0 && searchHistory.length > 0)}
-              />
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              
-              {searchTerm && (
-                <button 
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                >
-                  <X size={16} />
-                </button>
-              )}
+              <div className="relative flex items-center">
+                <Input
+                  type="text"
+                  placeholder="Search for products, brands..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowHistory(e.target.value.length > 0);
+                  }}
+                  className="kutuku-searchbar pr-10 pl-9 py-2.5 h-10"
+                  autoComplete="off"
+                  onFocus={() => setShowHistory(searchTerm.length > 0 && searchHistory.length > 0)}
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                  <SearchIcon className="h-4 w-4 text-gray-400" />
+                </div>
+                
+                {searchTerm && (
+                  <button 
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center h-5 w-5 text-gray-400"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
             </form>
             
             {/* Search History Dropdown */}
