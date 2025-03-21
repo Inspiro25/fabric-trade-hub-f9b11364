@@ -63,6 +63,10 @@ const AdminLogin = () => {
     }
   };
 
+  const handleManagementAccess = () => {
+    navigate('/management/login');
+  };
+
   return (
     <div className="container mx-auto px-4 py-10 max-w-md">
       <Card className="w-full">
@@ -115,8 +119,17 @@ const AdminLogin = () => {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center text-sm text-gray-500">
-          Contact support if you've lost your credentials
+        <CardFooter className="flex flex-col gap-2">
+          <p className="text-sm text-gray-500 text-center w-full">
+            Contact support if you've lost your credentials
+          </p>
+          <Button 
+            variant="ghost" 
+            className="text-xs text-muted-foreground opacity-70 hover:opacity-100" 
+            onClick={handleManagementAccess}
+          >
+            Management Access
+          </Button>
         </CardFooter>
       </Card>
     </div>
