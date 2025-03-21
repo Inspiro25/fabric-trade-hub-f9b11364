@@ -1,4 +1,3 @@
-
 import { db, collection, getDocs, getDoc, addDoc, updateDoc, doc, deleteDoc } from '@/lib/firebase';
 import { Shop } from './types';
 import { mockShops, shops } from './mockData';
@@ -69,6 +68,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
         productIds: data.productIds || [],
         isVerified: data.isVerified,
         createdAt: data.createdAt,
+        shopId: data.shopId,
       } as Shop;
     }
     
@@ -108,19 +108,30 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
 // Function to create a new shop
 export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | null> => {
   try {
+    // Generate a simple shop ID (in a real app, this would be more sophisticated)
+    const shopId = `shop-${Math.floor(Math.random() * 10000)}`;
+    
     const newShopRef = await addDoc(collection(db, 'shops'), {
       ...shopData,
+      shopId: shopId, // Add the shop ID for admin access
       createdAt: new Date().toISOString(),
     });
     
     const newShop = {
       id: newShopRef.id,
+      shopId: shopId,
       ...shopData,
       createdAt: new Date().toISOString(),
     };
     
     // Update local cache
     shops.push(newShop);
+    
+    // In a real app, you would save these credentials securely and send them to the shop owner
+    console.info('New shop created with credentials:', {
+      shopId: shopId,
+      password: `password${Math.floor(Math.random() * 10000)}` // This is just for demo
+    });
     
     return newShopRef.id;
   } catch (error) {

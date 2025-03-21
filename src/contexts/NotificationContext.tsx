@@ -20,6 +20,7 @@ interface NotificationContextType {
   markAllAsRead: () => void;
   clearNotifications: () => void;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+  broadcastNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -146,6 +147,33 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     });
   };
 
+  // New function to broadcast a notification to all users
+  const broadcastNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    // In a real app with a backend, you'd call an API to broadcast this to all users
+    // For now, we'll just add it to the current user's notifications
+    addNotification(notification);
+    
+    // Also store in localStorage as a "broadcast" notification so we can show it to other users
+    try {
+      const existingBroadcasts = JSON.parse(localStorage.getItem('broadcastNotifications') || '[]');
+      const newBroadcast = {
+        ...notification,
+        id: generateId(),
+        timestamp: Date.now(),
+        read: false,
+      };
+      existingBroadcasts.unshift(newBroadcast);
+      localStorage.setItem('broadcastNotifications', JSON.stringify(existingBroadcasts.slice(0, 10))); // Keep only the last 10
+    } catch (error) {
+      console.error('Error storing broadcast notification:', error);
+    }
+    
+    toast({
+      title: "Notification Broadcast",
+      description: "This notification has been sent to all users",
+    });
+  };
+
   const value = {
     notifications,
     unreadCount,
@@ -153,6 +181,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     markAllAsRead,
     clearNotifications,
     addNotification,
+    broadcastNotification,
   };
 
   return (

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Lock, Store } from 'lucide-react';
+import { fetchShops } from '@/lib/shops';
 
 // Validation schema
 const formSchema = z.object({
@@ -38,8 +39,8 @@ const AdminLogin = () => {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    // Check if credentials match
+  const onSubmit = async (data: FormValues) => {
+    // First check against hard-coded credentials
     const validCredentials = ADMIN_CREDENTIALS.find(
       cred => cred.shopId === data.shopId && cred.password === data.password
     );
@@ -53,7 +54,29 @@ const AdminLogin = () => {
         duration: 3000,
       });
       navigate('/admin/dashboard');
-    } else {
+      return;
+    }
+
+    // If not found in hard-coded credentials, check against shops from the database
+    try {
+      const shops = await fetchShops();
+      const validShop = shops.find(shop => shop.shopId === data.shopId);
+      
+      // For this demo, we're using a simple password validation
+      // In a real app, you'd use proper password hashing and validation
+      if (validShop && data.password === `password${data.shopId.split('-')[1]}`) {
+        sessionStorage.setItem('adminShopId', data.shopId);
+        toast({
+          title: "Login successful",
+          description: "Welcome to your admin panel",
+          duration: 3000,
+        });
+        navigate('/admin/dashboard');
+      } else {
+        throw new Error('Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
       toast({
         title: "Login failed",
         description: "Invalid shop ID or password",

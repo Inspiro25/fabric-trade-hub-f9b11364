@@ -11,4 +11,5 @@ export interface Shop {
   productIds: string[];
   isVerified: boolean;
   createdAt: string;
+  shopId?: string; // Added for admin access
 }

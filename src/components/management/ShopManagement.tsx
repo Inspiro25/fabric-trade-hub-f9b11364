@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +11,11 @@ import { Plus, Search } from 'lucide-react';
 import ShopTable from './ShopTable';
 import ShopForm, { ShopFormValues } from './ShopForm';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();
+  const { broadcastNotification } = useNotifications();
   const [shops, setShops] = useState<Shop[]>([]);
   const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,6 +83,15 @@ const ShopManagement: React.FC = () => {
           title: 'Success',
           description: 'Shop has been created successfully',
         });
+        
+        // Send notification to all users
+        broadcastNotification({
+          title: 'New Shop Added',
+          message: `${data.name} has joined our marketplace. Check it out!`,
+          type: 'system',
+          link: `/shops/${shopId}`
+        });
+        
         loadShops();
         setIsAddDialogOpen(false);
       } else {
