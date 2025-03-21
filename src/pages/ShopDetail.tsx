@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
 import { products } from '@/lib/products';
@@ -11,10 +11,13 @@ import { MapPin, Star, CheckCircle, Store, ArrowLeft, Share2, Calendar, Shopping
 import { formatDistanceToNow } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 const ShopDetail = () => {
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const [isFollowing, setIsFollowing] = useState(false);
   
   const shop = useMemo(() => {
     if (!id) return null;
@@ -25,6 +28,47 @@ const ShopDetail = () => {
     if (!id) return [];
     return getShopProducts(id, products);
   }, [id]);
+
+  const handleFollow = () => {
+    setIsFollowing(!isFollowing);
+    toast({
+      title: isFollowing ? "Unfollowed shop" : "Following shop",
+      description: isFollowing 
+        ? `You are no longer following ${shop?.name}`
+        : `You are now following ${shop?.name}`,
+      duration: 3000,
+    });
+  };
+
+  const handleShare = async () => {
+    if (!shop) return;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Check out ${shop.name} on Kutuku`,
+          text: shop.description,
+          url: window.location.href,
+        });
+      } else {
+        // Fallback for browsers that don't support the Web Share API
+        navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link copied",
+          description: "Shop link copied to clipboard",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+      toast({
+        title: "Sharing failed",
+        description: "Unable to share shop details",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
 
   if (!shop) {
     return (
@@ -67,13 +111,22 @@ const ShopDetail = () => {
               className="w-full h-full object-cover opacity-80"
             />
             <div className="absolute bottom-0 right-0 p-2 flex gap-1.5">
-              <Button size="sm" variant="secondary" className="h-7 text-xs px-2.5 bg-white/80 backdrop-blur-sm">
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="h-7 text-xs px-2.5 bg-white/80 backdrop-blur-sm"
+                onClick={handleShare}
+              >
                 <Share2 className="h-3 w-3 mr-1" />
                 Share
               </Button>
-              <Button size="sm" className="h-7 text-xs px-2.5 bg-purple-600 hover:bg-purple-700">
+              <Button 
+                size="sm" 
+                className={`h-7 text-xs px-2.5 ${isFollowing ? 'bg-gray-600 hover:bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+                onClick={handleFollow}
+              >
                 <Store className="h-3 w-3 mr-1" />
-                Follow
+                {isFollowing ? 'Following' : 'Follow'}
               </Button>
             </div>
           </div>
