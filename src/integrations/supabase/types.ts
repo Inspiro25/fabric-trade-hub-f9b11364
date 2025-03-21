@@ -623,6 +623,7 @@ export type Database = {
           name: string
           owner_email: string | null
           owner_name: string | null
+          password: string | null
           rating: number | null
           review_count: number | null
           shop_id: string | null
@@ -639,6 +640,7 @@ export type Database = {
           name: string
           owner_email?: string | null
           owner_name?: string | null
+          password?: string | null
           rating?: number | null
           review_count?: number | null
           shop_id?: string | null
@@ -655,6 +657,7 @@ export type Database = {
           name?: string
           owner_email?: string | null
           owner_name?: string | null
+          password?: string | null
           rating?: number | null
           review_count?: number | null
           shop_id?: string | null

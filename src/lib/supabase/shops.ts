@@ -32,7 +32,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
       status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending',
-      password: shop?.password || '', // Added password field
+      password: shop?.password || '', // Password field from database
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -72,7 +72,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
       status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending',
-      password: shop?.password || '', // Added password field
+      password: shop?.password || '', // Password field from database
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
@@ -138,7 +138,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         owner_email: shopData.ownerEmail,
         status: shopData.status || 'pending',
         password: shopData.password, // Store password for shop login
-      } as any)
+      })
       .select()
       .single();
     
