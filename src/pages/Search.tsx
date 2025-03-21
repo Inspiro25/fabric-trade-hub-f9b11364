@@ -1,14 +1,13 @@
-
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { useShopSearch } from '@/hooks/use-shop-search';
+import { Card } from '@/components/ui/card';
+import { useShopSearch, SortOption } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/ui/ProductCard';
@@ -36,7 +35,7 @@ const Search = () => {
   
   // Initialize filter states from URL
   const sortParam = queryParams.get('sort') || 'relevance';
-  const validatedSortValue = isValidSortOption(sortParam) ? sortParam : 'relevance';
+  const validatedSortValue: SortOption = isValidSortOption(sortParam) ? sortParam as SortOption : 'relevance';
   
   const initialFilters = {
     category: queryParams.get('category') || 'all',

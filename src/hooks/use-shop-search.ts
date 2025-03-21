@@ -1,8 +1,9 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { Product, fetchProducts, getAllCategories } from '@/lib/products';
 import { useState, useMemo } from 'react';
 
-type SortOption = 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest';
+export type SortOption = 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest';
 
 interface SearchFilters {
   category: string;
