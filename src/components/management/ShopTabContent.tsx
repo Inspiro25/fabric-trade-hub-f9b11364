@@ -38,13 +38,16 @@ const ShopTabContent: React.FC<ShopTabContentProps> = ({
         <CardTitle className={isMobile ? "text-lg" : ""}>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <div className={isMobile ? "px-0 pb-0" : "p-6 pt-0"}>
-        <ShopTable
-          shops={filteredShops}
-          isLoading={isLoading}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+      <div className={isMobile ? "px-0 pb-0 overflow-x-auto" : "p-6 pt-0"}>
+        <div className={isMobile ? "min-w-full w-max" : ""}>
+          <ShopTable
+            shops={filteredShops}
+            isLoading={isLoading}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            isMobile={isMobile}
+          />
+        </div>
       </div>
     </Card>
   );

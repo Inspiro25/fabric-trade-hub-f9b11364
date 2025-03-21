@@ -13,10 +13,12 @@ const ShopManagementHeader: React.FC<ShopManagementHeaderProps> = ({
   isMobile = false 
 }) => {
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 mb-4">
       <div>
-        <h2 className="text-xl md:text-3xl font-bold tracking-tight">Shop Management</h2>
-        <p className="text-sm text-muted-foreground">
+        <h2 className={`text-xl md:text-3xl font-bold tracking-tight ${isMobile ? 'text-center w-full' : ''}`}>
+          Shop Management
+        </h2>
+        <p className={`text-sm text-muted-foreground ${isMobile ? 'text-center' : ''}`}>
           Manage shop listings, verify new shops, and handle shop information
         </p>
       </div>
