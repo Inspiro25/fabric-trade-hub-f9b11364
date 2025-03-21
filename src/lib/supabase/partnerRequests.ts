@@ -55,7 +55,7 @@ export const getPartnerRequests = async (): Promise<PartnerRequest[]> => {
       contactName: item.contact_name,
       mobileNumber: item.mobile_number,
       email: item.email,
-      status: item.status,
+      status: item.status as 'pending' | 'approved' | 'rejected',
       createdAt: item.created_at
     }));
   } catch (error) {

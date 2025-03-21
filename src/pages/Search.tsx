@@ -36,7 +36,7 @@ const Search = () => {
   
   // Initialize filter states from URL
   const sortParam = queryParams.get('sort') || 'relevance';
-  const validatedSortValue = isValidSortOption(sortParam) ? sortParam : 'relevance';
+  const validatedSortValue: SortOption = isValidSortOption(sortParam) ? sortParam : 'relevance';
   
   const initialFilters = {
     category: queryParams.get('category') || 'all',
