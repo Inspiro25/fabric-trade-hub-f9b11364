@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -8,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+
 const Authentication = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('register') ? 'register' : 'login';
@@ -15,6 +18,7 @@ const Authentication = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login, register: registerUser, loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -26,6 +30,8 @@ const Authentication = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const timer = setTimeout(() => {
@@ -33,7 +39,8 @@ const Authentication = () => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
-  const handleLogin = (e: React.FormEvent) => {
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Simple validation
@@ -42,11 +49,18 @@ const Authentication = () => {
       return;
     }
 
-    // Mock login - in a real app, this would call an API
-    toast.success('Login successful!');
-    navigate('/');
+    setIsSubmitting(true);
+    try {
+      await login(loginEmail, loginPassword);
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  const handleRegister = (e: React.FormEvent) => {
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Simple validation
@@ -59,10 +73,41 @@ const Authentication = () => {
       return;
     }
 
-    // Mock registration - in a real app, this would call an API
-    toast.success('Registration successful!');
-    navigate('/');
+    setIsSubmitting(true);
+    try {
+      await registerUser(email, password);
+      navigate('/');
+    } catch (error) {
+      console.error('Registration error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleGoogleLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      await loginWithGoogleProvider();
+      navigate('/');
+    } catch (error) {
+      console.error('Google login error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    setIsSubmitting(true);
+    try {
+      await loginWithFacebookProvider();
+      navigate('/');
+    } catch (error) {
+      console.error('Facebook login error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return <div className="animate-page-transition">
       <Navbar />
       
@@ -112,8 +157,8 @@ const Authentication = () => {
                       </div>
                     </div>
                     
-                    <Button type="submit" className="w-full">
-                      Sign In
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Signing In...' : 'Sign In'}
                     </Button>
                     
                     <div className="relative my-6">
@@ -128,7 +173,7 @@ const Authentication = () => {
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <Button variant="outline" type="button" className="w-full">
+                      <Button variant="outline" type="button" className="w-full" onClick={handleGoogleLogin} disabled={isSubmitting}>
                         <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
                           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -137,7 +182,7 @@ const Authentication = () => {
                         </svg>
                         Google
                       </Button>
-                      <Button variant="outline" type="button" className="w-full">
+                      <Button variant="outline" type="button" className="w-full" onClick={handleFacebookLogin} disabled={isSubmitting}>
                         <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
                           <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill="#1877F2" />
                         </svg>
@@ -213,8 +258,8 @@ const Authentication = () => {
                       </Label>
                     </div>
                     
-                    <Button type="submit" className="w-full">
-                      Create Account
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Creating Account...' : 'Create Account'}
                     </Button>
                     
                     <div className="relative my-6">
@@ -229,7 +274,7 @@ const Authentication = () => {
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <Button variant="outline" type="button" className="w-full">
+                      <Button variant="outline" type="button" className="w-full" onClick={handleGoogleLogin} disabled={isSubmitting}>
                         <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
                           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -238,7 +283,7 @@ const Authentication = () => {
                         </svg>
                         Google
                       </Button>
-                      <Button variant="outline" type="button" className="w-full">
+                      <Button variant="outline" type="button" className="w-full" onClick={handleFacebookLogin} disabled={isSubmitting}>
                         <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
                           <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" fill="#1877F2" />
                         </svg>

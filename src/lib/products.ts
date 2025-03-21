@@ -1,3 +1,5 @@
+import { db, collection, getDocs, getDoc, doc, query, where, addDoc, updateDoc, deleteDoc } from '@/lib/firebase';
+
 export interface Product {
   id: string;
   name: string;
@@ -14,9 +16,11 @@ export interface Product {
   reviewCount: number;
   stock: number;
   tags: string[];
+  shopId?: string;
 }
 
-export const products: Product[] = [
+// Mock data for products - will use as fallback
+export const mockProducts: Product[] = [
   {
     id: "p1",
     name: "Premium Cotton T-Shirt",
@@ -326,57 +330,360 @@ export const products: Product[] = [
   }
 ];
 
-export const getProductById = (id: string): Product | undefined => {
-  return products.find(product => product.id === id);
+// Local state to store products
+let products: Product[] = [...mockProducts];
+
+// Function to fetch all products from Firestore
+export const fetchProducts = async (): Promise<Product[]> => {
+  try {
+    const productsSnapshot = await getDocs(collection(db, 'products'));
+    
+    if (productsSnapshot.empty) {
+      console.log('No products found in database, using mock data');
+      return mockProducts;
+    }
+    
+    const fetchedProducts = productsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        salePrice: data.salePrice,
+        images: data.images || [],
+        category: data.category,
+        colors: data.colors || [],
+        sizes: data.sizes || [],
+        isNew: data.isNew,
+        isTrending: data.isTrending,
+        rating: data.rating,
+        reviewCount: data.reviewCount,
+        stock: data.stock,
+        tags: data.tags || [],
+        shopId: data.shopId,
+      } as Product;
+    });
+    
+    // Update local state
+    products = fetchedProducts;
+    return fetchedProducts;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return mockProducts;
+  }
 };
 
-export const getRelatedProducts = (currentProductId: string, category: string): Product[] => {
-  return products
-    .filter(product => product.id !== currentProductId && product.category === category)
-    .slice(0, 4);
+// Initialize products from database
+(async () => {
+  try {
+    products = await fetchProducts();
+  } catch (error) {
+    console.error('Failed to initialize products from database:', error);
+  }
+})();
+
+// Get product by ID
+export const getProductById = async (id: string): Promise<Product | undefined> => {
+  try {
+    const productDoc = await getDoc(doc(db, 'products', id));
+    
+    if (productDoc.exists()) {
+      const data = productDoc.data();
+      return {
+        id: productDoc.id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        salePrice: data.salePrice,
+        images: data.images || [],
+        category: data.category,
+        colors: data.colors || [],
+        sizes: data.sizes || [],
+        isNew: data.isNew,
+        isTrending: data.isTrending,
+        rating: data.rating,
+        reviewCount: data.reviewCount,
+        stock: data.stock,
+        tags: data.tags || [],
+        shopId: data.shopId,
+      } as Product;
+    }
+    
+    // Fallback to local cache
+    return products.find(product => product.id === id);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return products.find(product => product.id === id);
+  }
 };
 
-export const getNewArrivals = (): Product[] => {
-  return products.filter(product => product.isNew).slice(0, 8);
+// Create a new product
+export const createProduct = async (productData: Omit<Product, 'id'>): Promise<string | null> => {
+  try {
+    const newProductRef = await addDoc(collection(db, 'products'), productData);
+    
+    const newProduct = {
+      id: newProductRef.id,
+      ...productData,
+    };
+    
+    // Update local cache
+    products = [...products, newProduct];
+    
+    return newProductRef.id;
+  } catch (error) {
+    console.error('Error creating product:', error);
+    return null;
+  }
 };
 
-export const getTrendingProducts = (): Product[] => {
-  return products.filter(product => product.isTrending).slice(0, 8);
+// Update a product
+export const updateProduct = async (id: string, productData: Partial<Product>): Promise<boolean> => {
+  try {
+    await updateDoc(doc(db, 'products', id), {
+      ...productData,
+      id: undefined, // Prevent updating the ID
+    });
+    
+    // Update local cache
+    products = products.map(product => 
+      product.id === id ? { ...product, ...productData } : product
+    );
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    return false;
+  }
 };
 
-export const getProductsByCategory = (category: string): Product[] => {
-  return products.filter(product => product.category === category);
+// Delete a product
+export const deleteProduct = async (id: string): Promise<boolean> => {
+  try {
+    await deleteDoc(doc(db, 'products', id));
+    
+    // Update local cache
+    products = products.filter(product => product.id !== id);
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    return false;
+  }
 };
 
-export const getAllCategories = (): string[] => {
-  const categories = new Set(products.map(product => product.category));
-  return Array.from(categories);
+// Function to get related products
+export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
+  try {
+    const relatedQuery = query(
+      collection(db, 'products'), 
+      where('category', '==', category)
+    );
+    
+    const relatedSnapshot = await getDocs(relatedQuery);
+    
+    if (!relatedSnapshot.empty) {
+      return relatedSnapshot.docs
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            salePrice: data.salePrice,
+            images: data.images || [],
+            category: data.category,
+            colors: data.colors || [],
+            sizes: data.sizes || [],
+            isNew: data.isNew,
+            isTrending: data.isTrending,
+            rating: data.rating,
+            reviewCount: data.reviewCount,
+            stock: data.stock,
+            tags: data.tags || [],
+            shopId: data.shopId,
+          } as Product;
+        })
+        .filter(product => product.id !== currentProductId)
+        .slice(0, 4);
+    }
+    
+    // Fallback to local data
+    return products
+      .filter(product => product.id !== currentProductId && product.category === category)
+      .slice(0, 4);
+  } catch (error) {
+    console.error('Error fetching related products:', error);
+    return products
+      .filter(product => product.id !== currentProductId && product.category === category)
+      .slice(0, 4);
+  }
 };
 
-export const getTopRatedProducts = (): Product[] => {
-  return [...products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+// Utility functions to get filtered products
+export const getNewArrivals = async (): Promise<Product[]> => {
+  try {
+    const newArrivalsQuery = query(
+      collection(db, 'products'), 
+      where('isNew', '==', true)
+    );
+    
+    const snapshot = await getDocs(newArrivalsQuery);
+    
+    if (!snapshot.empty) {
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+        } as Product;
+      }).slice(0, 8);
+    }
+    
+    // Fallback to local data
+    return products.filter(product => product.isNew).slice(0, 8);
+  } catch (error) {
+    console.error('Error fetching new arrivals:', error);
+    return products.filter(product => product.isNew).slice(0, 8);
+  }
 };
 
-export const getDiscountedProducts = (): Product[] => {
-  return products.filter(product => product.salePrice !== undefined).slice(0, 8);
+export const getTrendingProducts = async (): Promise<Product[]> => {
+  try {
+    const trendingQuery = query(
+      collection(db, 'products'), 
+      where('isTrending', '==', true)
+    );
+    
+    const snapshot = await getDocs(trendingQuery);
+    
+    if (!snapshot.empty) {
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+        } as Product;
+      }).slice(0, 8);
+    }
+    
+    // Fallback to local data
+    return products.filter(product => product.isTrending).slice(0, 8);
+  } catch (error) {
+    console.error('Error fetching trending products:', error);
+    return products.filter(product => product.isTrending).slice(0, 8);
+  }
 };
 
-export const getProductsByTags = (tag: string): Product[] => {
-  return products.filter(product => product.tags.includes(tag)).slice(0, 8);
+export const getProductsByCategory = async (category: string): Promise<Product[]> => {
+  try {
+    const categoryQuery = query(
+      collection(db, 'products'), 
+      where('category', '==', category)
+    );
+    
+    const snapshot = await getDocs(categoryQuery);
+    
+    if (!snapshot.empty) {
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+        } as Product;
+      });
+    }
+    
+    // Fallback to local data
+    return products.filter(product => product.category === category);
+  } catch (error) {
+    console.error(`Error fetching products for category ${category}:`, error);
+    return products.filter(product => product.category === category);
+  }
 };
 
-export const getBestSellingProducts = (): Product[] => {
-  return [...products]
-    .sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount))
-    .slice(0, 8);
+export const getAllCategories = async (): Promise<string[]> => {
+  try {
+    const productsSnapshot = await getDocs(collection(db, 'products'));
+    
+    if (!productsSnapshot.empty) {
+      const categories = new Set(
+        productsSnapshot.docs.map(doc => doc.data().category as string)
+      );
+      return Array.from(categories);
+    }
+    
+    // Fallback to local data
+    const categories = new Set(products.map(product => product.category));
+    return Array.from(categories);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    const categories = new Set(products.map(product => product.category));
+    return Array.from(categories);
+  }
 };
 
-export const searchProducts = (query: string): Product[] => {
-  const lowercaseQuery = query.toLowerCase();
-  return products.filter(product => 
-    product.name.toLowerCase().includes(lowercaseQuery) || 
-    product.description.toLowerCase().includes(lowercaseQuery) ||
-    product.category.toLowerCase().includes(lowercaseQuery) ||
-    product.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery))
-  );
+export const getTopRatedProducts = async (): Promise<Product[]> => {
+  try {
+    const productsSnapshot = await getDocs(collection(db, 'products'));
+    
+    if (!productsSnapshot.empty) {
+      return productsSnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        } as Product))
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 8);
+    }
+    
+    // Fallback to local data
+    return [...products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+  } catch (error) {
+    console.error('Error fetching top rated products:', error);
+    return [...products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+  }
 };
+
+export const getDiscountedProducts = async (): Promise<Product[]> => {
+  try {
+    const productsSnapshot = await getDocs(collection(db, 'products'));
+    
+    if (!productsSnapshot.empty) {
+      return productsSnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        } as Product))
+        .filter(product => product.salePrice !== undefined)
+        .slice(0, 8);
+    }
+    
+    // Fallback to local data
+    return products.filter(product => product.salePrice !== undefined).slice(0, 8);
+  } catch (error) {
+    console.error('Error fetching discounted products:', error);
+    return products.filter(product => product.salePrice !== undefined).slice(0, 8);
+  }
+};
+
+export const getProductsByTags = async (tag: string): Promise<Product[]> => {
+  try {
+    const productsSnapshot = await getDocs(collection(db, 'products'));
+    
+    if (!productsSnapshot.empty) {
+      return productsSnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        } as Product))
+        .filter(product => product.tags.includes(tag))
+        .slice(0, 8);
+    }
+    
+    // Fallback to local data
+    return products.filter(product => product.tags.includes(tag)).slice(0, 8);
+  } catch (error) {
+    console.error(`Error fetching products

@@ -8,8 +8,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Product } from '@/lib/products';
+import { Product, createProduct, updateProduct } from '@/lib/products';
 import { Save, X, Plus, Minus } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Validation schema
 const formSchema = z.object({
@@ -48,6 +49,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
   const [newColor, setNewColor] = useState('');
   const [newSize, setNewSize] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -62,24 +64,59 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    // Convert string values to numbers
-    const formattedData = {
-      ...data,
-      price: Number(data.price),
-      salePrice: data.salePrice && data.salePrice !== '' ? Number(data.salePrice) : undefined,
-      stock: Number(data.stock),
-      shopId,
-      id: product?.id || `product-${Date.now()}`,
-      images: [data.mainImage, ...additionalImages],
-      colors,
-      sizes,
-      tags,
-      rating: product?.rating || 4.0,
-      reviewCount: product?.reviewCount || 0,
-    };
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     
-    onSave(formattedData);
+    try {
+      // Convert string values to numbers
+      const formattedData = {
+        ...data,
+        price: Number(data.price),
+        salePrice: data.salePrice && data.salePrice !== '' ? Number(data.salePrice) : undefined,
+        stock: Number(data.stock),
+        shopId,
+        images: [data.mainImage, ...additionalImages.filter(img => img.trim() !== '')],
+        colors,
+        sizes,
+        tags,
+        rating: product?.rating || 4.0,
+        reviewCount: product?.reviewCount || 0,
+        isNew: product?.isNew || mode === 'add', // Mark as new if adding
+      };
+      
+      let result;
+      
+      if (mode === 'add') {
+        // Create new product in database
+        const productId = await createProduct(formattedData);
+        if (productId) {
+          result = { ...formattedData, id: productId };
+          toast.success('Product created successfully');
+        } else {
+          toast.error('Failed to create product');
+          setIsSubmitting(false);
+          return;
+        }
+      } else if (product) {
+        // Update existing product
+        const success = await updateProduct(product.id, formattedData);
+        if (success) {
+          result = { ...formattedData, id: product.id };
+          toast.success('Product updated successfully');
+        } else {
+          toast.error('Failed to update product');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      onSave(result);
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast.error('An error occurred while saving the product');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Helper functions for managing arrays
@@ -258,7 +295,9 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="sm" 
-                    onClick={addImageUrl}
+                    onClick={() => {
+                      setAdditionalImages([...additionalImages, '']);
+                    }}
                   >
                     <Plus className="h-3.5 w-3.5 mr-1" />
                     Add Image
@@ -270,13 +309,20 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     <Input 
                       placeholder="https://example.com/image.jpg" 
                       value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
+                      onChange={(e) => {
+                        const updatedImages = [...additionalImages];
+                        updatedImages[index] = e.target.value;
+                        setAdditionalImages(updatedImages);
+                      }}
                     />
                     <Button 
                       type="button" 
                       variant="outline" 
                       size="icon" 
-                      onClick={() => removeImageUrl(index)}
+                      onClick={() => {
+                        const updatedImages = additionalImages.filter((_, i) => i !== index);
+                        setAdditionalImages(updatedImages);
+                      }}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -298,7 +344,12 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="icon" 
-                    onClick={addColor}
+                    onClick={() => {
+                      if (newColor && !colors.includes(newColor)) {
+                        setColors([...colors, newColor]);
+                        setNewColor('');
+                      }
+                    }}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -309,7 +360,9 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                       {color}
                       <button
                         type="button"
-                        onClick={() => removeColor(color)}
+                        onClick={() => {
+                          setColors(colors.filter(c => c !== color));
+                        }}
                         className="ml-1 text-gray-500 hover:text-red-500"
                       >
                         <X className="h-3 w-3" />
@@ -331,7 +384,12 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="icon" 
-                    onClick={addSize}
+                    onClick={() => {
+                      if (newSize && !sizes.includes(newSize)) {
+                        setSizes([...sizes, newSize]);
+                        setNewSize('');
+                      }
+                    }}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -342,7 +400,9 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                       {size}
                       <button
                         type="button"
-                        onClick={() => removeSize(size)}
+                        onClick={() => {
+                          setSizes(sizes.filter(s => s !== size));
+                        }}
                         className="ml-1 text-gray-500 hover:text-red-500"
                       >
                         <X className="h-3 w-3" />
@@ -364,7 +424,12 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     type="button" 
                     variant="outline" 
                     size="icon" 
-                    onClick={addTag}
+                    onClick={() => {
+                      if (newTag && !tags.includes(newTag)) {
+                        setTags([...tags, newTag]);
+                        setNewTag('');
+                      }
+                    }}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -375,7 +440,9 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                       {tag}
                       <button
                         type="button"
-                        onClick={() => removeTag(tag)}
+                        onClick={() => {
+                          setTags(tags.filter(t => t !== tag));
+                        }}
                         className="ml-1 text-gray-500 hover:text-red-500"
                       >
                         <X className="h-3 w-3" />
@@ -387,12 +454,15 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
             </div>
             
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
                 Cancel
               </Button>
-              <Button type="submit">
+              <Button type="submit" disabled={isSubmitting}>
                 <Save className="mr-2 h-4 w-4" />
-                {mode === 'add' ? 'Add Product' : 'Save Changes'}
+                {isSubmitting 
+                  ? (mode === 'add' ? 'Creating...' : 'Saving...') 
+                  : (mode === 'add' ? 'Add Product' : 'Save Changes')
+                }
               </Button>
             </div>
           </form>
