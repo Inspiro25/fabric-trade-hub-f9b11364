@@ -17,7 +17,7 @@ export const getShopProducts = async (shopId: string, allProducts?: Product[]): 
     }
     
     // If allProducts was provided, use it for the fallback
-    if (allProducts && shop.productIds) {
+    if (allProducts && shop.productIds && shop.productIds.length > 0) {
       return allProducts.filter(product => shop.productIds.includes(product.id));
     }
     
@@ -29,7 +29,7 @@ export const getShopProducts = async (shopId: string, allProducts?: Product[]): 
     // Fallback to filtering by productIds if allProducts was provided
     if (allProducts) {
       const shop = shops.find(s => s.id === shopId);
-      if (shop && shop.productIds) {
+      if (shop && shop.productIds && shop.productIds.length > 0) {
         return allProducts.filter(product => shop.productIds.includes(product.id));
       }
     }

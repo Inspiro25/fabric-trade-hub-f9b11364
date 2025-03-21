@@ -13,9 +13,12 @@ import { productStore } from '@/lib/types/product';
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
     const products = await supabaseFetchProducts();
-    // Update the product store
-    productStore.updateProducts(products);
-    return products;
+    if (products && products.length > 0) {
+      // Update the product store
+      productStore.updateProducts(products);
+      return products;
+    }
+    return productStore.products; // Fallback to local cache
   } catch (error) {
     console.error('Error fetching products:', error);
     return productStore.products; // Fallback to local cache
@@ -35,7 +38,11 @@ export const fetchProducts = async (): Promise<Product[]> => {
 export const getProductById = async (id: string): Promise<Product | undefined> => {
   try {
     const product = await supabaseGetProductById(id);
-    return product;
+    if (product) {
+      return product;
+    }
+    // Try to find in local cache if not in database
+    return productStore.products.find(product => product.id === id);
   } catch (error) {
     console.error('Error fetching product:', error);
     return productStore.products.find(product => product.id === id);
@@ -55,9 +62,10 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
       
       // Update local cache
       productStore.addProduct(newProduct);
+      return productId;
     }
     
-    return productId;
+    return null;
   } catch (error) {
     console.error('Error creating product:', error);
     return null;
@@ -72,9 +80,10 @@ export const updateProduct = async (id: string, productData: Partial<Product>): 
     if (success) {
       // Update local cache
       productStore.updateProduct(id, productData);
+      return true;
     }
     
-    return success;
+    return false;
   } catch (error) {
     console.error('Error updating product:', error);
     return false;
@@ -89,9 +98,10 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
     if (success) {
       // Update local cache
       productStore.removeProduct(id);
+      return true;
     }
     
-    return success;
+    return false;
   } catch (error) {
     console.error('Error deleting product:', error);
     return false;

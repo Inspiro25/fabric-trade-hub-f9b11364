@@ -14,15 +14,14 @@ export const fetchShops = async (): Promise<Shop[]> => {
   try {
     const fetchedShops = await supabaseFetchShops();
     
-    if (fetchedShops.length === 0) {
-      console.log('No shops found in database, using mock data');
-      return mockShops;
+    if (fetchedShops && fetchedShops.length > 0) {
+      // Update the shops reference
+      Object.assign(shops, fetchedShops);
+      return fetchedShops;
     }
     
-    // Update the shops reference
-    Object.assign(shops, fetchedShops);
-    
-    return fetchedShops;
+    console.log('No shops found in database, using mock data');
+    return mockShops;
   } catch (error) {
     console.error('Error fetching shops:', error);
     return mockShops; // Fallback to mock data
@@ -33,7 +32,9 @@ export const fetchShops = async (): Promise<Shop[]> => {
 (async () => {
   try {
     const fetchedShops = await fetchShops();
-    Object.assign(shops, fetchedShops);
+    if (fetchedShops && fetchedShops.length > 0) {
+      Object.assign(shops, fetchedShops);
+    }
   } catch (error) {
     console.error('Failed to initialize shops from database:', error);
   }
@@ -69,9 +70,10 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
       if (shopIndex !== -1) {
         shops[shopIndex] = { ...shops[shopIndex], ...shopData };
       }
+      return true;
     }
     
-    return success;
+    return false;
   } catch (error) {
     console.error('Error updating shop:', error);
     return false;
@@ -91,7 +93,6 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
       
       // Update local cache
       shops.push(newShop);
-      
       return shopId;
     }
     
@@ -113,9 +114,10 @@ export const deleteShop = async (id: string): Promise<boolean> => {
       if (shopIndex !== -1) {
         shops.splice(shopIndex, 1);
       }
+      return true;
     }
     
-    return success;
+    return false;
   } catch (error) {
     console.error('Error deleting shop:', error);
     return false;

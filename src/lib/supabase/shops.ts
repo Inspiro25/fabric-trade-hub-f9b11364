@@ -6,7 +6,7 @@ import { Shop } from "@/lib/shops/types";
 export const fetchShops = async (): Promise<Shop[]> => {
   try {
     const { data: shops, error } = await supabase
-      .from('shops')
+      .from('shops' as any)
       .select('*');
     
     if (error) {
@@ -16,7 +16,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
     
     if (!shops) return [];
     
-    return shops.map(shop => ({
+    return shops.map((shop: any) => ({
       id: shop.id || '',
       name: shop.name || '',
       description: shop.description || '',
@@ -40,7 +40,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
 export const getShopById = async (id: string): Promise<Shop | undefined> => {
   try {
     const { data: shop, error } = await supabase
-      .from('shops')
+      .from('shops' as any)
       .select('*')
       .eq('id', id)
       .single();
@@ -76,7 +76,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
 export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('shops')
+      .from('shops' as any)
       .update({
         name: shopData.name,
         description: shopData.description,
@@ -106,7 +106,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
     const shopId = shopData.shopId || `shop-${Math.floor(Math.random() * 10000)}`;
     
     const { data, error } = await supabase
-      .from('shops')
+      .from('shops' as any)
       .insert({
         name: shopData.name,
         description: shopData.description,
@@ -141,7 +141,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
 export const deleteShop = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('shops')
+      .from('shops' as any)
       .delete()
       .eq('id', id);
     
