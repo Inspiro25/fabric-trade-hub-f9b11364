@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductGrid from '@/components/features/ProductGrid';
-import { MapPin, Star, CheckCircle, Store, ArrowLeft, Share2, Calendar, ShoppingBag } from 'lucide-react';
+import { MapPin, Star, CheckCircle, Store, ArrowLeft, Share2, Calendar, ShoppingBag, Settings } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
@@ -90,13 +90,23 @@ const ShopDetail = () => {
       {/* Compact Shop Header */}
       <div className="bg-gradient-to-r from-[#E5DEFF] to-[#D6BCFA] shadow-sm">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center mb-2">
-            <Link to="/shops">
-              <Button size="icon" variant="ghost" className="h-7 w-7 mr-2">
-                <ArrowLeft className="h-4 w-4" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center">
+              <Link to="/shops">
+                <Button size="icon" variant="ghost" className="h-7 w-7 mr-2">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <h1 className="text-sm font-medium">Shop Details</h1>
+            </div>
+            
+            {/* Add admin link */}
+            <Link to="/admin/login">
+              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
+                <Settings className="h-3.5 w-3.5 mr-1.5" />
+                Admin
               </Button>
             </Link>
-            <h1 className="text-sm font-medium">Shop Details</h1>
           </div>
         </div>
       </div>

@@ -1,0 +1,126 @@
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useToast } from '@/hooks/use-toast';
+import { Lock, Store } from 'lucide-react';
+
+// Validation schema
+const formSchema = z.object({
+  shopId: z.string().min(1, "Shop ID is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+// Mock admin credentials (in a real app, this would be validated against a database)
+const ADMIN_CREDENTIALS = [
+  { shopId: 'shop-1', password: 'electronics123' },
+  { shopId: 'shop-2', password: 'fashion123' },
+  { shopId: 'shop-3', password: 'home123' },
+];
+
+const AdminLogin = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      shopId: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = (data: FormValues) => {
+    // Check if credentials match
+    const validCredentials = ADMIN_CREDENTIALS.find(
+      cred => cred.shopId === data.shopId && cred.password === data.password
+    );
+
+    if (validCredentials) {
+      // Store the shop ID in session storage for admin session
+      sessionStorage.setItem('adminShopId', data.shopId);
+      toast({
+        title: "Login successful",
+        description: "Welcome to your admin panel",
+        duration: 3000,
+      });
+      navigate('/admin/dashboard');
+    } else {
+      toast({
+        title: "Login failed",
+        description: "Invalid shop ID or password",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-10 max-w-md">
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex justify-center mb-4">
+            <div className="bg-purple-100 p-3 rounded-full">
+              <Store className="h-8 w-8 text-purple-600" />
+            </div>
+          </div>
+          <CardTitle className="text-center">Shop Admin Login</CardTitle>
+          <CardDescription className="text-center">
+            Enter your shop ID and password to access your admin panel
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="shopId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shop ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your shop ID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Enter your password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button type="submit" className="w-full">
+                <Lock className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex justify-center text-sm text-gray-500">
+          Contact support if you've lost your credentials
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+export default AdminLogin;

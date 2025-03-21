@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,6 +32,10 @@ import CategorySection from "./components/features/CategorySection";
 import Shops from "./pages/Shops";
 import ShopDetail from "./pages/ShopDetail";
 
+// Import new admin components
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -66,6 +69,9 @@ const AppContent = () => {
             <Route path="/shop/:id" element={<ShopDetail />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
+            {/* Add new admin routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </MobileAppLayout>
@@ -90,6 +96,9 @@ const AppContent = () => {
           <Route path="/shop/:id" element={<ShopDetail />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
+          {/* Add new admin routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       )}
