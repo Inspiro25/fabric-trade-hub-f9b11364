@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
@@ -30,7 +31,7 @@ const Search = () => {
   const initialFilters = {
     category: queryParams.get('category') || 'all',
     priceRange: queryParams.get('price') || 'all',
-    sort: (queryParams.get('sort') || 'relevance') as 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest',
+    sort: (queryParams.get('sort') as 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest') || 'relevance',
     inStock: queryParams.get('inStock') === 'true',
     onSale: queryParams.get('onSale') === 'true'
   };
@@ -73,9 +74,9 @@ const Search = () => {
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16">
-      {/* Header - Made more compact for mobile */}
-      <header className="bg-white dark:bg-gray-800 px-3 py-2 sticky top-0 z-30 shadow-sm">
-        <div className="flex items-center gap-2">
+      {/* Header - Added more spacing at the top */}
+      <header className="bg-white dark:bg-gray-800 px-3 py-3 sticky top-0 z-30 shadow-sm">
+        <div className="flex items-center gap-2 mt-1">
           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -112,9 +113,9 @@ const Search = () => {
           </Button>
         </div>
         
-        {/* Category Pills - Horizontal scrollable */}
+        {/* Category Pills - Horizontal scrollable with better alignment */}
         {!showFilters && categories && categories.length > 0 && (
-          <div className="pt-2 overflow-x-auto whitespace-nowrap -mx-3 px-3 scrollbar-hide">
+          <div className="pt-3 overflow-x-auto whitespace-nowrap -mx-3 px-3 scrollbar-hide">
             <div className="flex gap-1.5 pb-1">
               <Button
                 size="sm"
@@ -142,12 +143,12 @@ const Search = () => {
       </header>
       
       <div className="flex flex-col lg:flex-row">
-        {/* Filters sidebar - Optimized for mobile with a slide-up panel */}
+        {/* Filters sidebar - Fixed alignment issues */}
         {showFilters && (
-          <aside className={`${isMobile ? 'fixed inset-0 z-20 bg-black/60' : 'w-64 sticky top-[53px]'}`}>
+          <aside className={`${isMobile ? 'fixed inset-0 z-20 bg-black/60' : 'w-64 sticky top-[61px]'}`}>
             <div 
               className={`
-                ${isMobile ? 'absolute bottom-0 left-0 right-0 rounded-t-xl max-h-[85vh] overflow-y-auto' : 'min-h-[calc(100vh-53px)]'} 
+                ${isMobile ? 'absolute bottom-0 left-0 right-0 rounded-t-xl max-h-[85vh] overflow-y-auto' : 'min-h-[calc(100vh-61px)]'} 
                 bg-white dark:bg-gray-800 p-4 border-r animate-slide-in-right
               `}
             >
