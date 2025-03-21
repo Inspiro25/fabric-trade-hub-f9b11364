@@ -19,7 +19,7 @@ type ProfileFormProps = {
   emailDisabled?: boolean;
 };
 
-const ProfileForm = ({
+export const ProfileForm = ({
   displayName,
   setDisplayName,
   email,
