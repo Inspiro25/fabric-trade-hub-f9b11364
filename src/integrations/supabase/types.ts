@@ -110,6 +110,59 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          banner_image: string | null
+          code: string
+          created_at: string
+          description: string | null
+          discount: number | null
+          expiry: string
+          id: string
+          is_active: boolean
+          shop_id: string | null
+          start_date: string
+          title: string
+          type: string
+        }
+        Insert: {
+          banner_image?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          discount?: number | null
+          expiry: string
+          id?: string
+          is_active?: boolean
+          shop_id?: string | null
+          start_date?: string
+          title: string
+          type: string
+        }
+        Update: {
+          banner_image?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount?: number | null
+          expiry?: string
+          id?: string
+          is_active?: boolean
+          shop_id?: string | null
+          start_date?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_coupon_usage: {
         Row: {
           coupon_id: string | null

@@ -11,7 +11,8 @@ import {
   Settings, 
   PieChart, 
   AlertTriangle, 
-  ChevronLeft 
+  ChevronLeft,
+  Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -99,6 +100,7 @@ const DashboardLayout = () => {
                 <NavItem path="/management/dashboard" icon={Home} label="Dashboard" />
                 <NavItem path="/management/analytics" icon={BarChart3} label="Analytics" />
                 <NavItem path="/management/shops" icon={Store} label="Shops" />
+                <NavItem path="/management/offers" icon={Tag} label="Offers" />
                 <NavItem path="/management/users" icon={Users} label="Users" />
                 <NavItem path="/management/settings" icon={Settings} label="Settings" />
               </ul>

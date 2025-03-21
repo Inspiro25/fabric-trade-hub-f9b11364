@@ -45,6 +45,7 @@ import ManagementLogin from "./pages/ManagementLogin";
 import DashboardLayout from "./components/management/DashboardLayout";
 import ManagementDashboard from "./pages/ManagementDashboard";
 import ManagementShops from "./pages/ManagementShops";
+import ManagementOffers from "./pages/ManagementOffers";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const AppContent = () => {
             <Route path="/management" element={<DashboardLayout />}>
               <Route path="dashboard" element={<ManagementDashboard />} />
               <Route path="shops" element={<ManagementShops />} />
+              <Route path="offers" element={<ManagementOffers />} />
               <Route path="analytics" element={<ManagementDashboard />} />
               <Route path="users" element={<ManagementDashboard />} />
               <Route path="settings" element={<ManagementDashboard />} />
@@ -125,6 +127,7 @@ const AppContent = () => {
           <Route path="/management" element={<DashboardLayout />}>
             <Route path="dashboard" element={<ManagementDashboard />} />
             <Route path="shops" element={<ManagementShops />} />
+            <Route path="offers" element={<ManagementOffers />} />
             <Route path="analytics" element={<ManagementDashboard />} />
             <Route path="users" element={<ManagementDashboard />} />
             <Route path="settings" element={<ManagementDashboard />} />

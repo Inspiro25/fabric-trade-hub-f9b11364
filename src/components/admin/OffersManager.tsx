@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,67 +8,47 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Percent, Tag, Calendar, Plus, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Mock offer type
-interface Offer {
-  id: string;
-  title: string;
-  description: string;
-  code: string;
-  discount: number;
-  expiry: string;
-  type: 'percentage' | 'shipping' | 'bogo';
-  shopId: string;
-  shopName: string;
-  bannerImage: string;
-}
-
-// Mock initial offers
-const initialOffers: Offer[] = [
-  {
-    id: "offer1",
-    title: "Summer Sale",
-    description: "Get up to 50% off on summer collection",
-    code: "SUMMER50",
-    discount: 50,
-    expiry: "2023-09-30",
-    type: "percentage",
-    shopId: "shop1",
-    shopName: "Fashion Store",
-    bannerImage: "https://images.unsplash.com/photo-1607083206968-13611e3d76db?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c3VtbWVyJTIwc2FsZXxlbnwwfHwwfHx8MA%3D%3D"
-  },
-  {
-    id: "offer2",
-    title: "Weekend Special",
-    description: "25% off on all accessories every weekend",
-    code: "WEEKEND25",
-    discount: 25,
-    expiry: "2023-11-30",
-    type: "percentage",
-    shopId: "shop1",
-    shopName: "Fashion Store",
-    bannerImage: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvcHBpbmd8ZW58MHx8MHx8fDA%3D"
-  }
-];
+import { Offer, createOffer, deleteOffer, getShopOffers, updateOffer } from '@/lib/supabase/offers';
+import DeleteConfirmationDialog from '../management/DeleteConfirmationDialog';
 
 interface OffersManagerProps {
   shopId: string;
 }
 
 const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
-  const [offers, setOffers] = useState<Offer[]>(initialOffers);
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [isAddingOffer, setIsAddingOffer] = useState(false);
   const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState<Omit<Offer, 'id' | 'shopId' | 'shopName'>>({
+  const [formData, setFormData] = useState<Omit<Offer, 'id' | 'shop_id' | 'created_at' | 'is_active' | 'start_date'>>({
     title: '',
     description: '',
     code: '',
     discount: 0,
-    expiry: new Date().toISOString().split('T')[0],
+    expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default 30 days from now
     type: 'percentage',
-    bannerImage: ''
+    banner_image: ''
   });
+
+  useEffect(() => {
+    fetchOffers();
+  }, [shopId]);
+  
+  const fetchOffers = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getShopOffers(shopId);
+      setOffers(data);
+    } catch (error) {
+      console.error("Error fetching offers:", error);
+      toast.error("Failed to load offers");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -87,65 +67,107 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
       description: '',
       code: '',
       discount: 0,
-      expiry: new Date().toISOString().split('T')[0],
+      expiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       type: 'percentage',
-      bannerImage: ''
+      banner_image: ''
     });
   };
   
   const handleEditOffer = (offer: Offer) => {
     setIsAddingOffer(true);
     setEditingOfferId(offer.id);
+    
+    // Format date to YYYY-MM-DD for input fields
+    const expiryDate = new Date(offer.expiry).toISOString().split('T')[0];
+    
     setFormData({
       title: offer.title,
-      description: offer.description,
+      description: offer.description || '',
       code: offer.code,
-      discount: offer.discount,
-      expiry: offer.expiry,
+      discount: offer.discount || 0,
+      expiry: expiryDate,
       type: offer.type,
-      bannerImage: offer.bannerImage
+      banner_image: offer.banner_image || ''
     });
   };
   
-  const handleDeleteOffer = (id: string) => {
-    setOffers(prev => prev.filter(offer => offer.id !== id));
-    toast.success('Offer deleted successfully');
+  const handleConfirmDelete = async () => {
+    if (!offerToDelete) return;
+    
+    try {
+      await deleteOffer(offerToDelete);
+      setOffers(prev => prev.filter(offer => offer.id !== offerToDelete));
+      toast.success('Offer deleted successfully');
+    } catch (error) {
+      console.error("Error deleting offer:", error);
+      toast.error('Failed to delete offer');
+    } finally {
+      setDeleteDialogOpen(false);
+      setOfferToDelete(null);
+    }
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleDeleteOffer = (id: string) => {
+    setOfferToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingOfferId) {
-      // Update existing offer
-      setOffers(prev => prev.map(offer => 
-        offer.id === editingOfferId 
-          ? { 
-              ...offer, 
-              ...formData 
-            } 
-          : offer
-      ));
-      toast.success('Offer updated successfully');
-    } else {
-      // Add new offer
-      const newOffer: Offer = {
-        id: `offer${Date.now()}`,
-        shopId,
-        shopName: 'Your Shop',
-        ...formData
-      };
-      setOffers(prev => [...prev, newOffer]);
-      toast.success('Offer added successfully');
+    try {
+      if (editingOfferId) {
+        // Update existing offer
+        const updatedOffer = await updateOffer(editingOfferId, {
+          ...formData,
+          is_active: true
+        });
+        
+        setOffers(prev => prev.map(offer => 
+          offer.id === editingOfferId ? updatedOffer : offer
+        ));
+        
+        toast.success('Offer updated successfully');
+      } else {
+        // Add new offer
+        const newOffer = await createOffer({
+          ...formData,
+          shop_id: shopId,
+          is_active: true,
+          start_date: new Date().toISOString()
+        });
+        
+        setOffers(prev => [...prev, newOffer]);
+        toast.success('Offer added successfully');
+      }
+      
+      setIsAddingOffer(false);
+      setEditingOfferId(null);
+    } catch (error) {
+      console.error("Error saving offer:", error);
+      toast.error('Failed to save offer');
     }
-    
-    setIsAddingOffer(false);
-    setEditingOfferId(null);
   };
   
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Manage Offers</h2>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center p-6">
+            <p className="text-muted-foreground">Loading offers...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -201,7 +223,6 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
                   onChange={handleInputChange}
                   placeholder="Describe the offer details..."
                   rows={3}
-                  required
                 />
               </div>
               
@@ -252,11 +273,11 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="bannerImage">Banner Image URL</Label>
+                <Label htmlFor="banner_image">Banner Image URL</Label>
                 <Input
-                  id="bannerImage"
-                  name="bannerImage"
-                  value={formData.bannerImage}
+                  id="banner_image"
+                  name="banner_image"
+                  value={formData.banner_image}
                   onChange={handleInputChange}
                   placeholder="https://example.com/image.jpg"
                 />
@@ -297,17 +318,17 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
               {offers.map((offer) => (
                 <Card key={offer.id} className="overflow-hidden">
                   <div className="flex flex-col md:flex-row">
-                    {offer.bannerImage && (
+                    {offer.banner_image && (
                       <div className="md:w-1/4 h-32 md:h-auto overflow-hidden">
                         <img 
-                          src={offer.bannerImage} 
+                          src={offer.banner_image} 
                           alt={offer.title} 
                           className="w-full h-full object-cover"
                         />
                       </div>
                     )}
                     
-                    <div className={`flex-grow ${offer.bannerImage ? 'md:w-3/4' : 'w-full'}`}>
+                    <div className={`flex-grow ${offer.banner_image ? 'md:w-3/4' : 'w-full'}`}>
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <CardTitle className="text-lg">{offer.title}</CardTitle>
@@ -347,7 +368,7 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
                           </div>
                           
                           <div className="flex items-center">
-                            {offer.type === "percentage" && (
+                            {offer.type === "percentage" && offer.discount && (
                               <>
                                 <Percent className="h-4 w-4 mr-1 text-muted-foreground" />
                                 <span className="font-medium mr-1">Discount:</span>
@@ -381,6 +402,14 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
           )}
         </div>
       )}
+      
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Offer"
+        description="Are you sure you want to delete this offer? This action cannot be undone."
+      />
     </div>
   );
 };
