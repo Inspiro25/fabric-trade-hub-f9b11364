@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
@@ -8,7 +9,7 @@ import ShopFilters from './ShopFilters';
 import ShopTabContent from './ShopTabContent';
 import ShopDialogs from './ShopDialogs';
 import { ShopFormValues } from './ShopForm';
-import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/shops/crud';
+import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/supabase/shops';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();
@@ -72,6 +73,10 @@ const ShopManagement: React.FC = () => {
         reviewCount: 0,
         productIds: [],
         createdAt: new Date().toISOString(),
+        shopId: `shop-${Math.floor(Math.random() * 10000)}`,
+        ownerName: data.ownerName,
+        ownerEmail: data.ownerEmail,
+        status: data.status,
       };
       
       const shopId = await createShop(newShopData);
@@ -108,7 +113,14 @@ const ShopManagement: React.FC = () => {
     if (!shopToEdit) return;
     
     try {
-      const success = await updateShop(shopToEdit.id, data);
+      const success = await updateShop(shopToEdit.id, {
+        ...data,
+        rating: shopToEdit.rating,
+        reviewCount: shopToEdit.reviewCount,
+        productIds: shopToEdit.productIds,
+        createdAt: shopToEdit.createdAt,
+        shopId: shopToEdit.shopId
+      });
       
       if (success) {
         toast({

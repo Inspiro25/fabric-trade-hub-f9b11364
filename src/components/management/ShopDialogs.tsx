@@ -33,7 +33,7 @@ const ShopDialogs: React.FC<ShopDialogsProps> = ({
   return (
     <>
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Shop</DialogTitle>
             <DialogDescription>
@@ -51,7 +51,7 @@ const ShopDialogs: React.FC<ShopDialogsProps> = ({
       </Dialog>
       
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Shop</DialogTitle>
             <DialogDescription>
