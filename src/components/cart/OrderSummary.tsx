@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BadgePercent, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -36,12 +36,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
 
   return (
     <div className={`transition-all duration-500 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-      <Card className="border-none shadow-md overflow-hidden sticky top-20">
-        <CardHeader className="bg-gradient-to-r from-[#FFF0EA] to-[#FFEDDE] p-3">
-          <CardTitle className="text-base font-medium text-gray-800">Order Summary</CardTitle>
+      <Card className="border-none shadow-sm rounded-xl overflow-hidden sticky top-20">
+        <CardHeader className="bg-white border-b border-gray-100 p-3">
+          <CardTitle className="text-sm md:text-base font-medium text-gray-800">Order Summary</CardTitle>
         </CardHeader>
-        <CardContent className="p-3">
-          <div className="space-y-2 mb-4 text-sm">
+        <CardContent className="p-4 space-y-4">
+          <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal</span>
               <span className="font-medium">₹{subtotal.toFixed(2)}</span>
@@ -49,7 +49,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             
             {isPromoApplied && (
               <div className="flex justify-between text-green-600">
-                <span>Discount (10%)</span>
+                <span className="flex items-center gap-1">
+                  <BadgePercent className="w-3 h-3" />
+                  Discount (10%)
+                </span>
                 <span>-₹{discount.toFixed(2)}</span>
               </div>
             )}
@@ -67,13 +70,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             </div>
           </div>
           
-          <div className="mb-4">
-            <label htmlFor="promo-code" className="block text-xs font-medium mb-1">
-              Promo Code
-            </label>
+          <div className="bg-kutuku-light bg-opacity-50 p-3 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <BadgePercent className="w-4 h-4 text-kutuku-primary" />
+              <span className="text-sm font-medium text-gray-800">Apply Promo Code</span>
+            </div>
             <div className="flex">
               <Input 
-                id="promo-code" 
                 value={promoCode} 
                 onChange={e => setPromoCode(e.target.value)} 
                 placeholder="Enter code" 
@@ -101,16 +104,23 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             )}
           </div>
           
-          <Button 
-            className="w-full mb-2 bg-kutuku-primary hover:bg-kutuku-secondary" 
-            size="sm"
-            asChild
-          >
-            <Link to="/checkout" className="flex items-center justify-center">
-              Proceed to Checkout
-              <ArrowRight className="ml-1 w-3 h-3" />
-            </Link>
-          </Button>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Secure checkout with payment protection</span>
+            </div>
+            
+            <Button 
+              className="w-full bg-kutuku-primary hover:bg-kutuku-secondary rounded-full" 
+              size="sm"
+              asChild
+            >
+              <Link to="/checkout" className="flex items-center justify-center">
+                Proceed to Checkout
+                <ArrowRight className="ml-1 w-3 h-3" />
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

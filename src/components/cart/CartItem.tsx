@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, X } from 'lucide-react';
+import { Minus, Plus, Trash2 } from 'lucide-react';
 import { CartItem as CartItemType } from '@/contexts/CartContext';
 
 interface CartItemProps {
@@ -22,7 +22,7 @@ const CartItem: React.FC<CartItemProps> = ({
           <img 
             src={item.product.images[0]} 
             alt={item.product.name} 
-            className="w-14 h-14 object-cover rounded-md shadow-sm" 
+            className="w-16 h-16 object-cover rounded-lg shadow-sm" 
           />
         </Link>
       </div>
@@ -39,42 +39,47 @@ const CartItem: React.FC<CartItemProps> = ({
             {item.color}
           </span>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <div className="flex items-center border rounded-full overflow-hidden bg-white shadow-sm h-6">
+        
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center border rounded-full overflow-hidden bg-white shadow-sm h-6">
+            <button 
+              type="button" 
+              className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity - 1)} 
+              disabled={item.quantity <= 1}
+            >
+              <Minus className="w-2.5 h-2.5" />
+              <span className="sr-only">Decrease quantity</span>
+            </button>
+            <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+            <button 
+              type="button" 
+              className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity + 1)}
+            >
+              <Plus className="w-2.5 h-2.5" />
+              <span className="sr-only">Increase quantity</span>
+            </button>
+          </div>
+          
           <button 
             type="button" 
-            className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity - 1)} 
-            disabled={item.quantity <= 1}
+            className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-red-50"
+            onClick={() => removeFromCart(`${item.id}-${item.size}-${item.color}`)}
           >
-            <Minus className="w-2.5 h-2.5" />
-            <span className="sr-only">Decrease quantity</span>
-          </button>
-          <span className="w-5 text-center text-xs font-medium">{item.quantity}</span>
-          <button 
-            type="button" 
-            className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity + 1)}
-          >
-            <Plus className="w-2.5 h-2.5" />
-            <span className="sr-only">Increase quantity</span>
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="sr-only">Remove item</span>
           </button>
         </div>
-        
-        <span className="font-medium text-gray-800 text-xs min-w-14 text-right">
+      </div>
+      
+      <div className="text-right">
+        <span className="font-medium text-gray-800 text-sm min-w-14 block">
           ₹{((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
         </span>
-        
-        <button 
-          type="button" 
-          className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-red-50"
-          onClick={() => removeFromCart(`${item.id}-${item.size}-${item.color}`)}
-        >
-          <X className="w-3 h-3" />
-          <span className="sr-only">Remove item</span>
-        </button>
+        <span className="text-xs text-muted-foreground">
+          ₹{(item.product.salePrice || item.product.price).toFixed(2)} each
+        </span>
       </div>
     </li>
   );
