@@ -6,13 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useShopSearch, SortOption } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import ProductCard from '@/components/ui/ProductCard';
-
-type SortOption = 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest';
 
 const Search = () => {
   // Query parameters
