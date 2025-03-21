@@ -4,6 +4,13 @@ import { useAuth } from './AuthContext';
 import { Product } from '@/lib/products';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  fetchUserCart, 
+  upsertCartItem, 
+  removeCartItem, 
+  clearUserCart, 
+  updateCartItemQuantity 
+} from '@/lib/supabase/cart';
 
 export interface CartItem {
   id: string;
@@ -39,27 +46,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         if (currentUser) {
           // If user is logged in, get cart from Supabase
-          // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
-          const { data, error } = await supabase
-            .from('cart_items')
-            .select(`
-              id,
-              product_id,
-              quantity,
-              color,
-              size
-            `)
-            .eq('user_id', currentUser.uid);
+          const cartData = await fetchUserCart(currentUser.uid);
 
-          if (error) {
-            throw error;
-          }
-
-          if (data) {
+          if (cartData.length > 0) {
             // Fetch full product details for each cart item
             const cartWithProducts = await Promise.all(
-              data.map(async (item: any) => {
-                // @ts-ignore - TypeScript doesn't recognize the products table fields fully
+              cartData.map(async (item) => {
                 const { data: productData } = await supabase
                   .from('products')
                   .select('*')
@@ -87,7 +79,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 };
 
                 return {
-                  id: productData.id,
+                  id: item.product_id,
                   product,
                   quantity: item.quantity,
                   color: item.color,
@@ -97,6 +89,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             );
 
             setCartItems(cartWithProducts);
+          } else {
+            setCartItems([]);
           }
         } else {
           // If user is not logged in, use localStorage
@@ -159,21 +153,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (currentUser) {
-        // Save to Supabase
-        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
-        const { error } = await supabase
-          .from('cart_items')
-          .upsert({
-            user_id: currentUser.uid,
-            product_id: product.id,
-            quantity: newQuantity,
-            color,
-            size
-          }, {
-            onConflict: 'user_id, product_id, color, size'
-          });
-
-        if (error) throw error;
+        // Save to Supabase using the helper function
+        await upsertCartItem({
+          user_id: currentUser.uid,
+          product_id: product.id,
+          quantity: newQuantity,
+          color,
+          size
+        });
       }
       
       setCartItems(newCart);
@@ -194,17 +181,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       
       if (currentUser) {
-        // Remove from Supabase
-        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
-        const { error } = await supabase
-          .from('cart_items')
-          .delete()
-          .eq('user_id', currentUser.uid)
-          .eq('product_id', productId)
-          .eq('size', size)
-          .eq('color', color);
-
-        if (error) throw error;
+        // Remove from Supabase using the helper function
+        await removeCartItem(currentUser.uid, productId, size, color);
       }
       
       setCartItems(newCart);
@@ -230,17 +208,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (currentUser) {
-        // Update in Supabase
-        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
-        const { error } = await supabase
-          .from('cart_items')
-          .update({ quantity })
-          .eq('user_id', currentUser.uid)
-          .eq('product_id', productId)
-          .eq('size', size)
-          .eq('color', color);
-
-        if (error) throw error;
+        // Update in Supabase using the helper function
+        await updateCartItemQuantity(currentUser.uid, productId, size, color, quantity);
       }
       
       setCartItems(newCart);
@@ -254,14 +223,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = async () => {
     try {
       if (currentUser) {
-        // Clear from Supabase
-        // @ts-ignore - TypeScript doesn't recognize the cart_items table yet
-        const { error } = await supabase
-          .from('cart_items')
-          .delete()
-          .eq('user_id', currentUser.uid);
-
-        if (error) throw error;
+        // Clear from Supabase using the helper function
+        await clearUserCart(currentUser.uid);
       }
       
       setCartItems([]);
