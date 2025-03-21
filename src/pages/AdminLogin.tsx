@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Store, HandshakeIcon } from 'lucide-react';
+import { Lock, Store } from 'lucide-react';
 import { fetchShops } from '@/lib/shops';
 import PartnerRequestDialog from '@/components/management/PartnerRequestDialog';
 
@@ -62,11 +62,15 @@ const AdminLogin = () => {
     // If not found in hard-coded credentials, check against shops from the database
     try {
       const shops = await fetchShops();
-      const validShop = shops.find(shop => shop.shopId === data.shopId);
+      const validShop = shops.find(shop => 
+        shop.shopId === data.shopId && 
+        // Check if shop has a password stored, otherwise use the legacy fallback
+        (shop.password 
+          ? shop.password === data.password 
+          : `password${data.shopId.split('-')[1]}` === data.password)
+      );
       
-      // For this demo, we're using a simple password validation
-      // In a real app, you'd use proper password hashing and validation
-      if (validShop && data.password === `password${data.shopId.split('-')[1]}`) {
+      if (validShop) {
         sessionStorage.setItem('adminShopId', data.shopId);
         toast({
           title: "Login successful",

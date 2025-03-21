@@ -15,4 +15,5 @@ export interface Shop {
   ownerName?: string; // Owner name
   ownerEmail?: string; // Owner email
   status?: 'pending' | 'active' | 'suspended'; // Shop status
+  password?: string; // Password for admin login
 }

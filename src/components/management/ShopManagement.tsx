@@ -81,10 +81,11 @@ const ShopManagement: React.FC = () => {
         reviewCount: 0,
         productIds: [],
         createdAt: new Date().toISOString(),
-        shopId: `shop-${Math.floor(Math.random() * 10000)}`,
+        shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
         status: data.status,
+        password: data.password, // Store password for shop admin login
       };
       
       const shopId = await createShop(newShopData);
@@ -121,14 +122,21 @@ const ShopManagement: React.FC = () => {
     if (!shopToEdit) return;
     
     try {
-      const success = await updateShop(shopToEdit.id, {
+      // Only update password if a new one is provided
+      const updateData: Partial<Shop> = {
         ...data,
         rating: shopToEdit.rating,
         reviewCount: shopToEdit.reviewCount,
         productIds: shopToEdit.productIds,
         createdAt: shopToEdit.createdAt,
-        shopId: shopToEdit.shopId
-      });
+      };
+      
+      // If password field is empty, remove it from the update data
+      if (!data.password) {
+        delete updateData.password;
+      }
+      
+      const success = await updateShop(shopToEdit.id, updateData);
       
       if (success) {
         toast({

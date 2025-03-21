@@ -37,6 +37,8 @@ export const shopFormSchema = z.object({
   ownerName: z.string().min(2, "Owner name must be at least 2 characters"),
   ownerEmail: z.string().email("Must be a valid email address"),
   status: z.enum(['pending', 'active', 'suspended']).default('pending'),
+  shopId: z.string().min(4, "Shop ID must be at least 4 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export type ShopFormValues = z.infer<typeof shopFormSchema>;
@@ -68,6 +70,8 @@ const ShopForm: React.FC<ShopFormProps> = ({
       ownerName: initialData.ownerName || '',
       ownerEmail: initialData.ownerEmail || '',
       status: (initialData.status as any) || 'pending',
+      shopId: initialData.shopId || '',
+      password: '', // We don't display the existing password for security reasons
     } : {
       name: '',
       description: '',
@@ -78,6 +82,8 @@ const ShopForm: React.FC<ShopFormProps> = ({
       ownerName: '',
       ownerEmail: '',
       status: 'pending',
+      shopId: `shop-${Math.floor(Math.random() * 10000)}`,
+      password: '',
     },
   });
 
@@ -184,6 +190,51 @@ const ShopForm: React.FC<ShopFormProps> = ({
                 <FormControl>
                   <Input placeholder="Enter owner email" type="email" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="shopId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Shop ID</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Enter shop ID for login" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Used for admin login to the shop portal
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{initialData ? 'New Password' : 'Password'}</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="password" 
+                    placeholder={initialData ? "Enter new password (leave empty to keep current)" : "Enter shop password"}
+                    {...field} 
+                  />
+                </FormControl>
+                {initialData && (
+                  <FormDescription>
+                    Leave empty to keep the current password
+                  </FormDescription>
+                )}
                 <FormMessage />
               </FormItem>
             )}

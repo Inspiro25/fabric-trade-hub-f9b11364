@@ -31,7 +31,8 @@ export const fetchShops = async (): Promise<Shop[]> => {
       shopId: shop?.shop_id || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending'
+      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending',
+      password: shop?.password || '', // Added password field
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -70,7 +71,8 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       shopId: shop?.shop_id || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending'
+      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending',
+      password: shop?.password || '', // Added password field
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
@@ -81,19 +83,27 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
 // Function to update a shop
 export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<boolean> => {
   try {
+    const updateData: any = {
+      name: shopData.name,
+      description: shopData.description,
+      logo: shopData.logo,
+      cover_image: shopData.coverImage,
+      address: shopData.address,
+      is_verified: shopData.isVerified,
+      owner_name: shopData.ownerName,
+      owner_email: shopData.ownerEmail,
+      status: shopData.status,
+      shop_id: shopData.shopId,
+    };
+
+    // Only include password in the update if it was provided
+    if (shopData.password) {
+      updateData.password = shopData.password;
+    }
+    
     const { error } = await supabase
       .from('shops')
-      .update({
-        name: shopData.name,
-        description: shopData.description,
-        logo: shopData.logo,
-        cover_image: shopData.coverImage,
-        address: shopData.address,
-        is_verified: shopData.isVerified,
-        owner_name: shopData.ownerName,
-        owner_email: shopData.ownerEmail,
-        status: shopData.status
-      } as any)
+      .update(updateData)
       .eq('id', id);
     
     if (error) {
@@ -126,7 +136,8 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         shop_id: shopId,
         owner_name: shopData.ownerName,
         owner_email: shopData.ownerEmail,
-        status: shopData.status || 'pending'
+        status: shopData.status || 'pending',
+        password: shopData.password, // Store password for shop login
       } as any)
       .select()
       .single();
