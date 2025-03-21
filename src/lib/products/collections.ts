@@ -1,6 +1,6 @@
 
 import { db, collection, getDocs } from '@/lib/firebase';
-import { Product, products } from '@/lib/types/product';
+import { Product, productStore } from '@/lib/types/product';
 
 export const getTopRatedProducts = async (): Promise<Product[]> => {
   try {
@@ -17,10 +17,10 @@ export const getTopRatedProducts = async (): Promise<Product[]> => {
     }
     
     // Fallback to local data
-    return [...products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+    return [...productStore.products].sort((a, b) => b.rating - a.rating).slice(0, 8);
   } catch (error) {
     console.error('Error fetching top rated products:', error);
-    return [...products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+    return [...productStore.products].sort((a, b) => b.rating - a.rating).slice(0, 8);
   }
 };
 
@@ -39,10 +39,10 @@ export const getDiscountedProducts = async (): Promise<Product[]> => {
     }
     
     // Fallback to local data
-    return products.filter(product => product.salePrice !== undefined).slice(0, 8);
+    return productStore.products.filter(product => product.salePrice !== undefined).slice(0, 8);
   } catch (error) {
     console.error('Error fetching discounted products:', error);
-    return products.filter(product => product.salePrice !== undefined).slice(0, 8);
+    return productStore.products.filter(product => product.salePrice !== undefined).slice(0, 8);
   }
 };
 
@@ -61,9 +61,9 @@ export const getBestSellingProducts = async (): Promise<Product[]> => {
     }
     
     // Fallback to local data
-    return [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+    return [...productStore.products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
   } catch (error) {
     console.error('Error fetching best selling products:', error);
-    return [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+    return [...productStore.products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
   }
 };

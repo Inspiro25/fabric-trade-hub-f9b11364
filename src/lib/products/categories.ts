@@ -1,6 +1,6 @@
 
 import { db, collection, getDocs } from '@/lib/firebase';
-import { products } from '@/lib/types/product';
+import { productStore } from '@/lib/types/product';
 
 export const getAllCategories = async (): Promise<string[]> => {
   try {
@@ -14,11 +14,11 @@ export const getAllCategories = async (): Promise<string[]> => {
     }
     
     // Fallback to local data
-    const categories = new Set(products.map(product => product.category));
+    const categories = new Set(productStore.products.map(product => product.category));
     return Array.from(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);
-    const categories = new Set(products.map(product => product.category));
+    const categories = new Set(productStore.products.map(product => product.category));
     return Array.from(categories);
   }
 };

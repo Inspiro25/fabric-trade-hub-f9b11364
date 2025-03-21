@@ -1,6 +1,6 @@
 
 import { db, collection, getDocs, query, where } from '@/lib/firebase';
-import { Product, products } from '@/lib/types/product';
+import { Product, productStore } from '@/lib/types/product';
 
 // Function to get related products
 export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
@@ -40,12 +40,12 @@ export const getRelatedProducts = async (currentProductId: string, category: str
     }
     
     // Fallback to local data
-    return products
+    return productStore.products
       .filter(product => product.id !== currentProductId && product.category === category)
       .slice(0, 4);
   } catch (error) {
     console.error('Error fetching related products:', error);
-    return products
+    return productStore.products
       .filter(product => product.id !== currentProductId && product.category === category)
       .slice(0, 4);
   }
@@ -72,10 +72,10 @@ export const getNewArrivals = async (): Promise<Product[]> => {
     }
     
     // Fallback to local data
-    return products.filter(product => product.isNew).slice(0, 8);
+    return productStore.products.filter(product => product.isNew).slice(0, 8);
   } catch (error) {
     console.error('Error fetching new arrivals:', error);
-    return products.filter(product => product.isNew).slice(0, 8);
+    return productStore.products.filter(product => product.isNew).slice(0, 8);
   }
 };
 
@@ -99,10 +99,10 @@ export const getTrendingProducts = async (): Promise<Product[]> => {
     }
     
     // Fallback to local data
-    return products.filter(product => product.isTrending).slice(0, 8);
+    return productStore.products.filter(product => product.isTrending).slice(0, 8);
   } catch (error) {
     console.error('Error fetching trending products:', error);
-    return products.filter(product => product.isTrending).slice(0, 8);
+    return productStore.products.filter(product => product.isTrending).slice(0, 8);
   }
 };
 
@@ -126,10 +126,10 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
     }
     
     // Fallback to local data
-    return products.filter(product => product.category === category);
+    return productStore.products.filter(product => product.category === category);
   } catch (error) {
     console.error(`Error fetching products for category ${category}:`, error);
-    return products.filter(product => product.category === category);
+    return productStore.products.filter(product => product.category === category);
   }
 };
 
@@ -148,9 +148,9 @@ export const getProductsByTags = async (tag: string): Promise<Product[]> => {
     }
     
     // Fallback to local data
-    return products.filter(product => product.tags.includes(tag)).slice(0, 8);
+    return productStore.products.filter(product => product.tags.includes(tag)).slice(0, 8);
   } catch (error) {
     console.error(`Error fetching products with tag ${tag}:`, error);
-    return products.filter(product => product.tags.includes(tag)).slice(0, 8);
+    return productStore.products.filter(product => product.tags.includes(tag)).slice(0, 8);
   }
 };

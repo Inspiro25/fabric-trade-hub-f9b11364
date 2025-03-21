@@ -1,6 +1,6 @@
 
 import { db, collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc } from '@/lib/firebase';
-import { Product, products, mockProducts } from '@/lib/types/product';
+import { Product, mockProducts, productStore } from '@/lib/types/product';
 
 // Function to fetch all products from Firestore
 export const fetchProducts = async (): Promise<Product[]> => {
@@ -34,8 +34,8 @@ export const fetchProducts = async (): Promise<Product[]> => {
       } as Product;
     });
     
-    // Update local state
-    products = fetchedProducts;
+    // Update the product store
+    productStore.updateProducts(fetchedProducts);
     return fetchedProducts;
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -46,7 +46,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 // Initialize products from database
 (async () => {
   try {
-    products = await fetchProducts();
+    await fetchProducts();
   } catch (error) {
     console.error('Failed to initialize products from database:', error);
   }
@@ -80,10 +80,10 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
     }
     
     // Fallback to local cache
-    return products.find(product => product.id === id);
+    return productStore.products.find(product => product.id === id);
   } catch (error) {
     console.error('Error fetching product:', error);
-    return products.find(product => product.id === id);
+    return productStore.products.find(product => product.id === id);
   }
 };
 
@@ -98,7 +98,7 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
     };
     
     // Update local cache
-    products = [...products, newProduct];
+    productStore.addProduct(newProduct);
     
     return newProductRef.id;
   } catch (error) {
@@ -116,9 +116,7 @@ export const updateProduct = async (id: string, productData: Partial<Product>): 
     });
     
     // Update local cache
-    products = products.map(product => 
-      product.id === id ? { ...product, ...productData } : product
-    );
+    productStore.updateProduct(id, productData);
     
     return true;
   } catch (error) {
@@ -133,7 +131,7 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
     await deleteDoc(doc(db, 'products', id));
     
     // Update local cache
-    products = products.filter(product => product.id !== id);
+    productStore.removeProduct(id);
     
     return true;
   } catch (error) {

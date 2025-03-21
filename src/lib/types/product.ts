@@ -328,5 +328,36 @@ export const mockProducts: Product[] = [
   }
 ];
 
-// Shared state to store products - will be accessed by other modules
-export let products: Product[] = [...mockProducts];
+// Create a product store module to manage the products state
+class ProductStore {
+  private _products: Product[] = [...mockProducts];
+  
+  get products(): Product[] {
+    return [...this._products];
+  }
+  
+  set products(newProducts: Product[]) {
+    this._products = [...newProducts];
+  }
+  
+  updateProducts(newProducts: Product[]) {
+    this._products = [...newProducts];
+  }
+  
+  addProduct(product: Product) {
+    this._products = [...this._products, product];
+  }
+  
+  updateProduct(id: string, updatedProduct: Partial<Product>) {
+    this._products = this._products.map(product => 
+      product.id === id ? { ...product, ...updatedProduct } : product
+    );
+  }
+  
+  removeProduct(id: string) {
+    this._products = this._products.filter(product => product.id !== id);
+  }
+}
+
+// Create a singleton instance
+export const productStore = new ProductStore();
