@@ -46,6 +46,7 @@ import DashboardLayout from "./components/management/DashboardLayout";
 import ManagementDashboard from "./pages/ManagementDashboard";
 import ManagementShops from "./pages/ManagementShops";
 import ManagementOffers from "./pages/ManagementOffers";
+import ManagementShopPerformance from "./pages/ManagementShopPerformance";
 
 const queryClient = new QueryClient();
 
@@ -128,6 +129,7 @@ const AppContent = () => {
             <Route path="dashboard" element={<ManagementDashboard />} />
             <Route path="shops" element={<ManagementShops />} />
             <Route path="offers" element={<ManagementOffers />} />
+            <Route path="shop-performance" element={<ManagementShopPerformance />} />
             <Route path="analytics" element={<ManagementDashboard />} />
             <Route path="users" element={<ManagementDashboard />} />
             <Route path="settings" element={<ManagementDashboard />} />

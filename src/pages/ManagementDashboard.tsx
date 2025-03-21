@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, AreaChart, Bar, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ArrowUpRight, DollarSign, ShoppingCart, Store, Users, PlusCircle } from 'lucide-react';
+import { ArrowUpRight, DollarSign, ShoppingCart, Store, Users, PlusCircle, ChevronRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDashboardAnalytics } from '@/hooks/use-dashboard-analytics';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 const ManagementDashboard = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
   const { analytics, isLoading, refetch } = useDashboardAnalytics();
   const { toast } = useToast();
 
@@ -27,6 +26,10 @@ const ManagementDashboard = () => {
   const navigateToAddShop = () => {
     navigate('/management/shops');
     sessionStorage.setItem('openAddShopDialog', 'true');
+  };
+
+  const navigateToShopPerformance = () => {
+    navigate('/management/shop-performance');
   };
 
   return (
@@ -55,6 +58,16 @@ const ManagementDashboard = () => {
             <PlusCircle className="h-8 w-8 text-purple-500 mb-2" />
             <h3 className="font-medium">Add New Shop</h3>
             <p className="text-xs text-muted-foreground">Register a new merchant</p>
+          </div>
+        </Card>
+        
+        <Card className="p-4 hover:bg-gray-50 transition-colors cursor-pointer" onClick={navigateToShopPerformance}>
+          <div className="flex items-center justify-between h-24">
+            <div>
+              <h3 className="font-medium">Shop Performance</h3>
+              <p className="text-xs text-muted-foreground">View detailed performance metrics</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-gray-400" />
           </div>
         </Card>
       </div>
@@ -130,124 +143,84 @@ const ManagementDashboard = () => {
         </Card>
       </div>
       
-      {/* Charts */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="w-full md:w-auto grid grid-cols-2 md:flex">
-          <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>
-          <TabsTrigger value="shops" className="text-xs md:text-sm">Shop Performance</TabsTrigger>
-        </TabsList>
+      {/* Chart - Removed the tabs and only kept the overview chart */}
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-base md:text-lg">Revenue & Orders</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Monthly sales revenue and order count
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-64 md:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={analytics?.monthlySalesData}
+                margin={{ 
+                  top: 20, 
+                  right: isMobile ? 10 : 30, 
+                  left: isMobile ? 0 : 20, 
+                  bottom: 5 
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                <YAxis 
+                  yAxisId="left" 
+                  orientation="left" 
+                  stroke="#8884d8"
+                  width={isMobile ? 30 : 40}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  stroke="#82ca9d"
+                  width={isMobile ? 30 : 40}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                />
+                <Tooltip contentStyle={{ fontSize: isMobile ? 10 : 12 }} />
+                <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
+                <Bar yAxisId="left" dataKey="totalSales" name="Revenue ($)" fill="#8884d8" />
+                <Bar yAxisId="right" dataKey="totalOrders" name="Orders" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
         
-        <TabsContent value="overview" className="space-y-4">
-          <Card>
-            <CardHeader className="pb-2 md:pb-4">
-              <CardTitle className="text-base md:text-lg">Revenue & Orders</CardTitle>
-              <CardDescription className="text-xs md:text-sm">
-                Monthly sales revenue and order count
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-64 md:h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={analytics?.monthlySalesData}
-                  margin={{ 
-                    top: 20, 
-                    right: isMobile ? 10 : 30, 
-                    left: isMobile ? 0 : 20, 
-                    bottom: 5 
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tick={{ fontSize: isMobile ? 10 : 12 }} />
-                  <YAxis 
-                    yAxisId="left" 
-                    orientation="left" 
-                    stroke="#8884d8"
-                    width={isMobile ? 30 : 40}
-                    tick={{ fontSize: isMobile ? 10 : 12 }}
-                  />
-                  <YAxis 
-                    yAxisId="right" 
-                    orientation="right" 
-                    stroke="#82ca9d"
-                    width={isMobile ? 30 : 40}
-                    tick={{ fontSize: isMobile ? 10 : 12 }}
-                  />
-                  <Tooltip contentStyle={{ fontSize: isMobile ? 10 : 12 }} />
-                  <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
-                  <Bar yAxisId="left" dataKey="totalSales" name="Revenue ($)" fill="#8884d8" />
-                  <Bar yAxisId="right" dataKey="totalOrders" name="Orders" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2 md:pb-4">
-              <CardTitle className="text-base md:text-lg">Growth Trend</CardTitle>
-              <CardDescription className="text-xs md:text-sm">
-                Platform growth metrics
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-64 md:h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={analytics?.monthlySalesData}
-                  margin={{ 
-                    top: 20, 
-                    right: isMobile ? 10 : 30, 
-                    left: isMobile ? 0 : 20, 
-                    bottom: 5 
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tick={{ fontSize: isMobile ? 10 : 12 }} />
-                  <YAxis 
-                    width={isMobile ? 30 : 40}
-                    tick={{ fontSize: isMobile ? 10 : 12 }}
-                  />
-                  <Tooltip contentStyle={{ fontSize: isMobile ? 10 : 12 }} />
-                  <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
-                  <Area type="monotone" dataKey="totalSales" name="Revenue ($)" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-                  <Area type="monotone" dataKey="totalOrders" name="Orders" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="shops" className="space-y-4">
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {analytics?.shopPerformance.map((shop) => (
-              <Card key={shop.name}>
-                <CardHeader className="pb-2 md:pb-4">
-                  <CardTitle className="text-base md:text-lg">{shop.name}</CardTitle>
-                  <CardDescription className="text-xs md:text-sm">Performance metrics</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-xs md:text-sm">
-                    <div className="flex items-center justify-between">
-                      <span>Total Sales:</span>
-                      <span className="font-medium">${shop.sales.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Orders:</span>
-                      <span className="font-medium">{shop.orders}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Profit:</span>
-                      <span className="font-medium">${shop.profit.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Conversion Rate:</span>
-                      <span className="font-medium">{Math.round((shop.orders / 1200) * 100)}%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+        <Card>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-base md:text-lg">Growth Trend</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Platform growth metrics
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-64 md:h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={analytics?.monthlySalesData}
+                margin={{ 
+                  top: 20, 
+                  right: isMobile ? 10 : 30, 
+                  left: isMobile ? 0 : 20, 
+                  bottom: 5 
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: isMobile ? 10 : 12 }} />
+                <YAxis 
+                  width={isMobile ? 30 : 40}
+                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                />
+                <Tooltip contentStyle={{ fontSize: isMobile ? 10 : 12 }} />
+                <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12 }} />
+                <Area type="monotone" dataKey="totalSales" name="Revenue ($)" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
+                <Area type="monotone" dataKey="totalOrders" name="Orders" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
