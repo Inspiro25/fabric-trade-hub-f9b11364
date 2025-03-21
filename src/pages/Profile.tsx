@@ -93,16 +93,25 @@ const ProfilePage = () => {
       <div className="pb-16 bg-gray-50 min-h-screen">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-3 py-2 border-b border-gray-200">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 rounded-full" 
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft size={16} />
+              </Button>
+              <h1 className="text-lg font-semibold">My Profile</h1>
+            </div>
             <Button 
               variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full" 
-              onClick={() => navigate(-1)}
+              size="sm"
+              onClick={() => navigate('/auth')}
             >
-              <ArrowLeft size={16} />
+              Sign In
             </Button>
-            <h1 className="text-lg font-semibold">My Profile</h1>
           </div>
         </div>
         
