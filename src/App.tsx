@@ -16,6 +16,8 @@ import Checkout from "./pages/Checkout";
 import Search from "./pages/Search";
 import Wishlist from "./pages/Wishlist";
 import Notifications from "./pages/Notifications";
+import Orders from "./pages/Orders";
+import Tracking from "./pages/Tracking";
 import { lazy, Suspense } from "react";
 import MobileAppLayout from "./components/features/MobileAppLayout";
 import { useIsMobile } from "./hooks/use-mobile";
@@ -45,6 +47,8 @@ const AppContent = () => {
             <Route path="/search" element={<Search />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/tracking/:id" element={<Tracking />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
             <Route path="*" element={<NotFound />} />
@@ -60,6 +64,8 @@ const AppContent = () => {
           <Route path="/search" element={<Search />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/tracking/:id" element={<Tracking />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
           <Route path="*" element={<NotFound />} />
