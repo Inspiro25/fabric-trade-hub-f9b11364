@@ -156,34 +156,34 @@ const Orders = () => {
             <TabsTrigger value="shipped" className="text-xs">Shipped</TabsTrigger>
             <TabsTrigger value="delivered" className="text-xs">Delivered</TabsTrigger>
           </TabsList>
+          
+          {/* Order List - Moved TabsContent inside the Tabs component */}
+          <div className="p-3">
+            <TabsContent value="all" className="mt-0">
+              {orders.map((order) => (
+                <OrderItem key={order.id} order={order} />
+              ))}
+            </TabsContent>
+            
+            <TabsContent value="processing" className="mt-0">
+              {orders.filter(o => o.status === 'Processing').map((order) => (
+                <OrderItem key={order.id} order={order} />
+              ))}
+            </TabsContent>
+            
+            <TabsContent value="shipped" className="mt-0">
+              {orders.filter(o => o.status === 'Shipped').map((order) => (
+                <OrderItem key={order.id} order={order} />
+              ))}
+            </TabsContent>
+            
+            <TabsContent value="delivered" className="mt-0">
+              {orders.filter(o => o.status === 'Delivered').map((order) => (
+                <OrderItem key={order.id} order={order} />
+              ))}
+            </TabsContent>
+          </div>
         </Tabs>
-      </div>
-      
-      {/* Order List */}
-      <div className="p-3">
-        <TabsContent value="all" className="mt-0">
-          {orders.map((order) => (
-            <OrderItem key={order.id} order={order} />
-          ))}
-        </TabsContent>
-        
-        <TabsContent value="processing" className="mt-0">
-          {orders.filter(o => o.status === 'Processing').map((order) => (
-            <OrderItem key={order.id} order={order} />
-          ))}
-        </TabsContent>
-        
-        <TabsContent value="shipped" className="mt-0">
-          {orders.filter(o => o.status === 'Shipped').map((order) => (
-            <OrderItem key={order.id} order={order} />
-          ))}
-        </TabsContent>
-        
-        <TabsContent value="delivered" className="mt-0">
-          {orders.filter(o => o.status === 'Delivered').map((order) => (
-            <OrderItem key={order.id} order={order} />
-          ))}
-        </TabsContent>
       </div>
     </div>
   );
