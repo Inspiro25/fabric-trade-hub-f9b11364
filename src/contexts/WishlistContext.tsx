@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -9,10 +8,11 @@ import {
   removeFromWishlist as removeFromWishlistService,
   isInWishlist as checkIsInWishlist
 } from '@/services/wishlistService';
+import { Product } from '@/lib/products';
 
 interface WishlistContextType {
   wishlist: string[];
-  addToWishlist: (productId: string) => Promise<void>;
+  addToWishlist: (product: Product) => Promise<void>;
   removeFromWishlist: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   isLoading: boolean;
@@ -25,13 +25,11 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser } = useAuth();
   
-  // Fetch wishlist when user changes
   useEffect(() => {
     const fetchWishlist = async () => {
       setIsLoading(true);
       try {
         if (currentUser) {
-          // If logged in, fetch from Supabase
           const { data, error } = await supabase
             .from('user_wishlists')
             .select('product_id')
@@ -39,23 +37,19 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           
           if (error) {
             console.error('Error fetching wishlist:', error);
-            // Fall back to local storage
             const savedWishlist = localStorage.getItem('wishlist');
             setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
           } else {
             const productIds = data.map(item => item.product_id);
             setWishlist(productIds);
-            // Update local storage to match database
             localStorage.setItem('wishlist', JSON.stringify(productIds));
           }
         } else {
-          // If not logged in, use localStorage
           const savedWishlist = localStorage.getItem('wishlist');
           setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
         }
       } catch (error) {
         console.error('Error fetching wishlist:', error);
-        // Fall back to local storage
         const savedWishlist = localStorage.getItem('wishlist');
         setWishlist(savedWishlist ? JSON.parse(savedWishlist) : []);
       } finally {
@@ -66,20 +60,18 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetchWishlist();
   }, [currentUser]);
 
-  // Save to localStorage whenever wishlist changes (as a backup)
   useEffect(() => {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
-  const addToWishlist = async (productId: string) => {
+  const addToWishlist = async (product: Product) => {
     try {
-      if (wishlist.includes(productId)) return;
+      if (wishlist.includes(product.id)) return;
       
       if (currentUser) {
-        // Add to database if user is logged in
         const { error } = await supabase.from('user_wishlists').insert({
           user_id: currentUser.uid,
-          product_id: productId
+          product_id: product.id
         });
         
         if (error) {
@@ -89,8 +81,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       }
       
-      // Update state
-      setWishlist(prev => [...prev, productId]);
+      setWishlist(prev => [...prev, product.id]);
       toast.success('Added to wishlist');
     } catch (error) {
       console.error('Error adding to wishlist:', error);
@@ -101,7 +92,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const removeFromWishlist = async (productId: string) => {
     try {
       if (currentUser) {
-        // Remove from database if user is logged in
         const { error } = await supabase
           .from('user_wishlists')
           .delete()
@@ -115,7 +105,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       }
       
-      // Update state
       setWishlist(prev => prev.filter(id => id !== productId));
       toast.success('Removed from wishlist');
     } catch (error) {

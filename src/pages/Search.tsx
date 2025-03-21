@@ -80,10 +80,9 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { CalendarIcon, CheckCircledIcon, Copy, Filter, Heart, Loader2, MoreVertical, Plus, Search as SearchIcon, Share2, ShoppingCart, SortAsc, SortDesc, X } from 'lucide-react';
+import { CalendarIcon, CheckCircleIcon, Copy, Filter, Heart, Loader2, MoreVertical, Plus, Search as SearchIcon, Share2, ShoppingCart, SortAsc, SortDesc, X } from 'lucide-react';
 import { addDays, format } from "date-fns"
 
-// Define the type for the product
 interface Product {
   id: string;
   name: string;
@@ -101,7 +100,6 @@ interface Product {
   shop_id: string | null;
 }
 
-// Define the type for the category
 interface Category {
   id: string;
   name: string;
@@ -109,7 +107,6 @@ interface Category {
   image: string | null;
 }
 
-// Define the type for the shop
 interface Shop {
   id: string;
   name: string;
@@ -126,13 +123,11 @@ interface Shop {
   status: string | null;
 }
 
-// Define the type for the filter
 interface FilterOption {
   label: string;
   value: string;
 }
 
-// Define the type for the sort option
 type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating';
 
 const Search = () => {
@@ -154,9 +149,9 @@ const Search = () => {
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
-  const { addItem: addItemToCart } = useCart();
-  const { addItem: addItemToWishlist } = useWishlist();
-  const { isLoggedIn } = useAuth();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
+  const { currentUser } = useAuth();
   const isMobile = useIsMobile();
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
@@ -169,7 +164,7 @@ const Search = () => {
   const [date, setDate] = useState<Date | undefined>(new Date())
 
   const handleAddToCart = async (product: Product) => {
-    if (!isLoggedIn) {
+    if (!currentUser) {
       setSelectedProduct(product);
       setIsDialogOpen(true);
       return;
@@ -177,7 +172,7 @@ const Search = () => {
 
     setIsAddingToCart(product.id);
     try {
-      await addItemToCart(product, 1, product.colors ? product.colors[0] : null, product.sizes ? product.sizes[0] : null);
+      await addToCart(product, 1, product.colors ? product.colors[0] : null, product.sizes ? product.sizes[0] : null);
       toast({
         title: "Success",
         description: `${product.name} added to cart.`,
@@ -194,7 +189,7 @@ const Search = () => {
   };
 
   const handleAddToWishlist = async (product: Product) => {
-    if (!isLoggedIn) {
+    if (!currentUser) {
       setSelectedProduct(product);
       setIsDialogOpen(true);
       return;
@@ -202,7 +197,7 @@ const Search = () => {
 
     setIsAddingToWishlist(product.id);
     try {
-      await addItemToWishlist(product);
+      await addToWishlist(product);
       toast({
         title: "Success",
         description: `${product.name} added to wishlist.`,
@@ -236,7 +231,6 @@ const Search = () => {
       setError(null);
 
       try {
-        // Fetch products based on the search query
         const productsResponse = await fetch(`/api/products?q=${query}`);
         if (!productsResponse.ok) {
           throw new Error(`Failed to fetch products: ${productsResponse.status}`);
@@ -244,7 +238,6 @@ const Search = () => {
         const productsData = await productsResponse.json();
         setProducts(productsData);
 
-        // Fetch categories
         const categoriesResponse = await fetch('/api/categories');
         if (!categoriesResponse.ok) {
           throw new Error(`Failed to fetch categories: ${categoriesResponse.status}`);
@@ -252,7 +245,6 @@ const Search = () => {
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData);
 
-        // Fetch shops
         const shopsResponse = await fetch('/api/shops');
         if (!shopsResponse.ok) {
           throw new Error(`Failed to fetch shops: ${shopsResponse.status}`);
@@ -694,7 +686,7 @@ const Search = () => {
             <Button variant="secondary" size="sm" onClick={copyToClipboard} disabled={isCopied}>
               {isCopied ? (
                 <>
-                  <CheckCircledIcon className="mr-2 h-4 w-4" />
+                  <CheckCircleIcon className="mr-2 h-4 w-4" />
                   Copied!
                 </>
               ) : (
