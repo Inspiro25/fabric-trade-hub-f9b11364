@@ -56,6 +56,7 @@ const Settings = () => {
   // Notification settings state
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [smsNotifications, setSmsNotifications] = useState(false); // Add state for SMS notifications
   
   // Language state
   const [language, setLanguage] = useState('English');
@@ -72,6 +73,7 @@ const Settings = () => {
       if (userProfile.preferences?.notifications) {
         setEmailNotifications(userProfile.preferences.notifications.email);
         setPushNotifications(userProfile.preferences.notifications.push);
+        setSmsNotifications(userProfile.preferences.notifications.sms);
       }
       
       // Initialize language preference if available
@@ -100,7 +102,7 @@ const Settings = () => {
           notifications: {
             email: emailNotifications,
             push: pushNotifications,
-            sms: userProfile?.preferences?.notifications?.sms || false
+            sms: smsNotifications
           },
           language
         }
@@ -131,8 +133,9 @@ const Settings = () => {
         preferences: {
           ...(userProfile?.preferences || {}),
           notifications: {
-            ...(userProfile?.preferences?.notifications || {}),
-            push: newValue
+            email: emailNotifications,
+            push: newValue,
+            sms: smsNotifications
           }
         }
       });
@@ -161,8 +164,9 @@ const Settings = () => {
         preferences: {
           ...(userProfile?.preferences || {}),
           notifications: {
-            ...(userProfile?.preferences?.notifications || {}),
-            email: newValue
+            email: newValue,
+            push: pushNotifications,
+            sms: smsNotifications
           }
         }
       });
@@ -181,6 +185,38 @@ const Settings = () => {
       });
     }
   };
+
+  // Add a toggle for SMS notifications
+  const toggleSmsNotifications = async () => {
+    const newValue = !smsNotifications;
+    setSmsNotifications(newValue);
+    
+    try {
+      await updateUserProfile({
+        preferences: {
+          ...(userProfile?.preferences || {}),
+          notifications: {
+            email: emailNotifications,
+            push: pushNotifications,
+            sms: newValue
+          }
+        }
+      });
+      
+      toast({
+        title: `SMS Notifications ${newValue ? 'Enabled' : 'Disabled'}`,
+        description: `You will ${newValue ? 'now' : 'no longer'} receive SMS notifications.`,
+      });
+    } catch (error) {
+      // Revert the UI state if update fails
+      setSmsNotifications(!newValue);
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating your notification settings.",
+        variant: "destructive",
+      });
+    }
+  };
   
   const handleLanguageChange = async (newLanguage: string) => {
     setLanguage(newLanguage);
@@ -189,7 +225,12 @@ const Settings = () => {
       await updateUserProfile({
         preferences: {
           ...(userProfile?.preferences || {}),
-          language: newLanguage
+          language: newLanguage,
+          notifications: {
+            email: emailNotifications,
+            push: pushNotifications,
+            sms: smsNotifications
+          }
         }
       });
       
@@ -284,6 +325,15 @@ const Settings = () => {
               title="Email Notifications"
               description="Receive notifications via email"
               action={<Switch checked={emailNotifications} onCheckedChange={toggleEmailNotifications} />}
+            />
+
+            <Separator className="dark:bg-gray-700" />
+            
+            <SettingItem
+              icon={<Bell size={18} />}
+              title="SMS Notifications"
+              description="Receive notifications via SMS"
+              action={<Switch checked={smsNotifications} onCheckedChange={toggleSmsNotifications} />}
             />
           </div>
           
