@@ -104,9 +104,14 @@ const ManagementShops = () => {
 
   const handleAddShop = async (data: ShopFormValues) => {
     try {
-      // Add default values that aren't part of the form
-      const newShopData = {
-        ...data,
+      // Ensure all required properties are included with non-optional values
+      const newShopData: Omit<Shop, "id"> = {
+        name: data.name,
+        description: data.description,
+        address: data.address,
+        logo: data.logo || '/placeholder.svg',
+        coverImage: data.coverImage || '/placeholder.svg',
+        isVerified: data.isVerified || false,
         rating: 0,
         reviewCount: 0,
         productIds: [],
