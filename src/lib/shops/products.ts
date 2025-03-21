@@ -1,8 +1,7 @@
-
-import { db, doc, collection, getDocs, query, where } from '@/lib/firebase';
 import { Product } from '@/lib/products';
-import { shops } from './mockData';
 import { getShopById } from './crud';
+import { getShopProducts as supabaseGetShopProducts } from '@/lib/supabase/products';
+import { shops } from './mockData';
 
 // Function to get products for a shop
 export const getShopProducts = async (shopId: string, allProducts?: Product[]): Promise<Product[]> => {
@@ -10,31 +9,11 @@ export const getShopProducts = async (shopId: string, allProducts?: Product[]): 
     const shop = await getShopById(shopId);
     if (!shop) return [];
     
-    // First try to get products from database
-    const productsQuery = query(collection(db, 'products'), where('shopId', '==', shopId));
-    const productsSnapshot = await getDocs(productsQuery);
+    // Get products from Supabase
+    const products = await supabaseGetShopProducts(shopId);
     
-    if (!productsSnapshot.empty) {
-      return productsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          salePrice: data.salePrice,
-          images: data.images || [],
-          category: data.category,
-          colors: data.colors || [],
-          sizes: data.sizes || [],
-          isNew: data.isNew,
-          isTrending: data.isTrending,
-          rating: data.rating,
-          reviewCount: data.reviewCount,
-          stock: data.stock,
-          tags: data.tags || [],
-        } as Product;
-      });
+    if (products.length > 0) {
+      return products;
     }
     
     // If allProducts was provided, use it for the fallback

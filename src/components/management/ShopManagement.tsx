@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { TabsContent } from '@/components/ui/tabs';
-import { createShop, deleteShop, fetchShops, updateShop } from '@/lib/shops';
 import { useToast } from '@/hooks/use-toast';
 import { Shop } from '@/lib/shops/types';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -10,6 +9,7 @@ import ShopFilters from './ShopFilters';
 import ShopTabContent from './ShopTabContent';
 import ShopDialogs from './ShopDialogs';
 import { ShopFormValues } from './ShopForm';
+import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/supabase/shops';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();

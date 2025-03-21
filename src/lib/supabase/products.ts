@@ -1,0 +1,229 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/lib/products";
+
+// Function to fetch all products from Supabase
+export const fetchProducts = async (): Promise<Product[]> => {
+  try {
+    const { data: products, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        shops(*),
+        categories(*)
+      `);
+    
+    if (error) {
+      console.error('Error fetching products:', error);
+      throw error;
+    }
+    
+    return products.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      salePrice: product.sale_price,
+      images: product.images || [],
+      category: product.categories?.name || '',
+      colors: product.colors || [],
+      sizes: product.sizes || [],
+      isNew: product.is_new || false,
+      isTrending: product.is_trending || false,
+      rating: product.rating || 0,
+      reviewCount: product.review_count || 0,
+      stock: product.stock || 0,
+      tags: product.tags || [],
+      shopId: product.shop_id,
+    }));
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+};
+
+// Get product by ID
+export const getProductById = async (id: string): Promise<Product | undefined> => {
+  try {
+    const { data: product, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        shops(*),
+        categories(*)
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      console.error(`Error fetching product ${id}:`, error);
+      return undefined;
+    }
+    
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      salePrice: product.sale_price,
+      images: product.images || [],
+      category: product.categories?.name || '',
+      colors: product.colors || [],
+      sizes: product.sizes || [],
+      isNew: product.is_new || false,
+      isTrending: product.is_trending || false,
+      rating: product.rating || 0,
+      reviewCount: product.review_count || 0,
+      stock: product.stock || 0,
+      tags: product.tags || [],
+      shopId: product.shop_id,
+    };
+  } catch (error) {
+    console.error(`Error fetching product ${id}:`, error);
+    return undefined;
+  }
+};
+
+// Get products by shop ID
+export const getShopProducts = async (shopId: string): Promise<Product[]> => {
+  try {
+    const { data: products, error } = await supabase
+      .from('products')
+      .select(`
+        *,
+        categories(*)
+      `)
+      .eq('shop_id', shopId);
+    
+    if (error) {
+      console.error(`Error fetching products for shop ${shopId}:`, error);
+      return [];
+    }
+    
+    return products.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      salePrice: product.sale_price,
+      images: product.images || [],
+      category: product.categories?.name || '',
+      colors: product.colors || [],
+      sizes: product.sizes || [],
+      isNew: product.is_new || false,
+      isTrending: product.is_trending || false,
+      rating: product.rating || 0,
+      reviewCount: product.review_count || 0,
+      stock: product.stock || 0,
+      tags: product.tags || [],
+      shopId: product.shop_id,
+    }));
+  } catch (error) {
+    console.error(`Error fetching products for shop ${shopId}:`, error);
+    return [];
+  }
+};
+
+// Create a new product
+export const createProduct = async (productData: Omit<Product, 'id'>): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .insert({
+        name: productData.name,
+        description: productData.description,
+        price: productData.price,
+        sale_price: productData.salePrice,
+        images: productData.images,
+        category_id: productData.category, // Assuming category is the category ID
+        shop_id: productData.shopId,
+        colors: productData.colors,
+        sizes: productData.sizes,
+        is_new: productData.isNew,
+        is_trending: productData.isTrending,
+        stock: productData.stock,
+        tags: productData.tags,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating product:', error);
+      return null;
+    }
+    
+    return data.id;
+  } catch (error) {
+    console.error('Error creating product:', error);
+    return null;
+  }
+};
+
+// Update a product
+export const updateProduct = async (id: string, productData: Partial<Product>): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .update({
+        name: productData.name,
+        description: productData.description,
+        price: productData.price,
+        sale_price: productData.salePrice,
+        images: productData.images,
+        category_id: productData.category, // Assuming category is the category ID
+        colors: productData.colors,
+        sizes: productData.sizes,
+        is_new: productData.isNew,
+        is_trending: productData.isTrending,
+        stock: productData.stock,
+        tags: productData.tags,
+      })
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating product:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating product:', error);
+    return false;
+  }
+};
+
+// Delete a product
+export const deleteProduct = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting product:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    return false;
+  }
+};
+
+// Fetch categories
+export const fetchCategories = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*');
+      
+    if (error) throw error;
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+};

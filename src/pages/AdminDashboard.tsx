@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getShopById } from '@/lib/shops';
-import { getShopProducts } from '@/lib/shops';
+import { getShopById } from '@/lib/supabase/shops';
+import { getShopProducts } from '@/lib/supabase/products';
 import { Product } from '@/lib/products';
 import { Store, Package, LogOut, Plus, Settings, ChevronLeft, Percent } from 'lucide-react';
 import ShopDetailsEditor from '@/components/admin/ShopDetailsEditor';

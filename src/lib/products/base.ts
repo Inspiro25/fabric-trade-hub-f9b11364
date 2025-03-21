@@ -1,45 +1,24 @@
 
-import { db, collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc } from '@/lib/firebase';
-import { Product, mockProducts, productStore } from '@/lib/types/product';
+import { Product } from '@/lib/types/product';
+import { 
+  fetchProducts as supabaseFetchProducts,
+  getProductById as supabaseGetProductById,
+  createProduct as supabaseCreateProduct,
+  updateProduct as supabaseUpdateProduct,
+  deleteProduct as supabaseDeleteProduct
+} from '@/lib/supabase/products';
+import { productStore } from '@/lib/types/product';
 
-// Function to fetch all products from Firestore
+// Function to fetch all products
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
-    const productsSnapshot = await getDocs(collection(db, 'products'));
-    
-    if (productsSnapshot.empty) {
-      console.log('No products found in database, using mock data');
-      return mockProducts;
-    }
-    
-    const fetchedProducts = productsSnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        salePrice: data.salePrice,
-        images: data.images || [],
-        category: data.category,
-        colors: data.colors || [],
-        sizes: data.sizes || [],
-        isNew: data.isNew,
-        isTrending: data.isTrending,
-        rating: data.rating,
-        reviewCount: data.reviewCount,
-        stock: data.stock,
-        tags: data.tags || [],
-        shopId: data.shopId,
-      } as Product;
-    });
-    
+    const products = await supabaseFetchProducts();
     // Update the product store
-    productStore.updateProducts(fetchedProducts);
-    return fetchedProducts;
+    productStore.updateProducts(products);
+    return products;
   } catch (error) {
     console.error('Error fetching products:', error);
-    return mockProducts;
+    return productStore.products; // Fallback to local cache
   }
 };
 
@@ -55,32 +34,8 @@ export const fetchProducts = async (): Promise<Product[]> => {
 // Get product by ID
 export const getProductById = async (id: string): Promise<Product | undefined> => {
   try {
-    const productDoc = await getDoc(doc(db, 'products', id));
-    
-    if (productDoc.exists()) {
-      const data = productDoc.data();
-      return {
-        id: productDoc.id,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        salePrice: data.salePrice,
-        images: data.images || [],
-        category: data.category,
-        colors: data.colors || [],
-        sizes: data.sizes || [],
-        isNew: data.isNew,
-        isTrending: data.isTrending,
-        rating: data.rating,
-        reviewCount: data.reviewCount,
-        stock: data.stock,
-        tags: data.tags || [],
-        shopId: data.shopId,
-      } as Product;
-    }
-    
-    // Fallback to local cache
-    return productStore.products.find(product => product.id === id);
+    const product = await supabaseGetProductById(id);
+    return product;
   } catch (error) {
     console.error('Error fetching product:', error);
     return productStore.products.find(product => product.id === id);
@@ -90,17 +45,19 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 // Create a new product
 export const createProduct = async (productData: Omit<Product, 'id'>): Promise<string | null> => {
   try {
-    const newProductRef = await addDoc(collection(db, 'products'), productData);
+    const productId = await supabaseCreateProduct(productData);
     
-    const newProduct = {
-      id: newProductRef.id,
-      ...productData,
-    };
+    if (productId) {
+      const newProduct = {
+        id: productId,
+        ...productData,
+      };
+      
+      // Update local cache
+      productStore.addProduct(newProduct);
+    }
     
-    // Update local cache
-    productStore.addProduct(newProduct);
-    
-    return newProductRef.id;
+    return productId;
   } catch (error) {
     console.error('Error creating product:', error);
     return null;
@@ -110,15 +67,14 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
 // Update a product
 export const updateProduct = async (id: string, productData: Partial<Product>): Promise<boolean> => {
   try {
-    await updateDoc(doc(db, 'products', id), {
-      ...productData,
-      id: undefined, // Prevent updating the ID
-    });
+    const success = await supabaseUpdateProduct(id, productData);
     
-    // Update local cache
-    productStore.updateProduct(id, productData);
+    if (success) {
+      // Update local cache
+      productStore.updateProduct(id, productData);
+    }
     
-    return true;
+    return success;
   } catch (error) {
     console.error('Error updating product:', error);
     return false;
@@ -128,12 +84,14 @@ export const updateProduct = async (id: string, productData: Partial<Product>): 
 // Delete a product
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
-    await deleteDoc(doc(db, 'products', id));
+    const success = await supabaseDeleteProduct(id);
     
-    // Update local cache
-    productStore.removeProduct(id);
+    if (success) {
+      // Update local cache
+      productStore.removeProduct(id);
+    }
     
-    return true;
+    return success;
   } catch (error) {
     console.error('Error deleting product:', error);
     return false;
