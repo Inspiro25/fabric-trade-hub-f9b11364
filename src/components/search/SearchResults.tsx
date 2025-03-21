@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import SearchProductCard, { SearchPageProduct } from './SearchProductCard';
+import { Button } from '@/components/ui/button';
 
 interface SearchResultsProps {
   loading: boolean;
@@ -12,6 +13,7 @@ interface SearchResultsProps {
   handleAddToCart: (product: SearchPageProduct) => void;
   handleAddToWishlist: (product: SearchPageProduct) => void;
   handleShareProduct: (product: SearchPageProduct) => void;
+  onRetry?: () => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
@@ -22,7 +24,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   isAddingToWishlist,
   handleAddToCart,
   handleAddToWishlist,
-  handleShareProduct
+  handleShareProduct,
+  onRetry
 }) => {
   if (loading) {
     return (
@@ -34,10 +37,28 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   }
   
   if (error) {
+    const isApiUnavailable = error.includes('API endpoint might be unavailable') || 
+                            error.includes('HTML instead of JSON');
+    
     return (
       <div className="text-red-500 py-8 text-center">
         <p className="mb-2 font-semibold">Error: {error}</p>
-        <p className="text-sm">Please try refreshing the page or try again later.</p>
+        <p className="text-sm mb-4">
+          {isApiUnavailable 
+            ? 'The product API is currently unavailable. This might be because the backend service is down.' 
+            : 'Please try refreshing the page or try again later.'}
+        </p>
+        
+        {onRetry && (
+          <Button 
+            onClick={onRetry} 
+            variant="outline" 
+            className="flex items-center"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        )}
       </div>
     );
   }

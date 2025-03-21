@@ -8,6 +8,7 @@ import SearchSort from '@/components/search/SearchSort';
 import SearchResults from '@/components/search/SearchResults';
 import ShareDialog from '@/components/search/ShareDialog';
 import AuthDialog from '@/components/search/AuthDialog';
+import { toast } from '@/hooks/use-toast';
 
 const Search = () => {
   const location = useLocation();
@@ -47,7 +48,16 @@ const Search = () => {
     handleSortChange,
     clearFilters,
     handleLogin,
+    fetchData
   } = useSearch(query);
+
+  const handleRetry = () => {
+    toast({
+      title: "Retrying",
+      description: "Attempting to fetch products again...",
+    });
+    fetchData();
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -119,6 +129,7 @@ const Search = () => {
         handleAddToCart={handleAddToCart}
         handleAddToWishlist={handleAddToWishlist}
         handleShareProduct={handleShareProduct}
+        onRetry={handleRetry}
       />
 
       <AuthDialog 
