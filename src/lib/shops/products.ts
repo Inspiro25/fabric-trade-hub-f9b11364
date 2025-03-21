@@ -1,4 +1,5 @@
-import { doc, collection, getDocs, query, where } from '@/lib/firebase';
+
+import { db, doc, collection, getDocs, query, where } from '@/lib/firebase';
 import { Product } from '@/lib/products';
 import { shops } from './mockData';
 import { getShopById } from './crud';
