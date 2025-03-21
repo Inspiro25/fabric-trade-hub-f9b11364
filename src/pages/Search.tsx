@@ -29,12 +29,13 @@ const Search = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobile ? 'grid' : 'grid');
   
-  // Initialize filter states from URL
-  const sortParam = queryParams.get('sort') || 'relevance';
   // Validate the sort parameter against allowed values
   const isValidSortOption = (value: string): value is SortOption => {
     return ['relevance', 'price-low', 'price-high', 'rating', 'newest'].includes(value);
   };
+  
+  // Initialize filter states from URL
+  const sortParam = queryParams.get('sort') || 'relevance';
   
   const initialFilters = {
     category: queryParams.get('category') || 'all',
