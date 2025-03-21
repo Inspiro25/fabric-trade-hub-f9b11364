@@ -91,6 +91,57 @@ const Search = () => {
     currentPage * itemsPerPage
   );
 
+  // Render mobile filter buttons
+  const renderMobileFilterButtons = () => (
+    <div className="flex items-center space-x-2 self-end md:self-auto">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={() => setMobileFiltersOpen(true)}
+      >
+        <SlidersHorizontal className="mr-2 h-4 w-4" />
+        Filters
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={() => setMobileSortOpen(true)}
+      >
+        <ArrowUpDown className="mr-2 h-4 w-4" />
+        Sort
+      </Button>
+    </div>
+  );
+
+  // Render desktop filter buttons
+  const renderDesktopFilterButtons = () => (
+    <div className="flex items-center space-x-2">
+      <SearchFilters
+        isMobile={false}
+        categories={categories}
+        shops={shops}
+        selectedCategory={selectedCategory}
+        selectedShop={selectedShop}
+        priceRange={priceRange}
+        rating={rating}
+        mobileFiltersOpen={mobileFiltersOpen}
+        setMobileFiltersOpen={setMobileFiltersOpen}
+        handleCategoryChange={handleCategoryChange}
+        handleShopChange={handleShopChange}
+        handlePriceRangeChange={handlePriceRangeChange}
+        handleRatingChange={handleRatingChange}
+        clearFilters={clearFilters}
+      />
+      <SearchSort
+        isMobile={false}
+        sortOption={sortOption}
+        mobileSortOpen={mobileSortOpen}
+        setMobileSortOpen={setMobileSortOpen}
+        handleSortChange={handleSortChange}
+      />
+    </div>
+  );
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Search header */}
@@ -102,54 +153,7 @@ const Search = () => {
           </p>
         </div>
         
-        <div className="flex items-center space-x-2 self-end md:self-auto">
-          {isMobile ? (
-            <>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setMobileFiltersOpen(true)}
-              >
-                <SlidersHorizontal className="mr-2 h-4 w-4" />
-                Filters
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setMobileSortOpen(true)}
-              >
-                <ArrowUpDown className="mr-2 h-4 w-4" />
-                Sort
-              </Button>
-            </>
-          ) : (
-            <>
-              <SearchFilters
-                isMobile={false}
-                categories={categories}
-                shops={shops}
-                selectedCategory={selectedCategory}
-                selectedShop={selectedShop}
-                priceRange={priceRange}
-                rating={rating}
-                mobileFiltersOpen={mobileFiltersOpen}
-                setMobileFiltersOpen={setMobileFiltersOpen}
-                handleCategoryChange={handleCategoryChange}
-                handleShopChange={handleShopChange}
-                handlePriceRangeChange={handlePriceRangeChange}
-                handleRatingChange={handleRatingChange}
-                clearFilters={clearFilters}
-              />
-              <SearchSort
-                isMobile={false}
-                sortOption={sortOption}
-                mobileSortOpen={mobileSortOpen}
-                setMobileSortOpen={setMobileSortOpen}
-                handleSortChange={handleSortChange}
-              />
-            </>
-          )}
-        </div>
+        {isMobile ? renderMobileFilterButtons() : renderDesktopFilterButtons()}
       </div>
       
       {/* Main content */}
