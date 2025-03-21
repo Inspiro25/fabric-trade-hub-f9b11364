@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Shop } from '@/lib/shops/types';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -22,6 +22,7 @@ const ShopManagement: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [shopToEdit, setShopToEdit] = useState<Shop | null>(null);
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     loadShops();
@@ -81,7 +82,6 @@ const ShopManagement: React.FC = () => {
           description: 'Shop has been created successfully',
         });
         
-        // Send notification to all users
         broadcastNotification({
           title: 'New Shop Added',
           message: `${data.name} has joined our marketplace. Check it out!`,
@@ -175,45 +175,49 @@ const ShopManagement: React.FC = () => {
       <ShopFilters
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
       
-      <TabsContent value="all">
-        <ShopTabContent
-          title="All Shops"
-          description="Manage all shops registered on the platform"
-          shops={filteredShops}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onDelete={confirmDelete}
-          tabValue="all"
-        />
-      </TabsContent>
-      
-      <TabsContent value="verified">
-        <ShopTabContent
-          title="Verified Shops"
-          description="Shops that have been verified by administrators"
-          shops={filteredShops}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onDelete={confirmDelete}
-          tabValue="verified"
-          filterCondition={(shop) => shop.isVerified}
-        />
-      </TabsContent>
-      
-      <TabsContent value="unverified">
-        <ShopTabContent
-          title="Unverified Shops"
-          description="Shops pending verification by administrators"
-          shops={filteredShops}
-          isLoading={isLoading}
-          onEdit={handleEdit}
-          onDelete={confirmDelete}
-          tabValue="unverified"
-          filterCondition={(shop) => !shop.isVerified}
-        />
-      </TabsContent>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsContent value="all">
+          <ShopTabContent
+            title="All Shops"
+            description="Manage all shops registered on the platform"
+            shops={filteredShops}
+            isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={confirmDelete}
+            tabValue="all"
+          />
+        </TabsContent>
+        
+        <TabsContent value="verified">
+          <ShopTabContent
+            title="Verified Shops"
+            description="Shops that have been verified by administrators"
+            shops={filteredShops}
+            isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={confirmDelete}
+            tabValue="verified"
+            filterCondition={(shop) => shop.isVerified}
+          />
+        </TabsContent>
+        
+        <TabsContent value="unverified">
+          <ShopTabContent
+            title="Unverified Shops"
+            description="Shops pending verification by administrators"
+            shops={filteredShops}
+            isLoading={isLoading}
+            onEdit={handleEdit}
+            onDelete={confirmDelete}
+            tabValue="unverified"
+            filterCondition={(shop) => !shop.isVerified}
+          />
+        </TabsContent>
+      </Tabs>
       
       <ShopDialogs
         isAddDialogOpen={isAddDialogOpen}

@@ -1,221 +1,172 @@
 
 import React, { useState, useEffect } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Calendar, Edit, ExternalLink, PenSquare, Search, Tag, Trash } from 'lucide-react';
-import { Offer, getAllOffers, deleteOffer } from '@/lib/supabase/offers';
-import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
+import { Plus, Search } from 'lucide-react';
+import { Offer, getAllOffers, createOffer, updateOffer, deleteOffer } from '@/lib/supabase/offers';
+import OffersTable from './OffersTable';
 
-const OffersManagement = () => {
-  const [offers, setOffers] = useState<(Offer & { shops: { name: string } | null })[]>([]);
+const OffersManagement: React.FC = () => {
+  const { toast } = useToast();
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [offerToDelete, setOfferToDelete] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
-    fetchOffers();
+    loadOffers();
   }, []);
 
-  const fetchOffers = async () => {
+  useEffect(() => {
+    if (offers.length > 0) {
+      let filtered = [...offers];
+      
+      // Apply search filter
+      if (searchQuery.trim() !== '') {
+        filtered = filtered.filter(
+          offer => 
+            offer.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            offer.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (offer.description && offer.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+      }
+      
+      setFilteredOffers(filtered);
+    }
+  }, [searchQuery, offers]);
+
+  const loadOffers = async () => {
     setIsLoading(true);
     try {
-      const data = await getAllOffers();
-      setOffers(data);
+      const fetchedOffers = await getAllOffers();
+      setOffers(fetchedOffers);
+      setFilteredOffers(fetchedOffers);
     } catch (error) {
-      console.error("Error fetching offers:", error);
-      toast.error("Failed to load offers");
+      console.error('Error loading offers:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load offers',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDeleteClick = (id: string) => {
-    setOfferToDelete(id);
-    setDeleteDialogOpen(true);
+  const handleAddOffer = () => {
+    // Add offer functionality
+    toast({
+      title: 'Add Offer',
+      description: 'This feature is under development'
+    });
   };
 
-  const handleConfirmDelete = async () => {
-    if (!offerToDelete) return;
-    
+  const handleEditOffer = (offer: Offer) => {
+    // Edit offer functionality
+    toast({
+      title: 'Edit Offer',
+      description: `Editing offer: ${offer.title}`
+    });
+  };
+
+  const handleDeleteOffer = async (offerId: string) => {
     try {
-      await deleteOffer(offerToDelete);
-      setOffers(offers.filter(offer => offer.id !== offerToDelete));
-      toast.success("Offer deleted successfully");
+      await deleteOffer(offerId);
+      toast({
+        title: 'Success',
+        description: 'Offer has been deleted successfully',
+      });
+      loadOffers();
     } catch (error) {
-      console.error("Error deleting offer:", error);
-      toast.error("Failed to delete offer");
-    } finally {
-      setDeleteDialogOpen(false);
-      setOfferToDelete(null);
-    }
-  };
-
-  const filteredOffers = offers.filter(offer => 
-    offer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    offer.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (offer.shops?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
-  };
-
-  const getStatusBadge = (offer: Offer) => {
-    const now = new Date();
-    const expiryDate = new Date(offer.expiry);
-    
-    if (!offer.is_active) {
-      return <Badge variant="outline" className="bg-gray-100">Inactive</Badge>;
-    } else if (expiryDate < now) {
-      return <Badge variant="outline" className="bg-red-100 text-red-800">Expired</Badge>;
-    } else {
-      return <Badge variant="outline" className="bg-green-100 text-green-800">Active</Badge>;
+      console.error('Error deleting offer:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete offer',
+        variant: 'destructive',
+      });
     }
   };
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Special Offers Management</CardTitle>
-          <CardDescription>
-            View and manage offers across all shops on the platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search offers..."
-                className="pl-8 w-full"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+      <div className="flex justify-between">
+        <div className="flex items-center space-x-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search offers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-[250px]"
+          />
+        </div>
+        <Button onClick={handleAddOffer}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Offer
+        </Button>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="all">All Offers</TabsTrigger>
+          <TabsTrigger value="active">Active</TabsTrigger>
+          <TabsTrigger value="expired">Expired</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Offers</CardTitle>
+              <CardDescription>Manage all promotions and special offers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OffersTable 
+                offers={filteredOffers}
+                isLoading={isLoading}
+                onEdit={handleEditOffer}
+                onDelete={handleDeleteOffer}
               />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          {isLoading ? (
-            <div className="flex items-center justify-center py-10">
-              <p className="text-muted-foreground">Loading offers...</p>
-            </div>
-          ) : filteredOffers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              {searchTerm ? (
-                <>
-                  <p className="mb-2 text-muted-foreground">No offers match your search</p>
-                  <Button variant="outline" onClick={() => setSearchTerm('')}>Clear search</Button>
-                </>
-              ) : (
-                <p className="text-muted-foreground">No offers available</p>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Shop</TableHead>
-                    <TableHead>Expiry</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredOffers.map((offer) => (
-                    <TableRow key={offer.id}>
-                      <TableCell className="font-medium">{offer.title}</TableCell>
-                      <TableCell>
-                        <code className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
-                          {offer.code}
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        {offer.type === 'percentage' ? (
-                          <Badge variant="outline" className="bg-blue-50">
-                            {offer.discount}% Off
-                          </Badge>
-                        ) : offer.type === 'shipping' ? (
-                          <Badge variant="outline" className="bg-green-50">
-                            Free Shipping
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-purple-50">
-                            Buy 1 Get 1
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {offer.shops?.name || "Platform-wide"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Calendar className="mr-1 h-3 w-3 text-muted-foreground" />
-                          {formatDate(offer.expiry)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(offer)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          {offer.shop_id && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              asChild
-                              className="h-8 w-8 p-0"
-                            >
-                              <Link to={`/shop/${offer.shop_id}`}>
-                                <ExternalLink className="h-4 w-4" />
-                                <span className="sr-only">View Shop</span>
-                              </Link>
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDeleteClick(offer.id)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <TabsContent value="active">
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Offers</CardTitle>
+              <CardDescription>Currently active promotions and special offers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OffersTable 
+                offers={filteredOffers.filter(offer => offer.is_active && new Date(offer.expiry) > new Date())}
+                isLoading={isLoading}
+                onEdit={handleEditOffer}
+                onDelete={handleDeleteOffer}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <DeleteConfirmationDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={handleConfirmDelete}
-        title="Delete Offer"
-        description="Are you sure you want to delete this offer? This action cannot be undone and will remove it from all shop pages."
-      />
+        <TabsContent value="expired">
+          <Card>
+            <CardHeader>
+              <CardTitle>Expired Offers</CardTitle>
+              <CardDescription>Past promotions and special offers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OffersTable 
+                offers={filteredOffers.filter(offer => !offer.is_active || new Date(offer.expiry) <= new Date())}
+                isLoading={isLoading}
+                onEdit={handleEditOffer}
+                onDelete={handleDeleteOffer}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

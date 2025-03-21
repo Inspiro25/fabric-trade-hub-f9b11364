@@ -7,15 +7,19 @@ import { Search } from 'lucide-react';
 interface ShopFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
 }
 
 const ShopFilters: React.FC<ShopFiltersProps> = ({
   searchQuery,
   setSearchQuery,
+  activeTab = 'all',
+  setActiveTab = () => {},
 }) => {
   return (
     <>
-      <Tabs defaultValue="all" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">All Shops</TabsTrigger>
           <TabsTrigger value="verified">Verified Shops</TabsTrigger>
