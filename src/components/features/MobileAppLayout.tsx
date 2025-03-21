@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Search, ShoppingBag, Heart, User } from 'lucide-react';
+import { Home, Search, ShoppingBag, Heart, Store } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -74,10 +74,10 @@ const MobileAppLayout: React.FC<{
             isActive={pathname === '/wishlist'} 
           />
           <MobileNavItem 
-            to="/auth" 
-            icon={<User size={20} />} 
-            label="Profile" 
-            isActive={pathname === '/auth'} 
+            to="/shops" 
+            icon={<Store size={20} />} 
+            label="Shops" 
+            isActive={pathname === '/shops' || pathname.includes('/shop/')} 
           />
         </div>
       </div>

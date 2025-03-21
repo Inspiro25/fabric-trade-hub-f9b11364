@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Heart } from 'lucide-react';
+import { ShoppingCart, Search, Store, Menu, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
@@ -100,10 +100,11 @@ const Navbar = () => {
               </Link>
             </Button>
 
+            {/* Changed from User to Store icon */}
             <Button variant="ghost" size="icon" className="relative" asChild>
-              <Link to="/auth">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Account</span>
+              <Link to="/shops">
+                <Store className="h-5 w-5" />
+                <span className="sr-only">Shops</span>
               </Link>
             </Button>
           </div>

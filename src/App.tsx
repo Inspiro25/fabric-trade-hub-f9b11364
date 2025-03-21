@@ -28,6 +28,10 @@ import { useIsMobile } from "./hooks/use-mobile";
 // Import the CategorySection component for category routes
 import CategorySection from "./components/features/CategorySection";
 
+// Import new Shop components
+import Shops from "./pages/Shops";
+import ShopDetail from "./pages/ShopDetail";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -55,6 +59,9 @@ const AppContent = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/help" element={<Help />} />
+            {/* Add routes for shops */}
+            <Route path="/shops" element={<Shops />} />
+            <Route path="/shop/:id" element={<ShopDetail />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
             <Route path="*" element={<NotFound />} />
@@ -75,6 +82,9 @@ const AppContent = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/help" element={<Help />} />
+          {/* Add routes for shops */}
+          <Route path="/shops" element={<Shops />} />
+          <Route path="/shop/:id" element={<ShopDetail />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
           <Route path="*" element={<NotFound />} />
