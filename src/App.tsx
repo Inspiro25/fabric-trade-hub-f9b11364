@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { CartProvider } from "@/contexts/CartContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
@@ -138,19 +139,21 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <WishlistProvider>
-        <NotificationProvider>
-          <ThemeProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </TooltipProvider>
-          </ThemeProvider>
-        </NotificationProvider>
-      </WishlistProvider>
+      <CartProvider>
+        <WishlistProvider>
+          <NotificationProvider>
+            <ThemeProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </TooltipProvider>
+            </ThemeProvider>
+          </NotificationProvider>
+        </WishlistProvider>
+      </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
