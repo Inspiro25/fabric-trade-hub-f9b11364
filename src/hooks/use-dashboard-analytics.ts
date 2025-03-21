@@ -15,15 +15,13 @@ export const useDashboardAnalytics = () => {
     queryKey: ['dashboardAnalytics'],
     queryFn: fetchDashboardAnalytics,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    onSettled: (data, error) => {
-      if (error) {
-        console.error('Error fetching dashboard analytics:', error);
-        toast({
-          title: "Error fetching analytics",
-          description: "Could not load dashboard data.",
-          variant: "destructive",
-        });
-      }
+    onError: (error) => {
+      console.error('Error fetching dashboard analytics:', error);
+      toast({
+        title: "Error fetching analytics",
+        description: "Could not load dashboard data.",
+        variant: "destructive",
+      });
     }
   });
 

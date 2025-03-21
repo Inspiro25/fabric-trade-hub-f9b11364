@@ -26,7 +26,8 @@ import {
   YAxis, 
   Tooltip, 
   ResponsiveContainer,
-  Legend
+  Legend,
+  CartesianGrid
 } from 'recharts';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

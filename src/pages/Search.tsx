@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Search as SearchIcon, X, Grid, List, Filter, ShoppingBag } from 'lucide-react';
@@ -35,7 +36,7 @@ const Search = () => {
   
   // Initialize filter states from URL
   const sortParam = queryParams.get('sort') || 'relevance';
-  const validatedSortValue: SortOption = isValidSortOption(sortParam) ? sortParam : 'relevance';
+  const validatedSortValue = isValidSortOption(sortParam) ? sortParam : 'relevance';
   
   const initialFilters = {
     category: queryParams.get('category') || 'all',
