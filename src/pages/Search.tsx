@@ -30,10 +30,16 @@ const Search = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(isMobile ? 'grid' : 'grid');
   
   // Initialize filter states from URL
+  const sortParam = queryParams.get('sort') || 'relevance';
+  // Validate the sort parameter against allowed values
+  const isValidSortOption = (value: string): value is SortOption => {
+    return ['relevance', 'price-low', 'price-high', 'rating', 'newest'].includes(value);
+  };
+  
   const initialFilters = {
     category: queryParams.get('category') || 'all',
     priceRange: queryParams.get('price') || 'all',
-    sort: (queryParams.get('sort') as SortOption) || 'relevance',
+    sort: isValidSortOption(sortParam) ? sortParam : 'relevance',
     inStock: queryParams.get('inStock') === 'true',
     onSale: queryParams.get('onSale') === 'true'
   };
