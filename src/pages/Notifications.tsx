@@ -65,25 +65,25 @@ const NotificationItem = ({ notification }: { notification: Notification }) => {
   
   return (
     <div 
-      className={`px-4 py-3.5 cursor-pointer transition-colors duration-200 ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
+      className={`px-3 py-2.5 cursor-pointer transition-colors duration-200 ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
       onClick={handleClick}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         {!notification.read && (
-          <div className="h-2.5 w-2.5 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
+          <div className="h-2 w-2 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
         )}
         {notification.read && (
-          <div className="h-2.5 w-2.5 mt-1.5 flex-shrink-0"></div>
+          <div className="h-2 w-2 mt-1.5 flex-shrink-0"></div>
         )}
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-1.5 mb-0.5">
             {getNotificationIcon(notification.type)}
-            <h3 className={`text-sm font-semibold ${notification.read ? 'text-gray-800' : 'text-black'}`}>
+            <h3 className={`text-xs font-semibold ${notification.read ? 'text-gray-800' : 'text-black'}`}>
               {notification.title}
             </h3>
           </div>
-          <p className="text-sm text-gray-600 mb-1.5 leading-snug">{notification.message}</p>
-          <span className="text-xs text-gray-500">{formatTimestamp(notification.timestamp)}</span>
+          <p className="text-xs text-gray-600 mb-1 leading-tight">{notification.message}</p>
+          <span className="text-[10px] text-gray-500">{formatTimestamp(notification.timestamp)}</span>
         </div>
       </div>
     </div>
@@ -91,12 +91,12 @@ const NotificationItem = ({ notification }: { notification: Notification }) => {
 };
 
 const EmptyNotifications = () => (
-  <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-    <div className="bg-gray-100 p-5 rounded-full mb-5">
-      <Bell className="h-8 w-8 text-gray-400" />
+  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+    <div className="bg-gray-100 p-4 rounded-full mb-3">
+      <Bell className="h-6 w-6 text-gray-400" />
     </div>
-    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Notifications</h3>
-    <p className="text-sm text-gray-600 max-w-md">
+    <h3 className="text-base font-semibold text-gray-900 mb-1">No Notifications</h3>
+    <p className="text-xs text-gray-600 max-w-xs">
       When you get notifications, they'll show up here.
     </p>
   </div>
@@ -111,20 +111,20 @@ const Notifications = () => {
   }, []);
   
   return (
-    <div className="pb-16 bg-gray-50 min-h-screen">
-      {/* Header - Apple style */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 py-3 border-b border-gray-200">
+    <div className="pb-12 bg-gray-50 min-h-screen">
+      {/* Header - Compact Apple style */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-3 py-2 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-full" 
+              className="h-8 w-8 rounded-full" 
               onClick={() => navigate(-1)}
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
             </Button>
-            <h1 className="text-xl font-semibold">Notifications</h1>
+            <h1 className="text-lg font-semibold">Notifications</h1>
           </div>
           
           {notifications.length > 0 && (
@@ -132,7 +132,7 @@ const Notifications = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-sm font-medium text-blue-600 rounded-full"
+                className="text-xs font-medium text-blue-600 rounded-full px-2.5 py-1 h-7"
                 onClick={markAllAsRead}
               >
                 Mark All
@@ -143,23 +143,23 @@ const Notifications = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-9 w-9 rounded-full text-gray-500"
+                    className="h-7 w-7 rounded-full text-gray-500"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-xl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Clear All Notifications?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. All notifications will be permanently removed.
+                <AlertDialogContent className="rounded-xl max-w-[90%] p-4">
+                  <AlertDialogHeader className="pb-2">
+                    <AlertDialogTitle className="text-base">Clear All Notifications?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-xs">
+                      This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <AlertDialogFooter className="gap-2">
-                    <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
+                  <AlertDialogFooter className="gap-2 pt-2">
+                    <AlertDialogCancel className="rounded-full text-xs h-8">Cancel</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={clearNotifications} 
-                      className="bg-red-500 hover:bg-red-600 rounded-full"
+                      className="bg-red-500 hover:bg-red-600 rounded-full text-xs h-8"
                     >
                       Clear All
                     </AlertDialogAction>
@@ -172,14 +172,14 @@ const Notifications = () => {
       </div>
       
       {/* Main Content */}
-      <main className="py-4 px-4">
+      <main className="py-2 px-2">
         {notifications.length > 0 ? (
           <Card className="overflow-hidden rounded-xl shadow-sm border-gray-100 animate-fade-in">
             <div className="p-0.5">
               {notifications.map((notification, index) => (
                 <React.Fragment key={notification.id}>
                   <NotificationItem notification={notification} />
-                  {index < notifications.length - 1 && <Separator className="mx-4" />}
+                  {index < notifications.length - 1 && <Separator className="mx-2" />}
                 </React.Fragment>
               ))}
             </div>
