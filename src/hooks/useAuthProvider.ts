@@ -5,7 +5,11 @@ import { auth } from '@/lib/firebase';
 import { UserProfile } from '@/types/auth';
 import { 
   fetchUserProfile, 
-  updateUserProfile, 
+  updateUserProfile,
+  addAddress,
+  updateAddress,
+  removeAddress,
+  setDefaultAddress, 
   loginWithEmailPassword, 
   registerWithEmailPassword, 
   loginWithGoogleAuth, 
@@ -93,6 +97,48 @@ export const useAuthProvider = () => {
     setUserProfile(updatedProfile);
   };
 
+  const handleAddAddress = async (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => {
+    const addressId = await addAddress(currentUser, address);
+    
+    // Refresh user profile to get updated addresses
+    if (currentUser) {
+      const profile = await fetchUserProfile(currentUser.uid, currentUser);
+      setUserProfile(profile);
+    }
+    
+    return addressId;
+  };
+
+  const handleUpdateAddress = async (address: UserProfile['savedAddresses'][0]) => {
+    await updateAddress(currentUser, address);
+    
+    // Refresh user profile to get updated addresses
+    if (currentUser) {
+      const profile = await fetchUserProfile(currentUser.uid, currentUser);
+      setUserProfile(profile);
+    }
+  };
+
+  const handleRemoveAddress = async (addressId: string) => {
+    await removeAddress(currentUser, addressId);
+    
+    // Refresh user profile to get updated addresses
+    if (currentUser) {
+      const profile = await fetchUserProfile(currentUser.uid, currentUser);
+      setUserProfile(profile);
+    }
+  };
+
+  const handleSetDefaultAddress = async (addressId: string) => {
+    await setDefaultAddress(currentUser, addressId);
+    
+    // Refresh user profile to get updated addresses
+    if (currentUser) {
+      const profile = await fetchUserProfile(currentUser.uid, currentUser);
+      setUserProfile(profile);
+    }
+  };
+
   return {
     currentUser,
     userProfile,
@@ -104,5 +150,9 @@ export const useAuthProvider = () => {
     logout: handleLogout,
     forgotPassword: handleForgotPassword,
     updateUserProfile: handleUpdateUserProfile,
+    addAddress: handleAddAddress,
+    updateAddress: handleUpdateAddress,
+    removeAddress: handleRemoveAddress,
+    setDefaultAddress: handleSetDefaultAddress,
   };
 };

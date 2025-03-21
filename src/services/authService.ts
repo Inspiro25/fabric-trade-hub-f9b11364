@@ -3,26 +3,85 @@ import { User, UserCredential } from 'firebase/auth';
 import { db, doc, setDoc, getDoc, loginWithEmail, loginWithGoogle, loginWithFacebook, registerWithEmail, logoutUser, resetPassword } from '@/lib/firebase';
 import { UserProfile } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-// Fetch user profile from Firestore
+// Fetch user profile from Supabase
 export const fetchUserProfile = async (uid: string, currentUser: User | null): Promise<UserProfile | null> => {
   try {
-    const userDoc = await getDoc(doc(db, 'users', uid));
-    if (userDoc.exists()) {
-      return userDoc.data() as UserProfile;
-    } else {
-      // If no profile exists, create one with basic info from auth
-      if (currentUser) {
+    // First try to get user from Supabase
+    const { data: userProfile, error } = await supabase
+      .from('user_profiles')
+      .select(`
+        display_name,
+        email,
+        phone,
+        address,
+        preferences,
+        avatar_url
+      `)
+      .eq('id', uid)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching profile from Supabase:', error);
+      
+      // Fallback to Firebase if Supabase fails
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      if (userDoc.exists()) {
+        return userDoc.data() as UserProfile;
+      } else if (currentUser) {
+        // If no profile exists in Firebase either, create one with basic info
         const newProfile: UserProfile = {
           displayName: currentUser.displayName || 'Guest User',
           email: currentUser.email || '',
         };
         
-        // Save to database
+        // Save to Firebase as fallback
         await setDoc(doc(db, 'users', uid), newProfile);
         return newProfile;
       }
+    } else if (userProfile) {
+      // Convert Supabase format to our UserProfile format
+      return {
+        displayName: userProfile.display_name || 'Guest User',
+        email: userProfile.email,
+        phone: userProfile.phone || undefined,
+        address: userProfile.address || undefined,
+        preferences: userProfile.preferences || undefined,
+        avatarUrl: userProfile.avatar_url || undefined
+      };
     }
+    
+    // Fetch saved addresses
+    const { data: addresses } = await supabase
+      .from('user_addresses')
+      .select('*')
+      .eq('user_id', uid)
+      .order('is_default', { ascending: false });
+    
+    if (addresses && addresses.length > 0) {
+      const formattedProfile = {
+        displayName: userProfile?.display_name || 'Guest User',
+        email: userProfile?.email || (currentUser?.email || ''),
+        phone: userProfile?.phone || undefined,
+        address: userProfile?.address || undefined,
+        preferences: userProfile?.preferences || undefined,
+        avatarUrl: userProfile?.avatar_url || undefined,
+        savedAddresses: addresses.map(addr => ({
+          id: addr.id,
+          name: addr.name,
+          addressLine1: addr.address_line1,
+          addressLine2: addr.address_line2,
+          city: addr.city,
+          state: addr.state,
+          postalCode: addr.postal_code,
+          country: addr.country,
+          isDefault: addr.is_default
+        }))
+      };
+      return formattedProfile;
+    }
+    
     return null;
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -30,7 +89,7 @@ export const fetchUserProfile = async (uid: string, currentUser: User | null): P
   }
 };
 
-// Update user profile
+// Update user profile in Supabase
 export const updateUserProfile = async (
   currentUser: User | null, 
   userProfile: UserProfile | null, 
@@ -41,25 +100,278 @@ export const updateUserProfile = async (
   }
   
   try {
-    // Update in firestore
-    const updatedProfile = {
-      ...userProfile,
-      ...data
+    // Prepare data for Supabase format
+    const supabaseData = {
+      display_name: data.displayName,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      preferences: data.preferences,
+      avatar_url: data.avatarUrl
     };
     
-    await setDoc(doc(db, 'users', currentUser.uid), updatedProfile, { merge: true });
+    // Filter out undefined values
+    const filteredData = Object.entries(supabaseData)
+      .filter(([_, v]) => v !== undefined)
+      .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+    
+    // Update in Supabase
+    const { error } = await supabase
+      .from('user_profiles')
+      .update(filteredData)
+      .eq('id', currentUser.uid);
+    
+    if (error) {
+      console.error('Error updating profile in Supabase:', error);
+      
+      // Fallback to Firebase if Supabase fails
+      const updatedProfile = {
+        ...userProfile,
+        ...data
+      };
+      
+      await setDoc(doc(db, 'users', currentUser.uid), updatedProfile, { merge: true });
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated",
+      });
+      
+      return updatedProfile;
+    }
     
     toast({
       title: "Profile Updated",
       description: "Your profile has been successfully updated",
     });
     
-    return updatedProfile;
+    return {
+      ...userProfile,
+      ...data
+    };
   } catch (error) {
     console.error('Error updating profile:', error);
     toast({
       title: "Update Failed",
       description: error instanceof Error ? error.message : "Failed to update profile",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Add a new address
+export const addAddress = async (
+  currentUser: User | null,
+  address: Omit<UserProfile['savedAddresses'][0], 'id'>
+): Promise<string | undefined> => {
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+  
+  try {
+    // Prepare data for Supabase format
+    const supabaseData = {
+      user_id: currentUser.uid,
+      name: address.name,
+      address_line1: address.addressLine1,
+      address_line2: address.addressLine2,
+      city: address.city,
+      state: address.state,
+      postal_code: address.postalCode,
+      country: address.country,
+      is_default: address.isDefault
+    };
+    
+    // If this is default, update all other addresses to non-default
+    if (address.isDefault) {
+      await supabase
+        .from('user_addresses')
+        .update({ is_default: false })
+        .eq('user_id', currentUser.uid);
+    }
+    
+    // Insert into Supabase
+    const { data, error } = await supabase
+      .from('user_addresses')
+      .insert(supabaseData)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding address in Supabase:', error);
+      toast({
+        title: "Failed to Add Address",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    toast({
+      title: "Address Added",
+      description: "Your address has been successfully added",
+    });
+    
+    return data.id;
+  } catch (error) {
+    console.error('Error adding address:', error);
+    toast({
+      title: "Failed to Add Address",
+      description: error instanceof Error ? error.message : "Failed to add address",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Update an existing address
+export const updateAddress = async (
+  currentUser: User | null,
+  address: UserProfile['savedAddresses'][0]
+): Promise<void> => {
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+  
+  try {
+    // Prepare data for Supabase format
+    const supabaseData = {
+      name: address.name,
+      address_line1: address.addressLine1,
+      address_line2: address.addressLine2,
+      city: address.city,
+      state: address.state,
+      postal_code: address.postalCode,
+      country: address.country,
+      is_default: address.isDefault
+    };
+    
+    // If this is default, update all other addresses to non-default
+    if (address.isDefault) {
+      await supabase
+        .from('user_addresses')
+        .update({ is_default: false })
+        .eq('user_id', currentUser.uid)
+        .neq('id', address.id);
+    }
+    
+    // Update in Supabase
+    const { error } = await supabase
+      .from('user_addresses')
+      .update(supabaseData)
+      .eq('id', address.id)
+      .eq('user_id', currentUser.uid);
+    
+    if (error) {
+      console.error('Error updating address in Supabase:', error);
+      toast({
+        title: "Failed to Update Address",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    toast({
+      title: "Address Updated",
+      description: "Your address has been successfully updated",
+    });
+  } catch (error) {
+    console.error('Error updating address:', error);
+    toast({
+      title: "Failed to Update Address",
+      description: error instanceof Error ? error.message : "Failed to update address",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Remove an address
+export const removeAddress = async (
+  currentUser: User | null,
+  addressId: string
+): Promise<void> => {
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+  
+  try {
+    // Delete from Supabase
+    const { error } = await supabase
+      .from('user_addresses')
+      .delete()
+      .eq('id', addressId)
+      .eq('user_id', currentUser.uid);
+    
+    if (error) {
+      console.error('Error removing address in Supabase:', error);
+      toast({
+        title: "Failed to Remove Address",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    toast({
+      title: "Address Removed",
+      description: "Your address has been successfully removed",
+    });
+  } catch (error) {
+    console.error('Error removing address:', error);
+    toast({
+      title: "Failed to Remove Address",
+      description: error instanceof Error ? error.message : "Failed to remove address",
+      variant: "destructive",
+    });
+    throw error;
+  }
+};
+
+// Set an address as default
+export const setDefaultAddress = async (
+  currentUser: User | null,
+  addressId: string
+): Promise<void> => {
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+  
+  try {
+    // First set all addresses to non-default
+    await supabase
+      .from('user_addresses')
+      .update({ is_default: false })
+      .eq('user_id', currentUser.uid);
+    
+    // Then set the specified address as default
+    const { error } = await supabase
+      .from('user_addresses')
+      .update({ is_default: true })
+      .eq('id', addressId)
+      .eq('user_id', currentUser.uid);
+    
+    if (error) {
+      console.error('Error setting default address in Supabase:', error);
+      toast({
+        title: "Failed to Set Default Address",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+    
+    toast({
+      title: "Default Address Updated",
+      description: "Your default address has been successfully updated",
+    });
+  } catch (error) {
+    console.error('Error setting default address:', error);
+    toast({
+      title: "Failed to Set Default Address",
+      description: error instanceof Error ? error.message : "Failed to set default address",
       variant: "destructive",
     });
     throw error;
@@ -93,13 +405,14 @@ export const registerWithEmailPassword = async (email: string, password: string)
   try {
     const userCredential = await registerWithEmail(email, password);
     
-    // Create user profile in database
+    // Create user profile in Supabase
+    // Note: We don't need to explicitly create a profile because the trigger in Supabase
+    // will automatically create one. We just need to format the data for our app.
+    
     const newUser: UserProfile = {
       displayName: email.split('@')[0],
       email: email,
     };
-    
-    await setDoc(doc(db, 'users', userCredential.uid), newUser);
     
     toast({
       title: "Registration Successful",
@@ -123,20 +436,26 @@ export const loginWithGoogleAuth = async (): Promise<{userCredential: User, prof
   try {
     const userCredential = await loginWithGoogle();
     
-    // Check if user profile exists, create if not
-    const userDoc = await getDoc(doc(db, 'users', userCredential.uid));
+    // Check if user profile exists
+    const { data: userProfile, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userCredential.uid)
+      .single();
+    
     let profile: UserProfile | null = null;
     
-    if (!userDoc.exists()) {
-      const newUser: UserProfile = {
-        displayName: userCredential.displayName || 'Google User',
-        email: userCredential.email || '',
-      };
-      
-      await setDoc(doc(db, 'users', userCredential.uid), newUser);
-      profile = newUser;
+    if (error || !userProfile) {
+      console.log('User profile not found or error:', error);
+      // Profile will be created by the trigger in Supabase
     } else {
-      profile = userDoc.data() as UserProfile;
+      profile = {
+        displayName: userProfile.display_name || userCredential.displayName || 'Google User',
+        email: userProfile.email || userCredential.email || '',
+        phone: userProfile.phone || undefined,
+        address: userProfile.address || undefined,
+        avatarUrl: userProfile.avatar_url || undefined,
+      };
     }
     
     toast({
@@ -161,20 +480,26 @@ export const loginWithFacebookAuth = async (): Promise<{userCredential: User, pr
   try {
     const userCredential = await loginWithFacebook();
     
-    // Check if user profile exists, create if not
-    const userDoc = await getDoc(doc(db, 'users', userCredential.uid));
+    // Check if user profile exists
+    const { data: userProfile, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userCredential.uid)
+      .single();
+    
     let profile: UserProfile | null = null;
     
-    if (!userDoc.exists()) {
-      const newUser: UserProfile = {
-        displayName: userCredential.displayName || 'Facebook User',
-        email: userCredential.email || '',
-      };
-      
-      await setDoc(doc(db, 'users', userCredential.uid), newUser);
-      profile = newUser;
+    if (error || !userProfile) {
+      console.log('User profile not found or error:', error);
+      // Profile will be created by the trigger in Supabase
     } else {
-      profile = userDoc.data() as UserProfile;
+      profile = {
+        displayName: userProfile.display_name || userCredential.displayName || 'Facebook User',
+        email: userProfile.email || userCredential.email || '',
+        phone: userProfile.phone || undefined,
+        address: userProfile.address || undefined,
+        avatarUrl: userProfile.avatar_url || undefined,
+      };
     }
     
     toast({

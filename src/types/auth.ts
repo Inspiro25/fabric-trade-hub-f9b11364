@@ -17,6 +17,17 @@ export interface UserProfile {
     country: string;
     isDefault: boolean;
   }[];
+  preferences?: {
+    notifications?: {
+      email: boolean;
+      sms: boolean;
+      push: boolean;
+    };
+    theme?: string;
+    currency?: string;
+    language?: string;
+  };
+  avatarUrl?: string;
 }
 
 export interface AuthContextType {
@@ -30,4 +41,8 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
+  addAddress: (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => Promise<string | undefined>;
+  updateAddress: (address: UserProfile['savedAddresses'][0]) => Promise<void>;
+  removeAddress: (addressId: string) => Promise<void>;
+  setDefaultAddress: (addressId: string) => Promise<void>;
 }
