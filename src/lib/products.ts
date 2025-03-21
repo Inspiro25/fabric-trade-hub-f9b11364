@@ -1,3 +1,4 @@
+
 import { db, collection, getDocs, getDoc, doc, query, where, addDoc, updateDoc, deleteDoc } from '@/lib/firebase';
 
 export interface Product {
@@ -690,3 +691,27 @@ export const getProductsByTags = async (tag: string): Promise<Product[]> => {
     return products.filter(product => product.tags.includes(tag)).slice(0, 8);
   }
 };
+
+// Add the missing getBestSellingProducts function
+export const getBestSellingProducts = async (): Promise<Product[]> => {
+  try {
+    const productsSnapshot = await getDocs(collection(db, 'products'));
+    
+    if (!productsSnapshot.empty) {
+      return productsSnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        } as Product))
+        .sort((a, b) => b.reviewCount - a.reviewCount) // Sort by review count as a proxy for popularity
+        .slice(0, 8);
+    }
+    
+    // Fallback to local data
+    return [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+  } catch (error) {
+    console.error('Error fetching best selling products:', error);
+    return [...products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+  }
+};
+
