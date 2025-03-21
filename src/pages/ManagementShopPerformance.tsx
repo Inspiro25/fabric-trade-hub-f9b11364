@@ -88,7 +88,7 @@ const ManagementShopPerformance = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-3 md:p-8 pt-4 md:pt-6">
+    <div className="flex-1 space-y-4 p-2 md:p-8 pt-4 md:pt-6 overflow-x-hidden">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-0">
         <div className="flex items-center gap-2">
           <Button 
@@ -99,13 +99,13 @@ const ManagementShopPerformance = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Shop Performance</h2>
+          <h2 className="text-xl md:text-3xl font-bold tracking-tight">Shop Performance</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 text-xs md:text-sm">
             <Filter className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             <Select value={timeFilter} onValueChange={setTimeFilter}>
-              <SelectTrigger className="h-8 md:h-9 w-[120px]">
+              <SelectTrigger className="h-8 md:h-9 w-[100px] md:w-[120px]">
                 <SelectValue placeholder="Filter by" />
               </SelectTrigger>
               <SelectContent>
@@ -137,13 +137,13 @@ const ManagementShopPerformance = () => {
       ) : (
         <div className="space-y-6">
           {/* Overall Performance Summary */}
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Total Sales</CardTitle>
+              <CardHeader className="pb-1 px-3 md:px-6">
+                <CardTitle className="text-xs md:text-sm">Total Sales</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold">
+              <CardContent className="pt-0 px-3 md:px-6">
+                <div className="text-lg md:text-2xl font-bold">
                   ${analytics.shopPerformance.reduce((sum, shop) => sum + shop.sales, 0).toLocaleString()}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center mt-1">
@@ -154,11 +154,11 @@ const ManagementShopPerformance = () => {
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Total Orders</CardTitle>
+              <CardHeader className="pb-1 px-3 md:px-6">
+                <CardTitle className="text-xs md:text-sm">Total Orders</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold">
+              <CardContent className="pt-0 px-3 md:px-6">
+                <div className="text-lg md:text-2xl font-bold">
                   {analytics.shopPerformance.reduce((sum, shop) => sum + shop.orders, 0).toLocaleString()}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center mt-1">
@@ -169,11 +169,11 @@ const ManagementShopPerformance = () => {
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Total Profit</CardTitle>
+              <CardHeader className="pb-1 px-3 md:px-6">
+                <CardTitle className="text-xs md:text-sm">Total Profit</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold">
+              <CardContent className="pt-0 px-3 md:px-6">
+                <div className="text-lg md:text-2xl font-bold">
                   ${analytics.shopPerformance.reduce((sum, shop) => sum + shop.profit, 0).toLocaleString()}
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center mt-1">
@@ -184,11 +184,11 @@ const ManagementShopPerformance = () => {
             </Card>
             
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Avg. Conversion</CardTitle>
+              <CardHeader className="pb-1 px-3 md:px-6">
+                <CardTitle className="text-xs md:text-sm">Avg. Conversion</CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="text-2xl font-bold">
+              <CardContent className="pt-0 px-3 md:px-6">
+                <div className="text-lg md:text-2xl font-bold">
                   {Math.round(analytics.shopPerformance.reduce((sum, shop) => sum + (shop.orders / 1200) * 100, 0) / analytics.shopPerformance.length)}%
                 </div>
                 <div className="text-xs text-muted-foreground flex items-center mt-1">
@@ -209,7 +209,7 @@ const ManagementShopPerformance = () => {
               return (
                 <Card key={shop.name} className="overflow-hidden">
                   <CardHeader className="pb-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                       <CardTitle>{shop.name}</CardTitle>
                       <div className={`text-sm font-medium ${metrics.salesGrowth >= 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}>
                         {metrics.salesGrowth >= 0 ? (
@@ -237,47 +237,47 @@ const ManagementShopPerformance = () => {
                   </CardHeader>
                   
                   <Tabs defaultValue="overview" className="w-full">
-                    <div className="px-6">
+                    <div className="px-4 md:px-6">
                       <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="sales">Sales Breakdown</TabsTrigger>
+                        <TabsTrigger value="sales">Sales</TabsTrigger>
                         <TabsTrigger value="categories">Categories</TabsTrigger>
                       </TabsList>
                     </div>
                     
-                    <TabsContent value="overview" className="p-6">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <TabsContent value="overview" className="p-4 md:p-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Avg. Order Value</p>
-                          <p className="text-xl font-semibold">${metrics.avgOrderValue.toFixed(2)}</p>
+                          <p className="text-base md:text-xl font-semibold">${metrics.avgOrderValue.toFixed(2)}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Conversion Rate</p>
-                          <p className="text-xl font-semibold">{metrics.conversionRate}%</p>
+                          <p className="text-base md:text-xl font-semibold">{metrics.conversionRate}%</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Profit Margin</p>
-                          <p className="text-xl font-semibold">{metrics.profitMargin}%</p>
+                          <p className="text-base md:text-xl font-semibold">{metrics.profitMargin}%</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-muted-foreground">Customer Retention</p>
-                          <p className="text-xl font-semibold">{metrics.customerRetention}%</p>
+                          <p className="text-base md:text-xl font-semibold">{metrics.customerRetention}%</p>
                         </div>
                       </div>
                     </TabsContent>
                     
                     <TabsContent value="sales" className="p-2 pt-0">
-                      <div className="h-72">
+                      <div className="h-60 md:h-72 mt-2 overflow-x-auto">
                         <ResponsiveContainer width="100%" height="100%">
                           <RechartsBarChart
                             data={monthlySales}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                            margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
+                            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                            <YAxis tick={{ fontSize: 10 }} width={30} />
+                            <Tooltip contentStyle={{ fontSize: '12px' }} />
+                            <Legend wrapperStyle={{ fontSize: '10px' }} />
                             <Bar dataKey="sales" name="Sales ($)" fill="#8884d8" />
                             <Bar dataKey="orders" name="Orders" fill="#82ca9d" />
                           </RechartsBarChart>
@@ -286,8 +286,8 @@ const ManagementShopPerformance = () => {
                     </TabsContent>
                     
                     <TabsContent value="categories" className="p-2 pt-0">
-                      <div className="flex flex-col md:flex-row items-center justify-center gap-4 h-72">
-                        <div className="w-full md:w-1/2 h-full">
+                      <div className="flex flex-col md:flex-row items-center justify-center gap-4 h-60 md:h-72 mt-2">
+                        <div className="w-full md:w-1/2 h-40 md:h-full">
                           <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
@@ -296,7 +296,7 @@ const ManagementShopPerformance = () => {
                                 cy="50%"
                                 labelLine={false}
                                 label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
+                                outerRadius={60}
                                 fill="#8884d8"
                                 dataKey="value"
                               >
@@ -308,12 +308,12 @@ const ManagementShopPerformance = () => {
                             </PieChart>
                           </ResponsiveContainer>
                         </div>
-                        <div className="w-full md:w-1/2">
-                          <h4 className="text-sm font-medium mb-2">Category Performance</h4>
+                        <div className="w-full md:w-1/2 px-3 md:px-0">
+                          <h4 className="text-xs md:text-sm font-medium mb-2">Category Performance</h4>
                           {categoryData.map((category, index) => (
                             <div key={category.name} className="mb-2">
                               <div className="flex justify-between items-center mb-1">
-                                <span className="text-xs">{category.name}</span>
+                                <span className="text-xs truncate max-w-[100px]">{category.name}</span>
                                 <span className="text-xs font-medium">{category.value}%</span>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-1.5">
