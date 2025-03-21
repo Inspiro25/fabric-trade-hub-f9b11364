@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getProductById, getRelatedProducts, Product } from '@/lib/products';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,9 +33,12 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const [isFavorited, setIsFavorited] = useState(false);
   
   useEffect(() => {
     const fetchProductData = async () => {
@@ -81,6 +86,15 @@ const ProductDetail = () => {
     
     fetchProductData();
   }, [id, navigate]);
+
+  useEffect(() => {
+    // Update favorite status when product changes
+    if (product && isInWishlist(product.id)) {
+      setIsFavorited(true);
+    } else {
+      setIsFavorited(false);
+    }
+  }, [product, isInWishlist]);
   
   if (isLoading) {
     return (
@@ -95,13 +109,8 @@ const ProductDetail = () => {
   }
   
   const handleAddToCart = () => {
-    toast.success(`${product.name} added to cart`, {
-      description: `Size: ${selectedSize}, Color: ${selectedColor}, Quantity: ${quantity}`,
-      action: {
-        label: "View Cart",
-        onClick: () => navigate('/cart')
-      }
-    });
+    addToCart(product, quantity, selectedColor, selectedSize);
+    // Toast is now handled by CartContext's addToCart
   };
   
   const incrementQuantity = () => {
@@ -117,7 +126,14 @@ const ProductDetail = () => {
   };
   
   const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
+    if (isFavorited) {
+      removeFromWishlist(product.id);
+      setIsFavorited(false);
+    } else {
+      addToWishlist(product.id);
+      setIsFavorited(true);
+    }
+    
     toast.success(
       isFavorited 
         ? `${product.name} removed from wishlist` 

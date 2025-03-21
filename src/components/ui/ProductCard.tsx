@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCart } from '@/contexts/CartContext';
 import { toast } from "sonner";
 import { Product } from '@/lib/products';
 
@@ -21,7 +21,7 @@ interface ProductCardProps {
   layout?: 'vertical' | 'horizontal';
   rating?: number;
   reviewCount?: number;
-  product?: Product; // Add product prop
+  product?: Product;
   variant?: string;
   gridCols?: number;
 }
@@ -40,7 +40,6 @@ const ProductCard = ({
   reviewCount = 0,
   product,
 }: ProductCardProps) => {
-  // If a product object is provided, use its properties
   const productId = product?.id || id || '';
   const productName = product?.name || name || '';
   const productPrice = product?.price || price || 0;
@@ -56,6 +55,7 @@ const ProductCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const isMobile = useIsMobile();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const isFavorited = isInWishlist(productId);
 
   const handleImageLoad = () => {
@@ -74,17 +74,36 @@ const ProductCard = ({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log(`Added ${productName} to cart`);
-    toast.success(`Added ${productName} to cart`);
+    
+    if (product) {
+      addToCart(product, 1, product.colors[0] || '', product.sizes[0] || '');
+    } else {
+      const productObj: Product = {
+        id: productId,
+        name: productName,
+        price: productPrice,
+        salePrice: productSalePrice,
+        images: [productImage],
+        category: productCategory,
+        isNew: productIsNew,
+        isTrending: productIsTrending,
+        rating: productRating,
+        reviewCount: productReviewCount,
+        colors: ['default'],
+        sizes: ['default'],
+        description: '',
+        stock: 10,
+        tags: [],
+      };
+      addToCart(productObj, 1, 'default', 'default');
+    }
   };
 
   const discountPercentage = productSalePrice ? Math.round(((productPrice - productSalePrice) / productPrice) * 100) : 0;
 
-  // Mobile-friendly card (Flipkart/Amazon style)
   if (isMobile) {
     return (
       <div className="product-card-container animate-fade-in border rounded-lg overflow-hidden bg-white">
-        {/* Product Image & Badges */}
         <div className="relative">
           <Link to={`/product/${productId}`}>
             <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
@@ -97,7 +116,6 @@ const ProductCard = ({
             </div>
           </Link>
           
-          {/* Wishlist button - Amazon/Flipkart style */}
           <button
             className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
             onClick={toggleWishlist}
@@ -110,7 +128,6 @@ const ProductCard = ({
             />
           </button>
           
-          {/* Discount badge - Flipkart style */}
           {productSalePrice && (
             <div className="absolute bottom-0 left-0 bg-green-500 text-white px-1 py-0.5 text-xs font-bold">
               {discountPercentage}% OFF
@@ -118,7 +135,6 @@ const ProductCard = ({
           )}
         </div>
         
-        {/* Product Info */}
         <div className="p-2">
           <div className="mb-0.5">
             <span className="text-[10px] text-muted-foreground">{productCategory}</span>
@@ -127,7 +143,6 @@ const ProductCard = ({
             <h3 className="font-medium text-xs line-clamp-1">{productName}</h3>
           </Link>
           
-          {/* Rating - Flipkart style */}
           {productRating > 0 && (
             <div className="flex items-center gap-1 mb-0.5">
               <div className="bg-green-600 text-white text-[10px] px-1 py-0.5 rounded flex items-center">
@@ -152,7 +167,6 @@ const ProductCard = ({
     );
   }
 
-  // Horizontal layout for list view
   if (layout === 'horizontal') {
     return (
       <div 
@@ -161,7 +175,6 @@ const ProductCard = ({
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="flex flex-col sm:flex-row">
-          {/* Product Image & Badges */}
           <div className="relative overflow-hidden sm:w-36 md:w-48">
             <Link to={`/product/${productId}`}>
               <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
@@ -174,7 +187,6 @@ const ProductCard = ({
               </div>
             </Link>
             
-            {/* Badges */}
             <div className="absolute top-2 left-2 flex flex-col gap-1">
               {productIsNew && (
                 <div className="category-chip bg-primary text-primary-foreground px-1.5 py-0.5 text-xs">
@@ -194,7 +206,6 @@ const ProductCard = ({
             </div>
           </div>
           
-          {/* Product Info */}
           <div className="p-3 flex flex-col justify-between flex-grow">
             <div>
               <div className="mb-0.5">
@@ -204,7 +215,6 @@ const ProductCard = ({
                 <h3 className="font-medium text-sm line-clamp-1">{productName}</h3>
               </Link>
               
-              {/* Rating */}
               {productRating > 0 && (
                 <div className="flex items-center gap-1 mb-2">
                   <div className="flex items-center">
@@ -270,14 +280,12 @@ const ProductCard = ({
     );
   }
 
-  // Default vertical layout
   return (
     <div 
       className="product-card-container animate-fade-in"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Product Image & Badges */}
       <div className="relative overflow-hidden aspect-[3/4]">
         <Link to={`/product/${productId}`}>
           <div className={cn("w-full h-full", isLoading && "image-loading")}>
@@ -293,7 +301,6 @@ const ProductCard = ({
           </div>
         </Link>
         
-        {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {productIsNew && (
             <div className="category-chip bg-primary text-primary-foreground px-1.5 py-0.5 text-xs">
@@ -312,7 +319,6 @@ const ProductCard = ({
           )}
         </div>
         
-        {/* Actions */}
         <div 
           className={cn(
             "absolute right-2 top-2 flex flex-col gap-1 transition-all duration-300",
@@ -335,7 +341,6 @@ const ProductCard = ({
           </Button>
         </div>
         
-        {/* Quick Add Button */}
         <div 
           className={cn(
             "absolute inset-x-0 bottom-0 p-2 transition-all duration-300 transform",
@@ -352,7 +357,6 @@ const ProductCard = ({
         </div>
       </div>
       
-      {/* Product Info */}
       <div className="p-2">
         <div className="mb-0.5">
           <span className="category-chip text-[10px]">{productCategory}</span>
@@ -361,7 +365,6 @@ const ProductCard = ({
           <h3 className="font-medium text-xs line-clamp-1">{productName}</h3>
         </Link>
         
-        {/* Rating */}
         {productRating > 0 && (
           <div className="flex items-center gap-1 mb-1">
             <div className="flex items-center">
