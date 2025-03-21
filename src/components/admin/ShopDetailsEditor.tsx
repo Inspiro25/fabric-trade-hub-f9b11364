@@ -12,7 +12,7 @@ import { Shop } from '@/lib/shops';
 import { useToast } from '@/hooks/use-toast';
 import { Check, Save } from 'lucide-react';
 
-// Validation schema
+// Validation schema - using memo to prevent unnecessary re-evaluations
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -169,4 +169,4 @@ const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
   );
 };
 
-export default ShopDetailsEditor;
+export default React.memo(ShopDetailsEditor);

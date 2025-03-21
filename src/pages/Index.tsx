@@ -1,14 +1,30 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search } from 'lucide-react';
 import { getNewArrivals, getTrendingProducts, getAllCategories, getTopRatedProducts, getDiscountedProducts, getBestSellingProducts, Product } from '@/lib/products';
 import ProductCard from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import HomeCategories from '@/components/features/HomeCategories';
 import NotificationBadge from '@/components/features/NotificationBadge';
 import NotificationTest from '@/components/features/NotificationTest';
+
+// Lazy loading of sections to improve initial load performance
+const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
+const ProductSection = lazy(() => import('@/components/features/ProductSection'));
+
+// Simple loading placeholder component
+const SectionLoading = () => (
+  <div className="px-4 py-6 animate-pulse">
+    <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+    <div className="grid grid-cols-2 gap-3">
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className="bg-gray-200 rounded-lg h-40"></div>
+      ))}
+    </div>
+  </div>
+);
 
 const Index = () => {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
@@ -18,33 +34,48 @@ const Index = () => {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Track which data has been loaded to enable progressive loading
+  const [dataLoaded, setDataLoaded] = useState({
+    categories: false,
+    newArrivals: false,
+    bestSellers: false,
+    topRated: false,
+    discounted: false
+  });
 
   useEffect(() => {
+    // This function will fetch data progressively to improve perceived performance
     const fetchData = async () => {
       try {
-        // Fetch all data in parallel
-        const [
-          newArrivalsData, 
-          trendingData, 
-          topRatedData, 
-          discountedData, 
-          bestSellersData,
-          categoriesData
-        ] = await Promise.all([
-          getNewArrivals(),
-          getTrendingProducts(),
-          getTopRatedProducts(),
-          getDiscountedProducts(),
-          getBestSellingProducts(),
-          getAllCategories()
+        // First priority - categories and new arrivals
+        const [categoriesData, newArrivalsData] = await Promise.all([
+          getAllCategories(),
+          getNewArrivals()
         ]);
         
+        setCategories(categoriesData);
         setNewArrivals(newArrivalsData);
+        setDataLoaded(prev => ({...prev, categories: true, newArrivals: true}));
+        
+        // Second priority - trending and best sellers
+        const [trendingData, bestSellersData] = await Promise.all([
+          getTrendingProducts(),
+          getBestSellingProducts()
+        ]);
+        
         setTrendingProducts(trendingData);
+        setBestSellers(bestSellersData);
+        setDataLoaded(prev => ({...prev, bestSellers: true}));
+        
+        // Lower priority - load other data
+        const [topRatedData, discountedData] = await Promise.all([
+          getTopRatedProducts(),
+          getDiscountedProducts()
+        ]);
+        
         setTopRatedProducts(topRatedData);
         setDiscountedProducts(discountedData);
-        setBestSellers(bestSellersData);
-        setCategories(categoriesData);
+        setDataLoaded(prev => ({...prev, topRated: true, discounted: true}));
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -67,8 +98,8 @@ const Index = () => {
     }
   }, []);
 
-  // Show loading state
-  if (isLoading) {
+  // Show optimized loading state
+  if (isLoading && !dataLoaded.categories) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -105,6 +136,7 @@ const Index = () => {
                   src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1470" 
                   alt="Fashion sale" 
                   className="w-full h-full object-cover"
+                  loading="eager" // Prioritize this image
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
                   <h2 className="text-white text-2xl font-bold mb-2">Summer Sale</h2>
@@ -121,6 +153,7 @@ const Index = () => {
                   src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=1471" 
                   alt="New arrivals" 
                   className="w-full h-full object-cover"
+                  loading="lazy" // Defer loading this image
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
                   <h2 className="text-white text-2xl font-bold mb-2">New Arrivals</h2>
@@ -138,144 +171,57 @@ const Index = () => {
           </div>
         </Carousel>
         
-        {/* Categories */}
-        <HomeCategories categories={categories} />
+        {/* Categories - will always show first because we load them first */}
+        {dataLoaded.categories && <HomeCategories categories={categories} />}
         
-        {/* Deal of the Day */}
-        <section className="mb-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">Deal of the Day</h2>
-            <Link to="/category/deals" className="text-kutuku-primary text-sm font-medium flex items-center">
-              See All
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </Link>
-          </div>
-          
-          <div className="bg-white rounded-lg overflow-hidden shadow-sm">
-            <div className="relative aspect-[5/3] w-full">
-              <img 
-                src="https://images.unsplash.com/photo-1475180098004-ca77a66827be?q=80&w=1974" 
-                alt="Deal of the Day" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                -30%
-              </div>
-            </div>
-            <div className="p-4">
-              <h3 className="text-base font-medium mb-1">Summer Collection 2023</h3>
-              <div className="flex items-center mb-2">
-                <span className="text-lg font-bold text-kutuku-primary mr-2">₹1,399</span>
-                <span className="text-sm line-through text-gray-400">₹1,999</span>
-              </div>
-              <div className="grid grid-cols-4 gap-2 mb-3">
-                <div className="bg-gray-100 rounded-md p-2 text-center">
-                  <span className="block text-sm font-bold">12</span>
-                  <span className="text-xs text-gray-500">Hours</span>
-                </div>
-                <div className="bg-gray-100 rounded-md p-2 text-center">
-                  <span className="block text-sm font-bold">45</span>
-                  <span className="text-xs text-gray-500">Mins</span>
-                </div>
-                <div className="bg-gray-100 rounded-md p-2 text-center">
-                  <span className="block text-sm font-bold">52</span>
-                  <span className="text-xs text-gray-500">Secs</span>
-                </div>
-                <Button className="bg-kutuku-primary hover:bg-kutuku-secondary text-white w-full">
-                  Buy
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Deal of the Day - lazy loaded */}
+        <Suspense fallback={<SectionLoading />}>
+          <DealOfTheDay />
+        </Suspense>
         
-        {/* New Arrivals Section */}
-        <section className="mb-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">New Arrivals</h2>
-            <Link to="/category/new-arrivals" className="text-kutuku-primary text-sm font-medium flex items-center">
-              See All
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {newArrivals.slice(0, 4).map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                variant="compact"
-                gridCols={2}
-              />
-            ))}
-          </div>
-        </section>
+        {/* New Arrivals Section - progressive loading */}
+        {dataLoaded.newArrivals && (
+          <Suspense fallback={<SectionLoading />}>
+            <ProductSection 
+              title="New Arrivals"
+              products={newArrivals.slice(0, 4)}
+              linkTo="/category/new-arrivals"
+            />
+          </Suspense>
+        )}
         
-        {/* Best Sellers Section */}
-        <section className="mb-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">Best Sellers</h2>
-            <Link to="/category/best-sellers" className="text-kutuku-primary text-sm font-medium flex items-center">
-              See All
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {bestSellers.slice(0, 4).map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                variant="compact"
-                gridCols={2}
-              />
-            ))}
-          </div>
-        </section>
+        {/* Best Sellers Section - progressive loading */}
+        {dataLoaded.bestSellers && (
+          <Suspense fallback={<SectionLoading />}>
+            <ProductSection 
+              title="Best Sellers"
+              products={bestSellers.slice(0, 4)}
+              linkTo="/category/best-sellers"
+            />
+          </Suspense>
+        )}
         
-        {/* Top Rated Products */}
-        <section className="mb-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">Top Rated</h2>
-            <Link to="/category/top-rated" className="text-kutuku-primary text-sm font-medium flex items-center">
-              See All
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {topRatedProducts.slice(0, 4).map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                variant="compact"
-                gridCols={2}
-              />
-            ))}
-          </div>
-        </section>
+        {/* Top Rated Products - lazy loaded */}
+        {dataLoaded.topRated && (
+          <Suspense fallback={<SectionLoading />}>
+            <ProductSection 
+              title="Top Rated"
+              products={topRatedProducts.slice(0, 4)}
+              linkTo="/category/top-rated"
+            />
+          </Suspense>
+        )}
         
-        {/* Discounted Products */}
-        <section className="mb-6 px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">On Sale</h2>
-            <Link to="/category/sale" className="text-kutuku-primary text-sm font-medium flex items-center">
-              See All
-              <ArrowRight className="ml-1 h-3 w-3" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {discountedProducts.slice(0, 4).map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                variant="compact"
-                gridCols={2}
-              />
-            ))}
-          </div>
-        </section>
+        {/* Discounted Products - lazy loaded */}
+        {dataLoaded.discounted && (
+          <Suspense fallback={<SectionLoading />}>
+            <ProductSection 
+              title="On Sale"
+              products={discountedProducts.slice(0, 4)}
+              linkTo="/category/sale"
+            />
+          </Suspense>
+        )}
       </main>
       
       {/* Notification Test Component (only for development) */}
