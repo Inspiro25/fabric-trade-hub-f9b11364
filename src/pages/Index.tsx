@@ -1,12 +1,13 @@
-
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Search, Bell } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { getNewArrivals, getTrendingProducts, getAllCategories, getTopRatedProducts, getDiscountedProducts, getBestSellingProducts } from '@/lib/products';
 import ProductCard from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import HomeCategories from '@/components/features/HomeCategories';
+import NotificationBadge from '@/components/features/NotificationBadge';
+import NotificationTest from '@/components/features/NotificationTest';
 
 const Index = () => {
   const newArrivals = getNewArrivals();
@@ -16,7 +17,6 @@ const Index = () => {
   const bestSellers = getBestSellingProducts();
   const categories = getAllCategories();
 
-  // Scroll to section if hash is present in URL
   useEffect(() => {
     if (window.location.hash) {
       const id = window.location.hash.replace('#', '');
@@ -41,9 +41,7 @@ const Index = () => {
             <p className="text-xs text-gray-500">Welcome back!</p>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/notifications" className="text-gray-700">
-              <Bell size={20} />
-            </Link>
+            <NotificationBadge />
             <Link to="/search" className="text-gray-700">
               <Search size={20} />
             </Link>
@@ -234,6 +232,9 @@ const Index = () => {
           </div>
         </section>
       </main>
+      
+      {/* Notification Test Component (only for development) */}
+      <NotificationTest />
     </div>
   );
 };

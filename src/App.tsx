@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
@@ -14,6 +15,7 @@ import Authentication from "./pages/Authentication";
 import Checkout from "./pages/Checkout";
 import Search from "./pages/Search";
 import Wishlist from "./pages/Wishlist";
+import Notifications from "./pages/Notifications";
 import { lazy, Suspense } from "react";
 import MobileAppLayout from "./components/features/MobileAppLayout";
 import { useIsMobile } from "./hooks/use-mobile";
@@ -42,6 +44,7 @@ const AppContent = () => {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/search" element={<Search />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/notifications" element={<Notifications />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
             <Route path="*" element={<NotFound />} />
@@ -56,6 +59,7 @@ const AppContent = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/search" element={<Search />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/notifications" element={<Notifications />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
           <Route path="*" element={<NotFound />} />
@@ -69,13 +73,15 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <WishlistProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TooltipProvider>
+        <NotificationProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </TooltipProvider>
+        </NotificationProvider>
       </WishlistProvider>
     </AuthProvider>
   </QueryClientProvider>
