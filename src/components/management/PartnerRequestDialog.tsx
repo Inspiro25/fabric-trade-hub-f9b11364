@@ -22,6 +22,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createNotification } from '@/services/notificationService';
+import { createPartnerRequest } from '@/lib/supabase/partnerRequests';
+import { useToast } from '@/hooks/use-toast';
 
 // Validation schema for partner request form
 const formSchema = z.object({
@@ -44,6 +46,7 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
   onOpenChange,
   onSuccess,
 }) => {
+  const { toast } = useToast();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,9 +58,25 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
   });
 
   const onSubmit = async (data: FormValues) => {
-    // Create a notification for admin users
     try {
-      // We're using "admin" as the userId here as we're sending this to all admins
+      // Store in database
+      const requestId = await createPartnerRequest({
+        businessName: data.businessName,
+        contactName: data.contactName,
+        mobileNumber: data.mobileNumber,
+        email: data.email,
+      });
+      
+      if (!requestId) {
+        toast({
+          title: "Error",
+          description: "Failed to submit partner request. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Create a notification for admin users
       const notificationSent = await createNotification(
         "admin",
         "New Partner Request",
@@ -66,11 +85,26 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
       );
       
       if (notificationSent) {
+        toast({
+          title: "Request Submitted",
+          description: "Your partner request has been successfully submitted. Our team will contact you soon.",
+        });
         form.reset();
+        onSuccess();
+      } else {
+        toast({
+          title: "Partial Success",
+          description: "Your request was saved but we couldn't notify our team. We'll still review your application.",
+        });
         onSuccess();
       }
     } catch (error) {
       console.error("Error sending partner request:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit partner request. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
