@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   getNewArrivals, 
   getTrendingProducts, 
@@ -10,92 +10,71 @@ import {
   Product
 } from '@/lib/products';
 
-interface HomeDataState {
-  newArrivals: Product[];
-  trendingProducts: Product[];
-  topRatedProducts: Product[];
-  discountedProducts: Product[];
-  bestSellers: Product[];
-  categories: string[];
-  isLoading: boolean;
-  dataLoaded: {
-    categories: boolean;
-    newArrivals: boolean;
-    bestSellers: boolean;
-    topRated: boolean;
-    discounted: boolean;
-  };
-}
-
 export function useHomeData() {
-  const [state, setState] = useState<HomeDataState>({
-    newArrivals: [],
-    trendingProducts: [],
-    topRatedProducts: [],
-    discountedProducts: [],
-    bestSellers: [],
-    categories: [],
-    isLoading: true,
-    dataLoaded: {
-      categories: false,
-      newArrivals: false,
-      bestSellers: false,
-      topRated: false,
-      discounted: false
-    }
+  // Fetch categories data with React Query
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: getAllCategories,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
 
-  useEffect(() => {
-    // This function will fetch data progressively to improve perceived performance
-    const fetchData = async () => {
-      try {
-        // First priority - categories and new arrivals
-        const [categoriesData, newArrivalsData] = await Promise.all([
-          getAllCategories(),
-          getNewArrivals()
-        ]);
-        
-        setState(prev => ({
-          ...prev,
-          categories: categoriesData,
-          newArrivals: newArrivalsData,
-          dataLoaded: {...prev.dataLoaded, categories: true, newArrivals: true}
-        }));
-        
-        // Second priority - trending and best sellers
-        const [trendingData, bestSellersData] = await Promise.all([
-          getTrendingProducts(),
-          getBestSellingProducts()
-        ]);
-        
-        setState(prev => ({
-          ...prev,
-          trendingProducts: trendingData,
-          bestSellers: bestSellersData,
-          dataLoaded: {...prev.dataLoaded, bestSellers: true}
-        }));
-        
-        // Lower priority - load other data
-        const [topRatedData, discountedData] = await Promise.all([
-          getTopRatedProducts(),
-          getDiscountedProducts()
-        ]);
-        
-        setState(prev => ({
-          ...prev,
-          topRatedProducts: topRatedData,
-          discountedProducts: discountedData,
-          dataLoaded: {...prev.dataLoaded, topRated: true, discounted: true},
-          isLoading: false
-        }));
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setState(prev => ({...prev, isLoading: false}));
-      }
-    };
-    
-    fetchData();
-  }, []);
+  // Fetch new arrivals data with React Query
+  const newArrivalsQuery = useQuery({
+    queryKey: ['products', 'newArrivals'],
+    queryFn: getNewArrivals,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+  });
 
-  return state;
+  // Fetch trending products data with React Query
+  const trendingQuery = useQuery({
+    queryKey: ['products', 'trending'],
+    queryFn: getTrendingProducts,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+  });
+
+  // Fetch top rated products data with React Query
+  const topRatedQuery = useQuery({
+    queryKey: ['products', 'topRated'],
+    queryFn: getTopRatedProducts,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+  });
+
+  // Fetch discounted products data with React Query
+  const discountedQuery = useQuery({
+    queryKey: ['products', 'discounted'],
+    queryFn: getDiscountedProducts,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+  });
+
+  // Fetch best selling products data with React Query
+  const bestSellersQuery = useQuery({
+    queryKey: ['products', 'bestSellers'],
+    queryFn: getBestSellingProducts,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+  });
+
+  // Combine all loading states
+  const isLoading = 
+    categoriesQuery.isLoading || 
+    newArrivalsQuery.isLoading;
+
+  // Create a dataLoaded object to track which data has been loaded
+  const dataLoaded = {
+    categories: !categoriesQuery.isLoading,
+    newArrivals: !newArrivalsQuery.isLoading,
+    bestSellers: !bestSellersQuery.isLoading,
+    topRated: !topRatedQuery.isLoading,
+    discounted: !discountedQuery.isLoading
+  };
+
+  return {
+    categories: categoriesQuery.data || [],
+    newArrivals: newArrivalsQuery.data || [],
+    trendingProducts: trendingQuery.data || [],
+    topRatedProducts: topRatedQuery.data || [],
+    discountedProducts: discountedQuery.data || [],
+    bestSellers: bestSellersQuery.data || [],
+    isLoading,
+    dataLoaded
+  };
 }

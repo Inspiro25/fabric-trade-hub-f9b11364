@@ -9,6 +9,7 @@ import SectionLoading from '@/components/ui/SectionLoading';
 // Lazy loading of sections to improve initial load performance
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
 const ProductSection = lazy(() => import('@/components/features/ProductSection'));
+const Hero = lazy(() => import('@/components/features/Hero'));
 
 const Index = () => {
   const { 
@@ -40,7 +41,7 @@ const Index = () => {
   if (isLoading && !dataLoaded.categories) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-kutuku-primary"></div>
       </div>
     );
   }
@@ -53,7 +54,9 @@ const Index = () => {
       {/* Main Content */}
       <main className="pb-4">
         {/* Hero Banner Carousel */}
-        <HeroBanner />
+        <Suspense fallback={<SectionLoading />}>
+          <HeroBanner />
+        </Suspense>
         
         {/* Categories - will always show first because we load them first */}
         {dataLoaded.categories && <HomeCategories categories={categories} />}
@@ -107,8 +110,6 @@ const Index = () => {
           </Suspense>
         )}
       </main>
-      
-      {/* NotificationTest component removed */}
     </div>
   );
 };
