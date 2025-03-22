@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
@@ -18,10 +17,8 @@ export const useSearch = (): SearchReturn => {
   const { currentUser } = useAuth();
   const userId = currentUser?.uid || null;
   
-  // Get query from URL
   const urlQuery = searchParams.get('q') || '';
   
-  // Initialize search filters state
   const filters = useSearchFilters();
   const {
     selectedCategory,
@@ -50,7 +47,6 @@ export const useSearch = (): SearchReturn => {
     resetFilters
   } = filters;
   
-  // Custom state needed for useSearch
   const [query, setQuery] = useState(urlQuery);
   const [category, setCategory] = useState('');
   const [setPriceRange] = useState<(range: number[]) => void>(() => () => {});
@@ -58,14 +54,12 @@ export const useSearch = (): SearchReturn => {
   const [setSortOption] = useState<(option: SortOption) => void>(() => () => {});
   const [setViewMode] = useState<(mode: 'list' | 'grid') => void>(() => () => {});
   
-  // Initialize URL query if present
   useEffect(() => {
     if (urlQuery && !query) {
       setQuery(urlQuery);
     }
   }, [urlQuery, query]);
   
-  // Search data state
   const searchData = useSearchData(query);
   const {
     products,
@@ -77,27 +71,22 @@ export const useSearch = (): SearchReturn => {
     fetchData
   } = searchData;
   
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [resultsPerPage, setResultsPerPage] = useState(20);
   const totalProducts = products.length;
   const pageCount = Math.ceil(totalProducts / resultsPerPage);
   
-  // Search execution state
   const [hasSearched, setHasSearched] = useState(false);
   const [searchExecuted, setSearchExecuted] = useState(false);
   
-  // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
   
-  // Cart/Wishlist state
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
   const [recentlyViewed, setRecentlyViewed] = useState<SearchPageProduct[]>([]);
   
-  // Search history integration
   const searchHistoryUtils = useSearchHistory(userId);
   const { 
     searchHistory,
@@ -108,10 +97,8 @@ export const useSearch = (): SearchReturn => {
     fetchSearchHistory
   } = searchHistoryUtils;
   
-  // Product recommendations
   const { recommendations } = useRecommendations(userId);
   
-  // Perform search with current filters
   const executeSearch = useCallback(async () => {
     if (!query && !category) return;
     
@@ -127,11 +114,8 @@ export const useSearch = (): SearchReturn => {
     };
     
     try {
-      // Get search results - this is now just calling fetchData directly
-      // since we're already fetching in useSearchData
       fetchData();
       
-      // Add search to history if this is a new search
       if (query && !searchExecuted && userId) {
         saveSearchHistory(query);
       }
@@ -159,12 +143,10 @@ export const useSearch = (): SearchReturn => {
     fetchData
   ]);
   
-  // Execute search when filters change
   useEffect(() => {
     executeSearch();
   }, [executeSearch]);
   
-  // Check if search was initiated from the URL on initial load
   useEffect(() => {
     const queryParam = searchParams.get('q');
     const categoryParam = searchParams.get('category');
@@ -174,35 +156,43 @@ export const useSearch = (): SearchReturn => {
     }
   }, [searchParams]);
   
-  // Add product to cart
   const handleAddToCart = useCallback((product: SearchPageProduct) => {
     setIsAddingToCart(product.id);
-    // Fix: Call addToCart with all required parameters (id, quantity, color, size)
-    addToCart(product.id, 1, "", ""); // Adding empty strings for color and size as defaults
+    addToCart({
+      id: product.id,
+      name: product.name,
+      description: product.description || "",
+      price: product.price,
+      salePrice: product.salePrice,
+      images: product.images || [],
+      category: product.category || "",
+      colors: product.colors || [],
+      sizes: product.sizes || [],
+      rating: product.rating || 0,
+      reviewCount: product.reviewCount || 0,
+      stock: product.stock || 0,
+      tags: product.tags || []
+    }, 1, "", "");
     setTimeout(() => setIsAddingToCart(null), 1000);
   }, [addToCart]);
   
-  // Handle add to wishlist
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
     setIsAddingToWishlist(product.id);
     // Wishlist implementation would go here
     setTimeout(() => setIsAddingToWishlist(null), 1000);
   }, []);
   
-  // Handle share product
   const handleShareProduct = useCallback((product: SearchPageProduct) => {
     const shareLink = `${window.location.origin}/product/${product.id}`;
     setShareableLink(shareLink);
     setIsShareDialogOpen(true);
   }, []);
   
-  // Login handler
   const handleLogin = useCallback(() => {
     setIsDialogOpen(true);
   }, []);
   
   return {
-    // Search state
     query,
     setQuery,
     category,
@@ -216,37 +206,30 @@ export const useSearch = (): SearchReturn => {
     viewMode,
     setViewMode,
     
-    // Results state
     products,
     isLoading: loading,
     error,
     totalProducts,
     pageCount,
     
-    // Pagination
     currentPage,
     setCurrentPage,
     resultsPerPage,
     setResultsPerPage,
     
-    // Search status
     hasSearched,
     executeSearch,
     resetFilters,
     
-    // Cart integration
     handleAddToCart,
     
-    // Search history
     searchHistory,
     clearSearchHistoryItem,
     clearAllSearchHistory,
     saveSearchHistory,
     
-    // Recommendations
     recommendations,
     
-    // From useSearchFilters
     selectedCategory,
     selectedShop,
     rating,
@@ -262,7 +245,6 @@ export const useSearch = (): SearchReturn => {
     handleViewModeChange,
     clearFilters,
     
-    // Additional features
     isAddingToCart,
     isAddingToWishlist,
     handleAddToWishlist,
@@ -284,7 +266,6 @@ export const useSearch = (): SearchReturn => {
     fetchData,
     handleLogin,
     
-    // Additional data needed by the search page
     categories,
     shops
   };
