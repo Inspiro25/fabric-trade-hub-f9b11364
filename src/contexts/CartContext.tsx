@@ -33,6 +33,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [hasPendingMigration, setHasPendingMigration] = useState(false);
   
   // Use the cart storage hook to manage cart data
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
@@ -44,29 +45,40 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!isLoading && !isInitialized) {
       setIsInitialized(true);
+      
+      // Check if there's a guest cart to migrate
+      const guestCart = localStorage.getItem('guest_cart');
+      if (guestCart && currentUser) {
+        try {
+          const parsedCart = JSON.parse(guestCart);
+          if (parsedCart && parsedCart.length > 0) {
+            setHasPendingMigration(true);
+          }
+        } catch (e) {
+          // Invalid cart data, clear it
+          localStorage.removeItem('guest_cart');
+        }
+      }
     }
-  }, [isLoading, isInitialized]);
+  }, [isLoading, isInitialized, currentUser]);
 
   // Migrate guest cart to user cart when user logs in
   useEffect(() => {
     const migrateCart = async () => {
-      if (currentUser && isInitialized && !isLoading) {
+      if (currentUser && isInitialized && !isLoading && hasPendingMigration) {
         try {
           await migrateGuestCartToUser();
+          setHasPendingMigration(false);
         } catch (error) {
           console.error('Failed to migrate cart:', error);
-          // Use shadcn/ui toast
-          toast({
-            title: "Cart Error",
-            description: "Failed to synchronize your cart",
-            variant: "destructive",
-          });
+          // Do not show toast on error to reduce notifications
+          setHasPendingMigration(false);
         }
       }
     };
     
     migrateCart();
-  }, [currentUser, isInitialized, isLoading]);
+  }, [currentUser, isInitialized, isLoading, hasPendingMigration]);
 
   // Wrapper functions to provide consistent API
   const getCartTotalWrapper = () => getCartTotal(cartItems);

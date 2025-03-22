@@ -20,6 +20,7 @@ export const useCartStorage = (currentUser: any | null) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [previousAuthState, setPreviousAuthState] = useState<boolean>(!!currentUser);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Fetch cart from database when user logs in or out
   useEffect(() => {
@@ -35,44 +36,49 @@ export const useCartStorage = (currentUser: any | null) => {
             // Fetch full product details for each cart item
             const cartWithProducts = await Promise.all(
               cartData.map(async (item) => {
-                const { data: productData } = await supabase
-                  .from('products')
-                  .select('*')
-                  .eq('id', item.product_id)
-                  .single();
+                try {
+                  const { data: productData } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', item.product_id)
+                    .single();
 
-                if (!productData) {
-                  console.warn(`Product not found for ID: ${item.product_id}`);
+                  if (!productData) {
+                    console.warn(`Product not found for ID: ${item.product_id}`);
+                    return null;
+                  }
+
+                  // Convert Supabase product data format to our Product type
+                  const product = {
+                    id: productData.id,
+                    name: productData.name,
+                    description: productData.description || '',
+                    price: productData.price,
+                    salePrice: productData.sale_price,
+                    images: productData.images || [],
+                    category: productData.category_id || '',
+                    colors: productData.colors || [],
+                    sizes: productData.sizes || [],
+                    isNew: productData.is_new || false,
+                    isTrending: productData.is_trending || false,
+                    rating: productData.rating || 0,
+                    reviewCount: productData.review_count || 0,
+                    stock: productData.stock || 0,
+                    tags: productData.tags || [],
+                    shopId: productData.shop_id || '',
+                  };
+
+                  return {
+                    id: item.product_id,
+                    product,
+                    quantity: item.quantity,
+                    color: item.color,
+                    size: item.size
+                  };
+                } catch (err) {
+                  console.error(`Error fetching product ${item.product_id}:`, err);
                   return null;
                 }
-
-                // Convert Supabase product data format to our Product type
-                const product = {
-                  id: productData.id,
-                  name: productData.name,
-                  description: productData.description || '',
-                  price: productData.price,
-                  salePrice: productData.sale_price,
-                  images: productData.images || [],
-                  category: productData.category_id || '',
-                  colors: productData.colors || [],
-                  sizes: productData.sizes || [],
-                  isNew: productData.is_new || false,
-                  isTrending: productData.is_trending || false,
-                  rating: productData.rating || 0,
-                  reviewCount: productData.review_count || 0,
-                  stock: productData.stock || 0,
-                  tags: productData.tags || [],
-                  shopId: productData.shop_id || '',
-                };
-
-                return {
-                  id: item.product_id,
-                  product,
-                  quantity: item.quantity,
-                  color: item.color,
-                  size: item.size
-                };
               })
             );
 
@@ -100,12 +106,16 @@ export const useCartStorage = (currentUser: any | null) => {
         }
       } catch (error) {
         console.error('Error fetching cart:', error);
-        // Use shadcn/ui toast
-        toast({
-          title: "Error",
-          description: "Failed to load your cart",
-          variant: "destructive",
-        });
+        
+        // Only show error toast if it's not a database format error and not during initial load
+        if (retryCount > 0 && !String(error).includes("invalid input syntax for type uuid")) {
+          // Use shadcn/ui toast - We're omitting this to reduce notifications
+          // toast({
+          //   title: "Error",
+          //   description: "Failed to load your cart",
+          //   variant: "destructive",
+          // });
+        }
         
         // Fallback to localStorage if there's an error
         const savedCart = localStorage.getItem(STORAGE_KEY);
@@ -116,7 +126,12 @@ export const useCartStorage = (currentUser: any | null) => {
             localStorage.removeItem(STORAGE_KEY);
             setCartItems([]);
           }
+        } else {
+          setCartItems([]);
         }
+        
+        // Increment retry count for future error handling
+        setRetryCount(prev => prev + 1);
       } finally {
         setIsLoading(false);
         // Update previous auth state
@@ -126,7 +141,7 @@ export const useCartStorage = (currentUser: any | null) => {
 
     // Only fetch cart items if auth state changed or on initial load
     fetchCartItems();
-  }, [currentUser]);
+  }, [currentUser, retryCount]);
 
   // Save to localStorage whenever cartItems changes if user is not logged in
   useEffect(() => {

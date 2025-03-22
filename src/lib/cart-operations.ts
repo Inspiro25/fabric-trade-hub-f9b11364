@@ -136,12 +136,7 @@ export const useCartOperations = (
       setCartItems(newCart);
     } catch (error) {
       console.error('Error updating quantity:', error);
-      // Use shadcn/ui toast
-      toast({
-        title: "Error",
-        description: "Failed to update item quantity",
-        variant: "destructive",
-      });
+      // Use shadcn/ui toast - silent error, no toast
     }
   };
 
@@ -203,19 +198,14 @@ export const useCartOperations = (
       // Clear the guest cart
       localStorage.removeItem(STORAGE_KEY);
       
-      // Use shadcn/ui toast
+      // Use shadcn/ui toast - success only, no errors
       toast({
         title: "Cart synchronized",
-        description: "Your cart has been saved to your account",
+        description: "Your items are now saved to your account",
       });
     } catch (error) {
       console.error('Error migrating cart:', error);
-      // Use shadcn/ui toast
-      toast({
-        title: "Error",
-        description: "Failed to synchronize your cart",
-        variant: "destructive",
-      });
+      // Silent error, don't show toast to reduce irritation
     }
   };
 
