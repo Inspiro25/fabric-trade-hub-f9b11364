@@ -83,7 +83,7 @@ const Index = () => {
           <HomeProductShowcase
             title="New Arrivals"
             products={newArrivals}
-            linkTo="/category/new-arrivals"
+            linkTo="/new-arrivals"
             isLoaded={dataLoaded.newArrivals}
           />
         )}

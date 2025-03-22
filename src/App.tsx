@@ -48,6 +48,9 @@ import ManagementShops from "./pages/ManagementShops";
 import ManagementOffers from "./pages/ManagementOffers";
 import ManagementShopPerformance from "./pages/ManagementShopPerformance";
 
+// Import New Arrivals page
+import NewArrivals from "./pages/NewArrivals";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -82,6 +85,8 @@ const AppContent = () => {
             <Route path="/shop/:id" element={<ShopDetail />} />
             {/* Add a route for categories */}
             <Route path="/category/:categoryName" element={<CategorySection />} />
+            {/* Add route for new arrivals */}
+            <Route path="/new-arrivals" element={<NewArrivals />} />
             {/* Add admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -121,6 +126,8 @@ const AppContent = () => {
           <Route path="/shop/:id" element={<ShopDetail />} />
           {/* Add a route for categories */}
           <Route path="/category/:categoryName" element={<CategorySection />} />
+          {/* Add route for new arrivals */}
+          <Route path="/new-arrivals" element={<NewArrivals />} />
           {/* Add admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
