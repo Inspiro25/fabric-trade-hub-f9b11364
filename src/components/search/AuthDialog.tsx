@@ -2,38 +2,51 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
-  onLogin?: () => void;
+  onLogin: () => void;
 }
 
-const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onOpenChange, onLogin }) => {
-  const navigate = useNavigate();
-  
-  const handleLogin = () => {
-    if (onLogin) {
+const AuthDialog: React.FC<AuthDialogProps> = ({
+  open,
+  onOpenChange,
+  onLogin
+}) => {
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    try {
+      await login();
       onLogin();
-    } else {
-      navigate('/auth');
       onOpenChange(false);
+    } catch (error) {
+      console.error("Login failed:", error);
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Authentication Required</DialogTitle>
+          <DialogTitle>Login Required</DialogTitle>
           <DialogDescription>
             You need to be logged in to perform this action.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button type="button" onClick={handleLogin}>
-            Go to Login
+        <div className="flex flex-col space-y-4">
+          <p className="text-sm text-gray-500">
+            Please log in to access additional features like adding to wishlist, saving search history, and getting personalized recommendations.
+          </p>
+        </div>
+        <DialogFooter className="flex justify-between mt-4">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Not Now
+          </Button>
+          <Button onClick={handleLogin}>
+            Login
           </Button>
         </DialogFooter>
       </DialogContent>

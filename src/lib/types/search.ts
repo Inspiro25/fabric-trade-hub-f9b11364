@@ -1,4 +1,3 @@
-
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
 
 export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity' | 'relevance';
@@ -112,7 +111,6 @@ export interface SearchReturn {
   
   // Search history
   searchHistory: any[];
-  clearSearchHistory: () => void;
   clearSearchHistoryItem: (id: string) => void;
   clearAllSearchHistory: () => void;
   saveSearchHistory: (query: string) => void;
@@ -161,4 +159,8 @@ export interface SearchReturn {
   toggleDiscountFilter: (discount: string) => void;
   fetchData: () => Promise<void>;
   handleLogin: () => void;
+  
+  // Additional data-related properties needed by the search page
+  categories: any[];
+  shops: any[];
 }

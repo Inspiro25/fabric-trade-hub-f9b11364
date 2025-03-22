@@ -15,8 +15,8 @@ interface SearchRecommendationsProps {
   isAddingToWishlist: string | null;
   onAddToCart: (product: SearchPageProduct) => void;
   onAddToWishlist: (product: SearchPageProduct) => void;
-  onShare: (product: SearchPageProduct) => void;
-  onSelectProduct: (productId: string) => void;
+  onShareProduct: (product: SearchPageProduct) => void;
+  onSelectProduct?: (productId: string) => void;
   emptyStateIcon?: React.ReactNode;
   emptyStateTitle?: string;
   emptyStateMessage?: string;
@@ -28,8 +28,8 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
   isAddingToWishlist,
   onAddToCart,
   onAddToWishlist,
-  onShare,
-  onSelectProduct,
+  onShareProduct,
+  onSelectProduct = () => {},
   emptyStateIcon,
   emptyStateTitle = "No recommendations available",
   emptyStateMessage = "Browse our products to get personalized recommendations"
@@ -97,9 +97,9 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
               product={product}
               isAddingToCart={isAddingToCart === product.id}
               isAddingToWishlist={isAddingToWishlist === product.id}
-              onAddToCart={onAddToCart}
-              onAddToWishlist={onAddToWishlist}
-              onShare={onShare}
+              onAddToCart={() => onAddToCart(product)}
+              onAddToWishlist={() => onAddToWishlist(product)}
+              onShare={() => onShareProduct(product)}
               viewMode="grid"
               isCompact={true}
               buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "bg-orange-500 hover:bg-orange-600"}

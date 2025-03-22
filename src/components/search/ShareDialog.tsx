@@ -6,26 +6,26 @@ import { Input } from "@/components/ui/input";
 import { CheckCircleIcon, Copy } from 'lucide-react';
 
 interface ShareDialogProps {
-  isOpen: boolean;
+  open: boolean;
   onOpenChange: (open: boolean) => void;
-  shareableLink: string;
+  link: string;
 }
 
 const ShareDialog: React.FC<ShareDialogProps> = ({
-  isOpen,
+  open,
   onOpenChange,
-  shareableLink
+  link
 }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareableLink);
+    navigator.clipboard.writeText(link);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Share Product</DialogTitle>
@@ -34,7 +34,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2">
-          <Input type="text" value={shareableLink} readOnly className="flex-1" />
+          <Input type="text" value={link} readOnly className="flex-1" />
           <Button variant="secondary" size="sm" onClick={copyToClipboard} disabled={isCopied}>
             {isCopied ? (
               <>

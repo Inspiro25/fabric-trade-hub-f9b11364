@@ -14,14 +14,14 @@ interface SearchResultsProps {
   loading: boolean;
   error: string | null;
   products: SearchPageProduct[];
+  totalProducts: number;
   isAddingToCart: string | null;
   isAddingToWishlist: string | null;
-  handleAddToCart: (product: SearchPageProduct) => void;
-  handleAddToWishlist: (product: SearchPageProduct) => void;
-  handleShareProduct: (product: SearchPageProduct) => void;
+  onAddToCart: (product: SearchPageProduct) => void;
+  onAddToWishlist: (product: SearchPageProduct) => void;
+  onShareProduct: (product: SearchPageProduct) => void;
   onProductClick?: (product: SearchPageProduct) => void;
   onRetry?: () => void;
-  totalItems?: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
   itemsPerPage?: number;
@@ -34,14 +34,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   loading,
   error,
   products,
+  totalProducts,
   isAddingToCart,
   isAddingToWishlist,
-  handleAddToCart,
-  handleAddToWishlist,
-  handleShareProduct,
+  onAddToCart,
+  onAddToWishlist,
+  onShareProduct,
   onProductClick,
   onRetry,
-  totalItems = 0,
   currentPage = 1,
   onPageChange = () => {},
   itemsPerPage = 20,
@@ -63,7 +63,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return <SearchEmptyState />;
   }
   
-  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+  const totalPages = Math.ceil(totalProducts / itemsPerPage) || 1;
   
   return (
     <div className={cn(
@@ -73,7 +73,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       <SearchHeader 
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
-        totalItems={totalItems}
+        totalItems={totalProducts}
         onItemsPerPageChange={onItemsPerPageChange}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
@@ -99,9 +99,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               product={product}
               isAddingToCart={isAddingToCart === product.id}
               isAddingToWishlist={isAddingToWishlist === product.id}
-              onAddToCart={() => handleAddToCart(product)}
-              onAddToWishlist={() => handleAddToWishlist(product)}
-              onShare={() => handleShareProduct(product)}
+              onAddToCart={() => onAddToCart(product)}
+              onAddToWishlist={() => onAddToWishlist(product)}
+              onShare={() => onShareProduct(product)}
               onClick={onProductClick ? () => onProductClick(product) : undefined}
               viewMode={viewMode}
               buttonColor={isDarkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'}
