@@ -5,12 +5,16 @@ type ThemeContextType = {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
 };
 
 const ThemeContext = createContext<ThemeContextType>({
   isDarkMode: false,
   toggleDarkMode: () => {},
   primaryColor: '#FF6B00', // Default primary color (orange)
+  secondaryColor: '#FF8A3D', // Default secondary color (lighter orange)
+  accentColor: '#FFF0EA', // Default accent color (very light orange)
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -31,8 +35,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return false;
   });
 
-  // Set primary color based on dark mode
+  // Set colors based on dark mode
   const primaryColor = isDarkMode ? '#FF8A3D' : '#FF6B00';
+  const secondaryColor = isDarkMode ? '#FFA264' : '#FF8A3D';
+  const accentColor = isDarkMode ? '#433127' : '#FFF0EA';
 
   // Toggle the dark mode state
   const toggleDarkMode = () => {
@@ -57,7 +63,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [isDarkMode]);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode, primaryColor }}>
+    <ThemeContext.Provider value={{ 
+      isDarkMode, 
+      toggleDarkMode, 
+      primaryColor, 
+      secondaryColor, 
+      accentColor 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
