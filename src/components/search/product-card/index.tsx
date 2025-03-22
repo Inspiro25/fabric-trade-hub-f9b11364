@@ -1,79 +1,19 @@
 
-export * from './types';
-export * from './CompactProductCard';
-export * from './GridProductCard';
-export * from './ListProductCard';
-export * from './ProductCardSkeleton';
-
-import { SearchPageProduct, ProductCardBaseProps } from './types';
-import { CompactProductCard } from './CompactProductCard';
-import { GridProductCard } from './GridProductCard';
-import { ListProductCard } from './ListProductCard';
-import { ProductCardSkeleton } from './ProductCardSkeleton';
 import React from 'react';
+import GridProductCard from './GridProductCard';
+import ListProductCard from './ListProductCard';
+import CompactProductCard from './CompactProductCard';
+import { ProductCardSkeleton } from './ProductCardSkeleton';
+import type { ProductCardBaseProps, SearchPageProduct } from '@/hooks/use-search';
 
-interface SearchProductCardProps extends ProductCardBaseProps {
-  viewMode?: 'grid' | 'list';
-  isCompact?: boolean;
-  buttonColor?: string;
-}
-
-const SearchProductCard: React.FC<SearchProductCardProps> = ({
-  product,
-  isAddingToCart,
-  isAddingToWishlist,
-  onAddToCart,
-  onAddToWishlist,
-  onShare,
-  onClick,
-  viewMode = 'grid',
-  isCompact = false,
-  buttonColor
-}) => {
-  if (isCompact) {
-    return (
-      <CompactProductCard
-        product={product}
-        isAddingToCart={isAddingToCart}
-        isAddingToWishlist={isAddingToWishlist}
-        onAddToCart={onAddToCart}
-        onAddToWishlist={onAddToWishlist}
-        onShare={onShare}
-        onClick={onClick}
-        buttonColor={buttonColor}
-      />
-    );
-  }
-  
+const ProductCard = ({ viewMode = 'grid', ...props }: ProductCardBaseProps) => {
   if (viewMode === 'list') {
-    return (
-      <ListProductCard
-        product={product}
-        isAddingToCart={isAddingToCart}
-        isAddingToWishlist={isAddingToWishlist}
-        onAddToCart={onAddToCart}
-        onAddToWishlist={onAddToWishlist}
-        onShare={onShare}
-        onClick={onClick}
-        buttonColor={buttonColor}
-      />
-    );
+    return <ListProductCard {...props} />;
+  } else {
+    return <GridProductCard {...props} />;
   }
-  
-  // Default to grid view
-  return (
-    <GridProductCard
-      product={product}
-      isAddingToCart={isAddingToCart}
-      isAddingToWishlist={isAddingToWishlist}
-      onAddToCart={onAddToCart}
-      onAddToWishlist={onAddToWishlist}
-      onShare={onShare}
-      onClick={onClick}
-      buttonColor={buttonColor}
-    />
-  );
 };
 
-export default SearchProductCard;
-export { ProductCardSkeleton as SearchProductSkeleton };
+export { ProductCardSkeleton, CompactProductCard };
+export type { SearchPageProduct, ProductCardBaseProps };
+export default ProductCard;

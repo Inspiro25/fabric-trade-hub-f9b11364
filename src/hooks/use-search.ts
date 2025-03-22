@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -36,7 +37,7 @@ export interface SearchPageProduct {
 export interface Category {
   id: string;
   name: string;
-  image?: string;
+  image: string;  // Make this required to match Search.tsx
   description: string;
 }
 
@@ -58,7 +59,8 @@ export interface Shop {
   ownerEmail?: string;
   owner_email?: string;
   status?: 'pending' | 'active' | 'suspended';
-  shopId?: string;
+  shopId: string;  // Make this required to match Search.tsx
+  shop_id: string; // Add this to match Search.tsx
 }
 
 const useSearch = () => {
@@ -150,7 +152,8 @@ const useSearch = () => {
             ownerEmail: 'john@electrohub.com',
             owner_email: 'john@electrohub.com',
             status: 'active',
-            shopId: 'shop-1'
+            shopId: 'shop-1',
+            shop_id: 'shop-1'
           },
           {
             id: '2', 
@@ -170,7 +173,8 @@ const useSearch = () => {
             ownerEmail: 'jane@fashionworld.com',
             owner_email: 'jane@fashionworld.com',
             status: 'active',
-            shopId: 'shop-2'
+            shopId: 'shop-2',
+            shop_id: 'shop-2'
           },
           {
             id: '3', 
@@ -190,7 +194,8 @@ const useSearch = () => {
             ownerEmail: 'bob@homeessentials.com',
             owner_email: 'bob@homeessentials.com',
             status: 'active',
-            shopId: 'shop-3'
+            shopId: 'shop-3',
+            shop_id: 'shop-3'
           },
         ]);
 
@@ -272,6 +277,7 @@ const useSearch = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
+      // Fix the toast call by providing all required arguments
       toast(`${product.name} added to cart`, {
         description: "You can view it in your cart",
         action: {
@@ -288,6 +294,7 @@ const useSearch = () => {
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(null);
+      // Fix the toast call by providing all required arguments
       toast(`${product.name} added to wishlist`, {
         description: "You can view it in your wishlist",
         action: {
