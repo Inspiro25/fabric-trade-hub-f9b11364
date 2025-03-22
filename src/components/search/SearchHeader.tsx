@@ -58,7 +58,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
           </span>
         </Badge>
         <span className={cn(
-          "text-xs sm:text-sm",
+          "text-xs",
           isDarkMode ? "text-gray-400" : ""
         )}>
           Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} - {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
@@ -76,7 +76,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
             onValueChange={(value) => onItemsPerPageChange(Number(value))}
           >
             <SelectTrigger className={cn(
-              `${isMobile ? 'w-[100px] h-8' : 'w-[120px]'} text-xs`,
+              `${isMobile ? 'w-[90px] h-8 text-xs' : 'w-[120px] text-sm'}`,
               isDarkMode 
                 ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-orange-500" 
                 : "border-gray-200 focus:ring-kutuku-primary"

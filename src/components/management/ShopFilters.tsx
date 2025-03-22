@@ -20,11 +20,11 @@ const ShopFilters: React.FC<ShopFiltersProps> = ({
   isMobile = false
 }) => {
   return (
-    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+    <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between w-full">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className={isMobile ? "w-full overflow-x-auto" : ""}
+        className={isMobile ? "w-full overflow-x-auto hide-scrollbar" : ""}
       >
         <TabsList className={isMobile ? "w-full grid grid-cols-3" : ""}>
           <TabsTrigger value="all">All Shops</TabsTrigger>

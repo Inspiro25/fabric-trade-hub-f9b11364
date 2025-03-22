@@ -213,6 +213,30 @@
   .kutuku-badge {
     @apply bg-kutuku-light text-kutuku-primary text-xs font-medium px-2 py-1 rounded-full;
   }
+
+  .kutuku-searchbar {
+    @apply bg-kutuku-gray rounded-full px-4 py-2 text-sm w-full focus:outline-none;
+  }
+
+  .search-bar-mobile {
+    @apply w-full relative flex items-center;
+  }
+  
+  .search-bar-mobile input {
+    @apply h-10 pl-9 pr-12 rounded-full text-sm;
+  }
+  
+  .search-bar-mobile .search-icon {
+    @apply absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4;
+  }
+  
+  .search-bar-mobile .clear-icon {
+    @apply absolute right-11 top-1/2 transform -translate-y-1/2 h-4 w-4;
+  }
+  
+  .search-bar-mobile .submit-button {
+    @apply absolute right-1 top-1/2 transform -translate-y-1/2 h-8 rounded-full flex items-center justify-center;
+  }
 }
 
 /* Custom scrollbar */
@@ -268,10 +292,6 @@
 
 .kutuku-bottom-tab-icon {
   @apply mb-1;
-}
-
-.kutuku-searchbar {
-  @apply bg-kutuku-gray rounded-full px-4 py-2 text-sm w-full focus:outline-none;
 }
 
 .kutuku-product-grid {
