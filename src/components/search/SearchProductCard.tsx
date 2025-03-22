@@ -1,5 +1,8 @@
 
-import SearchProductCard, { SearchPageProduct, SearchProductSkeleton } from './product-card';
+import SearchProductCard from './product-card';
+import { ProductCardSkeleton as SearchProductSkeleton } from './product-card';
+import type { SearchPageProduct } from './product-card/types';
 
-export { SearchPageProduct, SearchProductSkeleton };
+export type { SearchPageProduct };
+export { SearchProductSkeleton };
 export default SearchProductCard;
