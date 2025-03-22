@@ -5,6 +5,8 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { ProductCardBaseProps } from './types';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
   product,
@@ -13,6 +15,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
   const discountPercent = product.sale_price 
     ? Math.round((1 - product.sale_price / product.price) * 100) 
     : 0;
+  const { isDarkMode } = useTheme();
     
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (onClick) onClick(product);
@@ -20,7 +23,10 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
     
   return (
     <motion.div 
-      className="group relative bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer"
+      className={cn(
+        "group relative rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer",
+        isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"
+      )}
       whileHover={{ y: -5 }}
       onClick={handleClick}
     >
@@ -39,20 +45,32 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
       )}
       
       <div className="p-2">
-        <h3 className="text-sm font-medium line-clamp-1">{product.name}</h3>
+        <h3 className={cn(
+          "text-sm font-medium line-clamp-1",
+          isDarkMode ? "text-gray-200" : ""
+        )}>{product.name}</h3>
         <div className="flex justify-between items-center mt-1">
           <div>
             {product.sale_price ? (
               <div className="flex items-center gap-1">
-                <span className="text-sm font-bold text-[#9b87f5]">
+                <span className={cn(
+                  "text-sm font-bold",
+                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                )}>
                   ${product.sale_price}
                 </span>
-                <span className="text-xs text-gray-500 line-through">
+                <span className={cn(
+                  "text-xs line-through",
+                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                )}>
                   ${product.price}
                 </span>
               </div>
             ) : (
-              <span className="text-sm font-bold">
+              <span className={cn(
+                "text-sm font-bold",
+                isDarkMode ? "text-white" : ""
+              )}>
                 ${product.price}
               </span>
             )}

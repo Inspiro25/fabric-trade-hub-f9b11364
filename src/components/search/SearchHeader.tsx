@@ -78,12 +78,12 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
             <SelectTrigger className={cn(
               `${isMobile ? 'w-[100px] h-8' : 'w-[120px]'} text-xs`,
               isDarkMode 
-                ? "border-gray-700 focus:ring-orange-500" 
+                ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-orange-500" 
                 : "border-gray-200 focus:ring-kutuku-primary"
             )}>
               <SelectValue placeholder="20 per page" />
             </SelectTrigger>
-            <SelectContent className={isDarkMode ? "bg-gray-800 border-gray-700" : ""}>
+            <SelectContent className={isDarkMode ? "bg-gray-800 border-gray-700 text-gray-200" : ""}>
               <SelectItem value="10">10 per page</SelectItem>
               <SelectItem value="20">20 per page</SelectItem>
               <SelectItem value="50">50 per page</SelectItem>

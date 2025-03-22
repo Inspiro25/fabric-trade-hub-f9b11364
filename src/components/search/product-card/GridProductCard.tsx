@@ -17,7 +17,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   onAddToWishlist,
   onShare,
   onClick,
-  buttonColor // Include buttonColor in the props
+  buttonColor
 }) => {
   const isAddingThisToCart = isAddingToCart === true || isAddingToCart === product.id;
   const isAddingThisToWishlist = isAddingToWishlist === true || isAddingToWishlist === product.id;
@@ -73,7 +73,10 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="h-8 w-8 rounded-full"
+                className={cn(
+                  "h-8 w-8 rounded-full",
+                  isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
+                )}
                 onClick={handleAddToWishlistClick}
               >
                 <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
@@ -82,7 +85,10 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
               <Button 
                 size="icon" 
                 variant="ghost" 
-                className="h-8 w-8 rounded-full"
+                className={cn(
+                  "h-8 w-8 rounded-full",
+                  isDarkMode ? "hover:bg-gray-700 text-gray-300" : "hover:bg-gray-100"
+                )}
                 onClick={handleShareClick}
               >
                 <Share2 className="h-4 w-4" />
@@ -105,8 +111,15 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
         
         {product.is_trending && (
           <div className="absolute left-2 bottom-2">
-            <Badge variant="outline" className="bg-orange-500/20 text-orange-800 border-orange-200">
-              <Zap className="h-3 w-3 mr-1 text-orange-600" /> Trending
+            <Badge variant="outline" className={cn(
+              isDarkMode 
+                ? "bg-orange-900/20 text-orange-300 border-orange-700" 
+                : "bg-orange-500/20 text-orange-800 border-orange-200"
+            )}>
+              <Zap className={cn(
+                "h-3 w-3 mr-1",
+                isDarkMode ? "text-orange-300" : "text-orange-600"
+              )} /> Trending
             </Badge>
           </div>
         )}
@@ -142,7 +155,10 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           <div>
             {product.sale_price ? (
               <div className="flex items-center gap-1">
-                <span className="text-base font-bold text-orange-500">
+                <span className={cn(
+                  "text-base font-bold",
+                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                )}>
                   ${product.sale_price}
                 </span>
                 <span className={cn(
@@ -167,7 +183,12 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           size="sm" 
           onClick={handleAddToCartClick}
           disabled={!!isAddingThisToCart}
-          className={cn("w-full h-9", buttonColor || "bg-orange-500 hover:bg-orange-600")}
+          className={cn(
+            "w-full h-9", 
+            buttonColor || (isDarkMode 
+              ? "bg-orange-600 hover:bg-orange-700" 
+              : "bg-orange-500 hover:bg-orange-600")
+          )}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           ADD TO BAG

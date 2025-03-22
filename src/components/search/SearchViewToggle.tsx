@@ -4,6 +4,7 @@ import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface SearchViewToggleProps {
   viewMode: 'grid' | 'list';
@@ -17,25 +18,35 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
   const { isDarkMode } = useTheme();
   
   return (
-    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}>
+    <ToggleGroup 
+      type="single" 
+      value={viewMode} 
+      onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}
+      className={cn(
+        "border",
+        isDarkMode ? "border-gray-700" : "border-gray-200"
+      )}
+    >
       <ToggleGroupItem 
         value="grid" 
-        className={`h-8 w-8 p-0 border-r ${
+        className={cn(
+          "h-8 w-8 p-0 border-r",
           isDarkMode 
-            ? 'data-[state=on]:bg-orange-900/50 data-[state=on]:text-orange-300' 
-            : 'data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary'
-        }`}
+            ? "border-gray-700 data-[state=on]:bg-orange-900/50 data-[state=on]:text-orange-300" 
+            : "border-gray-200 data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+        )}
       >
         <LayoutGrid className="h-4 w-4" />
         <span className="sr-only">Grid View</span>
       </ToggleGroupItem>
       <ToggleGroupItem 
         value="list" 
-        className={`h-8 w-8 p-0 ${
+        className={cn(
+          "h-8 w-8 p-0",
           isDarkMode 
-            ? 'data-[state=on]:bg-orange-900/50 data-[state=on]:text-orange-300' 
-            : 'data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary'
-        }`}
+            ? "data-[state=on]:bg-orange-900/50 data-[state=on]:text-orange-300" 
+            : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+        )}
       >
         <List className="h-4 w-4" />
         <span className="sr-only">List View</span>

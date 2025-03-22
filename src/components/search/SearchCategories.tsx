@@ -62,7 +62,7 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
   return (
     <div className={cn(
       "rounded-lg shadow-sm p-4 mb-6",
-      isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"
+      isDarkMode ? "bg-gray-800/90 border border-gray-700" : "bg-white"
     )}>
       <div className="flex items-center justify-between mb-3">
         <h3 className={cn(
@@ -73,7 +73,10 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
           Popular Categories
         </h3>
         
-        <Button variant="link" className="text-orange-500 p-0 h-auto text-sm" asChild>
+        <Button variant="link" className={cn(
+          "text-orange-500 p-0 h-auto text-sm",
+          isDarkMode ? "hover:text-orange-400" : "hover:text-orange-600"
+        )} asChild>
           <Link to="/categories">View All <ChevronRight className="h-3 w-3 ml-1" /></Link>
         </Button>
       </div>
@@ -106,7 +109,9 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
               className={cn(
                 "text-sm rounded-full px-3 py-1 h-auto flex items-center gap-1",
                 selectedCategory === category.id 
-                  ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                  ? isDarkMode
+                    ? 'bg-orange-600 text-white hover:bg-orange-700'
+                    : 'bg-orange-500 text-white hover:bg-orange-600'
                   : isDarkMode
                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'

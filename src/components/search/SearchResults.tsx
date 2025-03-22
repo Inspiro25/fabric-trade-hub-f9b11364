@@ -100,8 +100,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               onShare={() => handleShareProduct(product)}
               onClick={onProductClick ? () => onProductClick(product) : undefined}
               viewMode={viewMode}
-              // Pass buttonColor as a separate prop instead of trying to modify the product object
-              buttonColor={isDarkMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-kutuku-primary hover:bg-kutuku-secondary'}
+              buttonColor={isDarkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'}
             />
           </motion.div>
         ))}

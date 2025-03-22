@@ -72,7 +72,10 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
           Recommended For You
         </h3>
         
-        <Button variant="link" className="text-orange-500 p-0 h-auto text-sm" asChild>
+        <Button variant="link" className={cn(
+          "text-orange-500 p-0 h-auto text-sm",
+          isDarkMode ? "hover:text-orange-400" : "hover:text-orange-600"
+        )} asChild>
           <Link to="/recommendations">View All <ChevronRight className="h-3 w-3 ml-1" /></Link>
         </Button>
       </div>
