@@ -157,7 +157,6 @@ export const useSearch = (query: string) => {
   const { addToWishlist } = useWishlist();
   const { currentUser } = useAuth();
 
-  // Convert SearchPageProduct to ImportedProduct
   const convertToImportedProduct = (product: SearchPageProduct): ImportedProduct => {
     return {
       id: product.id,
@@ -173,13 +172,12 @@ export const useSearch = (query: string) => {
       isTrending: product.is_trending,
       rating: product.rating,
       reviewCount: product.review_count,
-      stock: 10, // Default value for stock
-      tags: [], // Default empty tags
+      stock: 10,
+      tags: [],
       shopId: product.shop_id
     };
   };
 
-  // Fetch products function that can be called to retry
   const fetchData = async () => {
     if (initialLoad && !query) {
       setLoading(false);
@@ -190,12 +188,10 @@ export const useSearch = (query: string) => {
     setError(null);
 
     try {
-      // Fetch products from Supabase
       let productsQuery = supabase
         .from('products')
         .select('*');
       
-      // Add search filter if query is provided
       if (query) {
         productsQuery = productsQuery.ilike('name', `%${query}%`);
       }
@@ -206,7 +202,6 @@ export const useSearch = (query: string) => {
         throw new Error(`Failed to fetch products: ${productsError.message}`);
       }
       
-      // Format data to match SearchPageProduct type
       const formattedProducts: SearchPageProduct[] = productsData.map(product => ({
         id: product.id,
         name: product.name,
@@ -226,7 +221,6 @@ export const useSearch = (query: string) => {
       
       setProducts(formattedProducts);
 
-      // Fetch categories from Supabase
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*');
@@ -238,7 +232,6 @@ export const useSearch = (query: string) => {
         setCategories(categoriesData || []);
       }
 
-      // Fetch shops from Supabase
       const { data: shopsData, error: shopsError } = await supabase
         .from('shops')
         .select('*');
@@ -250,19 +243,17 @@ export const useSearch = (query: string) => {
         setShops(shopsData || []);
       }
       
-      // Save search to history if there's a query and user is logged in
       if (query && currentUser) {
         try {
           await supabase.from('search_history').upsert(
             { 
-              user_id: currentUser.id, 
+              user_id: currentUser.uid,
               query: query.toLowerCase().trim(),
               searched_at: new Date().toISOString() 
             },
             { onConflict: 'user_id,query', ignoreDuplicates: false }
           );
           
-          // Refresh search history
           fetchSearchHistory();
         } catch (historyError) {
           console.error('Error saving search history:', historyError);
@@ -273,26 +264,22 @@ export const useSearch = (query: string) => {
     } catch (err: any) {
       console.error('Search error:', err);
       
-      // Check if the error is related to HTML response or API unavailability
       const errorMessage = err?.message || '';
       if (errorMessage.includes('HTML') || errorMessage.includes('API endpoint')) {
         setError("API endpoint is currently unavailable. Using mock data instead.");
         
-        // Log toast notification for API unavailability
         toast({
           title: "API Unavailable",
           description: "Using mock product data instead",
           variant: "destructive"
         });
         
-        // Use mock data as fallback
         setProducts(mockProducts);
         setCategories(mockCategories);
         setShops(mockShops);
       } else {
         setError(errorMessage || 'Failed to fetch data');
         
-        // Use mock data as fallback even for other errors
         setProducts(mockProducts);
         setCategories(mockCategories);
         setShops(mockShops);
@@ -302,7 +289,6 @@ export const useSearch = (query: string) => {
     }
   };
 
-  // Fetch search history
   const fetchSearchHistory = async () => {
     if (!currentUser) return;
     
@@ -310,7 +296,7 @@ export const useSearch = (query: string) => {
       const { data, error } = await supabase
         .from('search_history')
         .select('*')
-        .eq('user_id', currentUser.id)
+        .eq('user_id', currentUser.uid)
         .order('searched_at', { ascending: false })
         .limit(5);
         
@@ -325,51 +311,14 @@ export const useSearch = (query: string) => {
     }
   };
   
-  // Fetch recommendations
   const fetchRecommendations = async () => {
     if (!currentUser) {
-      // For non-logged in users, show trending products
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_trending', true)
-          .limit(4);
-          
-        if (error) {
-          console.error('Error fetching trending products:', error);
-          return;
-        }
-        
-        const formattedRecommendations: SearchPageProduct[] = (data || []).map(product => ({
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: Number(product.price),
-          sale_price: product.sale_price ? Number(product.sale_price) : null,
-          images: product.images || ['/placeholder.svg'],
-          category_id: product.category_id || '',
-          shop_id: product.shop_id,
-          is_new: product.is_new || false,
-          is_trending: product.is_trending || false,
-          colors: product.colors || [],
-          sizes: product.sizes || [],
-          rating: product.rating || 0,
-          review_count: product.review_count || 0
-        }));
-        
-        setRecommendations(formattedRecommendations);
-      } catch (err) {
-        console.error('Error fetching trending products:', err);
-      }
       return;
     }
     
     try {
-      // Get personalized recommendations
-      const recommendedProducts = await getPersonalizedRecommendations(currentUser.id, 4);
+      const recommendedProducts = await getPersonalizedRecommendations(currentUser.uid, 4);
       
-      // Format to SearchPageProduct type
       const formattedRecommendations: SearchPageProduct[] = recommendedProducts.map(product => ({
         id: product.id,
         name: product.name,
@@ -393,7 +342,6 @@ export const useSearch = (query: string) => {
     }
   };
 
-  // Clear search history item
   const clearSearchHistoryItem = async (id: string) => {
     if (!currentUser) return;
     
@@ -402,7 +350,7 @@ export const useSearch = (query: string) => {
         .from('search_history')
         .delete()
         .eq('id', id)
-        .eq('user_id', currentUser.id);
+        .eq('user_id', currentUser.uid);
         
       if (error) {
         console.error('Error deleting search history item:', error);
@@ -417,7 +365,6 @@ export const useSearch = (query: string) => {
     }
   };
   
-  // Clear all search history
   const clearAllSearchHistory = async () => {
     if (!currentUser) return;
     
@@ -425,7 +372,7 @@ export const useSearch = (query: string) => {
       const { error } = await supabase
         .from('search_history')
         .delete()
-        .eq('user_id', currentUser.id);
+        .eq('user_id', currentUser.uid);
         
       if (error) {
         console.error('Error clearing search history:', error);
@@ -442,12 +389,10 @@ export const useSearch = (query: string) => {
     }
   };
 
-  // Fetch products on mount and when query changes
   useEffect(() => {
     fetchData();
   }, [query]);
   
-  // Fetch search history and recommendations on mount
   useEffect(() => {
     if (currentUser) {
       fetchSearchHistory();
@@ -455,7 +400,6 @@ export const useSearch = (query: string) => {
     fetchRecommendations();
   }, [currentUser]);
 
-  // Filter and sort products
   const filteredProducts = products.filter(product => {
     if (selectedCategory && product.category_id !== selectedCategory) {
       return false;
@@ -487,7 +431,6 @@ export const useSearch = (query: string) => {
     }
   });
 
-  // Handler functions
   const handleAddToCart = async (product: SearchPageProduct) => {
     if (!currentUser) {
       setSelectedProduct(product);
@@ -497,7 +440,6 @@ export const useSearch = (query: string) => {
 
     setIsAddingToCart(product.id);
     try {
-      // Convert to imported Product type before passing to addToCart
       const convertedProduct = convertToImportedProduct(product);
       await addToCart(convertedProduct, 1, convertedProduct.colors[0] || null, convertedProduct.sizes[0] || null);
       toast({
@@ -524,7 +466,6 @@ export const useSearch = (query: string) => {
 
     setIsAddingToWishlist(product.id);
     try {
-      // Convert to imported Product type before passing to addToWishlist
       const convertedProduct = convertToImportedProduct(product);
       await addToWishlist(convertedProduct);
       toast({
