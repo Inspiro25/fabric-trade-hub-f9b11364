@@ -137,7 +137,7 @@ export const recordProductView = async (productId: string, userId?: string): Pro
       const { error } = await supabase
         .from('products')
         .update({
-          view_count: supabase.rpc('increment', { row_id: productId, increment_by: 1 })
+          review_count: supabase.rpc('increment', { row_id: productId, increment_by: 1 })
         })
         .eq('id', productId);
       
