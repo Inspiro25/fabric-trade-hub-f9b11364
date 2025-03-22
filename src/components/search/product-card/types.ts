@@ -1,4 +1,3 @@
-import { Product } from "@/lib/products/types";
 
 export interface ProductCardBaseProps {
   product: SearchPageProduct | Product;
@@ -13,15 +12,36 @@ export interface ProductCardBaseProps {
 export interface SearchPageProduct {
   id: string;
   name: string;
+  description?: string;
   price: number;
   sale_price?: number;
   images: string[];
-  rating?: number;
-  review_count?: number;
+  category?: string;
+  category_id?: string;
+  shop_id?: string;
   is_new?: boolean;
   is_trending?: boolean;
-  brand?: string; // Add the missing brand property
-  category?: string;
+  colors?: string[];
+  sizes?: string[];
   available_colors?: string[];
   available_sizes?: string[];
+  rating?: number;
+  review_count?: number;
+  stock?: number;
+  brand?: string;
+}
+
+// This is needed for compatibility with the Product type from lib/products
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  salePrice?: number;
+  images: string[];
+  category?: string;
+  isNew?: boolean;
+  isTrending?: boolean;
+  rating?: number;
+  reviewCount?: number;
+  brand?: string;
 }
