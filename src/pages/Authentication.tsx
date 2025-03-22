@@ -93,7 +93,8 @@ const Authentication = () => {
     setIsRegistering(true);
     
     try {
-      await register(values.email, values.password, values.name);
+      // Update the register function call to only pass email and password
+      await register(values.email, values.password);
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Registration error:", error);
