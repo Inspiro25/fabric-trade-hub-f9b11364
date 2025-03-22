@@ -14,6 +14,7 @@ import AuthDialog from '@/components/search/AuthDialog';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import SearchProductCard, { SearchProductSkeleton } from '@/components/search/SearchProductCard';
 import { 
   SlidersHorizontal, 
   ArrowUpDown, 

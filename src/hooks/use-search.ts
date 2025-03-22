@@ -334,13 +334,16 @@ export const useSearch = (query: string) => {
         name: product.name,
         description: product.description || '',
         price: Number(product.price),
-        salePrice: product.salePrice ? Number(product.salePrice) : null,
+        sale_price: product.salePrice ? Number(product.salePrice) : null,
         images: product.images || ['/placeholder.svg'],
-        category: product.category || '',
+        category_id: product.category || '',
+        shop_id: '1',
+        is_new: product.isNew || false,
+        is_trending: product.isTrending || false,
         colors: product.colors || [],
         sizes: product.sizes || [],
         rating: product.rating || 0,
-        reviewCount: product.reviewCount || 0
+        review_count: product.reviewCount || 0
       }));
       
       setRecommendations(formattedRecommendations);
@@ -411,6 +414,7 @@ export const useSearch = (query: string) => {
       }
     } catch (err) {
       console.error('Error fetching popular searches:', err);
+      setPopularSearches(['smartphone', 'headphones', 'laptop', 'watch', 'camera']);
     }
   };
 

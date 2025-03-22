@@ -7,7 +7,7 @@ import { SortAsc } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating';
+export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity' | 'relevance';
 
 interface FilterOption {
   label: string;
@@ -34,6 +34,8 @@ const SearchSort: React.FC<SearchSortProps> = ({
     { label: 'Price: Low to High', value: 'price-asc' },
     { label: 'Price: High to Low', value: 'price-desc' },
     { label: 'Rating', value: 'rating' },
+    { label: 'Popularity', value: 'popularity' },
+    { label: 'Relevance', value: 'relevance' }
   ];
 
   const renderSortContent = () => (
