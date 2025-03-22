@@ -32,7 +32,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { cn } from '@/lib/utils';
-import { SearchPageProduct } from '@/components/search/SearchProductCard';
+import { SearchPageProduct } from '@/hooks/use-search';
 
 const Search = () => {
   const location = useLocation();
