@@ -1,10 +1,9 @@
-
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useHomeData } from '@/hooks/use-home-data';
 import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download, Flame, Zap, Laptop, Smartphone, Headphones } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download, Flame, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
@@ -16,6 +15,7 @@ import HomeHero from '@/components/home/HomeHero';
 import ShopsSpotlight from '@/components/home/ShopsSpotlight';
 import FlashSaleTimer from '@/components/home/FlashSaleTimer';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
+import ElectronicsShowcase from '@/components/home/ElectronicsShowcase';
 
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
@@ -266,7 +266,7 @@ const Index = () => {
 
   if (isLoading && !categories.length) {
     return (
-      <div className="min-h-screen pt-16"> {/* Added pt-16 to create space below header */}
+      <div className="min-h-screen pt-16">
         <AppHeader />
         <div className="py-4 px-4 space-y-6">
           <Skeleton className="h-48 w-full rounded-xl" />
@@ -285,7 +285,7 @@ const Index = () => {
     <div className="min-h-screen">
       <AppHeader />
       
-      <main className="pb-16 pt-2"> {/* Added pt-2 to create slight padding at top of content */}
+      <main className="pb-16 pt-2">
         <HomeHero />
         
         <FlashSaleTimer />
