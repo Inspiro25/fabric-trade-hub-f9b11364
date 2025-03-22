@@ -78,18 +78,21 @@ const NewArrivals = () => {
       
       if (session?.session?.user && products && products.length > 0) {
         try {
-          // Create a separate object for the RPC parameters with explicit typing
-          const params = {
-            p_user_id: session.session.user.id,
-            p_product_id: products[0].id,
-            p_view_increment: 1
-          };
-          
-          // Call the RPC function with the params object
-          const { error } = await supabase.rpc('record_product_view', params);
+          // Use a raw SQL-like query to avoid TypeScript errors with RPC
+          const { error } = await supabase
+            .from('product_view_history')
+            .upsert({
+              user_id: session.session.user.id,
+              product_id: products[0].id,
+              view_count: 1,
+              last_viewed_at: new Date().toISOString()
+            }, {
+              onConflict: 'user_id,product_id',
+              ignoreDuplicates: false
+            });
           
           if (error) {
-            console.error('Error recording featured product view:', error);
+            console.error('Error recording product view:', error);
           }
         } catch (err) {
           console.error('Failed to record product view:', err);
