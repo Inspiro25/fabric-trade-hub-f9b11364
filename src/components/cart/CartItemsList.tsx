@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CartItem as CartItemType } from '@/contexts/CartContext';
@@ -26,8 +26,24 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   removeFromCart,
   isLoaded
 }) => {
+  const [mounted, setMounted] = useState(false);
+  
+  // Use useEffect to set mounted state after initial render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 50); // Short delay to prevent flashing
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Compute visibility classes based on loading and mounted state
+  const visibilityClass = isLoaded && mounted 
+    ? 'opacity-100 translate-y-0' 
+    : 'opacity-0 translate-y-8';
+  
   return (
-    <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+    <div className={`transition-opacity duration-300 ${visibilityClass}`}>
       <Card className="overflow-hidden border-none shadow-sm rounded-xl">
         <CardHeader className="bg-white border-b border-gray-100 p-3">
           <CardTitle className="text-sm md:text-base font-medium text-gray-800 flex items-center">
@@ -38,10 +54,14 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {cartItems.length === 0 ? (
+          {!isLoaded ? (
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-kutuku-primary mb-4" />
               <p className="text-muted-foreground">Loading your cart items...</p>
+            </div>
+          ) : cartItems.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">Your cart is empty</p>
             </div>
           ) : (
             <ul className="divide-y divide-gray-100">
@@ -69,4 +89,4 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   );
 };
 
-export default CartItemsList;
+export default React.memo(CartItemsList);

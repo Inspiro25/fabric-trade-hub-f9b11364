@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -74,7 +74,7 @@ const DealOfTheDay = () => {
     return () => clearInterval(timerId);
   }, [deal]);
   
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
     if (!deal) return;
     
     // Use the selected color and size
@@ -89,7 +89,7 @@ const DealOfTheDay = () => {
     );
     
     toast.success(`Added ${deal.name} to cart (${sizeToUse}, ${colorToUse})`);
-  };
+  }, [deal, selectedColor, selectedSize, addToCart]);
   
   if (isLoading) {
     return (

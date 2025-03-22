@@ -2,11 +2,8 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
-import { Product } from '@/lib/products';
 import CartToCheckout from '@/components/features/CartToCheckout';
 import EmptyCart from '@/components/cart/EmptyCart';
 import CartItemsList from '@/components/cart/CartItemsList';
@@ -25,11 +22,15 @@ const Cart = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+    
+    // Delay setting loaded state to prevent flashing
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   if (isLoading) {
     return (
@@ -60,7 +61,7 @@ const Cart = () => {
             <WishlistSection />
           </div>
           
-          {cartItems.length === 0 ? (
+          {!isLoading && cartItems.length === 0 ? (
             <EmptyCart />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

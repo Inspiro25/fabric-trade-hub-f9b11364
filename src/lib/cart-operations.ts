@@ -1,7 +1,7 @@
 
 import { CartItem } from '@/contexts/CartContext';
 import { Product } from '@/lib/products';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { 
   upsertCartItem, 
   removeCartItem, 
@@ -32,12 +32,11 @@ export const useCartOperations = (
       if (existingItemIndex > -1) {
         // Update quantity of existing item
         newQuantity = cartItems[existingItemIndex].quantity + quantity;
-        newCart = cartItems.map((item, index) => {
-          if (index === existingItemIndex) {
-            return { ...item, quantity: newQuantity };
-          }
-          return item;
-        });
+        newCart = [...cartItems]; // Create a new array to avoid direct mutation
+        newCart[existingItemIndex] = { 
+          ...newCart[existingItemIndex], 
+          quantity: newQuantity 
+        };
       } else {
         // Add new item
         newCart = [
@@ -46,6 +45,10 @@ export const useCartOperations = (
         ];
       }
       
+      // Set cart state immediately to improve UX
+      setCartItems(newCart);
+      
+      // Then persist to storage (async operation)
       if (currentUser) {
         // Save to Supabase or Firebase
         await upsertCartItem({
@@ -60,20 +63,11 @@ export const useCartOperations = (
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
       
-      setCartItems(newCart);
-      // Use shadcn/ui toast
-      toast({
-        title: "Added to cart",
-        description: product.name,
-      });
+      // Use sonner toast
+      toast.success(`Added ${product.name} to cart`);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      // Use shadcn/ui toast
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart",
-        variant: "destructive",
-      });
+      toast.error("Failed to add item to cart");
     }
   };
 
@@ -82,10 +76,15 @@ export const useCartOperations = (
     try {
       const [productId, size, color] = itemId.split('-');
       
+      // Optimistically update UI
       const newCart = cartItems.filter(item => 
         `${item.id}-${item.size}-${item.color}` !== itemId
       );
       
+      // Update state immediately
+      setCartItems(newCart);
+      
+      // Then persist changes
       if (currentUser) {
         // Remove from database
         await removeCartItem(currentUser.uid, productId, size, color);
@@ -94,20 +93,10 @@ export const useCartOperations = (
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
       
-      setCartItems(newCart);
-      // Use shadcn/ui toast
-      toast({
-        title: "Cart updated",
-        description: "Item removed from cart",
-      });
+      toast.success("Item removed from cart");
     } catch (error) {
       console.error('Error removing from cart:', error);
-      // Use shadcn/ui toast
-      toast({
-        title: "Error",
-        description: "Failed to remove item from cart",
-        variant: "destructive",
-      });
+      toast.error("Failed to remove item from cart");
     }
   };
 
@@ -118,6 +107,7 @@ export const useCartOperations = (
     try {
       const [productId, size, color] = itemId.split('-');
       
+      // Optimistically update UI
       const newCart = cartItems.map(item => {
         if (item.id === productId && item.size === size && item.color === color) {
           return { ...item, quantity };
@@ -125,6 +115,10 @@ export const useCartOperations = (
         return item;
       });
       
+      // Update state immediately
+      setCartItems(newCart);
+      
+      // Then persist changes
       if (currentUser) {
         // Update in database
         await updateCartItemQuantity(currentUser.uid, productId, size, color, quantity);
@@ -132,17 +126,19 @@ export const useCartOperations = (
         // Update localStorage for guest users
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
-      
-      setCartItems(newCart);
     } catch (error) {
       console.error('Error updating quantity:', error);
-      // Use shadcn/ui toast - silent error, no toast
+      // Silent error, no toast for quantity updates
     }
   };
 
   // Clear cart
   const clearCart = async () => {
     try {
+      // Update state immediately
+      setCartItems([]);
+      
+      // Then persist changes
       if (currentUser) {
         // Clear from database
         await clearUserCart(currentUser.uid);
@@ -151,20 +147,10 @@ export const useCartOperations = (
       // Clear from localStorage in either case
       localStorage.removeItem(STORAGE_KEY);
       
-      setCartItems([]);
-      // Use shadcn/ui toast
-      toast({
-        title: "Cart cleared",
-        description: "All items have been removed",
-      });
+      toast.success("All items have been removed");
     } catch (error) {
       console.error('Error clearing cart:', error);
-      // Use shadcn/ui toast
-      toast({
-        title: "Error",
-        description: "Failed to clear cart",
-        variant: "destructive",
-      });
+      toast.error("Failed to clear cart");
     }
   };
 
@@ -198,11 +184,7 @@ export const useCartOperations = (
       // Clear the guest cart
       localStorage.removeItem(STORAGE_KEY);
       
-      // Use shadcn/ui toast - success only, no errors
-      toast({
-        title: "Cart synchronized",
-        description: "Your items are now saved to your account",
-      });
+      toast.success("Your items are now saved to your account");
     } catch (error) {
       console.error('Error migrating cart:', error);
       // Silent error, don't show toast to reduce irritation
