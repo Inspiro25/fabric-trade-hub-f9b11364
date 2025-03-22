@@ -40,7 +40,7 @@ export const useSearchCartIntegration = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
-      toast(`${product.name} added to cart`, {
+      toast.success(`${product.name} added to cart`, {
         description: "You can view it in your cart",
         action: {
           label: "View Cart",
@@ -58,7 +58,7 @@ export const useSearchCartIntegration = () => {
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(null);
-      toast(`${product.name} added to wishlist`, {
+      toast.success(`${product.name} added to wishlist`, {
         description: "You can view it in your wishlist",
         action: {
           label: "View Wishlist",
