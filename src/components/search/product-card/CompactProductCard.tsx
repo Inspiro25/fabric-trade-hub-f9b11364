@@ -24,8 +24,10 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
   return (
     <motion.div 
       className={cn(
-        "group relative rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer",
-        isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"
+        "group relative rounded-lg overflow-hidden transition-all cursor-pointer",
+        isDarkMode 
+          ? "bg-gray-800 border border-gray-700 shadow-lg hover:shadow-xl hover:border-gray-600" 
+          : "bg-white border border-gray-100 shadow-sm hover:shadow-md"
       )}
       whileHover={{ y: -5 }}
       onClick={handleClick}
@@ -39,7 +41,10 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
       </AspectRatio>
       
       {product.sale_price && (
-        <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
+        <Badge className={cn(
+          "absolute top-2 left-2",
+          isDarkMode ? "bg-red-600 hover:bg-red-700" : "bg-red-500 hover:bg-red-600"
+        )}>
           {discountPercent}% Off
         </Badge>
       )}
@@ -47,7 +52,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
       <div className="p-2">
         <h3 className={cn(
           "text-sm font-medium line-clamp-1",
-          isDarkMode ? "text-gray-200" : ""
+          isDarkMode ? "text-gray-100" : ""
         )}>{product.name}</h3>
         <div className="flex justify-between items-center mt-1">
           <div>
@@ -69,7 +74,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
             ) : (
               <span className={cn(
                 "text-sm font-bold",
-                isDarkMode ? "text-white" : ""
+                isDarkMode ? "text-gray-100" : ""
               )}>
                 ${product.price}
               </span>

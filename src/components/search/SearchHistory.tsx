@@ -27,14 +27,16 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
 
   return (
     <div className={cn(
-      "rounded-lg shadow-sm p-4",
-      isDarkMode ? "bg-gray-800/90 border border-gray-700" : "bg-white",
+      "rounded-lg p-4",
+      isDarkMode 
+        ? "bg-gray-800 border border-gray-700 shadow-lg" 
+        : "bg-white shadow-sm",
       className
     )}>
       <div className="flex justify-between items-center mb-3">
         <h3 className={cn(
           "text-base font-medium flex items-center",
-          isDarkMode ? "text-white" : ""
+          isDarkMode ? "text-gray-100" : ""
         )}>
           <Clock className="h-4 w-4 mr-2 text-orange-500" />
           Recent Searches
@@ -47,7 +49,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
             className={cn(
               "text-xs flex items-center",
               isDarkMode 
-                ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700" 
+                ? "text-gray-300 hover:text-gray-100 hover:bg-gray-700" 
                 : "text-gray-500 hover:text-gray-700"
             )}
           >
@@ -65,13 +67,13 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
             className={cn(
               "group flex items-center px-3 py-1.5 rounded-full",
               isDarkMode
-                ? "bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-200"
+                ? "bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-100"
                 : "bg-orange-50 hover:bg-orange-100 border-orange-200 text-gray-700"
             )}
           >
             <button
               onClick={() => onSelectHistoryItem(item.query)}
-              className={isDarkMode ? "mr-1 text-gray-200" : "mr-1 text-gray-700"}
+              className={isDarkMode ? "mr-1 text-gray-100" : "mr-1 text-gray-700"}
             >
               {item.query}
             </button>
@@ -85,7 +87,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
             >
               <X className={cn(
                 "h-3 w-3",
-                isDarkMode ? "text-gray-400" : "text-gray-500"
+                isDarkMode ? "text-gray-300" : "text-gray-500"
               )} />
             </button>
           </Badge>

@@ -3,18 +3,48 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 const EmptyWishlist: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  
   return (
-    <div className="text-center py-10 bg-white rounded-xl shadow-sm p-6 max-w-md mx-auto">
-      <div className="inline-flex justify-center items-center p-3 bg-pink-50 rounded-full mb-4">
-        <Heart className="w-8 h-8 text-pink-500" />
+    <div className={cn(
+      "text-center py-10 rounded-xl p-6 max-w-md mx-auto",
+      isDarkMode 
+        ? "bg-gray-800 border border-gray-700 shadow-lg" 
+        : "bg-white shadow-sm"
+    )}>
+      <div className={cn(
+        "inline-flex justify-center items-center p-3 rounded-full mb-4",
+        isDarkMode ? "bg-pink-900/30" : "bg-pink-50"
+      )}>
+        <Heart className={cn(
+          "w-8 h-8",
+          isDarkMode ? "text-pink-400" : "text-pink-500"
+        )} />
       </div>
-      <h2 className="text-lg font-semibold mb-2">Your wishlist is empty</h2>
-      <p className="text-muted-foreground mb-6 text-sm max-w-xs mx-auto">
+      <h2 className={cn(
+        "text-lg font-semibold mb-2",
+        isDarkMode ? "text-gray-100" : ""
+      )}>Your wishlist is empty</h2>
+      <p className={cn(
+        "mb-6 text-sm max-w-xs mx-auto",
+        isDarkMode ? "text-gray-300" : "text-muted-foreground"
+      )}>
         Items you love will appear here. Start exploring and add your favorites.
       </p>
-      <Button size="lg" asChild className="bg-kutuku-primary hover:bg-kutuku-secondary rounded-full">
+      <Button 
+        size="lg" 
+        asChild 
+        className={cn(
+          "rounded-full",
+          isDarkMode 
+            ? "bg-orange-600 hover:bg-orange-700" 
+            : "bg-kutuku-primary hover:bg-kutuku-secondary"
+        )}
+      >
         <Link to="/">Start Shopping</Link>
       </Button>
     </div>

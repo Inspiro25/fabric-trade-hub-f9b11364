@@ -23,8 +23,8 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
       value={viewMode} 
       onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}
       className={cn(
-        "border",
-        isDarkMode ? "border-gray-700" : "border-gray-200"
+        "border rounded-md overflow-hidden",
+        isDarkMode ? "border-gray-600 bg-gray-800/50" : "border-gray-200"
       )}
     >
       <ToggleGroupItem 
@@ -32,7 +32,7 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
         className={cn(
           "h-8 w-8 p-0 border-r",
           isDarkMode 
-            ? "border-gray-700 data-[state=on]:bg-orange-900/50 data-[state=on]:text-orange-300" 
+            ? "border-gray-600 data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
             : "border-gray-200 data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
         )}
       >
@@ -44,7 +44,7 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
         className={cn(
           "h-8 w-8 p-0",
           isDarkMode 
-            ? "data-[state=on]:bg-orange-900/50 data-[state=on]:text-orange-300" 
+            ? "data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
             : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
         )}
       >
