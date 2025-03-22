@@ -22,12 +22,11 @@ const ManagementShops = () => {
           .storage
           .getBucket('products');
           
-        if (shopsError || productsError) {
-          console.warn('Storage buckets not found, attempting to create them');
-          // Buckets don't exist, creating them would require admin privileges
-          toast.error('Storage buckets need to be set up in Supabase dashboard');
-        } else {
+        if (!shopsError && !productsError) {
           setStorageInitialized(true);
+        } else {
+          console.warn('Storage buckets not found, attempting to create them');
+          toast.error('Storage buckets need to be set up in Supabase dashboard');
         }
       } catch (error) {
         console.error('Error checking storage buckets:', error);

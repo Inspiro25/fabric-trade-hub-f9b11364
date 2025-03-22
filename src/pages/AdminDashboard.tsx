@@ -1,182 +1,197 @@
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getShopById } from '@/lib/supabase/shops';
-import { getShopProducts } from '@/lib/supabase/products';
-import { Product } from '@/lib/products';
-import { Store, Package, LogOut, Plus, Settings, ChevronLeft, Percent } from 'lucide-react';
-import ShopDetailsEditor from '@/components/admin/ShopDetailsEditor';
+import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { ModeToggle } from '@/components/theme/ModeToggle';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import ProductsManager from '@/components/admin/ProductsManager';
 import OffersManager from '@/components/admin/OffersManager';
+import { fetchShops } from '@/lib/supabase/shops';
+import { Shop } from '@/lib/shops/types';
 
-const AdminDashboard = () => {
+const AdminDashboard: React.FC = () => {
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [shopId, setShopId] = useState<string | null>(null);
-  const [shop, setShop] = useState<any>(null);
-  const [shopProducts, setShopProducts] = useState<Product[]>([]);
+  const { isDarkMode } = useTheme();
+  const isMobile = useIsMobile();
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("products");
-
+  
   useEffect(() => {
-    const fetchData = async () => {
-      // Check if user is logged in
-      const adminShopId = sessionStorage.getItem('adminShopId');
-      
-      if (!adminShopId) {
-        navigate('/admin/login');
-        return;
+    if (!user) {
+      navigate('/auth/sign-in');
+    } else {
+      loadShops();
+    }
+  }, [user, navigate]);
+  
+  const loadShops = async () => {
+    setIsLoading(true);
+    try {
+      const fetchedShops = await fetchShops();
+      setShops(fetchedShops);
+      if (fetchedShops.length > 0) {
+        setSelectedShop(fetchedShops[0]);
       }
-      
-      setShopId(adminShopId);
-      
-      try {
-        // Fetch shop data
-        const shopData = await getShopById(adminShopId);
-        if (!shopData) {
-          navigate('/admin/login');
-          return;
-        }
-        
-        setShop(shopData);
-        
-        // Fetch shop products
-        const productsData = await getShopProducts(adminShopId);
-        setShopProducts(productsData);
-      } catch (error) {
-        console.error("Error fetching shop data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, [navigate]);
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('adminShopId');
-    navigate('/admin/login');
+    } catch (error) {
+      console.error('Error loading shops:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load shops',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/auth/sign-in');
+    } catch (error) {
+      console.error('Sign out failed:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to sign out',
+        variant: 'destructive',
+      });
+    }
+  };
+  
   if (isLoading) {
-    return <div className="container mx-auto p-4">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
   }
 
-  if (!shop) {
-    return <div className="container mx-auto p-4">Loading...</div>;
+  if (!user) {
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-3 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/">
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  <span className="hidden sm:inline">Back to Site</span>
-                </Link>
-              </Button>
+    <div className={isDarkMode ? "dark" : ""}>
+      <Helmet>
+        <title>Admin Dashboard | E-Commerce App</title>
+        <meta name="description" content="Admin dashboard for managing the e-commerce application" />
+      </Helmet>
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+        <header className="bg-white dark:bg-gray-800 shadow">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <div className="flex items-center space-x-4">
+              <ModeToggle />
+              <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-4 sm:px-0">
+            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+              <Card className="w-full md:w-1/4">
+                <CardHeader>
+                  <CardTitle>Shop Management</CardTitle>
+                  <CardDescription>Manage shops and their products.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="shop">Select Shop</Label>
+                    <Select value={selectedShop?.id} onValueChange={(value) => {
+                      const shop = shops.find(shop => shop.id === value);
+                      setSelectedShop(shop || null);
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a shop" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {shops.map((shop) => (
+                          <SelectItem key={shop.id} value={shop.id}>{shop.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="w-full md:w-3/4">
+                <CardHeader>
+                  <CardTitle>Products</CardTitle>
+                  <CardDescription>Manage products for the selected shop.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {selectedShop ? (
+                    <ProductsManager shopId={selectedShop?.id} />
+                  ) : (
+                    <p>Please select a shop to manage products.</p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
             
-            <div className="flex items-center">
-              <div className="mr-2 text-sm font-medium hidden md:block">
-                {shop.name} Admin
-              </div>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      {/* Admin Content */}
-      <div className="container mx-auto px-3 py-4 md:py-6">
-        <div className="flex items-center mb-4 md:mb-6">
-          <div className="flex-shrink-0 h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden border-2 border-white bg-white shadow-sm">
-            <img 
-              src={shop.logo} 
-              alt={`${shop.name} logo`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="ml-3">
-            <h1 className="text-lg md:text-xl font-bold">{shop.name}</h1>
-            <p className="text-xs md:text-sm text-gray-500">Shop Admin Dashboard</p>
-          </div>
-        </div>
-        
-        {/* Mobile Tab Selection */}
-        <div className="md:hidden mb-4">
-          <select 
-            className="w-full rounded-md border border-gray-300 py-2 px-3"
-            value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value)}
-          >
-            <option value="products">Products</option>
-            <option value="offers">Offers</option>
-            <option value="shop">Shop Details</option>
-            <option value="settings">Settings</option>
-          </select>
-        </div>
-        
-        {/* Desktop and Mobile Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6 hidden md:flex overflow-x-auto">
-            <TabsTrigger value="products" className="flex items-center">
-              <Package className="h-4 w-4 mr-2" />
-              Products
-            </TabsTrigger>
-            <TabsTrigger value="offers" className="flex items-center">
-              <Percent className="h-4 w-4 mr-2" />
-              Offers
-            </TabsTrigger>
-            <TabsTrigger value="shop" className="flex items-center">
-              <Store className="h-4 w-4 mr-2" />
-              Shop Details
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="products">
-            <ProductsManager shopId={shop.id} products={shopProducts} />
-          </TabsContent>
-          
-          <TabsContent value="offers">
-            <OffersManager shopId={shop.id} />
-          </TabsContent>
-          
-          <TabsContent value="shop">
-            <ShopDetailsEditor shop={shop} />
-          </TabsContent>
-          
-          <TabsContent value="settings">
-            <Card>
+            <Card className="mt-4">
               <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
+                <CardTitle>Offers Management</CardTitle>
+                <CardDescription>Manage offers and promotions for the selected shop.</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-500">
-                  This section will allow you to change your password and notification preferences.
-                </p>
-                <div className="mt-4">
-                  <Button disabled>
-                    Change Password
-                  </Button>
-                </div>
+                {selectedShop ? (
+                  <OffersManager shopId={selectedShop?.id} />
+                ) : (
+                  <p>Please select a shop to manage offers.</p>
+                )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </main>
       </div>
     </div>
   );

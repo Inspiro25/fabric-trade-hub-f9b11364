@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -15,6 +14,7 @@ import { fetchCategories } from '@/lib/supabase/products';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import MultiImageUpload from '@/components/ui/multi-image-upload';
 import { Switch } from '@/components/ui/switch';
+import { FormDescription } from "@/components/ui/form";
 
 // Validation schema
 const formSchema = z.object({
