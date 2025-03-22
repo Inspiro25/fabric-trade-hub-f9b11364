@@ -1,4 +1,3 @@
-
 import React from 'react';
 import SearchProductCard, { SearchPageProduct } from './SearchProductCard';
 import SearchHeader from './SearchHeader';

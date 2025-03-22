@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TrendingUp, ChevronRight } from 'lucide-react';
 import { SearchPageProduct } from './SearchProductCard';
