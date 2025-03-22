@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CartItem as CartItemType } from '@/contexts/CartContext';
@@ -43,7 +43,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
     : 'opacity-0 translate-y-8';
   
   return (
-    <div className={`transition-opacity duration-300 ${visibilityClass}`}>
+    <div className={`transition-all duration-300 ${visibilityClass}`}>
       <Card className="overflow-hidden border-none shadow-sm rounded-xl">
         <CardHeader className="bg-white border-b border-gray-100 p-3">
           <CardTitle className="text-sm md:text-base font-medium text-gray-800 flex items-center">
@@ -89,4 +89,5 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   );
 };
 
-export default React.memo(CartItemsList);
+// Use memo to prevent unnecessary re-renders
+export default memo(CartItemsList);

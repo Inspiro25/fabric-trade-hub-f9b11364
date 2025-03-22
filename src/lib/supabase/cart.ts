@@ -1,110 +1,249 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import { CartItem } from '@/contexts/CartContext';
 
-// Create a type for the cart_items table based on the SQL structure
-export type CartItem = {
-  id: string;
+/**
+ * Fetch cart items for a user from Supabase
+ */
+export const fetchCartItems = async (userId: string): Promise<Partial<CartItem>[]> => {
+  try {
+    // Check if userId is in UUID format
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    
+    // If not a valid UUID, use a different query approach
+    if (!isValidUUID) {
+      console.log('Using Firebase-style user ID query');
+      // For Firebase-style IDs, use a different table or column
+      const { data, error } = await supabase
+        .from('user_carts')
+        .select('*')
+        .eq('firebase_user_id', userId);
+      
+      if (error) {
+        console.error('Error fetching cart items:', error);
+        return [];
+      }
+      
+      return data || [];
+    }
+    
+    // For UUID format user IDs
+    const { data, error } = await supabase
+      .from('cart_items')
+      .select('id, product_id, quantity, color, size')
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error fetching cart items:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching cart items:', error);
+    return [];
+  }
+};
+
+/**
+ * Add or update a cart item in Supabase
+ */
+export const upsertCartItem = async (item: {
   user_id: string;
   product_id: string;
   quantity: number;
   color: string;
   size: string;
-  created_at?: string;
-};
-
-// Helper function to treat cart_items as a table
-export const getCartTable = () => {
-  // This is a workaround for TypeScript not recognizing the cart_items table
-  // @ts-expect-error - The cart_items table exists in the database but not in the TypeScript types
-  return supabase.from('cart_items') as ReturnType<typeof supabase.from<CartItem>>;
-};
-
-// Helper function to get a user's cart items
-export const fetchUserCart = async (userId: string) => {
-  const cartTable = getCartTable();
-  const { data, error } = await cartTable
-    .select(`
-      id,
-      product_id,
-      quantity,
-      color,
-      size
-    `)
-    .eq('user_id', userId);
+}): Promise<boolean> => {
+  try {
+    // Check if userId is in UUID format
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.user_id);
     
-  if (error) {
-    throw error;
-  }
-  
-  return data || [];
-};
-
-// Helper function to add/update cart item
-export const upsertCartItem = async (item: Omit<CartItem, 'id' | 'created_at'>) => {
-  const cartTable = getCartTable();
-  const { error } = await cartTable
-    .upsert(item, {
-      onConflict: 'user_id, product_id, color, size'
-    });
+    if (!isValidUUID) {
+      // For Firebase-style IDs, use the user_carts table
+      const { error } = await supabase
+        .from('user_carts')
+        .upsert({
+          firebase_user_id: item.user_id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          color: item.color,
+          size: item.size
+        });
+      
+      if (error) {
+        console.error('Error upserting cart item:', error);
+        return false;
+      }
+      
+      return true;
+    }
     
-  if (error) {
-    throw error;
-  }
-  
-  return true;
-};
-
-// Helper function to remove cart item
-export const removeCartItem = async (userId: string, productId: string, size: string, color: string) => {
-  const cartTable = getCartTable();
-  const { error } = await cartTable
-    .delete()
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .eq('size', size)
-    .eq('color', color);
+    // For UUID format user IDs
+    const { error } = await supabase
+      .from('cart_items')
+      .upsert({
+        user_id: item.user_id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        color: item.color,
+        size: item.size
+      });
     
-  if (error) {
-    throw error;
-  }
-  
-  return true;
-};
-
-// Helper function to clear cart
-export const clearUserCart = async (userId: string) => {
-  const cartTable = getCartTable();
-  const { error } = await cartTable
-    .delete()
-    .eq('user_id', userId);
+    if (error) {
+      console.error('Error upserting cart item:', error);
+      return false;
+    }
     
-  if (error) {
-    throw error;
+    return true;
+  } catch (error) {
+    console.error('Error upserting cart item:', error);
+    return false;
   }
-  
-  return true;
 };
 
-// Helper function to update cart item quantity
+/**
+ * Remove an item from the user's cart
+ */
+export const removeCartItem = async (
+  userId: string,
+  productId: string,
+  size: string,
+  color: string
+): Promise<boolean> => {
+  try {
+    // Check if userId is in UUID format
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    
+    if (!isValidUUID) {
+      // For Firebase-style IDs
+      const { error } = await supabase
+        .from('user_carts')
+        .delete()
+        .eq('firebase_user_id', userId)
+        .eq('product_id', productId)
+        .eq('size', size)
+        .eq('color', color);
+      
+      if (error) {
+        console.error('Error removing cart item:', error);
+        return false;
+      }
+      
+      return true;
+    }
+    
+    // For UUID format user IDs
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .eq('size', size)
+      .eq('color', color);
+    
+    if (error) {
+      console.error('Error removing cart item:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error removing cart item:', error);
+    return false;
+  }
+};
+
+/**
+ * Update the quantity of a cart item
+ */
 export const updateCartItemQuantity = async (
   userId: string,
   productId: string,
   size: string,
   color: string,
   quantity: number
-) => {
-  const cartTable = getCartTable();
-  const { error } = await cartTable
-    .update({ quantity })
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .eq('size', size)
-    .eq('color', color);
+): Promise<boolean> => {
+  try {
+    // Check if userId is in UUID format
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
     
-  if (error) {
-    throw error;
+    if (!isValidUUID) {
+      // For Firebase-style IDs
+      const { error } = await supabase
+        .from('user_carts')
+        .update({ quantity })
+        .eq('firebase_user_id', userId)
+        .eq('product_id', productId)
+        .eq('size', size)
+        .eq('color', color);
+      
+      if (error) {
+        console.error('Error updating cart item quantity:', error);
+        return false;
+      }
+      
+      return true;
+    }
+    
+    // For UUID format user IDs
+    const { error } = await supabase
+      .from('cart_items')
+      .update({ quantity })
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .eq('size', size)
+      .eq('color', color);
+    
+    if (error) {
+      console.error('Error updating cart item quantity:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating cart item quantity:', error);
+    return false;
   }
-  
-  return true;
+};
+
+/**
+ * Clear all items from the user's cart
+ */
+export const clearUserCart = async (userId: string): Promise<boolean> => {
+  try {
+    // Check if userId is in UUID format
+    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+    
+    if (!isValidUUID) {
+      // For Firebase-style IDs
+      const { error } = await supabase
+        .from('user_carts')
+        .delete()
+        .eq('firebase_user_id', userId);
+      
+      if (error) {
+        console.error('Error clearing user cart:', error);
+        return false;
+      }
+      
+      return true;
+    }
+    
+    // For UUID format user IDs
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error clearing user cart:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error clearing user cart:', error);
+    return false;
+  }
 };

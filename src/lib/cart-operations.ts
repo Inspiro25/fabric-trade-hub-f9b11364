@@ -22,6 +22,7 @@ export const useCartOperations = (
   // Add item to cart
   const addToCart = async (product: Product, quantity: number, color: string, size: string) => {
     try {
+      // Find existing item with same product, color, and size
       const existingItemIndex = cartItems.findIndex(
         item => item.id === product.id && item.color === color && item.size === size
       );

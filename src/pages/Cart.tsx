@@ -13,26 +13,38 @@ import { Loader2, ShoppingBag } from 'lucide-react';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const isMobile = useIsMobile();
   
   const subtotal = getCartTotal();
   const total = subtotal - (subtotal * 0.1) + (subtotal > 100 ? 0 : 10);
   const itemCount = getCartCount();
 
+  // Handle initial loading
   useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    // Delay setting loaded state to prevent flashing
-    if (!isLoading) {
+    // Set initial load done after a short delay to prevent unnecessary loading state
+    if (!initialLoadDone) {
       const timer = setTimeout(() => {
-        setIsLoaded(true);
-      }, 100);
+        setInitialLoadDone(true);
+      }, 50);
       return () => clearTimeout(timer);
     }
-  }, [isLoading]);
+  }, [initialLoadDone]);
 
-  if (isLoading) {
+  // Handle content visibility after loading is complete
+  useEffect(() => {
+    if (!isLoading && initialLoadDone) {
+      // Short delay to ensure smooth transition
+      const contentTimer = setTimeout(() => {
+        setIsContentLoaded(true);
+      }, 100);
+      return () => clearTimeout(contentTimer);
+    }
+  }, [isLoading, initialLoadDone]);
+
+  // True loading state - show only during initial load
+  if (isLoading && !initialLoadDone) {
     return (
       <div className="animate-page-transition min-h-screen bg-gray-50 flex items-center justify-center">
         <Navbar />
@@ -70,13 +82,13 @@ const Cart = () => {
                   cartItems={cartItems}
                   updateQuantity={updateQuantity}
                   removeFromCart={removeFromCart}
-                  isLoaded={isLoaded}
+                  isLoaded={isContentLoaded}
                 />
               </div>
               
               <OrderSummary 
                 subtotal={subtotal}
-                isLoaded={isLoaded}
+                isLoaded={isContentLoaded}
               />
             </div>
           )}

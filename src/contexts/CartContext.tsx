@@ -1,11 +1,11 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/products';
 import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 export interface CartItem {
   id: string;
@@ -78,14 +78,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     
     migrateCart();
-  }, [currentUser, isInitialized, isLoading, hasPendingMigration]);
+  }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
-  // Wrapper functions to provide consistent API
-  const getCartTotalWrapper = () => getCartTotal(cartItems);
-  const getCartCountWrapper = () => getCartCount(cartItems);
-  const isInCartWrapper = (productId: string, color?: string, size?: string) => isInCart(cartItems, productId, color, size);
+  // Memoize wrapped functions to prevent unnecessary re-renders
+  const getCartTotalWrapper = useCallback(() => getCartTotal(cartItems), [cartItems]);
+  const getCartCountWrapper = useCallback(() => getCartCount(cartItems), [cartItems]);
+  const isInCartWrapper = useCallback(
+    (productId: string, color?: string, size?: string) => isInCart(cartItems, productId, color, size), 
+    [cartItems]
+  );
 
-  const value = {
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     cartItems,
     addToCart,
     removeFromCart,
@@ -96,7 +100,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isInCart: isInCartWrapper,
     isLoading,
     migrateCartToUser: migrateGuestCartToUser
-  };
+  }), [
+    cartItems, 
+    addToCart, 
+    removeFromCart, 
+    updateQuantity, 
+    clearCart, 
+    getCartTotalWrapper, 
+    getCartCountWrapper, 
+    isInCartWrapper, 
+    isLoading, 
+    migrateGuestCartToUser
+  ]);
 
   return (
     <CartContext.Provider value={value}>
