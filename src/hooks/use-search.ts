@@ -1,248 +1,171 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { SearchPageProduct } from '@/components/search/product-card/types';
+import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { useCart } from '@/contexts/CartContext';
 import { useSearchFilters } from './use-search-filters';
 import { useSearchData } from './use-search-data';
+import { getProducts } from '@/lib/products/index';
+import { ProductFilters } from '@/lib/products/filters';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSearchHistory } from './use-search-history';
 import { useRecommendations } from './use-recommendations';
 
-export type SortOption = 'relevance' | 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity';
-
-export const useSearch = (initialQuery: string) => {
-  const [query, setQuery] = useState(initialQuery);
-  const [inputValue, setInputValue] = useState(initialQuery);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
-  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
-  const [shareableLink, setShareableLink] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
+export const useSearch = () => {
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { addToCart } = useCart();
+  const { currentUser } = useAuth();
+  const userId = currentUser?.uid || null;
   
-  // Get the current user from session
-  const [userId, setUserId] = useState<string | null>(null);
-  
-  useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUserId(data.session?.user?.id || null);
-    };
-    getUser();
-  }, []);
-  
-  // Import custom hooks
-  const { 
-    products: fetchedProducts, 
-    categories, 
-    shops, 
-    loading, 
-    error, 
-    fetchData,
-    initialLoad: dataInitialLoad
-  } = useSearchData(query);
-
+  // Initialize search filters from URL params
   const {
-    searchHistory,
-    popularSearches,
-    clearSearchHistoryItem,
-    clearAllSearchHistory,
-    saveSearchHistory,
-  } = useSearchHistory(userId);
-
-  const {
-    recommendations,
-    recentlyViewed,
-  } = useRecommendations(userId);
-
-  const {
-    selectedCategory,
-    selectedShop,
-    priceRange,
-    rating,
-    sortOption,
-    viewMode,
-    brandFilters,
-    discountFilters,
-    availabilityFilters,
-    mobileFiltersOpen,
-    setMobileFiltersOpen,
-    mobileSortOpen,
-    setMobileSortOpen,
-    handleCategoryChange,
-    handleShopChange,
-    handlePriceRangeChange,
-    handleRatingChange,
-    handleSortChange,
-    handleViewModeChange,
-    toggleBrandFilter,
-    toggleDiscountFilter,
-    handleAvailabilityFilterChange,
-    clearFilters,
-    filterProducts,
-    sortProducts
-  } = useSearchFilters();
-
-  const timeoutRef = useRef<number | null>(null);
-
-  // Parse URL params for category filter
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryParam = urlParams.get('category');
-    
-    if (categoryParam) {
-      handleCategoryChange(categoryParam);
-    }
-  }, []);
-
-  // Set initialLoad state when data is fetched
-  useEffect(() => {
-    if (query && !loading && !error) {
-      setInitialLoad(false);
-    }
-  }, [query, loading, error]);
-
-  // Filter and sort products
-  const filteredProducts = filterProducts(fetchedProducts);
-  const products = sortProducts(filteredProducts);
-  
-  const handleSearch = (newQuery: string) => {
-    setQuery(newQuery);
-    setShowSuggestions(false);
-    
-    // Update URL with search query
-    const url = new URL(window.location.href);
-    if (newQuery) {
-      url.searchParams.set('q', newQuery);
-    } else {
-      url.searchParams.delete('q');
-    }
-    window.history.pushState({}, '', url.toString());
-  };
-
-  const handleInputChange = (value: string) => {
-    setInputValue(value);
-    setShowSuggestions(value.length > 0);
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
-
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    handleSearch(inputValue);
-  };
-
-  const handleAutocomplete = (suggestion: string) => {
-    setInputValue(suggestion);
-    setShowSuggestions(false);
-    handleSearch(suggestion);
-  };
-  
-  const handleClear = () => {
-    setInputValue('');
-    setQuery('');
-    setShowSuggestions(false);
-    
-    // Update URL to remove search query
-    const url = new URL(window.location.href);
-    url.searchParams.delete('q');
-    window.history.pushState({}, '', url.toString());
-  };
-
-  const handleAddToCart = (product: SearchPageProduct) => {
-    setIsAddingToCart(product.id);
-    
-    setTimeout(() => {
-      setIsAddingToCart(null);
-      toast({
-        title: "Added to Cart",
-        description: `${product.name} has been added to your cart.`,
-      });
-    }, 500);
-  };
-
-  const handleAddToWishlist = (product: SearchPageProduct) => {
-    setIsAddingToWishlist(product.id);
-    
-    setTimeout(() => {
-      setIsAddingToWishlist(null);
-      toast({
-        title: "Added to Wishlist",
-        description: `${product.name} has been added to your wishlist.`,
-      });
-    }, 500);
-  };
-
-  const handleShareProduct = (product: SearchPageProduct) => {
-    const shareUrl = `${window.location.origin}/product/${product.id}`;
-    setShareableLink(shareUrl);
-    setIsShareDialogOpen(true);
-  };
-
-  const handleLogin = () => {
-    setIsDialogOpen(false);
-    // Redirect to login page
-    window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-  };
-
-  return {
     query,
-    inputValue,
-    showSuggestions,
-    categories,
-    shops,
-    products,
-    loading,
-    error,
-    isAddingToCart,
-    isAddingToWishlist,
-    shareableLink,
-    isDialogOpen,
-    setIsDialogOpen,
-    isShareDialogOpen,
-    setIsShareDialogOpen,
-    selectedCategory,
-    selectedShop,
+    setQuery,
+    category,
+    setCategory,
     priceRange,
-    rating,
+    setPriceRange,
+    ratings,
+    setRatings,
     sortOption,
+    setSortOption,
     viewMode,
+    setViewMode,
+    resetFilters
+  } = useSearchFilters(searchParams, setSearchParams);
+  
+  // Search data state
+  const {
+    products,
+    isLoading,
+    error,
+    totalProducts,
+    pageCount,
+    currentPage,
+    setCurrentPage,
+    resultsPerPage,
+    setResultsPerPage
+  } = useSearchData();
+  
+  // Search execution state
+  const [hasSearched, setHasSearched] = useState(false);
+  const [searchExecuted, setSearchExecuted] = useState(false);
+  
+  // Search history integration
+  const { 
     searchHistory,
-    popularSearches,
-    recommendations,
-    initialLoad,
-    recentlyViewed,
-    brandFilters,
-    discountFilters,
-    availabilityFilters,
-    mobileFiltersOpen,
-    setMobileFiltersOpen,
-    mobileSortOpen,
-    setMobileSortOpen,
-    handleInputChange,
-    handleSearchSubmit,
-    handleAutocomplete,
-    handleClear,
+    addToSearchHistory,
+    clearSearchHistory
+  } = useSearchHistory(userId);
+  
+  // Product recommendations
+  const { recommendations } = useRecommendations(userId);
+  
+  // Perform search with current filters
+  const executeSearch = useCallback(async () => {
+    if (!query && !category) return;
+    
+    const filters: ProductFilters = {
+      query: query || '',
+      category: category || undefined,
+      minPrice: priceRange?.[0] || undefined,
+      maxPrice: priceRange?.[1] || undefined,
+      minRating: ratings || undefined,
+      sortBy: sortOption || undefined,
+      page: currentPage,
+      limit: resultsPerPage
+    };
+    
+    try {
+      // Get search results
+      const searchResults = await getProducts(filters);
+      
+      // Add search to history if this is a new search
+      if (query && !searchExecuted) {
+        addToSearchHistory(query);
+      }
+      
+      setSearchExecuted(true);
+      setHasSearched(true);
+      
+      return searchResults;
+    } catch (error) {
+      console.error("Search execution error:", error);
+      return null;
+    }
+  }, [
+    query, 
+    category, 
+    priceRange, 
+    ratings, 
+    sortOption, 
+    currentPage, 
+    resultsPerPage,
+    searchExecuted,
+    addToSearchHistory
+  ]);
+  
+  // Execute search when filters change
+  useEffect(() => {
+    executeSearch();
+  }, [executeSearch]);
+  
+  // Check if search was initiated from the URL on initial load
+  useEffect(() => {
+    const queryParam = searchParams.get('q');
+    const categoryParam = searchParams.get('category');
+    
+    if (queryParam || categoryParam) {
+      setHasSearched(true);
+    }
+  }, [searchParams]);
+  
+  // Add product to cart
+  const handleAddToCart = useCallback((productId: string) => {
+    addToCart(productId, 1);
+  }, [addToCart]);
+  
+  return {
+    // Search state
+    query,
+    setQuery,
+    category,
+    setCategory,
+    priceRange,
+    setPriceRange,
+    ratings,
+    setRatings,
+    sortOption,
+    setSortOption,
+    viewMode,
+    setViewMode,
+    
+    // Results state
+    products,
+    isLoading,
+    error,
+    totalProducts,
+    pageCount,
+    
+    // Pagination
+    currentPage,
+    setCurrentPage,
+    resultsPerPage,
+    setResultsPerPage,
+    
+    // Search status
+    hasSearched,
+    executeSearch,
+    resetFilters,
+    
+    // Cart integration
     handleAddToCart,
-    handleAddToWishlist,
-    handleShareProduct,
-    handleCategoryChange,
-    handleShopChange,
-    handlePriceRangeChange,
-    handleRatingChange,
-    handleSortChange,
-    handleViewModeChange,
-    toggleBrandFilter,
-    toggleDiscountFilter,
-    handleAvailabilityFilterChange,
-    clearFilters,
-    fetchData,
-    handleLogin,
-    clearSearchHistoryItem,
-    clearAllSearchHistory,
-    saveSearchHistory,
+    
+    // Search history
+    searchHistory,
+    clearSearchHistory,
+    
+    // Recommendations
+    recommendations
   };
 };

@@ -20,6 +20,8 @@ import {
   Moon,
   Sun,
   LogIn,
+  ShoppingCart,
+  Bell
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -27,6 +29,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Switch } from "@/components/ui/switch";
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const SettingsMenu = () => {
   const { currentUser, userProfile, logout } = useAuth();
@@ -49,6 +52,12 @@ const SettingsMenu = () => {
       requiresAuth: true,
     },
     {
+      name: 'My Cart',
+      icon: <ShoppingCart size={16} />,
+      link: '/cart',
+      requiresAuth: false,
+    },
+    {
       name: 'Order Tracking',
       icon: <MapPin size={16} />,
       link: '/tracking',
@@ -58,6 +67,12 @@ const SettingsMenu = () => {
       name: 'Wishlist',
       icon: <Heart size={16} />,
       link: '/wishlist',
+      requiresAuth: false,
+    },
+    {
+      name: 'Notifications',
+      icon: <Bell size={16} />,
+      link: '/notifications',
       requiresAuth: false,
     },
     {
@@ -98,10 +113,20 @@ const SettingsMenu = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        <button className={cn(
+          "p-1.5 rounded-full transition-colors",
+          isDarkMode 
+            ? "hover:bg-gray-700 text-gray-200" 
+            : "hover:bg-gray-100 text-gray-800"
+        )}>
           <Avatar className="h-7 w-7">
             <AvatarImage src={currentUser?.photoURL || ""} alt="Profile" />
-            <AvatarFallback className="bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200 text-xs">
+            <AvatarFallback className={cn(
+              "text-xs",
+              isDarkMode 
+                ? "bg-blue-900 text-blue-200" 
+                : "bg-blue-100 text-blue-600"
+            )}>
               {isLoggedIn 
                 ? (userProfile?.displayName?.[0] || currentUser?.email?.[0] || "U") 
                 : "G"}
@@ -109,27 +134,53 @@ const SettingsMenu = () => {
           </Avatar>
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="p-0 max-w-xs w-full dark:bg-gray-800 dark:text-gray-200">
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/50 dark:to-indigo-900/50">
+      <SheetContent side="right" className={cn(
+        "p-0 max-w-xs w-full",
+        isDarkMode 
+          ? "bg-gray-800 text-gray-200" 
+          : "bg-white text-gray-800"
+      )}>
+        <div className={cn(
+          "p-4",
+          isDarkMode 
+            ? "bg-gradient-to-r from-blue-900/40 to-indigo-900/40" 
+            : "bg-gradient-to-r from-blue-50 to-indigo-50"
+        )}>
           <SheetHeader className="text-left mb-2">
-            <SheetTitle className="text-base dark:text-gray-100">Account</SheetTitle>
+            <SheetTitle className={cn(
+              "text-base",
+              isDarkMode ? "text-gray-100" : "text-gray-800"
+            )}>Account</SheetTitle>
           </SheetHeader>
           <div className="flex items-center gap-3">
-            <Avatar className="h-11 w-11 border-2 border-white dark:border-gray-700">
+            <Avatar className={cn(
+              "h-11 w-11 border-2",
+              isDarkMode ? "border-gray-700" : "border-white"
+            )}>
               <AvatarImage src={currentUser?.photoURL || ""} alt="Profile" />
-              <AvatarFallback className="bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200">
+              <AvatarFallback className={cn(
+                isDarkMode 
+                  ? "bg-blue-900 text-blue-200" 
+                  : "bg-blue-100 text-blue-600"
+              )}>
                 {isLoggedIn 
                   ? (userProfile?.displayName?.[0] || currentUser?.email?.[0] || "U") 
                   : "G"}
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium dark:text-gray-100">
+              <p className={cn(
+                "text-sm font-medium",
+                isDarkMode ? "text-gray-100" : "text-gray-800"
+              )}>
                 {isLoggedIn 
                   ? (userProfile?.displayName || currentUser?.displayName || currentUser?.email || "User") 
                   : "Guest User"}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className={cn(
+                "text-xs",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
                 {isLoggedIn ? currentUser?.email : "Not signed in"}
               </p>
             </div>
@@ -144,16 +195,26 @@ const SettingsMenu = () => {
                 <Link 
                   key={item.name} 
                   to={item.link} 
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-2.5 text-sm",
+                    isDarkMode 
+                      ? "hover:bg-gray-700" 
+                      : "hover:bg-gray-50"
+                  )}
                 >
-                  <span className="text-gray-500 dark:text-gray-400">{item.icon}</span>
+                  <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>{item.icon}</span>
                   {item.name}
                 </Link>
               ))}
             
-            <div className="flex items-center justify-between px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+            <div className={cn(
+              "flex items-center justify-between px-4 py-2.5 text-sm",
+              isDarkMode 
+                ? "hover:bg-gray-700" 
+                : "hover:bg-gray-50"
+            )}>
               <div className="flex items-center gap-3">
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
                   {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
                 </span>
                 Dark Mode
@@ -165,22 +226,32 @@ const SettingsMenu = () => {
             </div>
           </div>
           
-          <Separator className="my-2 dark:bg-gray-700" />
+          <Separator className={isDarkMode ? "my-2 bg-gray-700" : "my-2"} />
           
           {isLoggedIn ? (
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              className={cn(
+                "flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left",
+                isDarkMode 
+                  ? "text-red-400 hover:bg-gray-700" 
+                  : "text-red-600 hover:bg-gray-50"
+              )}
             >
-              <LogOut size={16} className="text-gray-500 dark:text-gray-400" />
+              <LogOut size={16} className={isDarkMode ? "text-gray-400" : "text-gray-500"} />
               Sign Out
             </button>
           ) : (
             <button
               onClick={handleLogin}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+              className={cn(
+                "flex items-center gap-3 px-4 py-2.5 text-sm w-full text-left",
+                isDarkMode 
+                  ? "text-blue-400 hover:bg-gray-700" 
+                  : "text-blue-600 hover:bg-gray-50"
+              )}
             >
-              <LogIn size={16} className="text-gray-500 dark:text-gray-400" />
+              <LogIn size={16} className={isDarkMode ? "text-gray-400" : "text-gray-500"} />
               Sign In
             </button>
           )}
