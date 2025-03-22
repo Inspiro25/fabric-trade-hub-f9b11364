@@ -108,7 +108,7 @@ const Shops = () => {
                     <img 
                       src={shop.coverImage} 
                       alt={shop.name} 
-                      className="w-full h-full object-cover mix-blend-overlay" 
+                      className="w-full h-full object-cover" 
                     />
                     {shop.isVerified && (
                       <Badge className="absolute top-2 right-2 bg-green-500 text-white border-none text-xs px-1.5 font-normal flex gap-0.5 items-center">
