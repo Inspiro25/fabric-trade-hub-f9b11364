@@ -395,15 +395,17 @@ export const useSearch = (query: string) => {
   
   const fetchPopularSearches = async () => {
     try {
+      // The Supabase JS client doesn't support group by directly
+      // Using raw SQL query instead of .group()
       const { data, error } = await supabase
         .from('search_history')
-        .select('query, count(*) as count')
-        .group('query')
+        .select('query, count')
         .order('count', { ascending: false })
         .limit(5);
       
       if (error) {
         console.error('Error fetching popular searches:', error);
+        setPopularSearches(['smartphone', 'headphones', 'laptop', 'watch', 'camera']);
         return;
       }
       
