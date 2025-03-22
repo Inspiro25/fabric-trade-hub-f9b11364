@@ -187,68 +187,58 @@ const FlashSaleTimer = () => {
   }, []);
   
   return (
-    <section className="relative py-6 overflow-hidden">
+    <section className="relative py-3 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 opacity-95"></div>
       
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
-        <div className="absolute top-10 right-10 w-20 h-20 bg-yellow-300/20 rounded-full blur-md"></div>
-        <div className="absolute bottom-5 left-1/4 w-32 h-32 bg-rose-300/20 rounded-full blur-lg"></div>
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
+        <div className="absolute -top-10 -left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+        <div className="absolute top-5 right-5 w-10 h-10 bg-yellow-300/20 rounded-full blur-md"></div>
+        <div className="absolute bottom-3 left-1/4 w-16 h-16 bg-rose-300/20 rounded-full blur-lg"></div>
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-6 md:mb-0 flex items-center">
-            <div className="mr-3 bg-white/20 backdrop-blur-sm p-2 rounded-full">
-              <Flame className="h-7 w-7 text-white animate-pulse" />
+        <div className="flex flex-col md:flex-row justify-between items-center gap-2">
+          <div className="md:w-auto flex items-center">
+            <div className="mr-2 bg-white/20 backdrop-blur-sm p-1.5 rounded-full">
+              <Flame className="h-5 w-5 text-white animate-pulse" />
             </div>
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center">
+              <h2 className="text-lg md:text-xl font-bold text-white flex items-center">
                 FLASH SALE
-                <Zap className="h-6 w-6 ml-2 text-yellow-300 animate-pulse" />
+                <Zap className="h-4 w-4 ml-1 text-yellow-300 animate-pulse" />
               </h2>
-              <p className="text-white/80 text-sm md:text-base">Crazy deals end soon!</p>
+              <p className="text-white/80 text-xs">Ends soon!</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-0">
+          <div className="flex items-center gap-1 md:gap-2">
             <div className="text-center">
-              <div className="bg-white rounded-lg shadow-lg p-2 md:p-3 w-14 md:w-16 font-mono font-bold text-xl md:text-2xl text-rose-600 border-b-4 border-rose-300">
+              <div className="bg-white rounded-md p-1 w-10 font-mono font-bold text-sm text-rose-600 border-b-2 border-rose-300">
                 {timeLeft.hours.toString().padStart(2, '0')}
               </div>
-              <span className="text-xs md:text-sm text-white font-medium mt-1 block">HOURS</span>
+              <span className="text-[10px] text-white font-medium mt-0.5 block">HRS</span>
             </div>
-            <span className="text-xl md:text-2xl font-bold text-white">:</span>
+            <span className="text-sm font-bold text-white">:</span>
             <div className="text-center">
-              <div className="bg-white rounded-lg shadow-lg p-2 md:p-3 w-14 md:w-16 font-mono font-bold text-xl md:text-2xl text-rose-600 border-b-4 border-rose-300">
+              <div className="bg-white rounded-md p-1 w-10 font-mono font-bold text-sm text-rose-600 border-b-2 border-rose-300">
                 {timeLeft.minutes.toString().padStart(2, '0')}
               </div>
-              <span className="text-xs md:text-sm text-white font-medium mt-1 block">MINS</span>
+              <span className="text-[10px] text-white font-medium mt-0.5 block">MIN</span>
             </div>
-            <span className="text-xl md:text-2xl font-bold text-white">:</span>
+            <span className="text-sm font-bold text-white">:</span>
             <div className="text-center">
-              <div className="bg-white rounded-lg shadow-lg p-2 md:p-3 w-14 md:w-16 font-mono font-bold text-xl md:text-2xl text-rose-600 border-b-4 border-rose-300">
+              <div className="bg-white rounded-md p-1 w-10 font-mono font-bold text-sm text-rose-600 border-b-2 border-rose-300">
                 {timeLeft.seconds.toString().padStart(2, '0')}
               </div>
-              <span className="text-xs md:text-sm text-white font-medium mt-1 block">SECS</span>
+              <span className="text-[10px] text-white font-medium mt-0.5 block">SEC</span>
             </div>
           </div>
           
-          <Button size="lg" className="bg-white text-rose-600 hover:bg-rose-50 transition-colors shadow-lg border-b-4 border-rose-200 font-bold" asChild>
+          <Button size="sm" className="bg-white text-rose-600 hover:bg-rose-50 transition-colors shadow-md border-b-2 border-rose-200 font-bold text-sm py-1" asChild>
             <Link to="/flash-sale">
-              SHOP NOW <Percent className="ml-2 h-4 w-4" />
+              SHOP NOW <Percent className="ml-1 h-3 w-3" />
             </Link>
           </Button>
-        </div>
-        
-        <div className="mt-4 flex overflow-x-auto gap-3 pb-2 hide-scrollbar">
-          {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="flex-shrink-0 bg-white/10 backdrop-blur-sm p-1.5 rounded-lg w-24">
-              <div className="bg-white/80 w-full h-20 rounded-md flex items-center justify-center">
-                <span className="font-bold text-rose-600 text-lg">-{30 + item*5}%</span>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -441,3 +431,4 @@ const Index = () => {
 };
 
 export default Index;
+
