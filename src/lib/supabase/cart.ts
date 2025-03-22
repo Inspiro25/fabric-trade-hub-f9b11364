@@ -28,7 +28,11 @@ export const fetchCartItems = async (userId: string): Promise<DBCartItem[]> => {
       return [];
     }
     
-    return data || [];
+    // Add the user_id to each returned item
+    return data ? data.map(item => ({
+      ...item,
+      user_id: userId
+    })) : [];
   } catch (error) {
     console.error('Error fetching cart items:', error);
     return [];

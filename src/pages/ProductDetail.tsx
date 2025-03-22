@@ -105,7 +105,7 @@ const ProductDetail = () => {
       if (currentUser && id) {
         try {
           // Use uid, id, or email as fallback for userId
-          const userId = currentUser.uid || currentUser.id || currentUser.email || '';
+          const userId = currentUser.uid || currentUser.email || '';
           if (userId) {
             try {
               const recommendations = await getPersonalizedRecommendations(userId);

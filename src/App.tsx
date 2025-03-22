@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,6 +58,51 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const isMobile = useIsMobile();
 
+  // Routes remain the same but MobileAppLayout is now inside the providers
+  const routeElements = (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/product/:id" element={<ProductDetail />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/auth" element={<Authentication />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/order-confirmation" element={<OrderConfirmation />} />
+      <Route path="/search" element={<Search />} />
+      <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/offers" element={<Offers />} />
+      <Route path="/notifications" element={<Notifications />} />
+      <Route path="/orders" element={<Orders />} />
+      <Route path="/tracking/:id" element={<Tracking />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/settings" element={<Settings />} />
+      <Route path="/help" element={<Help />} />
+      {/* Add routes for shops */}
+      <Route path="/shops" element={<Shops />} />
+      <Route path="/shop/:id" element={<ShopDetail />} />
+      {/* Add a route for categories */}
+      <Route path="/category/:categoryName" element={<CategorySection />} />
+      {/* Add route for new arrivals */}
+      <Route path="/new-arrivals" element={<NewArrivals />} />
+      {/* Add route for trending now */}
+      <Route path="/trending" element={<TrendingNow />} />
+      {/* Add admin routes */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      {/* Add management portal routes */}
+      <Route path="/management/login" element={<ManagementLogin />} />
+      <Route path="/management" element={<DashboardLayout />}>
+        <Route path="dashboard" element={<ManagementDashboard />} />
+        <Route path="shops" element={<ManagementShops />} />
+        <Route path="offers" element={<ManagementOffers />} />
+        <Route path="shop-performance" element={<ManagementShopPerformance />} />
+        <Route path="analytics" element={<ManagementDashboard />} />
+        <Route path="users" element={<ManagementDashboard />} />
+        <Route path="settings" element={<ManagementDashboard />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
@@ -67,90 +111,10 @@ const AppContent = () => {
     }>
       {isMobile ? (
         <MobileAppLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/auth" element={<Authentication />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order-confirmation" element={<OrderConfirmation />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/offers" element={<Offers />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/tracking/:id" element={<Tracking />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/help" element={<Help />} />
-            {/* Add routes for shops */}
-            <Route path="/shops" element={<Shops />} />
-            <Route path="/shop/:id" element={<ShopDetail />} />
-            {/* Add a route for categories */}
-            <Route path="/category/:categoryName" element={<CategorySection />} />
-            {/* Add route for new arrivals */}
-            <Route path="/new-arrivals" element={<NewArrivals />} />
-            {/* Add route for trending now */}
-            <Route path="/trending" element={<TrendingNow />} />
-            {/* Add admin routes */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            {/* Add management portal routes */}
-            <Route path="/management/login" element={<ManagementLogin />} />
-            <Route path="/management" element={<DashboardLayout />}>
-              <Route path="dashboard" element={<ManagementDashboard />} />
-              <Route path="shops" element={<ManagementShops />} />
-              <Route path="offers" element={<ManagementOffers />} />
-              <Route path="shop-performance" element={<ManagementShopPerformance />} />
-              <Route path="analytics" element={<ManagementDashboard />} />
-              <Route path="users" element={<ManagementDashboard />} />
-              <Route path="settings" element={<ManagementDashboard />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          {routeElements}
         </MobileAppLayout>
       ) : (
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/auth" element={<Authentication />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-confirmation" element={<OrderConfirmation />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/offers" element={<Offers />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/tracking/:id" element={<Tracking />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/help" element={<Help />} />
-          {/* Add routes for shops */}
-          <Route path="/shops" element={<Shops />} />
-          <Route path="/shop/:id" element={<ShopDetail />} />
-          {/* Add a route for categories */}
-          <Route path="/category/:categoryName" element={<CategorySection />} />
-          {/* Add route for new arrivals */}
-          <Route path="/new-arrivals" element={<NewArrivals />} />
-          {/* Add route for trending now */}
-          <Route path="/trending" element={<TrendingNow />} />
-          {/* Add admin routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          {/* Add management portal routes */}
-          <Route path="/management/login" element={<ManagementLogin />} />
-          <Route path="/management" element={<DashboardLayout />}>
-            <Route path="dashboard" element={<ManagementDashboard />} />
-            <Route path="shops" element={<ManagementShops />} />
-            <Route path="offers" element={<ManagementOffers />} />
-            <Route path="shop-performance" element={<ManagementShopPerformance />} />
-            <Route path="analytics" element={<ManagementDashboard />} />
-            <Route path="users" element={<ManagementDashboard />} />
-            <Route path="settings" element={<ManagementDashboard />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        routeElements
       )}
     </Suspense>
   );
