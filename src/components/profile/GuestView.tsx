@@ -2,10 +2,14 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, ShoppingBag, Store } from 'lucide-react';
+import { User, ShoppingBag, Store, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const GuestView = ({ isLoaded }: { isLoaded: boolean }) => {
+type GuestViewProps = {
+  isLoaded: boolean;
+};
+
+const GuestView = ({ isLoaded }: GuestViewProps) => {
   const navigate = useNavigate();
 
   return (
@@ -57,6 +61,15 @@ const GuestView = ({ isLoaded }: { isLoaded: boolean }) => {
                 <div>
                   <p className="text-sm font-medium">Shop access</p>
                   <p className="text-xs text-gray-500">Browse products and add them to cart</p>
+                </div>
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="bg-gray-100 p-2 rounded-full">
+                  <Heart className="h-4 w-4 text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Save favorites</p>
+                  <p className="text-xs text-gray-500">Create a wishlist to save items for later</p>
                 </div>
               </li>
             </ul>

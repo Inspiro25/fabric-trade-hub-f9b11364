@@ -47,7 +47,7 @@ export const useCartOperations = (
       }
       
       if (currentUser) {
-        // Save to Supabase using the helper function
+        // Save to Supabase or Firebase
         await upsertCartItem({
           user_id: currentUser.uid,
           product_id: product.id,
@@ -55,6 +55,9 @@ export const useCartOperations = (
           color,
           size
         });
+      } else {
+        // Save to localStorage for guest users
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
       
       setCartItems(newCart);
@@ -75,8 +78,11 @@ export const useCartOperations = (
       );
       
       if (currentUser) {
-        // Remove from Supabase using the helper function
+        // Remove from database
         await removeCartItem(currentUser.uid, productId, size, color);
+      } else {
+        // Update localStorage for guest users
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
       
       setCartItems(newCart);
@@ -102,8 +108,11 @@ export const useCartOperations = (
       });
       
       if (currentUser) {
-        // Update in Supabase using the helper function
+        // Update in database
         await updateCartItemQuantity(currentUser.uid, productId, size, color, quantity);
+      } else {
+        // Update localStorage for guest users
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
       
       setCartItems(newCart);
@@ -117,12 +126,12 @@ export const useCartOperations = (
   const clearCart = async () => {
     try {
       if (currentUser) {
-        // Clear from Supabase using the helper function
+        // Clear from database
         await clearUserCart(currentUser.uid);
-      } else {
-        // Clear from localStorage
-        localStorage.removeItem(STORAGE_KEY);
       }
+      
+      // Clear from localStorage in either case
+      localStorage.removeItem(STORAGE_KEY);
       
       setCartItems([]);
       toast.success('Cart cleared');
@@ -148,7 +157,7 @@ export const useCartOperations = (
         return;
       }
       
-      // For each item in the guest cart, add it to the user's cart in Supabase
+      // For each item in the guest cart, add it to the user's cart in database
       for (const item of guestCartItems) {
         await upsertCartItem({
           user_id: currentUser.uid,
@@ -162,11 +171,11 @@ export const useCartOperations = (
       // Clear the guest cart
       localStorage.removeItem(STORAGE_KEY);
       
-      // Reload the cart from Supabase (this will happen automatically via the useEffect in useCartStorage)
-      toast.success('Your cart has been migrated to your account');
+      // Toast notification
+      toast.success('Your cart has been synchronized with your account');
     } catch (error) {
       console.error('Error migrating cart:', error);
-      throw error;
+      toast.error('Failed to synchronize your cart');
     }
   };
 
