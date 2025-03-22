@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Lock, Store, Users, Building2, ArrowLeft } from 'lucide-react';
 import { fetchShops, getShopById } from '@/lib/supabase/shops';
 import PartnerRequestDialog from '@/components/management/PartnerRequestDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Validation schema
 const formSchema = z.object({
@@ -34,6 +35,7 @@ const AdminLogin = () => {
   const [isPartnerDialogOpen, setIsPartnerDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'partner'>('login');
+  const isMobile = useIsMobile();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -118,24 +120,24 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-blue-900">VyomaKart</h1>
-          <p className="text-indigo-600 mt-2">Shop Admin Portal</p>
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-kutuku-light to-orange-50 p-4 overflow-hidden">
+      <div className={`w-full ${isMobile ? 'max-w-[95%]' : 'max-w-md'}`}>
+        <div className="text-center mb-4">
+          <h1 className="text-3xl font-bold text-kutuku-primary">Kutuku</h1>
+          <p className="text-kutuku-secondary mt-1">Shop Admin Portal</p>
         </div>
         
         <Card className="border-none shadow-lg bg-white/90 backdrop-blur-sm">
-          <CardHeader className="space-y-1 pb-6">
-            <div className="mx-auto mb-4 bg-gradient-to-br from-blue-100 to-indigo-100 p-3 rounded-full">
-              <Store className="h-8 w-8 text-blue-600" />
+          <CardHeader className={`space-y-1 ${isMobile ? 'pb-4' : 'pb-6'}`}>
+            <div className="mx-auto mb-3 bg-gradient-to-br from-kutuku-light to-orange-100 p-3 rounded-full">
+              <Store className="h-6 w-6 text-kutuku-primary" />
             </div>
-            <div className="flex justify-center space-x-4 mb-2">
+            <div className="flex justify-center space-x-2 mb-2">
               <button
                 onClick={() => setActiveTab('login')}
-                className={`px-4 py-2 font-medium rounded-md transition-colors ${
+                className={`px-3 py-1.5 font-medium text-sm rounded-md transition-colors ${
                   activeTab === 'login'
-                    ? 'bg-blue-100 text-blue-800'
+                    ? 'bg-kutuku-light text-kutuku-primary'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -143,19 +145,19 @@ const AdminLogin = () => {
               </button>
               <button
                 onClick={() => setActiveTab('partner')}
-                className={`px-4 py-2 font-medium rounded-md transition-colors ${
+                className={`px-3 py-1.5 font-medium text-sm rounded-md transition-colors ${
                   activeTab === 'partner'
-                    ? 'bg-blue-100 text-blue-800'
+                    ? 'bg-kutuku-light text-kutuku-primary'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 Partner With Us
               </button>
             </div>
-            <CardTitle className="text-2xl font-bold text-center text-gray-800">
+            <CardTitle className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center text-gray-800`}>
               {activeTab === 'login' ? 'Shop Admin Login' : 'Become Our Partner'}
             </CardTitle>
-            <CardDescription className="text-center text-gray-600">
+            <CardDescription className="text-center text-gray-600 text-sm">
               {activeTab === 'login' 
                 ? 'Access your shop dashboard to manage products and orders' 
                 : 'Join our marketplace and start selling your products'}
@@ -165,7 +167,7 @@ const AdminLogin = () => {
           <CardContent>
             {activeTab === 'login' ? (
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                   <FormField
                     control={form.control}
                     name="shopId"
@@ -175,11 +177,11 @@ const AdminLogin = () => {
                         <FormControl>
                           <Input 
                             placeholder="Enter your shop ID" 
-                            className="bg-white/50 border-gray-200" 
+                            className="bg-white/50 border-gray-200 focus:border-kutuku-primary" 
                             {...field} 
                           />
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-500 text-xs" />
                       </FormItem>
                     )}
                   />
@@ -194,18 +196,18 @@ const AdminLogin = () => {
                           <Input 
                             type="password" 
                             placeholder="Enter your password" 
-                            className="bg-white/50 border-gray-200" 
+                            className="bg-white/50 border-gray-200 focus:border-kutuku-primary" 
                             {...field} 
                           />
                         </FormControl>
-                        <FormMessage className="text-red-500" />
+                        <FormMessage className="text-red-500 text-xs" />
                       </FormItem>
                     )}
                   />
                   
                   <Button 
                     type="submit" 
-                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium" 
+                    className="w-full mt-4 bg-kutuku-primary hover:bg-kutuku-secondary text-white font-medium" 
                     disabled={isLoading}
                   >
                     <Lock className="mr-2 h-4 w-4" />
@@ -214,29 +216,29 @@ const AdminLogin = () => {
                 </form>
               </Form>
             ) : (
-              <div className="space-y-4">
-                <p className="text-gray-600 text-sm mb-4">
+              <div className="space-y-3">
+                <p className="text-gray-600 text-xs mb-3">
                   Join our growing community of sellers and expand your business reach. Click below to submit your partnership request.
                 </p>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="flex items-center p-3 bg-blue-50 rounded-lg">
-                    <Users className="h-5 w-5 text-blue-600 mr-3" />
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center p-3 bg-kutuku-light rounded-lg">
+                    <Users className="h-4 w-4 text-kutuku-primary mr-3" />
                     <div>
-                      <h3 className="font-medium text-gray-800">10,000+ Customers</h3>
+                      <h3 className="font-medium text-sm text-gray-800">10,000+ Customers</h3>
                       <p className="text-xs text-gray-600">Access our large customer base</p>
                     </div>
                   </div>
-                  <div className="flex items-center p-3 bg-indigo-50 rounded-lg">
-                    <Building2 className="h-5 w-5 text-indigo-600 mr-3" />
+                  <div className="flex items-center p-3 bg-orange-50 rounded-lg">
+                    <Building2 className="h-4 w-4 text-kutuku-primary mr-3" />
                     <div>
-                      <h3 className="font-medium text-gray-800">Easy Integration</h3>
+                      <h3 className="font-medium text-sm text-gray-800">Easy Integration</h3>
                       <p className="text-xs text-gray-600">Simple tools to manage your store</p>
                     </div>
                   </div>
                 </div>
                 <Button 
                   onClick={handlePartnerRequest} 
-                  className="w-full mt-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium"
+                  className="w-full mt-3 bg-kutuku-primary hover:bg-kutuku-secondary text-white font-medium"
                 >
                   Apply for Partnership
                 </Button>
@@ -245,7 +247,7 @@ const AdminLogin = () => {
           </CardContent>
           
           <CardFooter className="flex flex-col items-center pt-0">
-            <p className="text-sm text-gray-500 mb-2">
+            <p className="text-xs text-gray-500 mb-2">
               {activeTab === 'login' 
                 ? 'Contact support if you\'ve lost your credentials' 
                 : 'We\'ll review your application within 48 hours'}
@@ -253,10 +255,10 @@ const AdminLogin = () => {
           </CardFooter>
         </Card>
         
-        <div className="mt-8 text-center">
+        <div className="mt-4 text-center">
           <Button 
             variant="ghost" 
-            className="text-xs flex items-center text-gray-500 hover:text-blue-600" 
+            className="text-xs flex items-center text-gray-500 hover:text-kutuku-primary" 
             onClick={handleManagementAccess}
           >
             <ArrowLeft className="mr-1 h-3 w-3" />
