@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import useSearch from '@/hooks/use-search';
+import useSearch, { SearchPageProduct, Category, Shop } from '@/hooks/use-search';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import SearchFilters from '@/components/search/SearchFilters';
@@ -32,7 +32,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { cn } from '@/lib/utils';
-import { SearchPageProduct } from '@/hooks/use-search';
 
 const Search = () => {
   const location = useLocation();
@@ -149,18 +148,6 @@ const Search = () => {
 
   const handleRetry = () => {
     fetchData();
-  };
-
-  const handleAddToCartAdapter = (product: SearchPageProduct) => {
-    handleAddToCart(product);
-  };
-  
-  const handleAddToWishlistAdapter = (product: SearchPageProduct) => {
-    handleAddToWishlist(product);
-  };
-  
-  const handleShareProductAdapter = (product: SearchPageProduct) => {
-    handleShareProduct(product);
   };
 
   const paginatedProducts = products.slice(
@@ -545,9 +532,9 @@ const Search = () => {
                       products={recommendations}
                       isAddingToCart={isAddingToCart}
                       isAddingToWishlist={isAddingToWishlist}
-                      onAddToCart={handleAddToCartAdapter}
-                      onAddToWishlist={handleAddToWishlistAdapter}
-                      onShareProduct={handleShareProductAdapter}
+                      onAddToCart={handleAddToCart}
+                      onAddToWishlist={handleAddToWishlist}
+                      onShareProduct={handleShareProduct}
                     />
                   </TabsContent>
                   
@@ -562,9 +549,9 @@ const Search = () => {
                       products={recentlyViewed}
                       isAddingToCart={isAddingToCart}
                       isAddingToWishlist={isAddingToWishlist}
-                      onAddToCart={handleAddToCartAdapter}
-                      onAddToWishlist={handleAddToWishlistAdapter}
-                      onShareProduct={handleShareProductAdapter}
+                      onAddToCart={handleAddToCart}
+                      onAddToWishlist={handleAddToWishlist}
+                      onShareProduct={handleShareProduct}
                       emptyStateMessage="No recently viewed products"
                     />
                   </TabsContent>
@@ -581,9 +568,9 @@ const Search = () => {
                 itemsPerPage={itemsPerPage}
                 isAddingToCart={isAddingToCart}
                 isAddingToWishlist={isAddingToWishlist}
-                onAddToCart={handleAddToCartAdapter}
-                onAddToWishlist={handleAddToWishlistAdapter}
-                onShareProduct={handleShareProductAdapter}
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+                onShareProduct={handleShareProduct}
                 onViewModeChange={handleViewModeChange}
                 onPageChange={handlePageChange}
                 onItemsPerPageChange={handleItemsPerPageChange}
@@ -594,7 +581,6 @@ const Search = () => {
         </div>
       </div>
       
-      {/* Dialogs */}
       <ShareDialog 
         open={isShareDialogOpen} 
         onOpenChange={setIsShareDialogOpen}

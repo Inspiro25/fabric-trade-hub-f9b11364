@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -34,6 +33,25 @@ export interface SearchPageProduct {
   brand?: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  image?: string;
+  description?: string;
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  description?: string;
+  logo?: string;
+  coverImage?: string;
+  address?: string;
+  rating?: number;
+  reviewCount?: number;
+  isVerified?: boolean;
+}
+
 const useSearch = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -46,9 +64,8 @@ const useSearch = () => {
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
   
-  // Mock data for search functionality
-  const [categories, setCategories] = useState<Array<{id: string, name: string, image?: string}>>([]);
-  const [shops, setShops] = useState<Array<{id: string, name: string}>>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedShop, setSelectedShop] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
@@ -66,7 +83,6 @@ const useSearch = () => {
   const [recentlyViewed, setRecentlyViewed] = useState<SearchPageProduct[]>([]);
   const [popularSearches, setPopularSearches] = useState<string[]>(['Shoes', 'Electronics', 'Fashion', 'Home']);
   
-  // Additional filter states
   const [availabilityFilters, setAvailabilityFilters] = useState<{inStock: boolean, outOfStock: boolean}>({
     inStock: false,
     outOfStock: false
@@ -96,23 +112,50 @@ const useSearch = () => {
       setError(null);
 
       try {
-        // Simulate fetching data from an API
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Mock categories
         setCategories([
-          {id: '1', name: 'Electronics', image: '/placeholder.svg'},
-          {id: '2', name: 'Fashion', image: '/placeholder.svg'},
-          {id: '3', name: 'Home', image: '/placeholder.svg'},
-          {id: '4', name: 'Sports', image: '/placeholder.svg'},
-          {id: '5', name: 'Books', image: '/placeholder.svg'},
+          {id: '1', name: 'Electronics', image: '/placeholder.svg', description: 'Electronic devices and gadgets'},
+          {id: '2', name: 'Fashion', image: '/placeholder.svg', description: 'Clothing and accessories'},
+          {id: '3', name: 'Home', image: '/placeholder.svg', description: 'Home appliances and furniture'},
+          {id: '4', name: 'Sports', image: '/placeholder.svg', description: 'Sports equipment and gear'},
+          {id: '5', name: 'Books', image: '/placeholder.svg', description: 'Books and reading materials'},
         ]);
         
-        // Mock shops
         setShops([
-          {id: '1', name: 'ElectroHub'},
-          {id: '2', name: 'Fashion World'},
-          {id: '3', name: 'Home Essentials'},
+          {
+            id: '1', 
+            name: 'ElectroHub', 
+            description: 'Best electronics store',
+            logo: '/placeholder.svg',
+            coverImage: '/placeholder.svg',
+            address: '123 Tech Street',
+            rating: 4.5,
+            reviewCount: 120,
+            isVerified: true
+          },
+          {
+            id: '2', 
+            name: 'Fashion World', 
+            description: 'Trendy fashion items',
+            logo: '/placeholder.svg',
+            coverImage: '/placeholder.svg',
+            address: '456 Style Avenue',
+            rating: 4.3,
+            reviewCount: 98,
+            isVerified: true
+          },
+          {
+            id: '3', 
+            name: 'Home Essentials', 
+            description: 'Everything for your home',
+            logo: '/placeholder.svg',
+            coverImage: '/placeholder.svg',
+            address: '789 Home Street',
+            rating: 4.2,
+            reviewCount: 76,
+            isVerified: true
+          },
         ]);
 
         const mockProducts: SearchPageProduct[] = Array.from({ length: itemsPerPage }, (_, i) => ({
@@ -141,15 +184,12 @@ const useSearch = () => {
         }));
 
         setProducts(mockProducts);
-        setTotalProducts(100); // Simulate total number of products
+        setTotalProducts(100);
         
-        // Mock recommendations
         setRecommendations(mockProducts.slice(0, 4));
         
-        // Mock recently viewed
         setRecentlyViewed(mockProducts.slice(4, 8));
         
-        // Set initial load to false after first load
         setInitialLoad(false);
         
         if (category) {
@@ -173,17 +213,14 @@ const useSearch = () => {
   const handleAddToCart = (product: SearchPageProduct) => {
     setIsAddingToCart(product.id);
 
-    // Convert SearchPageProduct to the Product type expected by addToCart
     const productForCart: Product = {
       id: product.id,
       name: product.name,
       price: product.price,
       images: product.images || [],
-      // Add any other required properties
       sale_price: product.sale_price || product.salePrice,
       description: product.description || '',
       category_id: product.category_id || product.category || '',
-      // Default values for required properties that might not be in SearchPageProduct
       colors: product.colors || [],
       sizes: product.sizes || [],
       stock: product.stock || 0,
@@ -199,7 +236,6 @@ const useSearch = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
-      // Fix toast call to match expected arguments
       toast.success(`${product.name} added to cart`);
     }, 500);
   };
@@ -210,7 +246,6 @@ const useSearch = () => {
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(null);
-      // Fix toast call to match expected arguments
       toast.success(`${product.name} added to wishlist`);
     }, 500);
   };
@@ -221,10 +256,9 @@ const useSearch = () => {
   };
   
   const handleRetry = () => {
-    navigate(0); // Refresh the current page
+    navigate(0);
   };
   
-  // Filter handling functions
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
   };
@@ -271,7 +305,6 @@ const useSearch = () => {
     setDiscountFilters({});
   };
   
-  // Search history functions
   const saveSearchHistory = (searchQuery: string) => {
     const newHistoryItem = {
       id: Date.now().toString(),
@@ -290,13 +323,10 @@ const useSearch = () => {
     setSearchHistory([]);
   };
   
-  // Auth related
   const handleLogin = () => {
     setIsDialogOpen(false);
-    // Navigate to login page or perform other auth actions
   };
   
-  // Mocking fetch data function for retrying
   const fetchData = () => {
     setLoading(true);
     setTimeout(() => {
