@@ -32,6 +32,7 @@ const FALLBACK_CATEGORY_IMAGES: Record<string, string> = {
 export default function HomeCategoryGrid({ categories, isLoading }: CategoryGridProps) {
   const [categoryDetails, setCategoryDetails] = useState<CategoryType[]>([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   // Animation variants
   const containerVariants = {
@@ -85,9 +86,9 @@ export default function HomeCategoryGrid({ categories, isLoading }: CategoryGrid
 
   if (isLoading || isLoadingDetails) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[...Array(8)].map((_, i) => (
-          <Skeleton key={i} className="h-32 rounded-xl" />
+          <Skeleton key={i} className="h-36 md:h-48 rounded-xl" />
         ))}
       </div>
     );
@@ -103,13 +104,18 @@ export default function HomeCategoryGrid({ categories, isLoading }: CategoryGrid
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4"
     >
       {displayCategories.slice(0, 8).map(category => (
-        <motion.div key={category} variants={itemVariants}>
+        <motion.div 
+          key={category} 
+          variants={itemVariants}
+          onMouseEnter={() => setHoveredCategory(category)}
+          onMouseLeave={() => setHoveredCategory(null)}
+        >
           <Link 
             to={`/category/${category.toLowerCase().replace(/\s+/g, '-')}`}
-            className="relative overflow-hidden rounded-xl group aspect-[4/3] block"
+            className="relative overflow-hidden rounded-xl group block aspect-square"
           >
             <img 
               src={getCategoryImage(category)}
@@ -117,13 +123,26 @@ export default function HomeCategoryGrid({ categories, isLoading }: CategoryGrid
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-4">
-              <span className="text-white font-semibold text-lg">{category}</span>
-              <span className="text-white/70 text-sm mt-1 opacity-0 -translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-4">
+              <span className="text-white font-semibold text-lg md:text-xl">{category}</span>
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: hoveredCategory === category ? '100%' : 0 }}
+                transition={{ duration: 0.3 }}
+                className="h-1 bg-orange-400 mt-2"
+              />
+              <motion.span 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ 
+                  opacity: hoveredCategory === category ? 1 : 0,
+                  y: hoveredCategory === category ? 0 : 10
+                }}
+                transition={{ duration: 0.3 }}
+                className="text-white/80 text-sm mt-1"
+              >
                 Explore Collection
-              </span>
+              </motion.span>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
           </Link>
         </motion.div>
       ))}

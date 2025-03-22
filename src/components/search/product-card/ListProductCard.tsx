@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Heart, ShoppingCart, Star, Award, Truck } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Award, Truck, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
@@ -41,15 +41,21 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
       onClick={handleProductClick}
     >
       <div className="flex">
-        <div className="w-32 sm:w-48 h-32 flex-shrink-0 relative">
+        <div className="w-32 sm:w-48 h-32 sm:h-48 flex-shrink-0 relative overflow-hidden">
           <img 
             src={product.images[0] || '/placeholder.svg'}
             alt={product.name}
-            className="object-cover w-full h-full"
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
           />
           {product.sale_price && (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              {discountPercent}% Off
+            <Badge className="absolute top-2 left-2 bg-rose-500 hover:bg-rose-600">
+              {discountPercent}% OFF
+            </Badge>
+          )}
+          
+          {product.is_new && (
+            <Badge className="absolute bottom-2 left-2 bg-emerald-500">
+              NEW
             </Badge>
           )}
         </div>
@@ -69,18 +75,29 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
                 )}
               </div>
               
-              <p className="text-gray-500 text-sm mb-2 line-clamp-2">{product.description}</p>
+              <div className="flex items-baseline gap-2 mb-2">
+                {product.brand && (
+                  <span className="text-gray-900 font-medium text-sm">{product.brand}</span>
+                )}
+                <span className="text-gray-500 text-sm line-clamp-1">{product.description}</span>
+              </div>
               
               <div className="flex flex-wrap gap-1 mb-2">
                 {product.is_new && (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
-                    <Award className="h-3 w-3 mr-1" /> New
+                    <Award className="h-3 w-3 mr-1" /> New Season
                   </Badge>
                 )}
                 
                 {(product.stock && product.stock > 0) && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                    <Truck className="h-3 w-3 mr-1" /> Fast Delivery
+                    <Truck className="h-3 w-3 mr-1" /> Free Delivery
+                  </Badge>
+                )}
+                
+                {product.is_trending && (
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-xs">
+                    <Zap className="h-3 w-3 mr-1" /> Trending
                   </Badge>
                 )}
               </div>
@@ -110,10 +127,10 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
               <div className="flex gap-2 mt-2 sm:mt-0">
                 <Button 
                   size="sm" 
-                  variant="secondary" 
+                  variant="outline" 
                   onClick={handleAddToWishlistClick}
                   disabled={!!isAddingThisToWishlist}
-                  className="h-8 w-8 p-0 rounded-full"
+                  className="h-9 w-9 p-0 rounded-full border-gray-300"
                 >
                   <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
                 </Button>
@@ -123,10 +140,10 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
                   variant="default"
                   onClick={handleAddToCartClick}
                   disabled={!!isAddingThisToCart}
-                  className="h-8 bg-[#9b87f5] hover:bg-[#7E69AB]"
+                  className="h-9 bg-[#9b87f5] hover:bg-[#7E69AB]"
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
+                  ADD TO BAG
                 </Button>
               </div>
             </div>

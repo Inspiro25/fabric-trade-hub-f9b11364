@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Heart, ShoppingCart, Share2, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Share2, Star, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
@@ -47,45 +47,71 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
       whileHover={{ y: -5 }}
       onClick={handleProductClick}
     >
-      <AspectRatio ratio={1}>
-        <img 
-          src={product.images[0] || '/placeholder.svg'}
-          alt={product.name}
-          className="object-cover w-full h-full transition-transform group-hover:scale-105"
-        />
-      </AspectRatio>
-      
-      {product.is_new && (
-        <Badge className="absolute top-2 left-2 bg-green-500 hover:bg-green-600">
-          New
-        </Badge>
-      )}
-      
-      {product.sale_price && (
-        <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600">
-          {discountPercent}% Off
-        </Badge>
-      )}
-      
-      <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button 
-          size="icon" 
-          variant="secondary" 
-          className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm"
-          onClick={handleShareClick}
-        >
-          <Share2 className="h-4 w-4" />
-        </Button>
+      <div className="relative">
+        <AspectRatio ratio={3/4}>
+          <img 
+            src={product.images[0] || '/placeholder.svg'}
+            alt={product.name}
+            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+          />
+          
+          {/* Overlay with quick actions - Myntra style */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">
+            <div className="flex gap-2 bg-white/90 backdrop-blur-sm p-1 rounded-full">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-8 w-8 rounded-full"
+                onClick={handleAddToWishlistClick}
+              >
+                <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
+              </Button>
+              
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-8 w-8 rounded-full"
+                onClick={handleShareClick}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </AspectRatio>
+        
+        {product.is_new && (
+          <Badge className="absolute top-2 left-2 bg-emerald-500 hover:bg-emerald-600">
+            NEW
+          </Badge>
+        )}
+        
+        {product.sale_price && (
+          <Badge className="absolute top-2 right-2 bg-rose-500 hover:bg-rose-600">
+            {discountPercent}% OFF
+          </Badge>
+        )}
+        
+        {product.is_trending && (
+          <div className="absolute left-2 bottom-2">
+            <Badge variant="outline" className="bg-purple-500/20 text-purple-800 border-purple-200">
+              <Zap className="h-3 w-3 mr-1 text-purple-600" /> Trending
+            </Badge>
+          </div>
+        )}
       </div>
       
-      <div className="p-4">
-        <h3 className="text-base font-medium line-clamp-1">{product.name}</h3>
+      <div className="p-3">
+        {product.brand && (
+          <h4 className="text-sm font-medium text-gray-900 mb-1 uppercase">{product.brand}</h4>
+        )}
+        
+        <h3 className="text-sm font-medium line-clamp-1 text-gray-700">{product.name}</h3>
         
         <div className="flex items-center mt-1 mb-2">
           {product.rating && (
             <div className="flex items-center text-amber-500">
-              <Star className="h-4 w-4 mr-1 fill-amber-500" />
-              <span>{product.rating}</span>
+              <Star className="h-3 w-3 mr-1 fill-amber-500" />
+              <span className="text-xs">{product.rating}</span>
               <span className="text-xs text-gray-500 ml-1">({product.review_count || 0})</span>
             </div>
           )}
@@ -95,42 +121,30 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           <div>
             {product.sale_price ? (
               <div className="flex items-center gap-1">
-                <span className="text-lg font-bold text-[#9b87f5]">
+                <span className="text-base font-bold text-[#9b87f5]">
                   ${product.sale_price}
                 </span>
-                <span className="text-sm text-gray-500 line-through">
+                <span className="text-xs text-gray-500 line-through">
                   ${product.price}
                 </span>
               </div>
             ) : (
-              <span className="text-lg font-bold">
+              <span className="text-base font-bold">
                 ${product.price}
               </span>
             )}
           </div>
         </div>
         
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="secondary" 
-            onClick={handleAddToWishlistClick}
-            disabled={!!isAddingThisToWishlist}
-            className="h-9 w-9 p-0 flex-shrink-0 rounded-full"
-          >
-            <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
-          </Button>
-          
-          <Button 
-            size="sm" 
-            onClick={handleAddToCartClick}
-            disabled={!!isAddingThisToCart}
-            className="h-9 flex-1 bg-[#9b87f5] hover:bg-[#7E69AB]"
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Add to Cart
-          </Button>
-        </div>
+        <Button 
+          size="sm" 
+          onClick={handleAddToCartClick}
+          disabled={!!isAddingThisToCart}
+          className="w-full h-9 bg-[#9b87f5] hover:bg-[#7E69AB]"
+        >
+          <ShoppingCart className="h-4 w-4 mr-2" />
+          ADD TO BAG
+        </Button>
       </div>
     </motion.div>
   );
