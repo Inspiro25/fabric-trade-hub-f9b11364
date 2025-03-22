@@ -1,10 +1,21 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/contexts/CartContext';
+
+// Define the database cart item type to match Supabase schema
+interface DBCartItem {
+  id?: string;
+  user_id: string;
+  product_id: string;
+  quantity: number;
+  color: string;
+  size: string;
+}
 
 /**
  * Fetch cart items for a user from Supabase
  */
-export const fetchCartItems = async (userId: string): Promise<Partial<CartItem>[]> => {
+export const fetchCartItems = async (userId: string): Promise<DBCartItem[]> => {
   try {
     // For all user IDs, use cart_items table with user_id field
     const { data, error } = await supabase

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -104,21 +103,25 @@ const ProductDetail = () => {
   React.useEffect(() => {
     const loadRecommendations = async () => {
       if (currentUser && id) {
-        // Check if currentUser has uid/id property
-        const userId = currentUser.uid || currentUser.id || '';
-        if (userId) {
-          try {
-            const recommendations = await getPersonalizedRecommendations(userId);
-            if (recommendations) {
-              setRecommendedProducts(recommendations);
+        try {
+          // Use uid, id, or email as fallback for userId
+          const userId = currentUser.uid || currentUser.id || currentUser.email || '';
+          if (userId) {
+            try {
+              const recommendations = await getPersonalizedRecommendations(userId);
+              if (recommendations) {
+                setRecommendedProducts(recommendations);
+              }
+            } catch (error) {
+              console.error('Error loading recommendations:', error);
             }
-          } catch (error) {
-            console.error('Error loading recommendations:', error);
           }
+        } catch (error) {
+          console.error('Error processing user ID for recommendations:', error);
         }
       }
     };
-		
+    
     const loadSimilarProducts = async () => {
       if (id) {
         try {
@@ -141,7 +144,12 @@ const ProductDetail = () => {
 
     setIsAddingToCart(true);
     try {
-      await addToCart(product);
+      // Pass color, size, and quantity for the cart item
+      // Default to first available color/size if product has them, otherwise empty strings
+      const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0] : '';
+      const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : '';
+      await addToCart(product, 1, defaultColor, defaultSize);
+      
       toast({
         title: 'Added to cart',
         description: `${product.name} has been added to your cart.`,
@@ -224,7 +232,7 @@ const ProductDetail = () => {
               className="w-full max-w-md"
             >
               <CarouselContent className="h-80 rounded-lg">
-                {product.images.map((image, index) => (
+                {product?.images.map((image, index) => (
                   <CarouselItem key={index} className="md:basis-1/1">
                     <div className="p-1">
                       <img
@@ -243,32 +251,32 @@ const ProductDetail = () => {
 
           {/* Product Info */}
           <div>
-            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+            <h1 className="text-2xl font-bold mb-2">{product?.name}</h1>
             <div className="flex items-center mb-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${i < Math.floor(product.rating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                    className={`h-4 w-4 ${i < Math.floor(product?.rating || 0) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
                   />
                 ))}
               </div>
               <span className="text-sm text-gray-500 ml-2">
-                {product.rating} ({product.reviewCount} reviews)
+                {product?.rating} ({product?.reviewCount} reviews)
               </span>
             </div>
             
-            {product.salePrice !== undefined && product.salePrice > 0 ? (
+            {product?.salePrice !== undefined && product.salePrice > 0 ? (
               <div className="flex items-center mb-4">
                 <span className="text-xl font-semibold text-gray-900">{formatCurrency(product.salePrice)}</span>
                 <span className="text-gray-500 ml-2 line-through">{formatCurrency(product.price)}</span>
                 <Badge className="ml-2">Sale</Badge>
               </div>
             ) : (
-              <span className="text-xl font-semibold text-gray-900 mb-4">{formatCurrency(product.price)}</span>
+              <span className="text-xl font-semibold text-gray-900 mb-4">{product && formatCurrency(product.price)}</span>
             )}
 
-            <p className="text-gray-700 mb-6">{product.description}</p>
+            <p className="text-gray-700 mb-6">{product?.description}</p>
 
             {/* Add to Cart Button */}
             <Button 

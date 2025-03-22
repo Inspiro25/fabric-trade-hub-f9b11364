@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/types/product';
 
@@ -133,16 +134,29 @@ export const recordProductView = async (productId: string, userId?: string): Pro
   try {
     // If no user ID, just increment view count on product
     if (!userId) {
-      const { error } = await supabase
+      // Since we can't use an RPC to increment directly, we'll need to fetch and update
+      const { data, error: fetchError } = await supabase
         .from('products')
-        .update({
-          // Use review_count as a proxy for views since view_count doesn't exist
-          review_count: supabase.rpc('increment', { row_id: 1, increment_by: 1 })
-        })
+        .select('review_count')
+        .eq('id', productId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching product for view count update:', fetchError);
+        return;
+      }
+      
+      // Now update with incremented count
+      const currentCount = data?.review_count || 0;
+      const newCount = currentCount + 1;
+      
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ review_count: newCount })
         .eq('id', productId);
       
-      if (error) {
-        console.error('Error incrementing product view count:', error);
+      if (updateError) {
+        console.error('Error updating product view count:', updateError);
       }
       return;
     }

@@ -118,7 +118,7 @@ export const useCartOperations = (
       
       // Optimistically update UI
       const newCart = cartItems.map(item => {
-        if (item.id === productId && item.size === size && item.color === color) {
+        if (item.product.id === productId && item.size === size && item.color === color) {
           return { ...item, quantity };
         }
         return item;
@@ -183,7 +183,7 @@ export const useCartOperations = (
       for (const item of guestCartItems) {
         await upsertCartItem({
           user_id: currentUser.uid,
-          product_id: item.id,
+          product_id: item.product.id,
           quantity: item.quantity,
           color: item.color,
           size: item.size
