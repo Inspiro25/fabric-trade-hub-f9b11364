@@ -13,7 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const ShopManagement: React.FC = () => {
   const { toast } = useToast();
-  const { broadcastNotification } = useNotifications();
+  const { addNotification } = useNotifications();
   const [shops, setShops] = useState<Shop[]>([]);
   const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,7 +95,7 @@ const ShopManagement: React.FC = () => {
           description: 'Shop has been created successfully',
         });
         
-        broadcastNotification({
+        addNotification({
           title: 'New Shop Added',
           message: `${data.name} has joined our marketplace. Check it out!`,
           type: 'system',
