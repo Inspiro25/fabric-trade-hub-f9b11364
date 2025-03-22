@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Shop, fetchShops } from '@/lib/shops';
 import { shops as mockShops } from '@/lib/shops/mockData';
 
@@ -9,6 +9,7 @@ export function useShopSearch() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Load shops on component mount
   useEffect(() => {
     const loadShops = async () => {
       setIsLoading(true);
@@ -29,15 +30,25 @@ export function useShopSearch() {
     loadShops();
   }, []);
 
-  // Filtered shops based on search term
-  const filteredShops = shops.filter(shop => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
+  // Memoized search filter function
+  const getFilteredShops = useCallback(() => {
+    if (!searchTerm.trim()) {
+      return shops;
+    }
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    return shops.filter(shop => 
       shop.name.toLowerCase().includes(searchLower) || 
       shop.description.toLowerCase().includes(searchLower) || 
       shop.address.toLowerCase().includes(searchLower)
     );
-  });
+  }, [searchTerm, shops]);
+
+  // Get filtered shops
+  const filteredShops = getFilteredShops();
+
+  // Clear search function
+  const clearSearch = useCallback(() => setSearchTerm(''), []);
 
   return {
     searchTerm,
@@ -46,6 +57,6 @@ export function useShopSearch() {
     allShops: shops,
     isLoading,
     error,
-    clearSearch: () => setSearchTerm('')
+    clearSearch
   };
 }
