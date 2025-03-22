@@ -1,10 +1,10 @@
 
 import React from 'react';
-import GridProductCard from './GridProductCard';
-import ListProductCard from './ListProductCard';
-import CompactProductCard from './CompactProductCard';
+import { GridProductCard } from './GridProductCard';
+import { ListProductCard } from './ListProductCard';
+import { CompactProductCard } from './CompactProductCard';
 import { ProductCardSkeleton } from './ProductCardSkeleton';
-import type { ProductCardBaseProps, SearchPageProduct } from '@/hooks/use-search';
+import type { ProductCardBaseProps, SearchPageProduct } from '@/hooks/search/types';
 
 const ProductCard = ({ viewMode = 'grid', ...props }: ProductCardBaseProps) => {
   if (viewMode === 'list') {
