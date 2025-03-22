@@ -9,19 +9,67 @@ import { Flame, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const NewArrivals = () => {
   const { isDarkMode } = useTheme();
   
   const { data: products, isLoading, error } = useQuery({
     queryKey: ['products', 'newArrivals'],
-    queryFn: getNewArrivals,
+    queryFn: async () => {
+      try {
+        // Fetch new arrivals directly from Supabase
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_new', true)
+          .order('created_at', { ascending: false })
+          .limit(12);
+          
+        if (error) {
+          console.error('Error fetching new arrivals:', error);
+          throw new Error(error.message);
+        }
+        
+        return data || [];
+      } catch (err) {
+        console.error('Failed to fetch new arrivals:', err);
+        // Fall back to the existing implementation
+        return getNewArrivals();
+      }
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Update view history if user is logged in
+  useEffect(() => {
+    const updateProductViews = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (session?.session?.user && products && products.length > 0) {
+        try {
+          const { error } = await supabase.rpc('record_product_view', {
+            p_user_id: session.session.user.id,
+            p_product_id: products[0].id,
+            p_view_increment: 1
+          });
+          
+          if (error) {
+            console.error('Error recording featured product view:', error);
+          }
+        } catch (err) {
+          console.error('Failed to record product view:', err);
+        }
+      }
+    };
+    
+    updateProductViews();
+  }, [products]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -79,12 +127,12 @@ const NewArrivals = () => {
                         {products[0].description || "Experience our newest arrival, crafted with exceptional quality and style."}
                       </p>
                       <div className="flex items-center gap-2 mb-4">
-                        {products[0].salePrice ? (
+                        {products[0].sale_price ? (
                           <>
-                            <span className="text-xl font-bold">₹{products[0].salePrice}</span>
+                            <span className="text-xl font-bold">₹{products[0].sale_price}</span>
                             <span className="text-muted-foreground line-through">₹{products[0].price}</span>
                             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                              {Math.round(((products[0].price - products[0].salePrice) / products[0].price) * 100)}% OFF
+                              {Math.round(((products[0].price - products[0].sale_price) / products[0].price) * 100)}% OFF
                             </span>
                           </>
                         ) : (

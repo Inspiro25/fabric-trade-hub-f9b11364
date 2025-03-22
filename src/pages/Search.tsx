@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/hooks/use-search';
+import { useAuth } from '@/contexts/AuthContext';
 import SearchFilters from '@/components/search/SearchFilters';
 import SearchSort from '@/components/search/SearchSort';
 import SearchResults from '@/components/search/SearchResults';
@@ -10,10 +12,8 @@ import SearchCategories from '@/components/search/SearchCategories';
 import SearchRecommendations from '@/components/search/SearchRecommendations';
 import ShareDialog from '@/components/search/ShareDialog';
 import AuthDialog from '@/components/search/AuthDialog';
-import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import SearchProductCard, { SearchProductSkeleton } from '@/components/search/SearchProductCard';
 import { 
   SlidersHorizontal, 
   ArrowUpDown, 
@@ -26,10 +26,8 @@ import {
   ChevronRight,
   Store
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 const Search = () => {
@@ -41,14 +39,13 @@ const Search = () => {
   const isMobile = useIsMobile();
   const [searchInput, setSearchInput] = useState(query);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchHistory, setLocalSearchHistory] = useState<{ id: string; query: string }[]>([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const { currentUser } = useAuth();
 
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Get all search-related functionality from the useSearch hook
   const {
     products,
     categories,
@@ -60,6 +57,7 @@ const Search = () => {
     priceRange,
     rating,
     sortOption,
+    viewMode,
     mobileFiltersOpen,
     setMobileFiltersOpen,
     mobileSortOpen,
@@ -71,7 +69,7 @@ const Search = () => {
     isShareDialogOpen,
     setIsShareDialogOpen,
     shareableLink,
-    searchHistory: hookSearchHistory,
+    searchHistory,
     recommendations,
     initialLoad,
     recentlyViewed,
@@ -90,6 +88,7 @@ const Search = () => {
     handlePriceRangeChange,
     handleRatingChange,
     handleSortChange,
+    handleViewModeChange,
     clearFilters,
     handleLogin,
     fetchData,
@@ -98,6 +97,7 @@ const Search = () => {
     saveSearchHistory,
   } = useSearch(query);
 
+  // Handle outside clicks to close suggestion dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -109,36 +109,10 @@ const Search = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Reset to page 1 when search query changes
   useEffect(() => {
-    if (currentUser) {
-      fetchSearchHistory();
-    }
-  }, [currentUser]);
-
-  const fetchSearchHistory = async () => {
-    if (!currentUser) return;
-    
-    setIsLoadingHistory(true);
-    try {
-      const { data, error } = await supabase
-        .from('search_history')
-        .select('*')
-        .eq('user_id', currentUser.uid)
-        .order('searched_at', { ascending: false })
-        .limit(5);
-        
-      if (error) {
-        console.error('Error fetching search history:', error);
-        return;
-      }
-      
-      setLocalSearchHistory(data || []);
-    } catch (err) {
-      console.error('Error fetching search history:', err);
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
+    setCurrentPage(1);
+  }, [query]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,20 +135,6 @@ const Search = () => {
     setShowSuggestions(false);
   };
 
-  const handleClearHistoryItem = async (id: string) => {
-    await clearSearchHistoryItem(id);
-    setLocalSearchHistory(prev => prev.filter(item => item.id !== id));
-  };
-
-  const handleClearAllHistory = async () => {
-    await clearAllSearchHistory();
-    setLocalSearchHistory([]);
-  };
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
@@ -185,167 +145,99 @@ const Search = () => {
     setCurrentPage(1);
   };
 
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  };
-
-  const handleCategoryPillClick = (categoryId: string | null) => {
-    handleCategoryChange(categoryId);
-  };
-
-  const handleHistoryItemClick = (historyQuery: string) => {
-    setSearchInput(historyQuery);
-    navigate(`/search?q=${encodeURIComponent(historyQuery)}`);
-  };
-
-  const handleRecommendedProductClick = (productId: string) => {
-    navigate(`/product/${productId}`);
-  };
-
   const handleRetry = () => {
     fetchData();
   };
 
-  const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const renderMobileFilterButtons = () => (
-    <div className="flex items-center space-x-2 self-end md:self-auto">
-      <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
-        <SlidersHorizontal className="mr-2 h-4 w-4" />
-        Filters
-      </Button>
-      <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
-        <ArrowUpDown className="mr-2 h-4 w-4" />
-        Sort
-      </Button>
-    </div>
+  // Paginate products for current page
+  const paginatedProducts = products.slice(
+    (currentPage - 1) * itemsPerPage, 
+    currentPage * itemsPerPage
   );
 
-  const renderDesktopFilterButtons = () => (
-    <div className="flex items-center space-x-2">
-      <SearchFilters 
-        isMobile={false} 
-        categories={categories} 
-        shops={shops} 
-        selectedCategory={selectedCategory} 
-        selectedShop={selectedShop} 
-        priceRange={priceRange} 
-        rating={rating} 
-        mobileFiltersOpen={mobileFiltersOpen} 
-        setMobileFiltersOpen={setMobileFiltersOpen} 
-        handleCategoryChange={handleCategoryChange} 
-        handleShopChange={handleShopChange} 
-        handlePriceRangeChange={handlePriceRangeChange} 
-        handleRatingChange={handleRatingChange} 
-        clearFilters={clearFilters} 
-      />
-      <SearchSort 
-        isMobile={false} 
-        sortOption={sortOption} 
-        mobileSortOpen={mobileSortOpen} 
-        setMobileSortOpen={setMobileSortOpen} 
-        handleSortChange={handleSortChange} 
-      />
-    </div>
-  );
-
+  // UI Components for different states
   const SearchSuggestions = () => {
     if (!showSuggestions) return null;
     
     return (
       <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-80 overflow-y-auto">
-        {isLoadingHistory ? (
-          <div className="p-3 text-center text-gray-500">
-            <motion.div 
-              className="inline-block"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        {searchInput && (
+          <div className="p-2 border-b">
+            <div 
+              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
+              onClick={() => handleSelectSuggestion(searchInput)}
             >
-              <Clock className="h-5 w-5" />
-            </motion.div>
-            <span className="ml-2">Loading suggestions...</span>
+              <SearchIcon className="h-4 w-4 text-[#9b87f5]" />
+              <span className="text-sm">Search for "<span className="font-medium">{searchInput}</span>"</span>
+            </div>
           </div>
-        ) : (
-          <>
-            {searchInput && (
-              <div className="p-2 border-b">
-                <div 
-                  className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
-                  onClick={() => handleSelectSuggestion(searchInput)}
+        )}
+        
+        {popularSearches.length > 0 && (
+          <div className="p-2 border-b">
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
+              <TrendingUp className="h-3 w-3" />
+              <span>Popular Searches</span>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 px-2">
+              {popularSearches.map((term, idx) => (
+                <Badge 
+                  key={idx} 
+                  variant="outline" 
+                  className="cursor-pointer hover:bg-gray-100 border-[#9b87f5] text-[#9b87f5]"
+                  onClick={() => handleSelectSuggestion(term)}
                 >
-                  <SearchIcon className="h-4 w-4 text-[#9b87f5]" />
-                  <span className="text-sm">Search for "<span className="font-medium">{searchInput}</span>"</span>
-                </div>
+                  {term}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {searchHistory && searchHistory.length > 0 && (
+          <div className="p-2">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 px-2">
+                <History className="h-3 w-3" />
+                <span>Recent Searches</span>
               </div>
-            )}
+              {searchHistory.length > 1 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearAllSearchHistory}
+                  className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
+                >
+                  Clear All
+                </Button>
+              )}
+            </div>
             
-            {popularSearches.length > 0 && (
-              <div className="p-2 border-b">
-                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
-                  <TrendingUp className="h-3 w-3" />
-                  <span>Popular Searches</span>
+            {searchHistory.map((item) => (
+              <div 
+                key={item.id} 
+                className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+              >
+                <div 
+                  className="flex items-center gap-2 text-sm text-gray-700"
+                  onClick={() => handleSelectSuggestion(item.query)}
+                >
+                  <Clock className="h-3.5 w-3.5 text-gray-400" />
+                  <span>{item.query}</span>
                 </div>
-                
-                <div className="flex flex-wrap gap-2 px-2">
-                  {popularSearches.map((term, idx) => (
-                    <Badge 
-                      key={idx} 
-                      variant="outline" 
-                      className="cursor-pointer hover:bg-gray-100 border-[#9b87f5] text-[#9b87f5]"
-                      onClick={() => handleSelectSuggestion(term)}
-                    >
-                      {term}
-                    </Badge>
-                  ))}
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearSearchHistoryItem(item.id);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                </button>
               </div>
-            )}
-            
-            {searchHistory.length > 0 && (
-              <div className="p-2">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500 px-2">
-                    <History className="h-3 w-3" />
-                    <span>Recent Searches</span>
-                  </div>
-                  {searchHistory.length > 1 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={handleClearAllHistory}
-                      className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
-                    >
-                      Clear All
-                    </Button>
-                  )}
-                </div>
-                
-                {searchHistory.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
-                  >
-                    <div 
-                      className="flex items-center gap-2 text-sm text-gray-700"
-                      onClick={() => handleSelectSuggestion(item.query)}
-                    >
-                      <Clock className="h-3.5 w-3.5 text-gray-400" />
-                      <span>{item.query}</span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleClearHistoryItem(item.id);
-                      }}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <XCircle className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
+            ))}
+          </div>
         )}
       </div>
     );
@@ -405,14 +297,51 @@ const Search = () => {
             </p>
           </div>
           
-          {isMobile ? renderMobileFilterButtons() : renderDesktopFilterButtons()}
+          {isMobile ? (
+            <div className="flex items-center space-x-2 self-end md:self-auto">
+              <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
+                <SlidersHorizontal className="mr-2 h-4 w-4" />
+                Filters
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+                Sort
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <SearchFilters 
+                isMobile={false} 
+                categories={categories} 
+                shops={shops} 
+                selectedCategory={selectedCategory} 
+                selectedShop={selectedShop} 
+                priceRange={priceRange} 
+                rating={rating} 
+                mobileFiltersOpen={mobileFiltersOpen} 
+                setMobileFiltersOpen={setMobileFiltersOpen} 
+                handleCategoryChange={handleCategoryChange} 
+                handleShopChange={handleShopChange} 
+                handlePriceRangeChange={handlePriceRangeChange} 
+                handleRatingChange={handleRatingChange} 
+                clearFilters={clearFilters} 
+              />
+              <SearchSort 
+                isMobile={false} 
+                sortOption={sortOption} 
+                mobileSortOpen={mobileSortOpen} 
+                setMobileSortOpen={setMobileSortOpen} 
+                handleSortChange={handleSortChange} 
+              />
+            </div>
+          )}
         </div>
       )}
       
       <div className="flex flex-col lg:flex-row gap-4">
         {!isMobile && (
           <div className="w-full lg:w-64 shrink-0 space-y-4">
-            {searchHistory.length > 0 && (
+            {searchHistory && searchHistory.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-4 sticky top-4">
                 <h2 className="font-semibold text-lg mb-3 flex items-center">
                   <History className="h-4 w-4 mr-2 text-kutuku-primary" />
@@ -420,9 +349,9 @@ const Search = () => {
                 </h2>
                 <SearchHistory 
                   history={searchHistory}
-                  onSelectHistoryItem={handleHistoryItemClick}
-                  onClearHistoryItem={handleClearHistoryItem}
-                  onClearAllHistory={handleClearAllHistory}
+                  onSelectHistoryItem={(query) => handleSelectSuggestion(query)}
+                  onClearHistoryItem={clearSearchHistoryItem}
+                  onClearAllHistory={clearAllSearchHistory}
                 />
               </div>
             )}
@@ -456,7 +385,7 @@ const Search = () => {
         <div className="flex-1">
           {initialLoad || !query ? (
             <div className="space-y-4">
-              {isMobile && searchHistory.length > 0 && (
+              {isMobile && searchHistory && searchHistory.length > 0 && (
                 <div className="bg-white rounded-lg shadow-sm p-3 md:p-4">
                   <h2 className="font-semibold text-lg mb-2 flex items-center">
                     <History className="h-4 w-4 mr-2 text-kutuku-primary" />
@@ -464,9 +393,9 @@ const Search = () => {
                   </h2>
                   <SearchHistory 
                     history={searchHistory}
-                    onSelectHistoryItem={handleHistoryItemClick}
-                    onClearHistoryItem={handleClearHistoryItem}
-                    onClearAllHistory={handleClearAllHistory}
+                    onSelectHistoryItem={(query) => handleSelectSuggestion(query)}
+                    onClearHistoryItem={clearSearchHistoryItem}
+                    onClearAllHistory={clearAllSearchHistory}
                   />
                 </div>
               )}
@@ -525,63 +454,50 @@ const Search = () => {
                     onAddToCart={handleAddToCart}
                     onAddToWishlist={handleAddToWishlist}
                     onShare={handleShareProduct}
-                    onSelectProduct={handleRecommendedProductClick}
+                    onSelectProduct={(id) => navigate(`/product/${id}`)}
                   />
                 </TabsContent>
                 
                 <TabsContent value="recently-viewed" className="bg-white rounded-b-lg shadow-sm p-3 md:p-4 mt-0">
-                  {recentlyViewed.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {recentlyViewed.map((product) => (
-                        <div key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
-                          <SearchProductCard
-                            product={product}
-                            isAddingToCart={isAddingToCart}
-                            isAddingToWishlist={isAddingToWishlist}
-                            onAddToCart={handleAddToCart}
-                            onAddToWishlist={handleAddToWishlist}
-                            onShare={handleShareProduct}
-                            viewMode="grid"
-                            isCompact={true}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6 text-gray-500">
-                      <Eye className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                      <h3 className="text-lg font-medium mb-1">No recently viewed products</h3>
-                      <p className="text-sm">Products you view will appear here</p>
-                    </div>
-                  )}
+                  <SearchRecommendations
+                    products={recentlyViewed}
+                    isAddingToCart={isAddingToCart}
+                    isAddingToWishlist={isAddingToWishlist}
+                    onAddToCart={handleAddToCart}
+                    onAddToWishlist={handleAddToWishlist}
+                    onShare={handleShareProduct}
+                    onSelectProduct={(id) => navigate(`/product/${id}`)}
+                    emptyStateIcon={<Eye className="h-12 w-12 mx-auto mb-2 text-gray-300" />}
+                    emptyStateTitle="No recently viewed products"
+                    emptyStateMessage="Products you view will appear here"
+                  />
                 </TabsContent>
               </Tabs>
             </div>
           ) : (
-            <>
-              <SearchResults 
-                loading={loading} 
-                error={error} 
-                products={paginatedProducts} 
-                isAddingToCart={isAddingToCart} 
-                isAddingToWishlist={isAddingToWishlist} 
-                handleAddToCart={handleAddToCart} 
-                handleAddToWishlist={handleAddToWishlist} 
-                handleShareProduct={handleShareProduct} 
-                onRetry={handleRetry}
-                totalItems={products.length}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-              />
-            </>
+            <SearchResults 
+              loading={loading} 
+              error={error} 
+              products={paginatedProducts} 
+              isAddingToCart={isAddingToCart} 
+              isAddingToWishlist={isAddingToWishlist} 
+              handleAddToCart={handleAddToCart} 
+              handleAddToWishlist={handleAddToWishlist} 
+              handleShareProduct={handleShareProduct} 
+              onRetry={handleRetry}
+              totalItems={products.length}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
           )}
         </div>
       </div>
 
+      {/* Mobile filter dialogs */}
       <SearchFilters 
         isMobile={true} 
         categories={categories} 
@@ -607,8 +523,8 @@ const Search = () => {
         handleSortChange={handleSortChange} 
       />
 
+      {/* Dialogs */}
       <AuthDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} onLogin={handleLogin} />
-
       <ShareDialog isOpen={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareableLink={shareableLink} />
     </div>
   );

@@ -1,42 +1,41 @@
 
-import { db, collection, getDocs, query, where } from '@/lib/firebase';
 import { Product, productStore } from '@/lib/types/product';
+import { supabase } from '@/integrations/supabase/client';
 
 // Function to get related products
 export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
   try {
-    const relatedQuery = query(
-      collection(db, 'products'), 
-      where('category', '==', category)
-    );
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('category_id', category)
+      .neq('id', currentProductId)
+      .limit(4);
     
-    const relatedSnapshot = await getDocs(relatedQuery);
+    if (error) {
+      console.error('Error fetching related products:', error);
+      throw error;
+    }
     
-    if (!relatedSnapshot.empty) {
-      return relatedSnapshot.docs
-        .map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            salePrice: data.salePrice,
-            images: data.images || [],
-            category: data.category,
-            colors: data.colors || [],
-            sizes: data.sizes || [],
-            isNew: data.isNew,
-            isTrending: data.isTrending,
-            rating: data.rating,
-            reviewCount: data.reviewCount,
-            stock: data.stock,
-            tags: data.tags || [],
-            shopId: data.shopId,
-          } as Product;
-        })
-        .filter(product => product.id !== currentProductId)
-        .slice(0, 4);
+    if (data && data.length > 0) {
+      return data.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        salePrice: product.sale_price,
+        images: product.images || [],
+        category: product.category_id || '',
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        isNew: product.is_new || false,
+        isTrending: product.is_trending || false,
+        rating: product.rating || 0,
+        reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
+        tags: product.tags || [],
+        shopId: product.shop_id || '',
+      }));
     }
     
     // Fallback to local data
@@ -54,21 +53,37 @@ export const getRelatedProducts = async (currentProductId: string, category: str
 // Utility functions to get filtered products
 export const getNewArrivals = async (): Promise<Product[]> => {
   try {
-    const newArrivalsQuery = query(
-      collection(db, 'products'), 
-      where('isNew', '==', true)
-    );
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_new', true)
+      .order('created_at', { ascending: false })
+      .limit(8);
     
-    const snapshot = await getDocs(newArrivalsQuery);
+    if (error) {
+      console.error('Error fetching new arrivals:', error);
+      throw error;
+    }
     
-    if (!snapshot.empty) {
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-        } as Product;
-      }).slice(0, 8);
+    if (data && data.length > 0) {
+      return data.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        salePrice: product.sale_price,
+        images: product.images || [],
+        category: product.category_id || '',
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        isNew: product.is_new || false,
+        isTrending: product.is_trending || false,
+        rating: product.rating || 0,
+        reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
+        tags: product.tags || [],
+        shopId: product.shop_id || '',
+      }));
     }
     
     // Fallback to local data
@@ -81,21 +96,37 @@ export const getNewArrivals = async (): Promise<Product[]> => {
 
 export const getTrendingProducts = async (): Promise<Product[]> => {
   try {
-    const trendingQuery = query(
-      collection(db, 'products'), 
-      where('isTrending', '==', true)
-    );
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_trending', true)
+      .order('review_count', { ascending: false })
+      .limit(8);
     
-    const snapshot = await getDocs(trendingQuery);
+    if (error) {
+      console.error('Error fetching trending products:', error);
+      throw error;
+    }
     
-    if (!snapshot.empty) {
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-        } as Product;
-      }).slice(0, 8);
+    if (data && data.length > 0) {
+      return data.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        salePrice: product.sale_price,
+        images: product.images || [],
+        category: product.category_id || '',
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        isNew: product.is_new || false,
+        isTrending: product.is_trending || false,
+        rating: product.rating || 0,
+        reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
+        tags: product.tags || [],
+        shopId: product.shop_id || '',
+      }));
     }
     
     // Fallback to local data
@@ -108,21 +139,35 @@ export const getTrendingProducts = async (): Promise<Product[]> => {
 
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
-    const categoryQuery = query(
-      collection(db, 'products'), 
-      where('category', '==', category)
-    );
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('category_id', category);
     
-    const snapshot = await getDocs(categoryQuery);
+    if (error) {
+      console.error(`Error fetching products for category ${category}:`, error);
+      throw error;
+    }
     
-    if (!snapshot.empty) {
-      return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-        } as Product;
-      });
+    if (data && data.length > 0) {
+      return data.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        salePrice: product.sale_price,
+        images: product.images || [],
+        category: product.category_id || '',
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        isNew: product.is_new || false,
+        isTrending: product.is_trending || false,
+        rating: product.rating || 0,
+        reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
+        tags: product.tags || [],
+        shopId: product.shop_id || '',
+      }));
     }
     
     // Fallback to local data
@@ -135,16 +180,36 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
 
 export const getProductsByTags = async (tag: string): Promise<Product[]> => {
   try {
-    const productsSnapshot = await getDocs(collection(db, 'products'));
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .contains('tags', [tag])
+      .limit(8);
+      
+    if (error) {
+      console.error(`Error fetching products with tag ${tag}:`, error);
+      throw error;
+    }
     
-    if (!productsSnapshot.empty) {
-      return productsSnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Product))
-        .filter(product => product.tags.includes(tag))
-        .slice(0, 8);
+    if (data && data.length > 0) {
+      return data.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        salePrice: product.sale_price,
+        images: product.images || [],
+        category: product.category_id || '',
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        isNew: product.is_new || false,
+        isTrending: product.is_trending || false,
+        rating: product.rating || 0,
+        reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
+        tags: product.tags || [],
+        shopId: product.shop_id || '',
+      }));
     }
     
     // Fallback to local data
