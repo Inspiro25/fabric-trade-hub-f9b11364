@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -120,6 +121,7 @@ const Search = () => {
     if (trimmedSearch) {
       navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
       if (currentUser) {
+        // Fixed: Only pass the query string (saveSearchHistory was updated to use the userId from state)
         saveSearchHistory(trimmedSearch);
       }
       setShowSuggestions(false);
@@ -130,6 +132,7 @@ const Search = () => {
     setSearchInput(selectedQuery);
     navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
     if (currentUser) {
+      // Fixed: Only pass the query string (saveSearchHistory was updated to use the userId from state)
       saveSearchHistory(selectedQuery);
     }
     setShowSuggestions(false);

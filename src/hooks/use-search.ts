@@ -5,6 +5,8 @@ import { toast } from '@/hooks/use-toast';
 import { SearchPageProduct } from '@/components/search/product-card/types';
 import { useSearchFilters } from './use-search-filters';
 import { useSearchData } from './use-search-data';
+import { useSearchHistory } from './use-search-history';
+import { useRecommendations } from './use-recommendations';
 
 export type SortOption = 'relevance' | 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity';
 
@@ -17,9 +19,20 @@ export const useSearch = (initialQuery: string) => {
   const [shareableLink, setShareableLink] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<any[]>([]);
-  const [popularSearches, setPopularSearches] = useState<any[]>([]);
+  const [initialLoad, setInitialLoad] = useState(true);
   
+  // Get the current user from session
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUserId(data.session?.user?.id || null);
+    };
+    getUser();
+  }, []);
+  
+  // Import custom hooks
   const { 
     products: fetchedProducts, 
     categories, 
@@ -30,12 +43,28 @@ export const useSearch = (initialQuery: string) => {
   } = useSearchData(query);
 
   const {
+    searchHistory,
+    popularSearches,
+    clearSearchHistoryItem,
+    clearAllSearchHistory,
+    saveSearchHistory,
+  } = useSearchHistory(userId);
+
+  const {
+    recommendations,
+    recentlyViewed,
+  } = useRecommendations();
+
+  const {
     selectedCategory,
     selectedShop,
     priceRange,
     rating,
     sortOption,
     viewMode,
+    brandFilters,
+    discountFilters,
+    availabilityFilters,
     mobileFiltersOpen,
     setMobileFiltersOpen,
     mobileSortOpen,
@@ -46,6 +75,9 @@ export const useSearch = (initialQuery: string) => {
     handleRatingChange,
     handleSortChange,
     handleViewModeChange,
+    toggleBrandFilter,
+    toggleDiscountFilter,
+    handleAvailabilityFilterChange,
     clearFilters,
     filterProducts,
     sortProducts
@@ -62,6 +94,13 @@ export const useSearch = (initialQuery: string) => {
       handleCategoryChange(categoryParam);
     }
   }, []);
+
+  // Set initialLoad state when data is fetched
+  useEffect(() => {
+    if (query && !loading && !error) {
+      setInitialLoad(false);
+    }
+  }, [query, loading, error]);
 
   // Filter and sort products
   const filteredProducts = filterProducts(fetchedProducts);
@@ -142,48 +181,11 @@ export const useSearch = (initialQuery: string) => {
     setIsShareDialogOpen(true);
   };
 
-  const saveSearchHistory = async (query: string, userId: string) => {
-    try {
-      await supabase.from('search_history').insert({
-        user_id: userId,
-        query: query.toLowerCase().trim(),
-      });
-    } catch (error) {
-      console.error('Error saving search history:', error);
-    }
+  const handleLogin = () => {
+    setIsDialogOpen(false);
+    // Redirect to login page
+    window.location.href = '/auth?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
   };
-
-  // Fetch search history and popular searches
-  useEffect(() => {
-    const fetchSearchData = async () => {
-      try {
-        const { data: session } = await supabase.auth.getSession();
-        
-        if (session?.session?.user) {
-          const { data: history } = await supabase
-            .from('search_history')
-            .select('*')
-            .eq('user_id', session.session.user.id)
-            .order('searched_at', { ascending: false })
-            .limit(10);
-          
-          setSearchHistory(history || []);
-        }
-        
-        const { data: popular } = await supabase
-          .from('popular_search_terms')
-          .select('*')
-          .order('count', { ascending: false })
-          .limit(10);
-        
-        setPopularSearches(popular || []);
-      } catch (error) {
-        console.error('Error fetching search history:', error);
-      }
-    };
-    
-    fetchSearchData();
-  }, []);
 
   return {
     query,
@@ -209,6 +211,12 @@ export const useSearch = (initialQuery: string) => {
     viewMode,
     searchHistory,
     popularSearches,
+    recommendations,
+    initialLoad,
+    recentlyViewed,
+    brandFilters,
+    discountFilters,
+    availabilityFilters,
     mobileFiltersOpen,
     setMobileFiltersOpen,
     mobileSortOpen,
@@ -226,8 +234,14 @@ export const useSearch = (initialQuery: string) => {
     handleRatingChange,
     handleSortChange,
     handleViewModeChange,
+    toggleBrandFilter,
+    toggleDiscountFilter,
+    handleAvailabilityFilterChange,
     clearFilters,
     fetchData,
+    handleLogin,
+    clearSearchHistoryItem,
+    clearAllSearchHistory,
     saveSearchHistory,
   };
 };
