@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import HomeHero from '@/components/home/HomeHero';
+import ShopsSpotlight from '@/components/home/ShopsSpotlight';
 
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
@@ -187,7 +188,7 @@ const FlashSaleTimer = () => {
   }, []);
   
   return (
-    <section className="relative py-3 overflow-hidden">
+    <section className="relative py-2 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 opacity-95"></div>
       
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
@@ -199,42 +200,42 @@ const FlashSaleTimer = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-center gap-2">
           <div className="md:w-auto flex items-center">
-            <div className="mr-2 bg-white/20 backdrop-blur-sm p-1.5 rounded-full">
-              <Flame className="h-5 w-5 text-white animate-pulse" />
+            <div className="mr-2 bg-white/20 backdrop-blur-sm p-1 rounded-full">
+              <Flame className="h-4 w-4 text-white animate-pulse" />
             </div>
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-white flex items-center">
+              <h2 className="text-sm md:text-base font-bold text-white flex items-center">
                 FLASH SALE
-                <Zap className="h-4 w-4 ml-1 text-yellow-300 animate-pulse" />
+                <Zap className="h-3 w-3 ml-1 text-yellow-300 animate-pulse" />
               </h2>
-              <p className="text-white/80 text-xs">Ends soon!</p>
+              <p className="text-white/80 text-[10px]">Ends soon!</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex items-center gap-1">
             <div className="text-center">
-              <div className="bg-white rounded-md p-1 w-10 font-mono font-bold text-sm text-rose-600 border-b-2 border-rose-300">
+              <div className="bg-white rounded-md p-0.5 w-8 font-mono font-bold text-xs text-rose-600 border-b-2 border-rose-300">
                 {timeLeft.hours.toString().padStart(2, '0')}
               </div>
-              <span className="text-[10px] text-white font-medium mt-0.5 block">HRS</span>
+              <span className="text-[8px] text-white font-medium mt-0.5 block">HRS</span>
             </div>
-            <span className="text-sm font-bold text-white">:</span>
+            <span className="text-xs font-bold text-white">:</span>
             <div className="text-center">
-              <div className="bg-white rounded-md p-1 w-10 font-mono font-bold text-sm text-rose-600 border-b-2 border-rose-300">
+              <div className="bg-white rounded-md p-0.5 w-8 font-mono font-bold text-xs text-rose-600 border-b-2 border-rose-300">
                 {timeLeft.minutes.toString().padStart(2, '0')}
               </div>
-              <span className="text-[10px] text-white font-medium mt-0.5 block">MIN</span>
+              <span className="text-[8px] text-white font-medium mt-0.5 block">MIN</span>
             </div>
-            <span className="text-sm font-bold text-white">:</span>
+            <span className="text-xs font-bold text-white">:</span>
             <div className="text-center">
-              <div className="bg-white rounded-md p-1 w-10 font-mono font-bold text-sm text-rose-600 border-b-2 border-rose-300">
+              <div className="bg-white rounded-md p-0.5 w-8 font-mono font-bold text-xs text-rose-600 border-b-2 border-rose-300">
                 {timeLeft.seconds.toString().padStart(2, '0')}
               </div>
-              <span className="text-[10px] text-white font-medium mt-0.5 block">SEC</span>
+              <span className="text-[8px] text-white font-medium mt-0.5 block">SEC</span>
             </div>
           </div>
           
-          <Button size="sm" className="bg-white text-rose-600 hover:bg-rose-50 transition-colors shadow-md border-b-2 border-rose-200 font-bold text-sm py-1" asChild>
+          <Button size="sm" className="bg-white text-rose-600 hover:bg-rose-50 transition-colors shadow-md border-b-2 border-rose-200 font-bold text-xs py-0.5 px-2" asChild>
             <Link to="/flash-sale">
               SHOP NOW <Percent className="ml-1 h-3 w-3" />
             </Link>
@@ -300,7 +301,16 @@ const Index = () => {
         <FlashSaleTimer />
         
         <AnimatedSection delay={0.1}>
-          <BrandsSpotlight />
+          <section className="py-10 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold mb-2">Popular Shops For You</h2>
+                <p className="text-gray-500">Discover top-rated shops with great products</p>
+              </div>
+              
+              <ShopsSpotlight />
+            </div>
+          </section>
         </AnimatedSection>
         
         <AnimatedSection delay={0.2}>
@@ -431,4 +441,3 @@ const Index = () => {
 };
 
 export default Index;
-
