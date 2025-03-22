@@ -67,61 +67,93 @@ const ManagementLogin = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-md">
-      <Card className="w-full">
-        <CardHeader>
-          <div className="flex justify-center mb-4">
-            <div className="bg-purple-100 p-3 rounded-full">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-50 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-purple-900">VyomaKart</h1>
+          <p className="text-indigo-600 mt-2">Management Portal</p>
+        </div>
+        
+        <Card className="border-none shadow-lg bg-white/90 backdrop-blur-sm">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="mx-auto mb-4 bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-full">
               <ShieldAlert className="h-8 w-8 text-purple-600" />
             </div>
-          </div>
-          <CardTitle className="text-center">Management Portal</CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access the management dashboard
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your username" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                <Lock className="mr-2 h-4 w-4" />
-                {isLoading ? 'Logging in...' : 'Login'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-center text-sm text-gray-500">
-          Only authorized personnel can access this portal
-        </CardFooter>
-      </Card>
+            <CardTitle className="text-2xl font-bold text-center text-gray-800">Management Access</CardTitle>
+            <CardDescription className="text-center text-gray-600">
+              Secure portal for management team
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">Username</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter your username" 
+                          className="bg-white/50 border-gray-200" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700">Password</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="password" 
+                          placeholder="Enter your password" 
+                          className="bg-white/50 border-gray-200" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500" />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium" 
+                  disabled={isLoading}
+                >
+                  <Lock className="mr-2 h-4 w-4" />
+                  {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+          
+          <CardFooter className="flex justify-center pt-0">
+            <p className="text-sm text-gray-500">
+              Authorized personnel only
+            </p>
+          </CardFooter>
+        </Card>
+        
+        <div className="mt-8 text-center">
+          <Button 
+            variant="ghost" 
+            className="text-xs text-gray-500 hover:text-purple-600" 
+            onClick={() => navigate('/admin/login')}
+          >
+            Shop Admin Access
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

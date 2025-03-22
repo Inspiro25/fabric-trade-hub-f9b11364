@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, Store } from 'lucide-react';
+import { Lock, Store, Users, Building2, ArrowLeft } from 'lucide-react';
 import { fetchShops, getShopById } from '@/lib/supabase/shops';
 import PartnerRequestDialog from '@/components/management/PartnerRequestDialog';
 
@@ -33,6 +33,7 @@ const AdminLogin = () => {
   const { toast } = useToast();
   const [isPartnerDialogOpen, setIsPartnerDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'login' | 'partner'>('login');
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -117,96 +118,152 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-10 max-w-md">
-      <Card className="w-full">
-        <CardHeader>
-          <div className="flex justify-center mb-4">
-            <div className="bg-purple-100 p-3 rounded-full">
-              <Store className="h-8 w-8 text-purple-600" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-blue-900">VyomaKart</h1>
+          <p className="text-indigo-600 mt-2">Shop Admin Portal</p>
+        </div>
+        
+        <Card className="border-none shadow-lg bg-white/90 backdrop-blur-sm">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="mx-auto mb-4 bg-gradient-to-br from-blue-100 to-indigo-100 p-3 rounded-full">
+              <Store className="h-8 w-8 text-blue-600" />
             </div>
-          </div>
-          <CardTitle className="text-center">Shop Admin Login</CardTitle>
-          <CardDescription className="text-center">
-            Enter your shop ID and password to access your admin panel
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="shopId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Shop ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your shop ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                <Lock className="mr-2 h-4 w-4" />
-                {isLoading ? 'Logging in...' : 'Login'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2">
-          <Button 
-            variant="outline" 
-            className="w-full text-purple-600 border-purple-200 hover:bg-purple-50"
-            onClick={handlePartnerRequest}
-          >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              className="mr-2"
-            >
-              <path d="M16.5 6a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"></path>
-              <rect width="6" height="6" x="15" y="3" rx="2"></rect>
-              <path d="M10 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0v0"></path>
-              <path d="M10 14a4 4 0 0 0-4 4"></path>
-              <path d="M16 14a4 4 0 0 0-4 4"></path>
-              <path d="M15 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0v0"></path>
-            </svg>
-            Partner with Us
-          </Button>
-          <p className="text-sm text-gray-500 text-center w-full mt-2">
-            Contact support if you've lost your credentials
-          </p>
+            <div className="flex justify-center space-x-4 mb-2">
+              <button
+                onClick={() => setActiveTab('login')}
+                className={`px-4 py-2 font-medium rounded-md transition-colors ${
+                  activeTab === 'login'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Shop Login
+              </button>
+              <button
+                onClick={() => setActiveTab('partner')}
+                className={`px-4 py-2 font-medium rounded-md transition-colors ${
+                  activeTab === 'partner'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Partner With Us
+              </button>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center text-gray-800">
+              {activeTab === 'login' ? 'Shop Admin Login' : 'Become Our Partner'}
+            </CardTitle>
+            <CardDescription className="text-center text-gray-600">
+              {activeTab === 'login' 
+                ? 'Access your shop dashboard to manage products and orders' 
+                : 'Join our marketplace and start selling your products'}
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            {activeTab === 'login' ? (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="shopId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Shop ID</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter your shop ID" 
+                            className="bg-white/50 border-gray-200" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700">Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="Enter your password" 
+                            className="bg-white/50 border-gray-200" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium" 
+                    disabled={isLoading}
+                  >
+                    <Lock className="mr-2 h-4 w-4" />
+                    {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-gray-600 text-sm mb-4">
+                  Join our growing community of sellers and expand your business reach. Click below to submit your partnership request.
+                </p>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="flex items-center p-3 bg-blue-50 rounded-lg">
+                    <Users className="h-5 w-5 text-blue-600 mr-3" />
+                    <div>
+                      <h3 className="font-medium text-gray-800">10,000+ Customers</h3>
+                      <p className="text-xs text-gray-600">Access our large customer base</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-indigo-50 rounded-lg">
+                    <Building2 className="h-5 w-5 text-indigo-600 mr-3" />
+                    <div>
+                      <h3 className="font-medium text-gray-800">Easy Integration</h3>
+                      <p className="text-xs text-gray-600">Simple tools to manage your store</p>
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handlePartnerRequest} 
+                  className="w-full mt-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium"
+                >
+                  Apply for Partnership
+                </Button>
+              </div>
+            )}
+          </CardContent>
+          
+          <CardFooter className="flex flex-col items-center pt-0">
+            <p className="text-sm text-gray-500 mb-2">
+              {activeTab === 'login' 
+                ? 'Contact support if you've lost your credentials' 
+                : 'We'll review your application within 48 hours'}
+            </p>
+          </CardFooter>
+        </Card>
+        
+        <div className="mt-8 text-center">
           <Button 
             variant="ghost" 
-            className="text-xs text-muted-foreground opacity-70 hover:opacity-100" 
+            className="text-xs flex items-center text-gray-500 hover:text-blue-600" 
             onClick={handleManagementAccess}
           >
+            <ArrowLeft className="mr-1 h-3 w-3" />
             Management Access
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
       
       <PartnerRequestDialog 
         open={isPartnerDialogOpen} 
