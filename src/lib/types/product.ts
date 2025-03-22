@@ -4,17 +4,23 @@ export interface Product {
   description: string;
   price: number;
   salePrice?: number;
+  sale_price?: number; // Add this to ensure compatibility with Supabase data
   images: string[];
   category: string;
   colors: string[];
   sizes: string[];
   isNew?: boolean;
+  is_new?: boolean; // Add for compatibility 
   isTrending?: boolean;
+  is_trending?: boolean; // Add for compatibility
   rating: number;
   reviewCount: number;
+  review_count?: number; // Add for compatibility
   stock: number;
   tags: string[];
   shopId?: string;
+  shop_id?: string; // Add for compatibility
+  category_id?: string; // Add for compatibility
 }
 
 // Export mock products to be used as fallback

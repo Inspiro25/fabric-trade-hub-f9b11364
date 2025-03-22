@@ -11,6 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Product } from '@/lib/types/product';
 
 // Define a proper type for the products returned from Supabase
 interface SupabaseProduct {
@@ -32,6 +33,9 @@ interface SupabaseProduct {
   created_at?: string;
   tags?: string[];
 }
+
+// Create a union type that can be either a Product or SupabaseProduct
+type ProductUnion = Product | SupabaseProduct;
 
 const NewArrivals = () => {
   const { isDarkMode } = useTheme();
@@ -92,6 +96,18 @@ const NewArrivals = () => {
     updateProductViews();
   }, [products]);
 
+  // Helper function to get sale price safely
+  const getSalePrice = (product: ProductUnion): number | null => {
+    return 'sale_price' in product ? product.sale_price : product.salePrice || null;
+  };
+
+  // Helper function to calculate discount percentage
+  const calculateDiscount = (product: ProductUnion): number => {
+    const salePrice = getSalePrice(product);
+    if (!salePrice) return 0;
+    return Math.round(((product.price - salePrice) / product.price) * 100);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <AppHeader />
@@ -148,12 +164,12 @@ const NewArrivals = () => {
                         {products[0].description || "Experience our newest arrival, crafted with exceptional quality and style."}
                       </p>
                       <div className="flex items-center gap-2 mb-4">
-                        {products[0].sale_price ? (
+                        {getSalePrice(products[0]) ? (
                           <>
-                            <span className="text-xl font-bold">₹{products[0].sale_price}</span>
+                            <span className="text-xl font-bold">₹{getSalePrice(products[0])}</span>
                             <span className="text-muted-foreground line-through">₹{products[0].price}</span>
                             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                              {Math.round(((products[0].price - (products[0].sale_price || 0)) / products[0].price) * 100)}% OFF
+                              {calculateDiscount(products[0])}% OFF
                             </span>
                           </>
                         ) : (
@@ -179,7 +195,7 @@ const NewArrivals = () => {
                 {products.map(product => (
                   <ProductCard
                     key={product.id}
-                    product={product}
+                    product={product as any}
                   />
                 ))}
               </div>
