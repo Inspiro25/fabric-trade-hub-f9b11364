@@ -10,6 +10,7 @@ import {
 import SearchViewToggle from './SearchViewToggle';
 import { SlidersHorizontal, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SearchHeaderProps {
   currentPage: number;
@@ -28,10 +29,12 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   viewMode,
   onViewModeChange
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-lg shadow-sm mb-3 gap-2 border-b">
       <div className="text-sm text-gray-600 flex flex-wrap items-center">
-        <Badge variant="outline" className="mr-2 bg-orange-100 text-kutuku-primary border-kutuku-primary">
+        <Badge variant="outline" className="mr-2 bg-kutuku-light text-kutuku-primary border-kutuku-primary">
           <CheckCircle className="h-3 w-3 mr-1" />
           {totalItems} items
         </Badge>
@@ -40,14 +43,14 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         </span>
       </div>
       
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mt-1 sm:mt-0">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="h-4 w-4 text-kutuku-primary" />
           <Select
             value={itemsPerPage.toString()}
             onValueChange={(value) => onItemsPerPageChange(Number(value))}
           >
-            <SelectTrigger className="w-[120px] h-8 text-xs border-gray-200 focus:ring-kutuku-primary">
+            <SelectTrigger className={`${isMobile ? 'w-[100px] h-8' : 'w-[120px]'} text-xs border-gray-200 focus:ring-kutuku-primary`}>
               <SelectValue placeholder="20 per page" />
             </SelectTrigger>
             <SelectContent>
