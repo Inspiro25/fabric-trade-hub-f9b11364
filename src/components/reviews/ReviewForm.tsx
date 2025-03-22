@@ -55,7 +55,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
       const result = await createReview({
         rating,
         comment,
-        userId: user.id,
+        userId: user.uid, // Changed from user.id to user.uid to match Firebase User type
         reviewType,
         productId,
         shopId,
