@@ -36,7 +36,9 @@ export const useSearchCartIntegration = () => {
       tags: product.tags || []
     };
 
-    addToCart(productForCart, 1);
+    // Add empty string for color and size since these are required by the addToCart function
+    // The cart context expects 4 arguments: product, quantity, color, and size
+    addToCart(productForCart, 1, '', '');
     
     setTimeout(() => {
       setIsAddingToCart(null);
