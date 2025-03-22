@@ -5,7 +5,7 @@ import { Product } from '@/lib/products';
 import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 export interface CartItem {
   id: string;
@@ -55,7 +55,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await migrateGuestCartToUser();
         } catch (error) {
           console.error('Failed to migrate cart:', error);
-          toast.error('Failed to migrate your cart to your account');
+          // Use shadcn/ui toast
+          toast({
+            title: "Cart Error",
+            description: "Failed to synchronize your cart",
+            variant: "destructive",
+          });
         }
       }
     };

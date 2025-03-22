@@ -1,7 +1,7 @@
 
 import { CartItem } from '@/contexts/CartContext';
 import { Product } from '@/lib/products';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { 
   upsertCartItem, 
   removeCartItem, 
@@ -61,10 +61,19 @@ export const useCartOperations = (
       }
       
       setCartItems(newCart);
-      toast.success(`Added to cart: ${product.name}`);
+      // Use shadcn/ui toast
+      toast({
+        title: "Added to cart",
+        description: product.name,
+      });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
+      // Use shadcn/ui toast
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart",
+        variant: "destructive",
+      });
     }
   };
 
@@ -86,10 +95,19 @@ export const useCartOperations = (
       }
       
       setCartItems(newCart);
-      toast.success('Item removed from cart');
+      // Use shadcn/ui toast
+      toast({
+        title: "Cart updated",
+        description: "Item removed from cart",
+      });
     } catch (error) {
       console.error('Error removing from cart:', error);
-      toast.error('Failed to remove item from cart');
+      // Use shadcn/ui toast
+      toast({
+        title: "Error",
+        description: "Failed to remove item from cart",
+        variant: "destructive",
+      });
     }
   };
 
@@ -118,7 +136,12 @@ export const useCartOperations = (
       setCartItems(newCart);
     } catch (error) {
       console.error('Error updating quantity:', error);
-      toast.error('Failed to update item quantity');
+      // Use shadcn/ui toast
+      toast({
+        title: "Error",
+        description: "Failed to update item quantity",
+        variant: "destructive",
+      });
     }
   };
 
@@ -134,10 +157,19 @@ export const useCartOperations = (
       localStorage.removeItem(STORAGE_KEY);
       
       setCartItems([]);
-      toast.success('Cart cleared');
+      // Use shadcn/ui toast
+      toast({
+        title: "Cart cleared",
+        description: "All items have been removed",
+      });
     } catch (error) {
       console.error('Error clearing cart:', error);
-      toast.error('Failed to clear cart');
+      // Use shadcn/ui toast
+      toast({
+        title: "Error",
+        description: "Failed to clear cart",
+        variant: "destructive",
+      });
     }
   };
 
@@ -171,11 +203,19 @@ export const useCartOperations = (
       // Clear the guest cart
       localStorage.removeItem(STORAGE_KEY);
       
-      // Toast notification
-      toast.success('Your cart has been synchronized with your account');
+      // Use shadcn/ui toast
+      toast({
+        title: "Cart synchronized",
+        description: "Your cart has been saved to your account",
+      });
     } catch (error) {
       console.error('Error migrating cart:', error);
-      toast.error('Failed to synchronize your cart');
+      // Use shadcn/ui toast
+      toast({
+        title: "Error",
+        description: "Failed to synchronize your cart",
+        variant: "destructive",
+      });
     }
   };
 

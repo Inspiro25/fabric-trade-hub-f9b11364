@@ -9,7 +9,7 @@ import {
   clearUserCart, 
   updateCartItemQuantity 
 } from '@/lib/supabase/cart';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 const STORAGE_KEY = 'guest_cart';
 
@@ -100,7 +100,12 @@ export const useCartStorage = (currentUser: any | null) => {
         }
       } catch (error) {
         console.error('Error fetching cart:', error);
-        toast.error('Failed to load your cart');
+        // Use shadcn/ui toast
+        toast({
+          title: "Error",
+          description: "Failed to load your cart",
+          variant: "destructive",
+        });
         
         // Fallback to localStorage if there's an error
         const savedCart = localStorage.getItem(STORAGE_KEY);
