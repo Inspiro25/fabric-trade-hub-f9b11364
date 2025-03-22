@@ -77,7 +77,6 @@ const Search = () => {
     fetchData,
     clearSearchHistoryItem,
     clearAllSearchHistory,
-    saveSearchHistory,
   } = useSearch(query);
 
   // Handle clicks outside search suggestions
@@ -126,6 +125,29 @@ const Search = () => {
   };
 
   // Save search query to history
+  const saveSearchHistory = async (query: string) => {
+    if (!currentUser) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .upsert(
+          { 
+            user_id: currentUser.uid,
+            query: query.toLowerCase(),
+            searched_at: new Date().toISOString() 
+          },
+          { onConflict: 'user_id,query' }
+        );
+      
+      // Refresh search history
+      fetchSearchHistory();
+    } catch (error) {
+      console.error('Error saving search history:', error);
+    }
+  };
+
+  // Handle search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedSearch = searchInput.trim();
@@ -196,6 +218,11 @@ const Search = () => {
   // Handle clicking on a recommended product
   const handleRecommendedProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
+  };
+
+  // Add retry handler function
+  const handleRetry = () => {
+    fetchData();
   };
 
   // Paginate products

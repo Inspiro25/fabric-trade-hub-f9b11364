@@ -389,6 +389,27 @@ export const useSearch = (query: string) => {
     }
   };
 
+  const saveSearchHistory = async (query: string) => {
+    if (!currentUser) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .upsert(
+          { 
+            user_id: currentUser.uid,
+            query: query.toLowerCase().trim(),
+            searched_at: new Date().toISOString() 
+          },
+          { onConflict: 'user_id,query', ignoreDuplicates: false }
+        );
+      
+      fetchSearchHistory();
+    } catch (error) {
+      console.error('Error saving search history:', error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [query]);
@@ -565,5 +586,6 @@ export const useSearch = (query: string) => {
     fetchData,
     clearSearchHistoryItem,
     clearAllSearchHistory,
+    saveSearchHistory,
   };
 };
