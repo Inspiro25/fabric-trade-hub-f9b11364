@@ -39,7 +39,8 @@ export const useSearch = (initialQuery: string) => {
     shops, 
     loading, 
     error, 
-    fetchData 
+    fetchData,
+    initialLoad: dataInitialLoad
   } = useSearchData(query);
 
   const {
