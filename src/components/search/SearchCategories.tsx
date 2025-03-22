@@ -71,7 +71,9 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
   return (
     <div className={cn(
       "rounded-lg shadow-sm p-4 mb-6",
-      isDarkMode ? "bg-gray-800/90 border border-gray-700" : "bg-white"
+      isDarkMode 
+        ? "bg-gray-800/90 border border-gray-700" 
+        : "bg-white"
     )}>
       <div className="flex items-center justify-between mb-3">
         <h3 className={cn(

@@ -13,11 +13,14 @@ import { Offer, getActiveOffers } from '@/lib/supabase/offers';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts } from '@/lib/products/base';
 import { Product } from '@/lib/types/product';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 const Offers = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const isMobile = useIsMobile();
   const [discountedProducts, setDiscountedProducts] = useState<Product[]>([]);
+  const { isDarkMode } = useTheme();
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -54,7 +57,12 @@ const Offers = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode 
+        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+        : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
+    )}>
       <Navbar />
       
       <main className={`pt-16 pb-20 ${isMobile ? 'px-3' : 'px-4'}`}>
@@ -64,34 +72,70 @@ const Offers = () => {
               variant="ghost" 
               size="icon" 
               asChild 
-              className="mr-2 h-8 w-8"
+              className={cn(
+                "mr-2 h-8 w-8",
+                isDarkMode && "text-gray-200 hover:text-white hover:bg-gray-700"
+              )}
             >
               <Link to="/" aria-label="Back to home">
                 <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
-            <h1 className="text-2xl md:text-3xl font-bold">Special Offers</h1>
+            <h1 className={cn(
+              "text-2xl md:text-3xl font-bold",
+              isDarkMode && "text-white"
+            )}>Special Offers</h1>
           </div>
-          <p className="text-muted-foreground mb-6 ml-10">Discover great deals and discounts on your favorite products</p>
+          <p className={cn(
+            "mb-6 ml-10",
+            isDarkMode ? "text-gray-300" : "text-muted-foreground"
+          )}>Discover great deals and discounts on your favorite products</p>
           
           <div className="mb-8">
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="mb-6 w-full grid grid-cols-3 p-1 rounded-xl">
-                <TabsTrigger value="all" className="rounded-lg text-xs md:text-sm">All</TabsTrigger>
-                <TabsTrigger value="deals" className="rounded-lg text-xs md:text-sm">Deals</TabsTrigger>
-                <TabsTrigger value="coupons" className="rounded-lg text-xs md:text-sm">Coupons</TabsTrigger>
+              <TabsList className={cn(
+                "mb-6 w-full grid grid-cols-3 p-1 rounded-xl",
+                isDarkMode && "bg-gray-800 border border-gray-700"
+              )}>
+                <TabsTrigger 
+                  value="all" 
+                  className={cn(
+                    "rounded-lg text-xs md:text-sm",
+                    isDarkMode && "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400"
+                  )}
+                >All</TabsTrigger>
+                <TabsTrigger 
+                  value="deals" 
+                  className={cn(
+                    "rounded-lg text-xs md:text-sm",
+                    isDarkMode && "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400"
+                  )}
+                >Deals</TabsTrigger>
+                <TabsTrigger 
+                  value="coupons" 
+                  className={cn(
+                    "rounded-lg text-xs md:text-sm",
+                    isDarkMode && "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400"
+                  )}
+                >Coupons</TabsTrigger>
               </TabsList>
               
               <TabsContent value="all" className="space-y-8">
                 <section className="mb-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold">Featured Deals</h2>
+                    <h2 className={cn(
+                      "text-xl font-semibold",
+                      isDarkMode && "text-white"
+                    )}>Featured Deals</h2>
                     {discountedProducts.length > 4 && (
                       <Button 
                         variant="ghost" 
                         size="sm"
                         asChild
-                        className="text-sm text-primary"
+                        className={cn(
+                          "text-sm",
+                          isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-primary"
+                        )}
                       >
                         <Link to="/search?discount=true">
                           View all
@@ -107,39 +151,72 @@ const Offers = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-10 bg-white rounded-xl shadow-sm">
-                      <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                      <p className="text-muted-foreground">No featured deals available at the moment.</p>
+                    <div className={cn(
+                      "text-center py-10 rounded-xl shadow-sm",
+                      isDarkMode ? "bg-gray-800 text-gray-300" : "bg-white"
+                    )}>
+                      <ShoppingBag className={cn(
+                        "h-12 w-12 mx-auto mb-4 opacity-50",
+                        isDarkMode ? "text-gray-500" : "text-muted-foreground"
+                      )} />
+                      <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No featured deals available at the moment.</p>
                     </div>
                   )}
                 </section>
                 
                 <section>
-                  <h2 className="text-xl font-semibold mb-4">Available Offers</h2>
+                  <h2 className={cn(
+                    "text-xl font-semibold mb-4",
+                    isDarkMode && "text-white"
+                  )}>Available Offers</h2>
                   {isLoading ? (
                     <div className="flex justify-center items-center py-10">
                       <div className="animate-pulse space-y-4 w-full">
                         {[1, 2, 3].map((i) => (
-                          <div key={i} className="bg-gray-200 h-40 rounded-xl w-full"></div>
+                          <div key={i} className={cn(
+                            "h-40 rounded-xl w-full",
+                            isDarkMode ? "bg-gray-700" : "bg-gray-200"
+                          )}></div>
                         ))}
                       </div>
                     </div>
                   ) : error ? (
-                    <div className="text-center py-10 bg-white rounded-xl shadow-sm">
-                      <p className="text-red-500 mb-2">Error loading offers</p>
-                      <Button variant="outline" onClick={() => window.location.reload()}>
+                    <div className={cn(
+                      "text-center py-10 rounded-xl shadow-sm",
+                      isDarkMode ? "bg-gray-800" : "bg-white"
+                    )}>
+                      <p className={cn(
+                        "mb-2",
+                        isDarkMode ? "text-red-400" : "text-red-500"
+                      )}>Error loading offers</p>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => window.location.reload()}
+                        className={isDarkMode && "border-gray-600 text-gray-200 hover:bg-gray-700"}
+                      >
                         Try Again
                       </Button>
                     </div>
                   ) : offers.length === 0 ? (
-                    <div className="text-center py-10 bg-white rounded-xl shadow-sm">
-                      <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                      <p className="text-muted-foreground">No offers available at the moment.</p>
+                    <div className={cn(
+                      "text-center py-10 rounded-xl shadow-sm",
+                      isDarkMode ? "bg-gray-800" : "bg-white"
+                    )}>
+                      <Tag className={cn(
+                        "h-12 w-12 mx-auto mb-4 opacity-50",
+                        isDarkMode ? "text-gray-500" : "text-muted-foreground"
+                      )} />
+                      <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No offers available at the moment.</p>
                     </div>
                   ) : (
                     <div className={`grid grid-cols-1 ${isMobile ? 'gap-3' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
                       {offers.map((offer) => (
-                        <Card key={offer.id} className="overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md">
+                        <Card key={offer.id} className={cn(
+                          "overflow-hidden transition-all duration-300 hover:shadow-md",
+                          isDarkMode 
+                            ? "bg-gray-800 border-gray-700" 
+                            : "border border-gray-100 shadow-sm"
+                        )}>
                           {offer.banner_image && (
                             <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100">
                               <img 
@@ -157,22 +234,40 @@ const Offers = () => {
                           )}
                           <CardHeader className="p-4 pb-2">
                             <div className="flex justify-between items-start">
-                              <CardTitle className="text-lg font-semibold">{offer.title}</CardTitle>
+                              <CardTitle className={cn(
+                                "text-lg font-semibold",
+                                isDarkMode && "text-white"
+                              )}>{offer.title}</CardTitle>
                               {!offer.banner_image && (
                                 <>
                                   {offer.type === "percentage" && offer.discount && (
-                                    <div className="bg-red-100 text-red-600 rounded-full px-2 py-1 text-xs font-semibold flex items-center">
+                                    <div className={cn(
+                                      "rounded-full px-2 py-1 text-xs font-semibold flex items-center",
+                                      isDarkMode 
+                                        ? "bg-red-900/40 text-red-300" 
+                                        : "bg-red-100 text-red-600"
+                                    )}>
                                       <Percent className="h-3 w-3 mr-1" />
                                       {offer.discount}% OFF
                                     </div>
                                   )}
                                   {offer.type === "shipping" && (
-                                    <div className="bg-green-100 text-green-600 rounded-full px-2 py-1 text-xs font-semibold">
+                                    <div className={cn(
+                                      "rounded-full px-2 py-1 text-xs font-semibold",
+                                      isDarkMode 
+                                        ? "bg-green-900/40 text-green-300" 
+                                        : "bg-green-100 text-green-600"
+                                    )}>
                                       Free Shipping
                                     </div>
                                   )}
                                   {offer.type === "bogo" && (
-                                    <div className="bg-blue-100 text-blue-600 rounded-full px-2 py-1 text-xs font-semibold">
+                                    <div className={cn(
+                                      "rounded-full px-2 py-1 text-xs font-semibold",
+                                      isDarkMode 
+                                        ? "bg-blue-900/40 text-blue-300" 
+                                        : "bg-blue-100 text-blue-600"
+                                    )}>
                                       Buy 1 Get 1
                                     </div>
                                   )}
@@ -181,30 +276,50 @@ const Offers = () => {
                             </div>
                           </CardHeader>
                           <CardContent className="p-4 pt-2">
-                            <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{offer.description}</p>
+                            <p className={cn(
+                              "text-sm mb-3 line-clamp-2",
+                              isDarkMode ? "text-gray-300" : "text-muted-foreground"
+                            )}>{offer.description}</p>
                             
                             <div className="flex flex-wrap gap-2 items-center justify-between mb-2">
                               <div className="flex items-center">
-                                <Tag className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">
+                                <Tag className={cn(
+                                  "h-4 w-4 mr-1",
+                                  isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                                )} />
+                                <code className={cn(
+                                  "px-2 py-1 rounded text-xs font-mono",
+                                  isDarkMode ? "bg-gray-700" : "bg-gray-100"
+                                )}>
                                   {offer.code}
                                 </code>
                               </div>
-                              <div className="flex items-center text-xs text-muted-foreground">
+                              <div className={cn(
+                                "flex items-center text-xs",
+                                isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                              )}>
                                 <Clock className="h-3 w-3 mr-1" />
                                 Expires: {formatDate(offer.expiry)}
                               </div>
                             </div>
                             
                             <div className="flex items-center justify-between mt-3">
-                              <div className="text-xs text-muted-foreground">
+                              <div className={cn(
+                                "text-xs",
+                                isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                              )}>
                                 By: {offer.shops?.name || "Platform"}
                               </div>
                               {offer.shop_id && (
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="text-primary p-0 h-auto hover:bg-transparent hover:text-primary/80"
+                                  className={cn(
+                                    "p-0 h-auto hover:bg-transparent",
+                                    isDarkMode 
+                                      ? "text-orange-400 hover:text-orange-300" 
+                                      : "text-primary hover:text-primary/80"
+                                  )}
                                   asChild
                                 >
                                   <Link to={`/shop/${offer.shop_id}`}>
@@ -230,9 +345,15 @@ const Offers = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-10 bg-white rounded-xl shadow-sm">
-                    <ShoppingBag className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <p className="text-muted-foreground">No deals available at the moment.</p>
+                  <div className={cn(
+                    "text-center py-10 rounded-xl shadow-sm",
+                    isDarkMode ? "bg-gray-800" : "bg-white"
+                  )}>
+                    <ShoppingBag className={cn(
+                      "h-12 w-12 mx-auto mb-4 opacity-50",
+                      isDarkMode ? "text-gray-500" : "text-muted-foreground"
+                    )} />
+                    <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No deals available at the moment.</p>
                   </div>
                 )}
               </TabsContent>
@@ -242,12 +363,25 @@ const Offers = () => {
                   {offers
                     .filter(offer => offer.type === "percentage")
                     .map((offer) => (
-                    <Card key={offer.id} className="overflow-hidden border border-gray-100 shadow-sm">
+                    <Card key={offer.id} className={cn(
+                      "overflow-hidden shadow-sm",
+                      isDarkMode 
+                        ? "bg-gray-800 border-gray-700" 
+                        : "border border-gray-100"
+                    )}>
                       <CardHeader className="p-4 pb-2">
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg font-semibold">{offer.title}</CardTitle>
+                          <CardTitle className={cn(
+                            "text-lg font-semibold",
+                            isDarkMode && "text-white"
+                          )}>{offer.title}</CardTitle>
                           {offer.discount && (
-                            <div className="bg-red-100 text-red-600 rounded-full px-2 py-1 text-xs font-semibold flex items-center">
+                            <div className={cn(
+                              "rounded-full px-2 py-1 text-xs font-semibold flex items-center",
+                              isDarkMode 
+                                ? "bg-red-900/40 text-red-300" 
+                                : "bg-red-100 text-red-600"
+                            )}>
                               <Percent className="h-3 w-3 mr-1" />
                               {offer.discount}% OFF
                             </div>
@@ -255,30 +389,50 @@ const Offers = () => {
                         </div>
                       </CardHeader>
                       <CardContent className="p-4 pt-2">
-                        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{offer.description}</p>
+                        <p className={cn(
+                          "text-sm mb-3 line-clamp-2",
+                          isDarkMode ? "text-gray-300" : "text-muted-foreground"
+                        )}>{offer.description}</p>
                         
                         <div className="flex flex-wrap gap-2 items-center justify-between mb-2">
                           <div className="flex items-center">
-                            <Tag className="h-4 w-4 mr-1 text-muted-foreground" />
-                            <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono">
+                            <Tag className={cn(
+                              "h-4 w-4 mr-1",
+                              isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                            )} />
+                            <code className={cn(
+                              "px-2 py-1 rounded text-xs font-mono",
+                              isDarkMode ? "bg-gray-700" : "bg-gray-100"
+                            )}>
                               {offer.code}
                             </code>
                           </div>
-                          <div className="flex items-center text-xs text-muted-foreground">
+                          <div className={cn(
+                            "flex items-center text-xs",
+                            isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                          )}>
                             <Clock className="h-3 w-3 mr-1" />
                             Expires: {formatDate(offer.expiry)}
                           </div>
                         </div>
                         
                         <div className="flex items-center justify-between mt-3">
-                          <div className="text-xs text-muted-foreground">
+                          <div className={cn(
+                            "text-xs",
+                            isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                          )}>
                             By: {offer.shops?.name || "Platform"}
                           </div>
                           {offer.shop_id && (
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="text-primary p-0 h-auto hover:bg-transparent hover:text-primary/80"
+                              className={cn(
+                                "p-0 h-auto hover:bg-transparent",
+                                isDarkMode 
+                                  ? "text-orange-400 hover:text-orange-300" 
+                                  : "text-primary hover:text-primary/80"
+                              )}
                               asChild
                             >
                               <Link to={`/shop/${offer.shop_id}`}>
@@ -293,9 +447,15 @@ const Offers = () => {
                   ))}
                   
                   {offers.filter(offer => offer.type === "percentage").length === 0 && (
-                    <div className="col-span-full text-center py-10 bg-white rounded-xl shadow-sm">
-                      <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                      <p className="text-muted-foreground">No coupons available at the moment.</p>
+                    <div className={cn(
+                      "col-span-full text-center py-10 rounded-xl shadow-sm",
+                      isDarkMode ? "bg-gray-800" : "bg-white"
+                    )}>
+                      <Tag className={cn(
+                        "h-12 w-12 mx-auto mb-4 opacity-50",
+                        isDarkMode ? "text-gray-500" : "text-muted-foreground"
+                      )} />
+                      <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No coupons available at the moment.</p>
                     </div>
                   )}
                 </div>
