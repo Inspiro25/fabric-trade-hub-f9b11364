@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ interface FilterOption {
 
 interface SearchSortProps {
   isMobile: boolean;
-  sortOption: SortOption;
+  sortOption: string;
   mobileSortOpen: boolean;
   setMobileSortOpen: (open: boolean) => void;
   handleSortChange: (value: string) => void;

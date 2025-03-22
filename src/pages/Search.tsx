@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -546,5 +547,68 @@ const Search = () => {
                       isAddingToCart={isAddingToCart}
                       isAddingToWishlist={isAddingToWishlist}
                       onAddToCart={handleAddToCartAdapter}
-                     
+                      onAddToWishlist={handleAddToWishlistAdapter}
+                      onShareProduct={handleShareProductAdapter}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent 
+                    value="recently-viewed" 
+                    className={cn(
+                      "rounded-b-lg shadow-sm p-3 md:p-4 mt-0",
+                      isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border-x border-b border-gray-700" : "bg-white"
+                    )}
+                  >
+                    <SearchRecommendations 
+                      products={recentlyViewed}
+                      isAddingToCart={isAddingToCart}
+                      isAddingToWishlist={isAddingToWishlist}
+                      onAddToCart={handleAddToCartAdapter}
+                      onAddToWishlist={handleAddToWishlistAdapter}
+                      onShareProduct={handleShareProductAdapter}
+                      emptyStateMessage="No recently viewed products"
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
+            ) : (
+              <SearchResults 
+                products={paginatedProducts}
+                totalProducts={products.length}
+                loading={loading}
+                error={error}
+                viewMode={viewMode}
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                isAddingToCart={isAddingToCart}
+                isAddingToWishlist={isAddingToWishlist}
+                onAddToCart={handleAddToCartAdapter}
+                onAddToWishlist={handleAddToWishlistAdapter}
+                onShareProduct={handleShareProductAdapter}
+                onViewModeChange={handleViewModeChange}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+                onRetry={handleRetry}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Dialogs */}
+      <ShareDialog 
+        open={isShareDialogOpen} 
+        onOpenChange={setIsShareDialogOpen}
+        link={shareableLink}
+      />
+      
+      <AuthDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onLogin={handleLogin}
+      />
+    </div>
+  );
+};
 
+export default Search;
