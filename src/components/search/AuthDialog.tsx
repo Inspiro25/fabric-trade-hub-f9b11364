@@ -10,12 +10,16 @@ interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onLogin: () => void;
+  message?: string;
+  title?: string;
 }
 
 const AuthDialog: React.FC<AuthDialogProps> = ({
   open,
   onOpenChange,
-  onLogin
+  onLogin,
+  message = "You need to be logged in to perform this action.",
+  title = "Login Required"
 }) => {
   const { loginWithGoogleProvider } = useAuth();
   const { isDarkMode } = useTheme();
@@ -34,12 +38,12 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "sm:max-w-[425px]",
-        isDarkMode ? "bg-gray-800 border-gray-700" : ""
+        isDarkMode ? "bg-gray-800 border-gray-700 text-white" : ""
       )}>
         <DialogHeader>
-          <DialogTitle className={isDarkMode ? "text-white" : ""}>Login Required</DialogTitle>
+          <DialogTitle className={isDarkMode ? "text-white" : ""}>{title}</DialogTitle>
           <DialogDescription className={isDarkMode ? "text-gray-400" : ""}>
-            You need to be logged in to perform this action.
+            {message}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col space-y-4">
