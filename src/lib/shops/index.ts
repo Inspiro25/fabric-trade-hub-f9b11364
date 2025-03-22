@@ -1,14 +1,18 @@
 
-import { db } from '@/lib/firebase';
+// Export types
+export type { Shop } from './types';
 
-// Re-export types
-export * from './types';
+// Export the mock data for testing
+export { shops } from './mockData';
 
-// Re-export mock data
-export * from './mockData';
+// Export CRUD methods
+export { 
+  fetchShops, 
+  getShopById, 
+  updateShop, 
+  createShop, 
+  deleteShop 
+} from './crud';
 
-// Re-export CRUD operations
-export * from './crud';
-
-// Re-export product utilities
-export * from './products';
+// Export products methods
+export { getShopProducts } from './products';

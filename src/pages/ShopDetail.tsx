@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Shop } from '@/lib/shops';
+import ShopReviewsTab from '@/components/reviews/ShopReviewsTab';
 
 const ShopDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,12 +29,10 @@ const ShopDetail = () => {
       
       setIsLoading(true);
       try {
-        // Get shop data and resolve the Promise
         const shopData = await getShopById(id);
         if (shopData) {
           setShop(shopData);
           
-          // Fetch products for this shop - now calling with only one argument which is valid after our fix
           const productsData = await getShopProducts(id);
           setShopProducts(productsData);
         }
@@ -71,7 +70,6 @@ const ShopDetail = () => {
           url: window.location.href,
         });
       } else {
-        // Fallback for browsers that don't support the Web Share API
         navigator.clipboard.writeText(window.location.href);
         toast({
           title: "Link copied",
@@ -115,7 +113,6 @@ const ShopDetail = () => {
 
   return (
     <div className="pb-10">
-      {/* Compact Shop Header */}
       <div className="bg-gradient-to-r from-[#E5DEFF] to-[#D6BCFA] shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
@@ -127,8 +124,6 @@ const ShopDetail = () => {
               </Link>
               <h1 className="text-sm font-medium">Shop Details</h1>
             </div>
-            
-            {/* Add admin link */}
             <Link to="/admin/login">
               <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
                 <Settings className="h-3.5 w-3.5 mr-1.5" />
@@ -139,7 +134,6 @@ const ShopDetail = () => {
         </div>
       </div>
       
-      {/* Shop Info Card */}
       <div className="container mx-auto px-4 -mt-2">
         <Card className="overflow-hidden border-none shadow-md">
           <div className="h-28 bg-purple-50 relative">
@@ -219,7 +213,6 @@ const ShopDetail = () => {
         </Card>
       </div>
       
-      {/* Shop Content Tabs */}
       <div className="container mx-auto px-4 mt-3">
         <Tabs defaultValue="products" className="w-full">
           <TabsList className="w-full grid grid-cols-3 h-8 bg-purple-50">
@@ -272,12 +265,7 @@ const ShopDetail = () => {
           </TabsContent>
           
           <TabsContent value="reviews" className="mt-3">
-            <Card className="border-none shadow-sm bg-white rounded-lg overflow-hidden">
-              <CardContent className="p-3 text-center">
-                <h3 className="font-medium mb-1 text-sm text-purple-800">Customer Reviews</h3>
-                <p className="text-xs text-gray-500">Reviews feature coming soon</p>
-              </CardContent>
-            </Card>
+            <ShopReviewsTab shopId={shop.id} />
           </TabsContent>
         </Tabs>
       </div>
@@ -286,4 +274,3 @@ const ShopDetail = () => {
 };
 
 export default ShopDetail;
-

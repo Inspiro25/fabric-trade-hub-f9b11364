@@ -421,6 +421,8 @@ export type Database = {
           images: string[] | null
           product_id: string
           rating: number
+          review_type: string
+          shop_id: string | null
           updated_at: string
           user_id: string | null
         }
@@ -432,6 +434,8 @@ export type Database = {
           images?: string[] | null
           product_id: string
           rating: number
+          review_type?: string
+          shop_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -443,6 +447,8 @@ export type Database = {
           images?: string[] | null
           product_id?: string
           rating?: number
+          review_type?: string
+          shop_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -452,6 +458,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
             referencedColumns: ["id"]
           },
           {

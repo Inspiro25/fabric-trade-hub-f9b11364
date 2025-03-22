@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -22,6 +21,7 @@ import { toast } from 'sonner';
 import { getProductById, getRelatedProducts, Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import ProductReviews from '@/components/reviews/ProductReviews';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,29 +51,24 @@ const ProductDetail = () => {
       try {
         const productData = await getProductById(id);
         if (!productData) {
-          // Product not found, redirect to 404
           navigate('/not-found');
           return;
         }
         
         setProduct(productData);
         
-        // Initialize state with product data
         setMainImage(productData.images[0]);
         setSelectedColor(productData.colors[0]);
         setSelectedSize(productData.sizes[0]);
         
-        // Fetch related products
         const relatedProductsData = await getRelatedProducts(productData.id, productData.category);
         setRelatedProducts(relatedProductsData);
         
-        // Simulate loading
         const timer = setTimeout(() => {
           setIsLoaded(true);
           setIsLoading(false);
         }, 100);
         
-        // Scroll to top
         window.scrollTo(0, 0);
         
         return () => clearTimeout(timer);
@@ -88,7 +83,6 @@ const ProductDetail = () => {
   }, [id, navigate]);
 
   useEffect(() => {
-    // Update favorite status when product changes
     if (product && isInWishlist(product.id)) {
       setIsFavorited(true);
     } else {
@@ -105,12 +99,11 @@ const ProductDetail = () => {
   }
   
   if (!product) {
-    return null; // Will redirect in useEffect
+    return null;
   }
   
   const handleAddToCart = () => {
     addToCart(product, quantity, selectedColor, selectedSize);
-    // Toast is now handled by CartContext's addToCart
   };
   
   const incrementQuantity = () => {
@@ -168,7 +161,6 @@ const ProductDetail = () => {
       
       <main className="pt-24 pb-20">
         <div className="container mx-auto px-4 md:px-6">
-          {/* Breadcrumb */}
           <nav className="flex items-center text-sm mb-8">
             <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
               Home
@@ -181,9 +173,7 @@ const ProductDetail = () => {
             <span className="text-foreground">{product.name}</span>
           </nav>
           
-          {/* Product Details */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Product Images */}
             <div 
               className={`transition-all duration-500 ${
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
@@ -216,7 +206,6 @@ const ProductDetail = () => {
               </div>
             </div>
             
-            {/* Product Info */}
             <div 
               className={`transition-all duration-500 delay-300 ${
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
@@ -261,7 +250,6 @@ const ProductDetail = () => {
                 {product.description}
               </p>
               
-              {/* Color Selection */}
               <div className="mb-6">
                 <h3 className="font-medium mb-3">Color: <span className="text-muted-foreground">{selectedColor}</span></h3>
                 <div className="flex flex-wrap gap-3">
@@ -289,7 +277,6 @@ const ProductDetail = () => {
                 </div>
               </div>
               
-              {/* Size Selection */}
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-medium">Size: <span className="text-muted-foreground">{selectedSize}</span></h3>
@@ -317,7 +304,6 @@ const ProductDetail = () => {
                 </div>
               </div>
               
-              {/* Quantity and Add to Cart */}
               <div className="flex flex-wrap gap-4 mb-8">
                 <div className="flex items-center border rounded-md">
                   <Button 
@@ -370,7 +356,6 @@ const ProductDetail = () => {
                 </Button>
               </div>
               
-              {/* Product Info */}
               <div className="space-y-4 border-t border-border pt-6">
                 <div className="flex items-center gap-3">
                   <Truck className="w-5 h-5 text-muted-foreground" />
@@ -394,7 +379,14 @@ const ProductDetail = () => {
             </div>
           </div>
           
-          {/* Related Products */}
+          <section className="mt-16">
+            <ProductReviews 
+              productId={product.id} 
+              rating={product.rating} 
+              reviewCount={product.reviewCount}
+            />
+          </section>
+          
           <section className="mt-20">
             <ProductGrid 
               products={relatedProducts}
