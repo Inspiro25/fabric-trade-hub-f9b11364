@@ -93,8 +93,11 @@ const Authentication = () => {
     setIsRegistering(true);
     
     try {
-      // Update the register function call to only pass email and password
+      // The register function expects only email and password
       await register(values.email, values.password);
+      
+      // After successful registration, update the user profile with the name
+      // This would require additional code if you want to store the name
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -106,9 +109,9 @@ const Authentication = () => {
   
   return (
     <div className={`min-h-screen bg-gray-50 flex flex-col transition-all duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="flex-1 flex flex-col md:flex-row">
+      <div className="flex-1 flex flex-col">
         {/* Auth Form Section */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 order-2 md:order-1">
+        <div className="w-full flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 order-1">
           <div className="max-w-md w-full">
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-kutuku-primary">Vyoma</h1>
@@ -237,7 +240,7 @@ const Authentication = () => {
         </div>
         
         {/* Description Section */}
-        <div className="w-full md:w-1/2 bg-kutuku-primary text-white p-6 md:p-10 order-1 md:order-2">
+        <div className="w-full bg-kutuku-primary text-white p-6 md:p-10 order-2">
           <div className="max-w-md mx-auto h-full flex flex-col justify-center">
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4">Experience Vyoma</h2>
