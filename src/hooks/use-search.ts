@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock data for fallback when API is unavailable
 const mockProducts: SearchPageProduct[] = [
@@ -174,62 +175,64 @@ export const useSearch = (query: string) => {
     setError(null);
 
     try {
-      // Fetch products
-      const productsResponse = await fetch(`/api/products?q=${query}`);
+      // Fetch products from Supabase
+      let productsQuery = supabase
+        .from('products')
+        .select('*');
       
-      // Check if the response is HTML instead of JSON (error page)
-      const contentType = productsResponse.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        throw new Error('Server returned HTML instead of JSON. API endpoint might be unavailable.');
+      // Add search filter if query is provided
+      if (query) {
+        productsQuery = productsQuery.ilike('name', `%${query}%`);
       }
       
-      if (!productsResponse.ok) {
-        throw new Error(`Failed to fetch products: ${productsResponse.status}`);
+      const { data: productsData, error: productsError } = await productsQuery;
+      
+      if (productsError) {
+        throw new Error(`Failed to fetch products: ${productsError.message}`);
       }
       
-      const productsData = await productsResponse.json();
-      setProducts(productsData);
+      // Format data to match SearchPageProduct type
+      const formattedProducts: SearchPageProduct[] = productsData.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: Number(product.price),
+        sale_price: product.sale_price ? Number(product.sale_price) : null,
+        images: product.images || ['/placeholder.svg'],
+        category_id: product.category_id || '',
+        shop_id: product.shop_id,
+        is_new: product.is_new || false,
+        is_trending: product.is_trending || false,
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        rating: product.rating || 0,
+        review_count: product.review_count || 0
+      }));
+      
+      setProducts(formattedProducts);
 
-      // Fetch categories with better error handling
-      try {
-        const categoriesResponse = await fetch('/api/categories');
-        
-        // Check if the response is HTML
-        const catContentType = categoriesResponse.headers.get('content-type');
-        if (catContentType && catContentType.includes('text/html')) {
-          console.error('Categories API returned HTML instead of JSON');
-          setCategories([]);
-        } else if (categoriesResponse.ok) {
-          const categoriesData = await categoriesResponse.json();
-          setCategories(categoriesData);
-        } else {
-          console.error(`Failed to fetch categories: ${categoriesResponse.status}`);
-          setCategories([]);
-        }
-      } catch (catErr) {
-        console.error('Error fetching categories:', catErr);
+      // Fetch categories from Supabase
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*');
+      
+      if (categoriesError) {
+        console.error('Error fetching categories:', categoriesError);
         setCategories([]);
+      } else {
+        setCategories(categoriesData || []);
       }
 
-      // Fetch shops with better error handling
-      try {
-        const shopsResponse = await fetch('/api/shops');
-        
-        // Check if the response is HTML
-        const shopContentType = shopsResponse.headers.get('content-type');
-        if (shopContentType && shopContentType.includes('text/html')) {
-          console.error('Shops API returned HTML instead of JSON');
-          setShops([]);
-        } else if (shopsResponse.ok) {
-          const shopsData = await shopsResponse.json();
-          setShops(shopsData);
-        } else {
-          console.error(`Failed to fetch shops: ${shopsResponse.status}`);
-          setShops([]);
-        }
-      } catch (shopErr) {
-        console.error('Error fetching shops:', shopErr);
+      // Fetch shops from Supabase
+      const { data: shopsData, error: shopsError } = await supabase
+        .from('shops')
+        .select('*');
+      
+      if (shopsError) {
+        console.error('Error fetching shops:', shopsError);
         setShops([]);
+      } else {
+        setShops(shopsData || []);
       }
     } catch (err: any) {
       console.error('Search error:', err);

@@ -11,16 +11,17 @@ interface SearchErrorStateProps {
 
 const SearchErrorState: React.FC<SearchErrorStateProps> = ({ error, onRetry }) => {
   const isApiUnavailable = error.includes('API endpoint') || 
-                          error.includes('HTML instead of JSON');
+                          error.includes('HTML instead of JSON') ||
+                          error.includes('Failed to fetch products');
   
   return (
     <Alert variant="destructive" className="my-8">
-      <AlertTitle className="text-lg font-semibold">{isApiUnavailable ? 'API Unavailable' : 'Error'}</AlertTitle>
+      <AlertTitle className="text-lg font-semibold">{isApiUnavailable ? 'Database Connection Issue' : 'Error'}</AlertTitle>
       <AlertDescription>
         <p className="mb-4">{error}</p>
         <p className="text-sm mb-4">
           {isApiUnavailable 
-            ? 'The data source is currently unavailable. Showing mock data instead.' 
+            ? 'There was an issue connecting to the database. This could be temporary.' 
             : 'Please try refreshing the page or try again later.'}
         </p>
         
