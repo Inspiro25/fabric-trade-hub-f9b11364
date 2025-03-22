@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/contexts/CartContext';
 
@@ -36,20 +35,41 @@ export const upsertCartItem = async (item: {
   size: string;
 }): Promise<boolean> => {
   try {
-    // Use cart_items table with standard fields
-    const { error } = await supabase
+    // Check if item exists first
+    const { data: existingItems, error: checkError } = await supabase
       .from('cart_items')
-      .upsert({
-        user_id: item.user_id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        color: item.color,
-        size: item.size
-      });
+      .select('*')
+      .eq('user_id', item.user_id)
+      .eq('product_id', item.product_id)
+      .eq('color', item.color)
+      .eq('size', item.size);
     
-    if (error) {
-      console.error('Error upserting cart item:', error);
+    if (checkError) {
+      console.error('Error checking cart item:', checkError);
       return false;
+    }
+    
+    // If item exists, update it
+    if (existingItems && existingItems.length > 0) {
+      const { error: updateError } = await supabase
+        .from('cart_items')
+        .update({ quantity: item.quantity })
+        .eq('id', existingItems[0].id);
+      
+      if (updateError) {
+        console.error('Error updating cart item:', updateError);
+        return false;
+      }
+    } else {
+      // Otherwise insert new item
+      const { error: insertError } = await supabase
+        .from('cart_items')
+        .insert(item);
+      
+      if (insertError) {
+        console.error('Error inserting cart item:', insertError);
+        return false;
+      }
     }
     
     return true;

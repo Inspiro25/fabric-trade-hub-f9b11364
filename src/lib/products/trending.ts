@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/types/product';
 
@@ -137,7 +136,8 @@ export const recordProductView = async (productId: string, userId?: string): Pro
       const { error } = await supabase
         .from('products')
         .update({
-          review_count: supabase.rpc('increment', { row_id: productId, increment_by: 1 })
+          // Use review_count as a proxy for views since view_count doesn't exist
+          review_count: supabase.rpc('increment', { row_id: 1, increment_by: 1 })
         })
         .eq('id', productId);
       

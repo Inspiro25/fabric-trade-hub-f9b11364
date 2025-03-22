@@ -40,11 +40,11 @@ export const useCartStorage = (currentUser: any | null) => {
                   const { data: productData } = await supabase
                     .from('products')
                     .select('*')
-                    .eq('id', item.id)
+                    .eq('id', item.product_id)
                     .single();
 
                   if (!productData) {
-                    console.warn(`Product not found for ID: ${item.id}`);
+                    console.warn(`Product not found for ID: ${item.product_id}`);
                     return null;
                   }
 
@@ -69,14 +69,14 @@ export const useCartStorage = (currentUser: any | null) => {
                   };
 
                   return {
-                    id: item.id,
+                    id: item.product_id,
                     product,
                     quantity: item.quantity,
                     color: item.color,
                     size: item.size
                   };
                 } catch (err) {
-                  console.error(`Error fetching product ${item.id}:`, err);
+                  console.error(`Error fetching product ${item.product_id}:`, err);
                   return null;
                 }
               })
@@ -139,7 +139,7 @@ export const useCartStorage = (currentUser: any | null) => {
       }
     };
 
-    // Only fetch cart items if auth state changed or on initial load
+    // Always fetch cart items on mount and when auth state changes
     fetchUserCartItems();
   }, [currentUser, retryCount]);
 

@@ -24,7 +24,7 @@ export const useCartOperations = (
     try {
       // Find existing item with same product, color, and size
       const existingItemIndex = cartItems.findIndex(
-        item => item.id === product.id && item.color === color && item.size === size
+        item => item.product.id === product.id && item.color === color && item.size === size
       );
       
       let newCart: CartItem[];
@@ -75,11 +75,19 @@ export const useCartOperations = (
   // Remove item from cart
   const removeFromCart = async (itemId: string) => {
     try {
-      const [productId, size, color] = itemId.split('-');
+      // Parse the composite ID to get product_id, size, and color
+      const parts = itemId.split('-');
+      const productId = parts[0];
+      let size = '', color = '';
+      
+      if (parts.length > 1) {
+        size = parts[1] || '';
+        color = parts.length > 2 ? parts[2] : '';
+      }
       
       // Optimistically update UI
       const newCart = cartItems.filter(item => 
-        `${item.id}-${item.size}-${item.color}` !== itemId
+        `${item.product.id}-${item.size}-${item.color}` !== itemId
       );
       
       // Update state immediately
