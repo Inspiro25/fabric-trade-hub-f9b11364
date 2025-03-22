@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/lib/products";
 
@@ -217,10 +216,10 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
 export const fetchCategories = async () => {
   try {
     console.log('Fetching categories from Supabase...');
-    // @ts-ignore - TypeScript doesn't recognize 'categories' table in Supabase client type
     const { data, error } = await supabase
       .from('categories')
-      .select('id, name, description, image');
+      .select('id, name, description, image')
+      .order('name');
       
     if (error) {
       console.error('Error fetching categories:', error);

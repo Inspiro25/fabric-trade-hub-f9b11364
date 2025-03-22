@@ -1,8 +1,16 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tag, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { getCategoriesWithDetails } from '@/lib/products/categories';
+
+interface Category {
+  id: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+}
 
 interface SearchCategoriesProps {
   categories: { id: string; name: string; image?: string | null }[];
@@ -11,11 +19,41 @@ interface SearchCategoriesProps {
 }
 
 const SearchCategories: React.FC<SearchCategoriesProps> = ({
-  categories,
+  categories: propCategories,
   selectedCategory,
   onSelectCategory
 }) => {
-  if (categories.length === 0) return null;
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getCategoriesWithDetails();
+        
+        if (data && data.length > 0) {
+          setCategories(data);
+        } else if (propCategories.length > 0) {
+          // Fallback to prop categories if no data from API
+          setCategories(propCategories as Category[]);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        
+        if (propCategories.length > 0) {
+          // Fallback to prop categories on error
+          setCategories(propCategories as Category[]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, [propCategories]);
+
+  if (isLoading || categories.length === 0) return null;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 mb-6">

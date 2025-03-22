@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getAllCategories } from '@/lib/products';
+import { getCategoriesWithDetails } from '@/lib/products/categories';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
@@ -11,19 +11,27 @@ interface CategorySectionProps {
   showAll?: boolean;
 }
 
+interface CategoryType {
+  id: string;
+  name: string;
+  description: string | null;
+  image: string | null;
+}
+
 const CategorySection = ({
   title = "Shop by Category",
   subtitle = "Browse our full collection by category",
   layout = 'grid',
   showAll = true
 }: CategorySectionProps) => {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await getAllCategories();
+        setIsLoading(true);
+        const data = await getCategoriesWithDetails();
         setCategories(data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -58,12 +66,19 @@ const CategorySection = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categories.map(category => (
             <Link 
-              key={category}
-              to={`/category/${category.toLowerCase()}`}
+              key={category.id}
+              to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
               className="group relative h-40 overflow-hidden rounded-lg bg-gray-100 hover:bg-gray-200 transition-all"
             >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-medium">{category}</span>
+              {category.image && (
+                <img 
+                  src={category.image}
+                  alt={category.name}
+                  className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity"
+                />
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                <span className="text-lg font-medium text-white">{category.name}</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
             </Link>
@@ -73,11 +88,11 @@ const CategorySection = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {categories.map(category => (
             <Link 
-              key={category}
-              to={`/category/${category.toLowerCase()}`}
+              key={category.id}
+              to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
               className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-primary transition-colors"
             >
-              <span>{category}</span>
+              <span>{category.name}</span>
               <ArrowRight className="h-4 w-4 text-primary" />
             </Link>
           ))}
