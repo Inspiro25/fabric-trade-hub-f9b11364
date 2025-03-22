@@ -1,28 +1,27 @@
+import { Product } from "@/lib/products/types";
+
+export interface ProductCardBaseProps {
+  product: SearchPageProduct | Product;
+  isAddingToCart?: boolean | string;
+  isAddingToWishlist?: boolean | string;
+  onAddToCart?: (product: SearchPageProduct | Product) => void;
+  onAddToWishlist?: (product: SearchPageProduct | Product) => void;
+  onShare?: (product: SearchPageProduct | Product) => void;
+  onClick?: (product: SearchPageProduct | Product) => void;
+}
 
 export interface SearchPageProduct {
   id: string;
   name: string;
-  description: string;
   price: number;
-  sale_price: number | null;
+  sale_price?: number;
   images: string[];
-  category_id: string;
-  shop_id: string;
-  is_new: boolean;
-  is_trending: boolean;
-  colors: string[];
-  sizes: string[];
-  rating: number;
-  review_count: number;
-  stock?: number;
-}
-
-export interface ProductCardBaseProps {
-  product: SearchPageProduct;
-  isAddingToCart?: boolean | string | null;
-  isAddingToWishlist?: boolean | string | null;
-  onAddToCart?: (product: SearchPageProduct) => void;
-  onAddToWishlist?: (product: SearchPageProduct) => void;
-  onShare?: (product: SearchPageProduct) => void;
-  onClick?: (product: SearchPageProduct) => void;
+  rating?: number;
+  review_count?: number;
+  is_new?: boolean;
+  is_trending?: boolean;
+  brand?: string; // Add the missing brand property
+  category?: string;
+  available_colors?: string[];
+  available_sizes?: string[];
 }
