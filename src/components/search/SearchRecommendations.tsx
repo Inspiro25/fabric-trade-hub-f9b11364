@@ -69,7 +69,7 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
           isDarkMode ? "text-white" : ""
         )}>
           <TrendingUp className="h-4 w-4 mr-2 text-orange-500" />
-          Recommended For You
+          Recommends
         </h3>
         
         <Button variant="link" className={cn(

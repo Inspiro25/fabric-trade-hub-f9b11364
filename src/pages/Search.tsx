@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -46,11 +45,9 @@ const Search = () => {
   const { currentUser } = useAuth();
   const { isDarkMode } = useTheme();
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  // Get all search-related functionality from the useSearch hook
   const {
     products,
     categories,
@@ -102,7 +99,6 @@ const Search = () => {
     saveSearchHistory,
   } = useSearch(query);
 
-  // Handle outside clicks to close suggestion dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -114,7 +110,6 @@ const Search = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Reset to page 1 when search query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [query]);
@@ -154,13 +149,11 @@ const Search = () => {
     fetchData();
   };
 
-  // Paginate products for current page
   const paginatedProducts = products.slice(
     (currentPage - 1) * itemsPerPage, 
     currentPage * itemsPerPage
   );
 
-  // UI Components for different states
   const SearchSuggestions = () => {
     if (!showSuggestions) return null;
     
@@ -516,7 +509,7 @@ const Search = () => {
                       className="flex-1 data-[state=active]:text-kutuku-primary data-[state=active]:border-b-2 data-[state=active]:border-kutuku-primary py-3"
                     >
                       <TrendingUp className="h-4 w-4 mr-2" />
-                      Recommended for You
+                      Recommends
                     </TabsTrigger>
                     <TabsTrigger 
                       value="recently-viewed" 
@@ -590,7 +583,6 @@ const Search = () => {
           </div>
         </div>
 
-        {/* Mobile filter dialogs */}
         <SearchFilters 
           isMobile={true} 
           categories={categories} 
@@ -616,7 +608,6 @@ const Search = () => {
           handleSortChange={handleSortChange} 
         />
 
-        {/* Dialogs */}
         <AuthDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} onLogin={handleLogin} />
         <ShareDialog isOpen={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareableLink={shareableLink} />
       </div>
