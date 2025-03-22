@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -111,13 +110,18 @@ export const createReview = async (
     rating: number;
     comment: string;
     images?: string[];
-    userId: string; // This is now the Supabase user ID
+    userId: string; // Supabase user ID
     reviewType: 'product' | 'shop';
     productId?: string;
     shopId?: string;
   }
 ): Promise<Review | null> => {
   try {
+    // Validate user ID
+    if (!reviewData.userId || reviewData.userId.trim() === '') {
+      throw new Error('Valid user ID is required to submit a review');
+    }
+    
     // Validate that at least one ID is provided based on review type
     if (reviewData.reviewType === 'product' && !reviewData.productId) {
       throw new Error('Product ID is required for product reviews');

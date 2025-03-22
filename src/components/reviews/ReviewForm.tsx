@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, Upload } from 'lucide-react';
@@ -20,8 +20,28 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const { currentUser: user } = useAuth();
+
+  // Get Supabase user ID on component mount and when auth state changes
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSupabaseUserId(session?.user?.id || null);
+    };
+    
+    checkSession();
+    
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUserId(session?.user?.id || null);
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
@@ -30,7 +50,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user) {
+    // Check if user is authenticated
+    if (!user && !supabaseUserId) {
       setIsAuthDialogOpen(true);
       return;
     }
@@ -53,18 +74,26 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
       const reviewType = productId ? 'product' : 'shop';
       
-      // Get the Supabase user ID from the session
-      const { data: { session } } = await supabase.auth.getSession();
-      const supabaseUserId = session?.user?.id;
-      
+      // Check for Supabase user ID again to be sure
       if (!supabaseUserId) {
-        throw new Error('User ID not available');
+        // Try to get it one more time
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        
+        if (!userId) {
+          throw new Error('User ID not available. Please log in again.');
+        }
+        
+        // Update the state for future use
+        setSupabaseUserId(userId);
       }
+
+      console.log('Submitting review with user ID:', supabaseUserId ? `${supabaseUserId.substring(0, 6)}...` : 'No user ID');
 
       const result = await createReview({
         rating,
         comment,
-        userId: supabaseUserId, // Use Supabase user ID
+        userId: supabaseUserId!, // Use Supabase user ID with non-null assertion since we checked above
         reviewType,
         productId,
         shopId,
