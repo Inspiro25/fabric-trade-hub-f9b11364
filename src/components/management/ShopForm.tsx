@@ -10,6 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,14 +24,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import FileUpload from '@/components/ui/file-upload';
 
 // Schema for form validation
 const formSchema = z.object({
   name: z.string().min(2, 'Shop name must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
-  logo: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  coverImage: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   isVerified: z.boolean().default(false),
   shopId: z.string().min(4, 'Shop ID must be at least 4 characters'),
   ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
@@ -39,7 +39,10 @@ const formSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters').optional(),
 });
 
-export type ShopFormValues = z.infer<typeof formSchema>;
+export type ShopFormValues = z.infer<typeof formSchema> & {
+  logo?: string;
+  coverImage?: string;
+};
 
 interface ShopFormProps {
   shop?: Shop;
@@ -54,14 +57,15 @@ export const ShopForm: React.FC<ShopFormProps> = ({
   onCancel,
   isMobile = false
 }) => {
+  const [logo, setLogo] = React.useState<string>(shop?.logo || '');
+  const [coverImage, setCoverImage] = React.useState<string>(shop?.coverImage || '');
+
   const form = useForm<ShopFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: shop?.name || '',
       description: shop?.description || '',
       address: shop?.address || '',
-      logo: shop?.logo || '',
-      coverImage: shop?.coverImage || '',
       isVerified: shop?.isVerified || false,
       shopId: shop?.shopId || '',
       ownerName: shop?.ownerName || '',
@@ -73,9 +77,20 @@ export const ShopForm: React.FC<ShopFormProps> = ({
 
   const isSubmitting = form.formState.isSubmitting;
 
+  const handleFormSubmit = async (data: ShopFormValues) => {
+    // Add the logo and coverImage to the form data
+    const formData = {
+      ...data,
+      logo,
+      coverImage,
+    };
+    
+    await onSubmit(formData);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
           <FormField
             control={form.control}
@@ -165,33 +180,31 @@ export const ShopForm: React.FC<ShopFormProps> = ({
         </div>
 
         <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
-          <FormField
-            control={form.control}
-            name="logo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Logo URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter logo URL" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormLabel>Shop Logo</FormLabel>
+            <FileUpload
+              initialImage={logo}
+              onUploadComplete={setLogo}
+              bucketName="shops"
+              folderPath="logos"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Upload a square logo image for your shop (recommended: 400x400px)
+            </p>
+          </div>
 
-          <FormField
-            control={form.control}
-            name="coverImage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cover Image URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter cover image URL" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div>
+            <FormLabel>Cover Image</FormLabel>
+            <FileUpload
+              initialImage={coverImage}
+              onUploadComplete={setCoverImage}
+              bucketName="shops"
+              folderPath="covers"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Upload a banner image for your shop (recommended: 1200x400px)
+            </p>
+          </div>
         </div>
 
         <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>

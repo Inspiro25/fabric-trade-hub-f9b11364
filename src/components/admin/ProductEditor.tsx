@@ -9,10 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Product, createProduct, updateProduct } from '@/lib/products';
-import { Save, X, Plus, Minus } from 'lucide-react';
+import { Save, X, Plus, Minus, TagIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchCategories } from '@/lib/supabase/products';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MultiImageUpload from '@/components/ui/multi-image-upload';
+import { Switch } from '@/components/ui/switch';
 
 // Validation schema
 const formSchema = z.object({
@@ -28,7 +30,8 @@ const formSchema = z.object({
   stock: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
     message: "Stock must be a valid number",
   }),
-  mainImage: z.string().url("Main image must be a valid URL"),
+  isNew: z.boolean().default(false),
+  isTrending: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -42,8 +45,8 @@ interface ProductEditorProps {
 }
 
 const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, onSave, onCancel }) => {
-  const [additionalImages, setAdditionalImages] = useState<string[]>(
-    product?.images.slice(1) || []
+  const [productImages, setProductImages] = useState<string[]>(
+    product?.images || []
   );
   const [colors, setColors] = useState<string[]>(product?.colors || []);
   const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
@@ -64,7 +67,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       salePrice: product?.salePrice ? String(product.salePrice) : '',
       category: product?.category || '',
       stock: product ? String(product.stock) : '',
-      mainImage: product?.images[0] || '',
+      isNew: product?.isNew || mode === 'add',
+      isTrending: product?.isTrending || false,
     },
   });
 
@@ -87,6 +91,11 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
   }, []);
 
   const onSubmit = async (data: FormValues) => {
+    if (productImages.length === 0) {
+      toast.error('Please add at least one product image');
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -99,13 +108,14 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
         stock: Number(data.stock),
         category: data.category,
         shopId,
-        images: [data.mainImage, ...additionalImages.filter(img => img.trim() !== '')],
+        images: productImages,
         colors,
         sizes,
         tags,
         rating: product?.rating || 4.0,
         reviewCount: product?.reviewCount || 0,
-        isNew: product?.isNew || mode === 'add', // Mark as new if adding
+        isNew: data.isNew, 
+        isTrending: data.isTrending,
       };
       
       let result;
@@ -174,20 +184,6 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
 
   const removeTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const addImageUrl = () => {
-    setAdditionalImages([...additionalImages, '']);
-  };
-
-  const updateImageUrl = (index: number, value: string) => {
-    const updatedImages = [...additionalImages];
-    updatedImages[index] = value;
-    setAdditionalImages(updatedImages);
-  };
-
-  const removeImageUrl = (index: number) => {
-    setAdditionalImages(additionalImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -317,53 +313,62 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
               />
             </div>
             
-            <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="mainImage"
+                name="isNew"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Main Image URL</FormLabel>
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Mark as New</FormLabel>
+                      <FormDescription className="text-xs">
+                        Highlight this product as newly added
+                      </FormDescription>
+                    </div>
                     <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
                 )}
               />
               
-              <div className="mt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <FormLabel>Additional Images</FormLabel>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={addImageUrl}
-                  >
-                    <Plus className="h-3.5 w-3.5 mr-1" />
-                    Add Image
-                  </Button>
-                </div>
-                
-                {additionalImages.map((url, index) => (
-                  <div key={index} className="flex gap-2 mt-2">
-                    <Input 
-                      placeholder="https://example.com/image.jpg" 
-                      value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
-                    />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => removeImageUrl(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+              <FormField
+                control={form.control}
+                name="isTrending"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Mark as Trending</FormLabel>
+                      <FormDescription className="text-xs">
+                        Feature this product in trending sections
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div>
+              <FormLabel>Product Images</FormLabel>
+              <div className="mt-2">
+                <MultiImageUpload
+                  initialImages={productImages}
+                  onImagesChange={setProductImages}
+                  bucketName="products"
+                  folderPath={`shop-${shopId}`}
+                  maxFiles={6}
+                />
               </div>
+              <p className="text-sm text-gray-500 mt-1">Upload up to 6 product images. First image will be used as the main product image.</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

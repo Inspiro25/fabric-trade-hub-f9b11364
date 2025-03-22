@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
@@ -158,20 +159,21 @@ export const useSearch = (): SearchReturn => {
   
   const handleAddToCart = useCallback((product: SearchPageProduct) => {
     setIsAddingToCart(product.id);
+    // Convert the SearchPageProduct to a Product compatible with addToCart
     addToCart({
       id: product.id,
       name: product.name,
       description: product.description || "",
       price: product.price,
-      salePrice: product.salePrice,
+      salePrice: product.sale_price, // Fix: use sale_price instead of salePrice
       images: product.images || [],
       category: product.category || "",
       colors: product.colors || [],
       sizes: product.sizes || [],
       rating: product.rating || 0,
-      reviewCount: product.reviewCount || 0,
+      reviewCount: product.review_count || 0, // Fix: use review_count instead of reviewCount
       stock: product.stock || 0,
-      tags: product.tags || []
+      tags: product.meta?.tags || [] // Fix: access tags via meta property if available
     }, 1, "", "");
     setTimeout(() => setIsAddingToCart(null), 1000);
   }, [addToCart]);
@@ -207,6 +209,8 @@ export const useSearch = (): SearchReturn => {
     setViewMode,
     
     products,
+    categories, // Added to fix TypeScript error
+    shops, // Added to fix TypeScript error
     isLoading: loading,
     error,
     totalProducts,
@@ -265,8 +269,5 @@ export const useSearch = (): SearchReturn => {
     toggleDiscountFilter,
     fetchData,
     handleLogin,
-    
-    categories,
-    shops
   };
 };

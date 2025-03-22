@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -8,16 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Shop } from '@/lib/shops';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Check, Save } from 'lucide-react';
+import FileUpload from '@/components/ui/file-upload';
+import { updateShop } from '@/lib/supabase/shops';
 
 // Validation schema - using memo to prevent unnecessary re-evaluations
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
   address: z.string().min(5, "Address must be at least 5 characters"),
-  logo: z.string().url("Must be a valid URL"),
-  coverImage: z.string().url("Must be a valid URL"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -27,8 +28,9 @@ interface ShopDetailsEditorProps {
 }
 
 const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logo, setLogo] = useState(shop.logo);
+  const [coverImage, setCoverImage] = useState(shop.coverImage);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -36,27 +38,32 @@ const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
       name: shop.name,
       description: shop.description,
       address: shop.address,
-      logo: shop.logo,
-      coverImage: shop.coverImage,
     },
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     
-    // In a real app, this would save to a database
-    // Simulating API call with timeout
-    setTimeout(() => {
-      console.log("Shop details updated:", data);
+    try {
+      const updateData = {
+        ...data,
+        logo,
+        coverImage
+      };
       
-      toast({
-        title: "Shop details updated",
-        description: "Your shop information has been successfully updated",
-        duration: 3000,
-      });
+      const success = await updateShop(shop.id, updateData);
       
+      if (success) {
+        toast.success("Shop details updated successfully");
+      } else {
+        throw new Error("Failed to update shop details");
+      }
+    } catch (error) {
+      console.error("Error updating shop:", error);
+      toast.error("Failed to update shop details");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -116,34 +123,36 @@ const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
               )}
             />
             
-            <div className="grid grid-cols-1 gap-4">
-              <FormField
-                control={form.control}
-                name="logo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Logo URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter logo image URL" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <FormLabel>Shop Logo</FormLabel>
+                <div className="mt-2">
+                  <FileUpload
+                    initialImage={logo}
+                    onUploadComplete={(url) => setLogo(url)}
+                    bucketName="shops"
+                    folderPath="logos"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload a square logo image for your shop (recommended: 400x400px)
+                </p>
+              </div>
               
-              <FormField
-                control={form.control}
-                name="coverImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cover Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter cover image URL" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div>
+                <FormLabel>Cover Image</FormLabel>
+                <div className="mt-2">
+                  <FileUpload
+                    initialImage={coverImage}
+                    onUploadComplete={(url) => setCoverImage(url)}
+                    bucketName="shops"
+                    folderPath="covers"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload a banner image for your shop (recommended: 1200x400px)
+                </p>
+              </div>
             </div>
             
             <div className="flex justify-end">

@@ -1,32 +1,53 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Product } from '@/lib/products';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Plus, Edit, Trash, Eye, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import ProductEditor from '@/components/admin/ProductEditor';
+import { deleteProduct, getShopProducts } from '@/lib/supabase/products';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface ProductsManagerProps {
   shopId: string;
-  products: Product[];
 }
 
 type EditorMode = 'add' | 'edit' | null;
 
-const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId, products }) => {
-  const { toast } = useToast();
+const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editorMode, setEditorMode] = useState<EditorMode>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  
+  useEffect(() => {
+    loadProducts();
+  }, [shopId]);
+  
+  const loadProducts = async () => {
+    try {
+      setIsLoading(true);
+      const shopProducts = await getShopProducts(shopId);
+      setProducts(shopProducts);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const filteredProducts = searchQuery
     ? products.filter(product => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+        product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : products;
 
@@ -40,15 +61,31 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId, products }) =
     setEditorMode('edit');
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    // In a real app, this would delete from a database
-    console.log("Deleting product:", productId);
+  const confirmDeleteProduct = (productId: string) => {
+    setProductToDelete(productId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
     
-    toast({
-      title: "Product deleted",
-      description: "The product has been removed from your inventory",
-      duration: 3000,
-    });
+    try {
+      const success = await deleteProduct(productToDelete);
+      
+      if (success) {
+        toast.success('Product deleted successfully');
+        // Remove from local state
+        setProducts(products.filter(p => p.id !== productToDelete));
+      } else {
+        throw new Error('Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    } finally {
+      setShowDeleteDialog(false);
+      setProductToDelete(null);
+    }
   };
 
   const closeEditor = () => {
@@ -56,20 +93,28 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId, products }) =
     setSelectedProduct(null);
   };
 
-  const handleProductSave = (productData: any) => {
-    // In a real app, this would save to a database
-    console.log("Saving product:", productData);
-    
-    toast({
-      title: editorMode === 'add' ? "Product added" : "Product updated",
-      description: editorMode === 'add' 
-        ? "New product has been added to your inventory" 
-        : "Product has been updated successfully",
-      duration: 3000,
-    });
+  const handleProductSave = (productData: Product) => {
+    if (editorMode === 'add') {
+      setProducts([...products, productData]);
+    } else {
+      setProducts(products.map(p => p.id === productData.id ? productData : p));
+    }
     
     closeEditor();
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+          <p className="text-center text-muted-foreground">Loading products...</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
@@ -139,6 +184,9 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId, products }) =
                                 src={product.images[0]} 
                                 alt={product.name} 
                                 className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/placeholder.svg';
+                                }}
                               />
                             </div>
                             <span className="truncate max-w-[200px]">{product.name}</span>
@@ -170,7 +218,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId, products }) =
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-red-500"
-                              onClick={() => handleDeleteProduct(product.id)}
+                              onClick={() => confirmDeleteProduct(product.id)}
                             >
                               <Trash className="h-4 w-4" />
                             </Button>
@@ -195,6 +243,23 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({ shopId, products }) =
           </CardContent>
         </Card>
       )}
+      
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the product from your shop.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
