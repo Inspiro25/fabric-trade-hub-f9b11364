@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -76,16 +75,13 @@ const Offers = () => {
           
           <div className="mb-8">
             <Tabs defaultValue="all" className="w-full">
-              {/* Modified TabsList to ensure tabs fit on mobile without horizontal scroll */}
-              <TabsList className="mb-6 w-full grid grid-cols-4 p-1 rounded-xl">
+              <TabsList className="mb-6 w-full grid grid-cols-3 p-1 rounded-xl">
                 <TabsTrigger value="all" className="rounded-lg text-xs md:text-sm">All</TabsTrigger>
                 <TabsTrigger value="deals" className="rounded-lg text-xs md:text-sm">Deals</TabsTrigger>
                 <TabsTrigger value="coupons" className="rounded-lg text-xs md:text-sm">Coupons</TabsTrigger>
-                <TabsTrigger value="clearance" className="rounded-lg text-xs md:text-sm">Clearance</TabsTrigger>
               </TabsList>
               
               <TabsContent value="all" className="space-y-8">
-                {/* Featured deals section */}
                 <section className="mb-4">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold">Featured Deals</h2>
@@ -117,7 +113,6 @@ const Offers = () => {
                   )}
                 </section>
                 
-                {/* Available offers section with cards */}
                 <section>
                   <h2 className="text-xl font-semibold mb-4">Available Offers</h2>
                   {isLoading ? (
@@ -226,7 +221,6 @@ const Offers = () => {
                 </section>
               </TabsContent>
               
-              {/* The rest of the TabsContent sections remain with the same functionality */}
               <TabsContent value="deals">
                 {discountedProducts.length > 0 ? (
                   <div className={`grid grid-cols-2 ${isMobile ? 'gap-3' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
@@ -303,16 +297,6 @@ const Offers = () => {
                       <p className="text-muted-foreground">No coupons available at the moment.</p>
                     </div>
                   )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="clearance">
-                <div className="text-center py-10 bg-white rounded-xl shadow-sm">
-                  <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-muted-foreground mb-4">No clearance sales available at the moment.</p>
-                  <Button asChild>
-                    <Link to="/">Continue Shopping</Link>
-                  </Button>
                 </div>
               </TabsContent>
             </Tabs>
