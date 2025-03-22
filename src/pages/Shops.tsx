@@ -1,37 +1,26 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag } from 'lucide-react';
-import { Shop, fetchShops } from '@/lib/shops';
-import { shops as mockShops } from '@/lib/shops/mockData';
+import { Shop } from '@/lib/shops';
+import { useShopSearch } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Shops = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { 
+    searchTerm, 
+    setSearchTerm, 
+    shops: filteredShops, 
+    isLoading, 
+    error,
+    clearSearch 
+  } = useShopSearch();
+  
   const isMobile = useIsMobile();
-
-  useEffect(() => {
-    const loadShops = async () => {
-      setIsLoading(true);
-      try {
-        const shopsData = await fetchShops();
-        setShops(shopsData);
-      } catch (error) {
-        console.error("Failed to fetch shops:", error);
-        setShops(mockShops); // Fallback to mock data
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadShops();
-  }, []);
-
-  const filteredShops = shops.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()) || shop.description.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return <div className="min-h-screen bg-gray-50 pb-6">
       <div className="bg-gradient-to-r from-kutuku-light to-kutuku-light/50 border-b">
@@ -46,7 +35,13 @@ const Shops = () => {
           <CardContent className="p-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-              <Input type="text" placeholder="Search shops..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8 pr-8 h-9 text-sm rounded-full bg-gray-50" />
+              <Input 
+                type="text" 
+                placeholder="Search shops..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                className="pl-8 pr-8 h-9 text-sm rounded-full bg-gray-50" 
+              />
               {!isMobile && <Button variant="outline" size="sm" className="absolute right-1 top-1 h-7 text-xs rounded-full">
                   <Filter className="h-3 w-3 mr-1" />
                   Filters
@@ -63,7 +58,7 @@ const Shops = () => {
             <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <h3 className="text-base font-medium mb-1">No shops found</h3>
             <p className="text-sm text-gray-500 mb-3">Try adjusting your search term</p>
-            <Button onClick={() => setSearchTerm('')} className="text-sm rounded-full bg-kutuku-primary hover:bg-kutuku-secondary">
+            <Button onClick={clearSearch} className="text-sm rounded-full bg-kutuku-primary hover:bg-kutuku-secondary">
               Clear Search
             </Button>
           </div> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -110,6 +105,12 @@ const Shops = () => {
                 </Card>
               </Link>)}
           </div>}
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">
+              {error}
+            </div>
+          )}
       </div>
     </div>;
 };

@@ -1,164 +1,51 @@
-import { useQuery } from '@tanstack/react-query';
-import { Product, fetchProducts, getAllCategories } from '@/lib/products';
-import { useState, useMemo } from 'react';
 
-export type SortOption = 'relevance' | 'price-low' | 'price-high' | 'rating' | 'newest';
+import { useState, useEffect } from 'react';
+import { Shop, fetchShops } from '@/lib/shops';
+import { shops as mockShops } from '@/lib/shops/mockData';
 
-interface SearchFilters {
-  category: string;
-  priceRange: string;
-  sort: SortOption;
-  inStock: boolean;
-  onSale: boolean;
-}
+export function useShopSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function useShopSearch(searchQuery: string, initialFilters: Partial<SearchFilters> = {}) {
-  // State for filters
-  const [filters, setFilters] = useState<SearchFilters>({
-    category: initialFilters.category || 'all',
-    priceRange: initialFilters.priceRange || 'all',
-    sort: initialFilters.sort || 'relevance',
-    inStock: initialFilters.inStock || false,
-    onSale: initialFilters.onSale || false
-  });
-
-  // Fetch products
-  const productsQuery = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
+  useEffect(() => {
+    const loadShops = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        return await fetchProducts();
+        const shopsData = await fetchShops();
+        setShops(shopsData);
       } catch (error) {
-        console.error('Error fetching products:', error);
-        if (error instanceof Error) {
-          const errorMessage = error.message;
-          if (errorMessage.includes('<!DOCTYPE') || errorMessage.includes('<html')) {
-            throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
-          }
-        }
-        throw error;
+        console.error("Failed to fetch shops:", error);
+        setError("Failed to load shops. Using mock data instead.");
+        setShops(mockShops); // Fallback to mock data
+      } finally {
+        setIsLoading(false);
       }
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  });
+    };
+    
+    loadShops();
+  }, []);
 
-  // Fetch categories
-  const categoriesQuery = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      try {
-        return await getAllCategories();
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        if (error instanceof Error) {
-          const errorMessage = error.message;
-          if (errorMessage.includes('<!DOCTYPE') || errorMessage.includes('<html')) {
-            throw new Error('Server returned HTML instead of JSON. Please check your API endpoint configuration.');
-          }
-        }
-        throw error;
-      }
-    },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  // Filtered shops based on search term
+  const filteredShops = shops.filter(shop => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      shop.name.toLowerCase().includes(searchLower) || 
+      shop.description.toLowerCase().includes(searchLower) || 
+      shop.address.toLowerCase().includes(searchLower)
+    );
   });
-
-  // Apply filters to products
-  const filteredProducts = useMemo(() => {
-    if (!productsQuery.data || productsQuery.isLoading) return [];
-    
-    let filtered = [...productsQuery.data];
-    
-    // Search query filter
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(lowerQuery) || 
-        product.description.toLowerCase().includes(lowerQuery) ||
-        product.category.toLowerCase().includes(lowerQuery) ||
-        (product.tags && product.tags.some(tag => tag.toLowerCase().includes(lowerQuery)))
-      );
-    }
-    
-    // Category filter
-    if (filters.category && filters.category !== 'all') {
-      filtered = filtered.filter(product => 
-        product.category.toLowerCase() === filters.category.toLowerCase()
-      );
-    }
-    
-    // Price range filter
-    if (filters.priceRange && filters.priceRange !== 'all') {
-      const [min, max] = filters.priceRange.split('-').map(Number);
-      filtered = filtered.filter(product => {
-        const price = product.salePrice || product.price;
-        if (!max) {
-          return price >= min;
-        }
-        return price >= min && price <= max;
-      });
-    }
-    
-    // In stock filter
-    if (filters.inStock) {
-      filtered = filtered.filter(product => product.stock > 0);
-    }
-    
-    // On sale filter
-    if (filters.onSale) {
-      filtered = filtered.filter(product => !!product.salePrice);
-    }
-    
-    // Sort results
-    switch(filters.sort) {
-      case 'price-low':
-        filtered.sort((a, b) => {
-          const priceA = a.salePrice || a.price;
-          const priceB = b.salePrice || b.price;
-          return priceA - priceB;
-        });
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => {
-          const priceA = a.salePrice || a.price;
-          const priceB = b.salePrice || b.price;
-          return priceB - priceA;
-        });
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        filtered.sort((a, b) => {
-          if (a.isNew && !b.isNew) return -1;
-          if (!a.isNew && b.isNew) return 1;
-          return 0;
-        });
-        break;
-      default: // relevance
-        // Keep original order for relevance
-        break;
-    }
-    
-    return filtered;
-  }, [productsQuery.data, searchQuery, filters]);
 
   return {
-    products: filteredProducts,
-    categories: categoriesQuery.data || [],
-    isLoading: productsQuery.isLoading || categoriesQuery.isLoading,
-    error: productsQuery.error || categoriesQuery.error,
-    filters,
-    setFilters,
-    clearFilters: () => setFilters({
-      category: 'all',
-      priceRange: 'all',
-      sort: 'relevance',
-      inStock: false,
-      onSale: false
-    })
+    searchTerm,
+    setSearchTerm,
+    shops: filteredShops,
+    allShops: shops,
+    isLoading,
+    error,
+    clearSearch: () => setSearchTerm('')
   };
 }
