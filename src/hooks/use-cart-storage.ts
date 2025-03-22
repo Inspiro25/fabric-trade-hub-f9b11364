@@ -40,11 +40,11 @@ export const useCartStorage = (currentUser: any | null) => {
                   const { data: productData } = await supabase
                     .from('products')
                     .select('*')
-                    .eq('id', item.product_id)
+                    .eq('id', item.id)
                     .single();
 
                   if (!productData) {
-                    console.warn(`Product not found for ID: ${item.product_id}`);
+                    console.warn(`Product not found for ID: ${item.id}`);
                     return null;
                   }
 
@@ -69,14 +69,14 @@ export const useCartStorage = (currentUser: any | null) => {
                   };
 
                   return {
-                    id: item.product_id,
+                    id: item.id,
                     product,
                     quantity: item.quantity,
                     color: item.color,
                     size: item.size
                   };
                 } catch (err) {
-                  console.error(`Error fetching product ${item.product_id}:`, err);
+                  console.error(`Error fetching product ${item.id}:`, err);
                   return null;
                 }
               })
