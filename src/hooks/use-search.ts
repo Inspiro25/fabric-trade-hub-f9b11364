@@ -177,7 +177,8 @@ export const useSearch = (): SearchReturn => {
   // Add product to cart
   const handleAddToCart = useCallback((product: SearchPageProduct) => {
     setIsAddingToCart(product.id);
-    addToCart(product.id, 1);
+    // Fix: Call addToCart with all required parameters (id, quantity, color, size)
+    addToCart(product.id, 1, "", ""); // Adding empty strings for color and size as defaults
     setTimeout(() => setIsAddingToCart(null), 1000);
   }, [addToCart]);
   

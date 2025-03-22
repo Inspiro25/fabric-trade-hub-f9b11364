@@ -15,11 +15,11 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   onOpenChange,
   onLogin
 }) => {
-  const { login } = useAuth();
+  const { loginWithGoogleProvider } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await login();
+      await loginWithGoogleProvider();
       onLogin();
       onOpenChange(false);
     } catch (error) {

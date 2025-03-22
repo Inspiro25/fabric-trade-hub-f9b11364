@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,7 +23,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const { toast } = useToast();
   const { currentUser: user } = useAuth();
 
-  // Get Supabase user ID on component mount and when auth state changes
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -33,7 +31,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
     
     checkSession();
     
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSupabaseUserId(session?.user?.id || null);
     });
@@ -50,7 +47,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check if user is authenticated
     if (!user && !supabaseUserId) {
       setIsAuthDialogOpen(true);
       return;
@@ -74,9 +70,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
       const reviewType = productId ? 'product' : 'shop';
       
-      // Check for Supabase user ID again to be sure
       if (!supabaseUserId) {
-        // Try to get it one more time
         const { data: { session } } = await supabase.auth.getSession();
         const userId = session?.user?.id;
         
@@ -84,7 +78,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
           throw new Error('User ID not available. Please log in again.');
         }
         
-        // Update the state for future use
         setSupabaseUserId(userId);
       }
 
@@ -93,7 +86,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
       const result = await createReview({
         rating,
         comment,
-        userId: supabaseUserId!, // Use Supabase user ID with non-null assertion since we checked above
+        userId: supabaseUserId!,
         reviewType,
         productId,
         shopId,
@@ -123,7 +116,6 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
   const handleLogin = () => {
     setIsAuthDialogOpen(false);
-    // We'll refresh the page after login to get the latest user state
     window.location.reload();
   };
 
@@ -178,7 +170,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
       </form>
 
       <AuthDialog 
-        isOpen={isAuthDialogOpen} 
+        open={isAuthDialogOpen} 
         onOpenChange={setIsAuthDialogOpen}
         onLogin={handleLogin}
       />
