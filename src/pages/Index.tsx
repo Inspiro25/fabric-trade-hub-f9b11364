@@ -3,7 +3,7 @@ import { useHomeData } from '@/hooks/use-home-data';
 import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download, Flame, Zap } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download, Flame, Zap, Laptop, Smartphone, Headphones } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
@@ -121,34 +121,6 @@ const BrandsSpotlight = () => {
   );
 };
 
-const AppDownloadBanner = () => (
-  <section className="py-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-    <div className="container mx-auto px-4">
-      <div className="flex flex-col md:flex-row justify-between items-center">
-        <div className="mb-6 md:mb-0">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">Download Our App</h2>
-          <p className="mb-4">Get exclusive app-only offers and content</p>
-          <div className="flex gap-3">
-            <Button variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100">
-              <Download className="h-4 w-4 mr-2" />
-              App Store
-            </Button>
-            <Button variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100">
-              <Download className="h-4 w-4 mr-2" />
-              Google Play
-            </Button>
-          </div>
-        </div>
-        <img 
-          src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=300&auto=format&fit=crop&q=60" 
-          alt="Mobile App" 
-          className="w-40 md:w-60 rounded-xl shadow-lg"
-        />
-      </div>
-    </div>
-  </section>
-);
-
 const FlashSaleTimer = () => {
   const [timeLeft, setTimeLeft] = useState({
     hours: 5,
@@ -245,6 +217,57 @@ const FlashSaleTimer = () => {
     </section>
   );
 };
+
+const ElectronicsShowcase = () => (
+  <section className="py-10 bg-gradient-to-r from-blue-50 to-white">
+    <div className="container mx-auto px-4">
+      <div className="flex flex-col md:flex-row justify-between items-center">
+        <div className="mb-6 md:mb-0 md:w-1/2">
+          <h2 className="text-2xl md:text-3xl font-bold mb-3">Electronics & More</h2>
+          <p className="mb-4 text-gray-600">Discover our wide range of electronics, home appliances, and other categories</p>
+          <div className="flex gap-3">
+            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
+              <Link to="/category/electronics">
+                <Laptop className="h-4 w-4 mr-2" />
+                Shop Electronics
+              </Link>
+            </Button>
+            <Button variant="outline" className="border-blue-200" asChild>
+              <Link to="/category/smartphones">
+                <Smartphone className="h-4 w-4 mr-2" />
+                Smartphones
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <div className="md:w-1/2 grid grid-cols-2 gap-3">
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <img 
+              src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=300&auto=format&fit=crop" 
+              alt="Laptop" 
+              className="w-full h-auto rounded-md mb-2"
+            />
+            <h3 className="font-medium text-sm">Laptops & Computers</h3>
+            <p className="text-blue-600 text-xs flex items-center mt-1">
+              Shop Now <ArrowRight className="ml-1 h-3 w-3" />
+            </p>
+          </div>
+          <div className="bg-white p-3 rounded-lg shadow-sm">
+            <img 
+              src="https://images.unsplash.com/photo-1546027658-7aa750153465?q=80&w=300&auto=format&fit=crop" 
+              alt="Headphones" 
+              className="w-full h-auto rounded-md mb-2"
+            />
+            <h3 className="font-medium text-sm">Audio & Accessories</h3>
+            <p className="text-blue-600 text-xs flex items-center mt-1">
+              Shop Now <ArrowRight className="ml-1 h-3 w-3" />
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
 
 const Index = () => {
   const { 
@@ -395,7 +418,7 @@ const Index = () => {
         </AnimatedSection>
         
         <AnimatedSection delay={0.7}>
-          <AppDownloadBanner />
+          <ElectronicsShowcase />
         </AnimatedSection>
         
         <AnimatedSection delay={0.8}>
