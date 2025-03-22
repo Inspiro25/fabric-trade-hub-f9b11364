@@ -15,11 +15,11 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
 }) => {
   return (
     <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}>
-      <ToggleGroupItem value="grid" className="h-8 w-8 p-0 data-[state=on]:bg-[#E5DEFF] data-[state=on]:text-[#9b87f5] border-r">
+      <ToggleGroupItem value="grid" className="h-8 w-8 p-0 data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary border-r">
         <LayoutGrid className="h-4 w-4" />
         <span className="sr-only">Grid View</span>
       </ToggleGroupItem>
-      <ToggleGroupItem value="list" className="h-8 w-8 p-0 data-[state=on]:bg-[#E5DEFF] data-[state=on]:text-[#9b87f5]">
+      <ToggleGroupItem value="list" className="h-8 w-8 p-0 data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary">
         <List className="h-4 w-4" />
         <span className="sr-only">List View</span>
       </ToggleGroupItem>

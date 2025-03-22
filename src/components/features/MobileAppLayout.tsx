@@ -78,7 +78,7 @@ const MobileAppLayout: React.FC<{
             <Link
               to="/cart"
               className={cn(
-                "flex items-center justify-center w-12 h-12 rounded-full bg-kutuku-primary text-white -mt-6 shadow-md relative",
+                "flex items-center justify-center w-12 h-12 rounded-full text-white -mt-6 shadow-md relative",
                 pathname === '/cart' ? "bg-kutuku-secondary" : "bg-kutuku-primary"
               )}
             >

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -163,10 +164,10 @@ const Search = () => {
         {searchInput && (
           <div className="p-2 border-b">
             <div 
-              className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
+              className="flex items-center gap-2 p-2 hover:bg-orange-50 rounded cursor-pointer"
               onClick={() => handleSelectSuggestion(searchInput)}
             >
-              <SearchIcon className="h-4 w-4 text-[#9b87f5]" />
+              <SearchIcon className="h-4 w-4 text-kutuku-primary" />
               <span className="text-sm">Search for "<span className="font-medium">{searchInput}</span>"</span>
             </div>
           </div>
@@ -184,7 +185,7 @@ const Search = () => {
                 <Badge 
                   key={idx} 
                   variant="outline" 
-                  className="cursor-pointer hover:bg-gray-100 border-[#9b87f5] text-[#9b87f5]"
+                  className="cursor-pointer hover:bg-orange-50 border-kutuku-primary text-kutuku-primary"
                   onClick={() => handleSelectSuggestion(term)}
                 >
                   {term}
@@ -216,7 +217,7 @@ const Search = () => {
             {searchHistory.map((item) => (
               <div 
                 key={item.id} 
-                className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                className="flex items-center justify-between px-2 py-1.5 hover:bg-orange-50 rounded cursor-pointer"
               >
                 <div 
                   className="flex items-center gap-2 text-sm text-gray-700"
@@ -298,11 +299,11 @@ const Search = () => {
           
           {isMobile ? (
             <div className="flex items-center space-x-2 self-end md:self-auto">
-              <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
+              <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-kutuku-primary text-kutuku-primary">
                 <SlidersHorizontal className="mr-2 h-4 w-4" />
                 Filters
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
+              <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)} className="rounded-full border-kutuku-primary text-kutuku-primary">
                 <ArrowUpDown className="mr-2 h-4 w-4" />
                 Sort
               </Button>
