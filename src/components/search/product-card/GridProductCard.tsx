@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { ProductCardBaseProps } from './types';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   product,
@@ -23,6 +24,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   const discountPercent = product.sale_price 
     ? Math.round((1 - product.sale_price / product.price) * 100) 
     : 0;
+  const { isDarkMode } = useTheme();
     
   const handleProductClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (onClick) onClick(product);
@@ -45,7 +47,12 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
     
   return (
     <motion.div 
-      className="group relative bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer border border-gray-100"
+      className={cn(
+        "group relative rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer border",
+        isDarkMode 
+          ? "bg-gray-800 border-gray-700" 
+          : "bg-white border-gray-100"
+      )}
       whileHover={{ y: -5 }}
       onClick={handleProductClick}
     >
@@ -59,7 +66,10 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           
           {/* Overlay with quick actions - Myntra style */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-end justify-center p-3 opacity-0 group-hover:opacity-100">
-            <div className="flex gap-2 bg-white/90 backdrop-blur-sm p-1 rounded-full">
+            <div className={cn(
+              "flex gap-2 p-1 rounded-full",
+              isDarkMode ? "bg-gray-800/90" : "bg-white/90"
+            )}>
               <Button 
                 size="icon" 
                 variant="ghost" 
@@ -104,17 +114,26 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
       
       <div className="p-3">
         {product.brand && (
-          <h4 className="text-sm font-medium text-gray-900 mb-1 uppercase">{product.brand}</h4>
+          <h4 className={cn(
+            "text-sm font-medium mb-1 uppercase",
+            isDarkMode ? "text-gray-200" : "text-gray-900"
+          )}>{product.brand}</h4>
         )}
         
-        <h3 className="text-sm font-medium line-clamp-1 text-gray-700">{product.name}</h3>
+        <h3 className={cn(
+          "text-sm font-medium line-clamp-1",
+          isDarkMode ? "text-gray-200" : "text-gray-700"
+        )}>{product.name}</h3>
         
         <div className="flex items-center mt-1 mb-2">
           {product.rating && (
             <div className="flex items-center text-amber-500">
               <Star className="h-3 w-3 mr-1 fill-amber-500" />
               <span className="text-xs">{product.rating}</span>
-              <span className="text-xs text-gray-500 ml-1">({product.review_count || 0})</span>
+              <span className={cn(
+                "text-xs ml-1",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>({product.review_count || 0})</span>
             </div>
           )}
         </div>
@@ -126,12 +145,18 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
                 <span className="text-base font-bold text-orange-500">
                   ${product.sale_price}
                 </span>
-                <span className="text-xs text-gray-500 line-through">
+                <span className={cn(
+                  "text-xs line-through",
+                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                )}>
                   ${product.price}
                 </span>
               </div>
             ) : (
-              <span className="text-base font-bold">
+              <span className={cn(
+                "text-base font-bold",
+                isDarkMode ? "text-white" : ""
+              )}>
                 ${product.price}
               </span>
             )}

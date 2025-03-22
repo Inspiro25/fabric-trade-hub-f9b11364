@@ -5,6 +5,9 @@ import { SearchPageProduct } from './SearchProductCard';
 import SearchProductCard from './SearchProductCard';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface SearchRecommendationsProps {
   products: SearchPageProduct[];
@@ -31,26 +34,46 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
   emptyStateTitle = "No recommendations available",
   emptyStateMessage = "Browse our products to get personalized recommendations"
 }) => {
+  const { isDarkMode } = useTheme();
+  
   if (products.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        {emptyStateIcon || <TrendingUp className="h-12 w-12 mx-auto mb-2 text-gray-300" />}
-        <h3 className="text-lg font-medium mb-1">{emptyStateTitle}</h3>
-        <p className="text-sm">{emptyStateMessage}</p>
+      <div className={cn(
+        "text-center py-8",
+        isDarkMode ? "text-gray-300" : "text-gray-500"
+      )}>
+        {emptyStateIcon || <TrendingUp className={cn(
+          "h-12 w-12 mx-auto mb-2", 
+          isDarkMode ? "text-gray-600" : "text-gray-300"
+        )} />}
+        <h3 className={cn(
+          "text-lg font-medium mb-1", 
+          isDarkMode ? "text-white" : ""
+        )}>{emptyStateTitle}</h3>
+        <p className={cn(
+          "text-sm", 
+          isDarkMode ? "text-gray-400" : ""
+        )}>{emptyStateMessage}</p>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className={cn(
+      "p-4 rounded-lg",
+      isDarkMode ? "bg-gray-800/80 border border-gray-700" : "bg-white shadow-sm"
+    )}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium flex items-center">
+        <h3 className={cn(
+          "text-lg font-medium flex items-center",
+          isDarkMode ? "text-white" : ""
+        )}>
           <TrendingUp className="h-4 w-4 mr-2 text-orange-500" />
           Recommended For You
         </h3>
         
-        <Button variant="link" className="text-orange-500 p-0 h-auto text-sm">
-          View All <ChevronRight className="h-3 w-3 ml-1" />
+        <Button variant="link" className="text-orange-500 p-0 h-auto text-sm" asChild>
+          <Link to="/recommendations">View All <ChevronRight className="h-3 w-3 ml-1" /></Link>
         </Button>
       </div>
       
@@ -76,7 +99,7 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
               onShare={onShare}
               viewMode="grid"
               isCompact={true}
-              buttonColor="bg-orange-500 hover:bg-orange-600"
+              buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "bg-orange-500 hover:bg-orange-600"}
             />
           </motion.div>
         ))}

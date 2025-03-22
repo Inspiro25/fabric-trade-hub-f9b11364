@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
 import { Link } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -26,6 +28,7 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -57,9 +60,15 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
   if (isLoading || categories.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+    <div className={cn(
+      "rounded-lg shadow-sm p-4 mb-6",
+      isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white"
+    )}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-medium flex items-center">
+        <h3 className={cn(
+          "text-lg font-medium flex items-center",
+          isDarkMode ? "text-white" : ""
+        )}>
           <Tag className="h-4 w-4 mr-2 text-orange-500" />
           Popular Categories
         </h3>
@@ -73,7 +82,12 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
         {selectedCategory && (
           <Button
             onClick={() => onSelectCategory(null)}
-            className="text-sm bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1 h-auto text-gray-700"
+            className={cn(
+              "text-sm rounded-full px-3 py-1 h-auto",
+              isDarkMode 
+                ? "bg-gray-700 hover:bg-gray-600 text-white" 
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            )}
             variant="ghost"
             size="sm"
           >
@@ -89,11 +103,14 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
           >
             <Button
               onClick={() => onSelectCategory(category.id)}
-              className={`text-sm rounded-full px-3 py-1 h-auto flex items-center gap-1 ${
+              className={cn(
+                "text-sm rounded-full px-3 py-1 h-auto flex items-center gap-1",
                 selectedCategory === category.id 
                   ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
+                  : isDarkMode
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              )}
               variant={selectedCategory === category.id ? "default" : "ghost"}
               size="sm"
             >
