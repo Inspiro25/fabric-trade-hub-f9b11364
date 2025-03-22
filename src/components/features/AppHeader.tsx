@@ -1,12 +1,9 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import NotificationBadge from '@/components/features/NotificationBadge';
-
 const AppHeader: React.FC = () => {
-  return (
-    <div className="sticky top-0 z-10 bg-white px-4 py-3 shadow-sm">
+  return <div className="sticky top-0 z-10 bg-white px-4 shadow-sm py-[50px]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-kutuku-primary">Kutuku</h1>
@@ -19,8 +16,6 @@ const AppHeader: React.FC = () => {
           </Link>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default React.memo(AppHeader);
