@@ -73,6 +73,29 @@ const Authentication = () => {
     },
   });
   
+  const getErrorMessage = (errorCode: string): string => {
+    switch (errorCode) {
+      case 'auth/operation-not-allowed':
+        return "This authentication method is not enabled in the Firebase Console. Please contact support.";
+      case 'auth/email-already-in-use':
+        return "This email is already registered. Please try logging in instead.";
+      case 'auth/invalid-email':
+        return "The email address is not valid.";
+      case 'auth/user-disabled':
+        return "This account has been disabled. Please contact support.";
+      case 'auth/user-not-found':
+        return "No account found with this email. Please sign up first.";
+      case 'auth/wrong-password':
+        return "Incorrect password. Please try again.";
+      case 'auth/too-many-requests':
+        return "Too many failed attempts. Please try again later.";
+      case 'auth/network-request-failed':
+        return "Network error. Please check your connection and try again.";
+      default:
+        return "Authentication failed. Please try again.";
+    }
+  };
+  
   const onLoginSubmit = async (values: LoginFormValues) => {
     setError("");
     setIsLogging(true);
@@ -82,7 +105,8 @@ const Authentication = () => {
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
-      setError(error.message || "Login failed. Please check your credentials.");
+      const errorCode = error.code || "";
+      setError(getErrorMessage(errorCode));
     } finally {
       setIsLogging(false);
     }
@@ -101,7 +125,8 @@ const Authentication = () => {
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Registration error:", error);
-      setError(error.message || "Registration failed. Please try again.");
+      const errorCode = error.code || "";
+      setError(getErrorMessage(errorCode));
     } finally {
       setIsRegistering(false);
     }
