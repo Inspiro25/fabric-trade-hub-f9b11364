@@ -247,8 +247,8 @@ const AdminLogin = () => {
           <CardFooter className="flex flex-col items-center pt-0">
             <p className="text-sm text-gray-500 mb-2">
               {activeTab === 'login' 
-                ? 'Contact support if you've lost your credentials' 
-                : 'We'll review your application within 48 hours'}
+                ? 'Contact support if you\'ve lost your credentials' 
+                : 'We\'ll review your application within 48 hours'}
             </p>
           </CardFooter>
         </Card>
