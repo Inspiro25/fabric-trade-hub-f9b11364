@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -72,7 +73,7 @@ const Checkout = () => {
       initializeRazorpay({
         amount: cart.total * 100, 
         currency: 'INR',
-        name: 'Fashion Store',
+        name: 'Vyoma',
         description: 'Payment for your order',
         image: '/logo.png',
         prefill: {

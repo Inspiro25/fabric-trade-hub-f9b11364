@@ -37,7 +37,7 @@ const PaymentButton = ({
       await initializeRazorpay({
         amount: amount * 100, // Convert to paise
         currency: 'INR',
-        name: 'Fashion Store',
+        name: 'Vyoma',
         description: 'Payment for your order',
         image: '/logo.png',
         prefill: {
