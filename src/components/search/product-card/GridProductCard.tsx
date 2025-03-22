@@ -16,17 +16,36 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   onShare,
   onClick
 }) => {
-  const isAddingThisToCart = isAddingToCart === product.id;
-  const isAddingThisToWishlist = isAddingToWishlist === product.id;
+  const isAddingThisToCart = isAddingToCart === true || isAddingToCart === product.id;
+  const isAddingThisToWishlist = isAddingToWishlist === true || isAddingToWishlist === product.id;
   const discountPercent = product.sale_price 
     ? Math.round((1 - product.sale_price / product.price) * 100) 
     : 0;
+    
+  const handleProductClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (onClick) onClick(product);
+  };
+
+  const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onAddToCart) onAddToCart(product);
+  };
+
+  const handleAddToWishlistClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onAddToWishlist) onAddToWishlist(product);
+  };
+
+  const handleShareClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onShare) onShare(product);
+  };
     
   return (
     <motion.div 
       className="group relative bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer border border-gray-100"
       whileHover={{ y: -5 }}
-      onClick={onClick}
+      onClick={handleProductClick}
     >
       <AspectRatio ratio={1}>
         <img 
@@ -53,10 +72,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           size="icon" 
           variant="secondary" 
           className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-sm shadow-sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onShare(product);
-          }}
+          onClick={handleShareClick}
         >
           <Share2 className="h-4 w-4" />
         </Button>
@@ -98,11 +114,8 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           <Button 
             size="sm" 
             variant="secondary" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToWishlist(product);
-            }}
-            disabled={isAddingThisToWishlist}
+            onClick={handleAddToWishlistClick}
+            disabled={!!isAddingThisToWishlist}
             className="h-9 w-9 p-0 flex-shrink-0 rounded-full"
           >
             <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
@@ -110,11 +123,8 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           
           <Button 
             size="sm" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
-            disabled={isAddingThisToCart}
+            onClick={handleAddToCartClick}
+            disabled={!!isAddingThisToCart}
             className="h-9 flex-1 bg-[#9b87f5] hover:bg-[#7E69AB]"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />

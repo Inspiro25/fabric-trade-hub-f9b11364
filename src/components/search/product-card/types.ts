@@ -19,8 +19,8 @@ export interface SearchPageProduct {
 
 export interface ProductCardBaseProps {
   product: SearchPageProduct;
-  isAddingToCart?: boolean;
-  isAddingToWishlist?: boolean;
+  isAddingToCart?: boolean | string | null;
+  isAddingToWishlist?: boolean | string | null;
   onAddToCart?: (product: SearchPageProduct) => void;
   onAddToWishlist?: (product: SearchPageProduct) => void;
   onShare?: (product: SearchPageProduct) => void;

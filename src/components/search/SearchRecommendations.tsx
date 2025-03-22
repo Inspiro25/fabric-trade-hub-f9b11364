@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { TrendingUp, ChevronRight } from 'lucide-react';
 import { SearchPageProduct } from './SearchProductCard';
@@ -13,6 +14,9 @@ interface SearchRecommendationsProps {
   onAddToWishlist: (product: SearchPageProduct) => void;
   onShare: (product: SearchPageProduct) => void;
   onSelectProduct: (productId: string) => void;
+  emptyStateIcon?: React.ReactNode;
+  emptyStateTitle?: string;
+  emptyStateMessage?: string;
 }
 
 const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
@@ -22,14 +26,17 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
   onAddToCart,
   onAddToWishlist,
   onShare,
-  onSelectProduct
+  onSelectProduct,
+  emptyStateIcon,
+  emptyStateTitle = "No recommendations available",
+  emptyStateMessage = "Browse our products to get personalized recommendations"
 }) => {
   if (products.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        <TrendingUp className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-        <h3 className="text-lg font-medium mb-1">No recommendations available</h3>
-        <p className="text-sm">Browse our products to get personalized recommendations</p>
+        {emptyStateIcon || <TrendingUp className="h-12 w-12 mx-auto mb-2 text-gray-300" />}
+        <h3 className="text-lg font-medium mb-1">{emptyStateTitle}</h3>
+        <p className="text-sm">{emptyStateMessage}</p>
       </div>
     );
   }
@@ -62,8 +69,8 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
           >
             <SearchProductCard
               product={product}
-              isAddingToCart={isAddingToCart}
-              isAddingToWishlist={isAddingToWishlist}
+              isAddingToCart={isAddingToCart === product.id}
+              isAddingToWishlist={isAddingToWishlist === product.id}
               onAddToCart={onAddToCart}
               onAddToWishlist={onAddToWishlist}
               onShare={onShare}

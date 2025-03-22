@@ -14,17 +14,31 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
   onAddToWishlist,
   onClick
 }) => {
-  const isAddingThisToCart = isAddingToCart === product.id;
-  const isAddingThisToWishlist = isAddingToWishlist === product.id;
+  const isAddingThisToCart = isAddingToCart === true || isAddingToCart === product.id;
+  const isAddingThisToWishlist = isAddingToWishlist === true || isAddingToWishlist === product.id;
   const discountPercent = product.sale_price 
     ? Math.round((1 - product.sale_price / product.price) * 100) 
     : 0;
+  
+  const handleProductClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (onClick) onClick(product);
+  };
+
+  const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onAddToCart) onAddToCart(product);
+  };
+
+  const handleAddToWishlistClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (onAddToWishlist) onAddToWishlist(product);
+  };
     
   return (
     <motion.div 
       className="group relative bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer border border-gray-100"
       whileHover={{ scale: 1.01 }}
-      onClick={onClick}
+      onClick={handleProductClick}
     >
       <div className="flex">
         <div className="w-32 sm:w-48 h-32 flex-shrink-0 relative">
@@ -97,11 +111,8 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
                 <Button 
                   size="sm" 
                   variant="secondary" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToWishlist(product);
-                  }}
-                  disabled={isAddingThisToWishlist}
+                  onClick={handleAddToWishlistClick}
+                  disabled={!!isAddingThisToWishlist}
                   className="h-8 w-8 p-0 rounded-full"
                 >
                   <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
@@ -110,11 +121,8 @@ export const ListProductCard: React.FC<ProductCardBaseProps> = ({
                 <Button 
                   size="sm"
                   variant="default"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart(product);
-                  }}
-                  disabled={isAddingThisToCart}
+                  onClick={handleAddToCartClick}
+                  disabled={!!isAddingThisToCart}
                   className="h-8 bg-[#9b87f5] hover:bg-[#7E69AB]"
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />

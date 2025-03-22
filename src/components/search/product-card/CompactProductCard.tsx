@@ -14,11 +14,15 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
     ? Math.round((1 - product.sale_price / product.price) * 100) 
     : 0;
     
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (onClick) onClick(product);
+  };
+    
   return (
     <motion.div 
       className="group relative bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer"
       whileHover={{ y: -5 }}
-      onClick={() => onClick && onClick(product)}
+      onClick={handleClick}
     >
       <AspectRatio ratio={1}>
         <img 

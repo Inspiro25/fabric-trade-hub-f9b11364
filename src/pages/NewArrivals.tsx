@@ -12,6 +12,27 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+// Define a proper type for the products returned from Supabase
+interface SupabaseProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  sale_price: number | null;
+  images: string[];
+  category_id: string;
+  shop_id: string;
+  is_new: boolean;
+  is_trending: boolean;
+  colors: string[];
+  sizes: string[];
+  rating: number;
+  review_count: number;
+  stock?: number;
+  created_at?: string;
+  tags?: string[];
+}
+
 const NewArrivals = () => {
   const { isDarkMode } = useTheme();
   
@@ -32,7 +53,7 @@ const NewArrivals = () => {
           throw new Error(error.message);
         }
         
-        return data || [];
+        return data as SupabaseProduct[] || [];
       } catch (err) {
         console.error('Failed to fetch new arrivals:', err);
         // Fall back to the existing implementation
@@ -132,7 +153,7 @@ const NewArrivals = () => {
                             <span className="text-xl font-bold">₹{products[0].sale_price}</span>
                             <span className="text-muted-foreground line-through">₹{products[0].price}</span>
                             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                              {Math.round(((products[0].price - products[0].sale_price) / products[0].price) * 100)}% OFF
+                              {Math.round(((products[0].price - (products[0].sale_price || 0)) / products[0].price) * 100)}% OFF
                             </span>
                           </>
                         ) : (

@@ -84,7 +84,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             onAddToCart={() => handleAddToCart(product)}
             onAddToWishlist={() => handleAddToWishlist(product)}
             onShare={() => handleShareProduct(product)}
-            onClick={() => onProductClick && onProductClick(product)}
+            onClick={onProductClick ? () => onProductClick(product) : undefined}
             viewMode={viewMode}
           />
         ))}
