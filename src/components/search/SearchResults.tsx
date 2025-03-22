@@ -92,11 +92,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             transition={{ duration: 0.3 }}
           >
             <SearchProductCard
-              product={{
-                ...product,
-                // Override product colors to use orange for add to cart buttons
-                addToCartButtonColor: isDarkMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-kutuku-primary hover:bg-kutuku-secondary'
-              }}
+              product={product}
               isAddingToCart={isAddingToCart === product.id}
               isAddingToWishlist={isAddingToWishlist === product.id}
               onAddToCart={() => handleAddToCart(product)}
@@ -104,6 +100,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               onShare={() => handleShareProduct(product)}
               onClick={onProductClick ? () => onProductClick(product) : undefined}
               viewMode={viewMode}
+              // Pass buttonColor as a separate prop instead of trying to modify the product object
+              buttonColor={isDarkMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-kutuku-primary hover:bg-kutuku-secondary'}
             />
           </motion.div>
         ))}

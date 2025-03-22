@@ -7,6 +7,7 @@ export interface ProductCardBaseProps {
   onAddToWishlist?: (product: SearchPageProduct | Product) => void;
   onShare?: (product: SearchPageProduct | Product) => void;
   onClick?: (product: SearchPageProduct | Product) => void;
+  buttonColor?: string; // Add buttonColor prop to base props
 }
 
 export interface SearchPageProduct {

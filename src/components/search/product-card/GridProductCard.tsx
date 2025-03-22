@@ -6,6 +6,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { ProductCardBaseProps } from './types';
+import { cn } from '@/lib/utils';
 
 export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   product,
@@ -14,7 +15,8 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   onAddToCart,
   onAddToWishlist,
   onShare,
-  onClick
+  onClick,
+  buttonColor // Include buttonColor in the props
 }) => {
   const isAddingThisToCart = isAddingToCart === true || isAddingToCart === product.id;
   const isAddingThisToWishlist = isAddingToWishlist === true || isAddingToWishlist === product.id;
@@ -140,7 +142,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           size="sm" 
           onClick={handleAddToCartClick}
           disabled={!!isAddingThisToCart}
-          className="w-full h-9 bg-[#9b87f5] hover:bg-[#7E69AB]"
+          className={cn("w-full h-9", buttonColor || "bg-[#9b87f5] hover:bg-[#7E69AB]")}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           ADD TO BAG
