@@ -14,9 +14,23 @@ import AuthDialog from '@/components/search/AuthDialog';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SlidersHorizontal, ArrowUpDown, Search as SearchIcon, XCircle, Clock, History } from 'lucide-react';
+import { 
+  SlidersHorizontal, 
+  ArrowUpDown, 
+  Search as SearchIcon, 
+  XCircle, 
+  Clock, 
+  History, 
+  TrendingUp,
+  Eye,
+  ChevronRight,
+  Store
+} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { motion } from 'framer-motion';
 
 const Search = () => {
   const location = useLocation();
@@ -64,6 +78,14 @@ const Search = () => {
     searchHistory: hookSearchHistory,
     recommendations,
     initialLoad,
+    recentlyViewed,
+    popularSearches,
+    availabilityFilters,
+    handleAvailabilityFilterChange,
+    brandFilters,
+    toggleBrandFilter,
+    discountFilters,
+    toggleDiscountFilter,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,
@@ -77,6 +99,7 @@ const Search = () => {
     fetchData,
     clearSearchHistoryItem,
     clearAllSearchHistory,
+    saveSearchHistory,
   } = useSearch(query);
 
   // Handle clicks outside search suggestions
@@ -121,29 +144,6 @@ const Search = () => {
       console.error('Error fetching search history:', err);
     } finally {
       setIsLoadingHistory(false);
-    }
-  };
-
-  // Save search query to history
-  const saveSearchHistory = async (query: string) => {
-    if (!currentUser) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('search_history')
-        .upsert(
-          { 
-            user_id: currentUser.uid,
-            query: query.toLowerCase(),
-            searched_at: new Date().toISOString() 
-          },
-          { onConflict: 'user_id,query' }
-        );
-      
-      // Refresh search history
-      fetchSearchHistory();
-    } catch (error) {
-      console.error('Error saving search history:', error);
     }
   };
 
@@ -231,11 +231,11 @@ const Search = () => {
   // Render mobile filter buttons
   const renderMobileFilterButtons = () => (
     <div className="flex items-center space-x-2 self-end md:self-auto">
-      <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)}>
+      <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
         <SlidersHorizontal className="mr-2 h-4 w-4" />
         Filters
       </Button>
-      <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)}>
+      <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
         <ArrowUpDown className="mr-2 h-4 w-4" />
         Sort
       </Button>
@@ -276,9 +276,18 @@ const Search = () => {
     if (!showSuggestions) return null;
     
     return (
-      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
+      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-80 overflow-y-auto">
         {isLoadingHistory ? (
-          <div className="p-3 text-center text-gray-500">Loading...</div>
+          <div className="p-3 text-center text-gray-500">
+            <motion.div 
+              className="inline-block"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            >
+              <Clock className="h-5 w-5" />
+            </motion.div>
+            <span className="ml-2">Loading suggestions...</span>
+          </div>
         ) : (
           <>
             {searchInput && (
@@ -287,8 +296,30 @@ const Search = () => {
                   className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
                   onClick={() => handleSelectSuggestion(searchInput)}
                 >
-                  <SearchIcon className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">Search for "{searchInput}"</span>
+                  <SearchIcon className="h-4 w-4 text-[#9b87f5]" />
+                  <span className="text-sm">Search for "<span className="font-medium">{searchInput}</span>"</span>
+                </div>
+              </div>
+            )}
+            
+            {popularSearches.length > 0 && (
+              <div className="p-2 border-b">
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
+                  <TrendingUp className="h-3 w-3" />
+                  <span>Popular Searches</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 px-2">
+                  {popularSearches.map((term, idx) => (
+                    <Badge 
+                      key={idx} 
+                      variant="outline" 
+                      className="cursor-pointer hover:bg-gray-100 border-[#9b87f5] text-[#9b87f5]"
+                      onClick={() => handleSelectSuggestion(term)}
+                    >
+                      {term}
+                    </Badge>
+                  ))}
                 </div>
               </div>
             )}
@@ -296,7 +327,7 @@ const Search = () => {
             {searchHistory.length > 0 && (
               <div className="p-2">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500 px-2">
                     <History className="h-3 w-3" />
                     <span>Recent Searches</span>
                   </div>
@@ -344,38 +375,43 @@ const Search = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-[20px] md:py-[50px]">
+    <div className="container mx-auto px-4 py-[20px] md:py-[40px] bg-gray-50">
       {/* Search input */}
       <div className="mb-6">
-        <div ref={searchRef} className="relative w-full max-w-lg mx-auto">
+        <div ref={searchRef} className="relative w-full max-w-xl mx-auto">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
-            <Input
-              type="text"
-              placeholder="Search products, brands, categories..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onFocus={() => setShowSuggestions(true)}
-              className="pr-20 rounded-full border-kutuku-gray focus:border-kutuku-primary"
-            />
-            {searchInput && (
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search products, brands, categories..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                className="pr-24 rounded-full border-[#9b87f5] focus:border-[#7E69AB] pl-10 h-12 focus-visible:ring-[#9b87f5]"
+              />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#9b87f5]" />
+              
+              {searchInput && (
+                <Button 
+                  type="button" 
+                  size="icon" 
+                  variant="ghost" 
+                  onClick={() => setSearchInput('')}
+                  className="absolute right-12 top-1/2 transform -translate-y-1/2 h-8 w-8 flex items-center justify-center text-gray-400 hover:text-[#9b87f5]"
+                >
+                  <XCircle className="h-5 w-5" />
+                </Button>
+              )}
+              
               <Button 
-                type="button" 
-                size="icon" 
-                variant="ghost" 
-                onClick={() => setSearchInput('')}
-                className="absolute right-10 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
+                type="submit" 
+                size="sm"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full bg-[#9b87f5] hover:bg-[#7E69AB] h-10 px-4"
               >
-                <XCircle className="h-4 w-4" />
+                <SearchIcon className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Search</span>
               </Button>
-            )}
-            <Button 
-              type="submit" 
-              size="icon" 
-              variant="ghost" 
-              className="absolute right-0 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
-            >
-              <SearchIcon className="h-4 w-4" />
-            </Button>
+            </div>
           </form>
           
           <SearchSuggestions />
@@ -384,9 +420,11 @@ const Search = () => {
       
       {/* Search header */}
       {!initialLoad && query && (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-white p-4 rounded-lg shadow-sm">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold mb-1">Search Results for "{query}"</h1>
+            <h1 className="text-xl md:text-2xl font-bold mb-1">
+              Results for "<span className="text-[#9b87f5]">{query}</span>"
+            </h1>
             <p className="text-gray-500 text-sm">
               {products.length} {products.length === 1 ? 'result' : 'results'} found
             </p>
@@ -400,11 +438,14 @@ const Search = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar for desktop */}
         {!isMobile && (
-          <div className="w-full lg:w-64 shrink-0">
+          <div className="w-full lg:w-64 shrink-0 space-y-6">
             {/* Search history */}
             {searchHistory.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-4 mb-6 sticky top-4">
-                <h2 className="font-semibold text-lg mb-4">Recent Searches</h2>
+              <div className="bg-white rounded-lg shadow-sm p-4 sticky top-4">
+                <h2 className="font-semibold text-lg mb-4 flex items-center">
+                  <History className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                  Recent Searches
+                </h2>
                 <SearchHistory 
                   history={searchHistory}
                   onSelectHistoryItem={handleHistoryItemClick}
@@ -415,8 +456,11 @@ const Search = () => {
             )}
             
             {/* Filters for desktop */}
-            <div className="bg-white rounded-lg shadow p-4 sticky top-4">
-              <h2 className="font-semibold text-lg mb-4">Filters</h2>
+            <div className="bg-white rounded-lg shadow-sm p-4 sticky top-4">
+              <h2 className="font-semibold text-lg mb-4 flex items-center">
+                <SlidersHorizontal className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                Filters
+              </h2>
               <SearchFilters 
                 isMobile={false} 
                 categories={categories} 
@@ -442,35 +486,110 @@ const Search = () => {
         <div className="flex-1">
           {/* Show content based on state */}
           {initialLoad || !query ? (
-            <>
+            <div className="space-y-6">
               {/* Search history for mobile */}
               {isMobile && searchHistory.length > 0 && (
-                <SearchHistory 
-                  history={searchHistory}
-                  onSelectHistoryItem={handleHistoryItemClick}
-                  onClearHistoryItem={handleClearHistoryItem}
-                  onClearAllHistory={handleClearAllHistory}
-                />
+                <div className="bg-white rounded-lg shadow-sm p-4">
+                  <h2 className="font-semibold text-lg mb-2 flex items-center">
+                    <History className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                    Recent Searches
+                  </h2>
+                  <SearchHistory 
+                    history={searchHistory}
+                    onSelectHistoryItem={handleHistoryItemClick}
+                    onClearHistoryItem={handleClearHistoryItem}
+                    onClearAllHistory={handleClearAllHistory}
+                  />
+                </div>
               )}
               
-              {/* Category pills */}
-              <SearchCategories 
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={handleCategoryPillClick}
-              />
+              {/* Browse categories */}
+              <div className="bg-white rounded-lg shadow-sm p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-lg flex items-center">
+                    <Store className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                    Browse Categories
+                  </h2>
+                  <Button variant="link" className="text-[#9b87f5] p-0 h-auto text-sm" onClick={() => navigate('/categories')}>
+                    View All <ChevronRight className="h-3 w-3 ml-1" />
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {categories.slice(0, 10).map((category) => (
+                    <div 
+                      key={category.id}
+                      className="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:border-[#9b87f5] cursor-pointer transition-all hover:shadow-sm"
+                      onClick={() => {
+                        handleCategoryChange(category.id);
+                        navigate(`/search?category=${category.id}`);
+                      }}
+                    >
+                      <div className="w-12 h-12 bg-[#E5DEFF] rounded-full flex items-center justify-center mb-2">
+                        {category.image ? (
+                          <img src={category.image} alt={category.name} className="w-6 h-6" />
+                        ) : (
+                          <Store className="w-5 h-5 text-[#9b87f5]" />
+                        )}
+                      </div>
+                      <span className="text-sm text-center line-clamp-1">{category.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
               
-              {/* Recommendations */}
-              <SearchRecommendations 
-                products={recommendations}
-                isAddingToCart={isAddingToCart}
-                isAddingToWishlist={isAddingToWishlist}
-                onAddToCart={handleAddToCart}
-                onAddToWishlist={handleAddToWishlist}
-                onShare={handleShareProduct}
-                onSelectProduct={handleRecommendedProductClick}
-              />
-            </>
+              <Tabs defaultValue="recommended" className="w-full">
+                <TabsList className="w-full mb-4 bg-white border-b rounded-t-lg">
+                  <TabsTrigger value="recommended" className="flex-1 data-[state=active]:text-[#9b87f5] data-[state=active]:border-b-2 data-[state=active]:border-[#9b87f5]">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Recommended for You
+                  </TabsTrigger>
+                  <TabsTrigger value="recently-viewed" className="flex-1 data-[state=active]:text-[#9b87f5] data-[state=active]:border-b-2 data-[state=active]:border-[#9b87f5]">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Recently Viewed
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="recommended" className="bg-white rounded-b-lg shadow-sm p-4 mt-0">
+                  <SearchRecommendations 
+                    products={recommendations}
+                    isAddingToCart={isAddingToCart}
+                    isAddingToWishlist={isAddingToWishlist}
+                    onAddToCart={handleAddToCart}
+                    onAddToWishlist={handleAddToWishlist}
+                    onShare={handleShareProduct}
+                    onSelectProduct={handleRecommendedProductClick}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="recently-viewed" className="bg-white rounded-b-lg shadow-sm p-4 mt-0">
+                  {recentlyViewed.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {recentlyViewed.map((product) => (
+                        <div key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
+                          <SearchProductCard
+                            product={product}
+                            isAddingToCart={isAddingToCart}
+                            isAddingToWishlist={isAddingToWishlist}
+                            onAddToCart={handleAddToCart}
+                            onAddToWishlist={handleAddToWishlist}
+                            onShare={handleShareProduct}
+                            viewMode="grid"
+                            isCompact={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Eye className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <h3 className="text-lg font-medium mb-1">No recently viewed products</h3>
+                      <p className="text-sm">Products you view will appear here</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
           ) : (
             <>
               {/* Search results */}

@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Grid, LayoutGrid } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface SearchViewToggleProps {
   viewMode: 'grid' | 'list';
@@ -13,26 +14,16 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
   onViewModeChange
 }) => {
   return (
-    <div className="flex items-center space-x-1 border rounded-md">
-      <Button
-        variant={viewMode === 'grid' ? 'default' : 'ghost'}
-        size="icon"
-        className="h-8 w-8 rounded-none rounded-l-md"
-        onClick={() => onViewModeChange('grid')}
-      >
-        <Grid className="h-4 w-4" />
-        <span className="sr-only">Grid view</span>
-      </Button>
-      <Button
-        variant={viewMode === 'list' ? 'default' : 'ghost'}
-        size="icon"
-        className="h-8 w-8 rounded-none rounded-r-md"
-        onClick={() => onViewModeChange('list')}
-      >
+    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}>
+      <ToggleGroupItem value="grid" className="h-8 w-8 p-0 data-[state=on]:bg-[#E5DEFF] data-[state=on]:text-[#9b87f5] border-r">
         <LayoutGrid className="h-4 w-4" />
-        <span className="sr-only">List view</span>
-      </Button>
-    </div>
+        <span className="sr-only">Grid View</span>
+      </ToggleGroupItem>
+      <ToggleGroupItem value="list" className="h-8 w-8 p-0 data-[state=on]:bg-[#E5DEFF] data-[state=on]:text-[#9b87f5]">
+        <List className="h-4 w-4" />
+        <span className="sr-only">List View</span>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 };
 

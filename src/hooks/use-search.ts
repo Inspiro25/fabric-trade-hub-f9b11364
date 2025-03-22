@@ -9,7 +9,6 @@ import { SearchPageProduct } from '@/components/search/SearchProductCard';
 import { supabase } from '@/integrations/supabase/client';
 import { getPersonalizedRecommendations } from '@/services/recommendationService';
 
-// Mock data for fallback when API is unavailable
 const mockProducts: SearchPageProduct[] = [
   {
     id: "1",
@@ -77,7 +76,6 @@ const mockProducts: SearchPageProduct[] = [
   }
 ];
 
-// Mock categories for fallback
 const mockCategories = [
   { id: "electronics", name: "Electronics", description: "Electronic devices and gadgets", image: null },
   { id: "fashion", name: "Fashion", description: "Clothing and accessories", image: null },
@@ -85,14 +83,13 @@ const mockCategories = [
   { id: "beauty", name: "Beauty", description: "Beauty and personal care products", image: null }
 ];
 
-// Mock shops for fallback
 const mockShops = [
   { id: "1", name: "TechHub", description: "Your one-stop shop for technology", logo: null, cover_image: null, rating: 4.6, review_count: 245, is_verified: true, address: "123 Tech St, San Francisco", owner_name: "John Doe", owner_email: "john@techhub.com", shop_id: "th001", status: "active" },
   { id: "2", name: "Fashion Forward", description: "Latest fashion trends", logo: null, cover_image: null, rating: 4.3, review_count: 189, is_verified: true, address: "456 Style Ave, New York", owner_name: "Jane Smith", owner_email: "jane@fashionforward.com", shop_id: "ff002", status: "active" },
   { id: "3", name: "Home Essentials", description: "Everything for your home", logo: null, cover_image: null, rating: 4.1, review_count: 132, is_verified: false, address: "789 Home Blvd, Chicago", owner_name: "Mike Johnson", owner_email: "mike@homeessentials.com", shop_id: "he003", status: "active" }
 ];
 
-export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating';
+export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity' | 'relevance';
 
 interface Category {
   id: string;
@@ -135,7 +132,7 @@ export const useSearch = (query: string) => {
   const [selectedShop, setSelectedShop] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
   const [rating, setRating] = useState<number | null>(null);
-  const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const [sortOption, setSortOption] = useState<SortOption>('relevance');
   
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
@@ -152,6 +149,19 @@ export const useSearch = (query: string) => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [recommendations, setRecommendations] = useState<SearchPageProduct[]>([]);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [recentlyViewed, setRecentlyViewed] = useState<SearchPageProduct[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
+  
+  const [availabilityFilters, setAvailabilityFilters] = useState({
+    inStock: false,
+    fastDelivery: false,
+    dealOfDay: false,
+    amazonFulfilled: false
+  });
+  
+  const [brandFilters, setBrandFilters] = useState<string[]>([]);
+  const [discountFilters, setDiscountFilters] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
@@ -324,21 +334,83 @@ export const useSearch = (query: string) => {
         name: product.name,
         description: product.description || '',
         price: Number(product.price),
-        sale_price: product.salePrice ? Number(product.salePrice) : null,
+        salePrice: product.salePrice ? Number(product.salePrice) : null,
         images: product.images || ['/placeholder.svg'],
-        category_id: product.category || '',
-        shop_id: product.shopId || '',
-        is_new: product.isNew || false,
-        is_trending: product.isTrending || false,
+        category: product.category || '',
         colors: product.colors || [],
         sizes: product.sizes || [],
         rating: product.rating || 0,
-        review_count: product.reviewCount || 0
+        reviewCount: product.reviewCount || 0
       }));
       
       setRecommendations(formattedRecommendations);
     } catch (err) {
       console.error('Error fetching recommendations:', err);
+    }
+  };
+
+  const fetchRecentlyViewed = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('product_view_history')
+        .select('*, products(*)')
+        .eq('user_id', currentUser.uid)
+        .order('last_viewed_at', { ascending: false })
+        .limit(4);
+      
+      if (error) {
+        console.error('Error fetching recently viewed products:', error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        const formattedProducts: SearchPageProduct[] = data.map(item => ({
+          id: item.products.id,
+          name: item.products.name,
+          description: item.products.description || '',
+          price: Number(item.products.price),
+          sale_price: item.products.sale_price ? Number(item.products.sale_price) : null,
+          images: item.products.images || ['/placeholder.svg'],
+          category_id: item.products.category_id || '',
+          shop_id: item.products.shop_id || '',
+          is_new: item.products.is_new || false,
+          is_trending: item.products.is_trending || false,
+          colors: item.products.colors || [],
+          sizes: item.products.sizes || [],
+          rating: item.products.rating || 0,
+          review_count: item.products.review_count || 0
+        }));
+        
+        setRecentlyViewed(formattedProducts);
+      }
+    } catch (err) {
+      console.error('Error fetching recently viewed products:', err);
+    }
+  };
+  
+  const fetchPopularSearches = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('query, count(*) as count')
+        .group('query')
+        .order('count', { ascending: false })
+        .limit(5);
+      
+      if (error) {
+        console.error('Error fetching popular searches:', error);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        setPopularSearches(data.map(item => item.query));
+      } else {
+        setPopularSearches(['smartphone', 'headphones', 'laptop', 'watch', 'camera']);
+      }
+    } catch (err) {
+      console.error('Error fetching popular searches:', err);
     }
   };
 
@@ -410,6 +482,29 @@ export const useSearch = (query: string) => {
     }
   };
 
+  const handleAvailabilityFilterChange = (key: keyof typeof availabilityFilters) => {
+    setAvailabilityFilters(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+  
+  const toggleBrandFilter = (brand: string) => {
+    setBrandFilters(prev => 
+      prev.includes(brand) 
+        ? prev.filter(b => b !== brand) 
+        : [...prev, brand]
+    );
+  };
+  
+  const toggleDiscountFilter = (discount: string) => {
+    setDiscountFilters(prev => 
+      prev.includes(discount) 
+        ? prev.filter(d => d !== discount) 
+        : [...prev, discount]
+    );
+  };
+
   useEffect(() => {
     fetchData();
   }, [query]);
@@ -431,9 +526,26 @@ export const useSearch = (query: string) => {
     if (product.price < priceRange[0] || product.price > priceRange[1]) {
       return false;
     }
-    if (rating && product.rating !== rating) {
+    if (rating && (!product.rating || product.rating < rating)) {
       return false;
     }
+    if (availabilityFilters.inStock && (!product.stock || product.stock <= 0)) {
+      return false;
+    }
+    if (brandFilters.length > 0 && !brandFilters.includes(product.shop_id)) {
+      return false;
+    }
+    if (discountFilters.length > 0) {
+      if (!product.sale_price) return false;
+      
+      const discountPercent = Math.round((1 - product.sale_price / product.price) * 100);
+      
+      if (discountFilters.includes('10+') && discountPercent < 10) return false;
+      if (discountFilters.includes('25+') && discountPercent < 25) return false;
+      if (discountFilters.includes('50+') && discountPercent < 50) return false;
+      if (discountFilters.includes('70+') && discountPercent < 70) return false;
+    }
+    
     return true;
   });
 
@@ -442,11 +554,14 @@ export const useSearch = (query: string) => {
       case 'newest':
         return 0;
       case 'price-asc':
-        return a.price - b.price;
+        return (a.sale_price || a.price) - (b.sale_price || b.price);
       case 'price-desc':
-        return b.price - a.price;
+        return (b.sale_price || b.price) - (a.sale_price || a.price);
       case 'rating':
         return (b.rating || 0) - (a.rating || 0);
+      case 'popularity':
+        return (b.review_count || 0) - (a.review_count || 0);
+      case 'relevance':
       default:
         return 0;
     }
@@ -572,6 +687,16 @@ export const useSearch = (query: string) => {
     searchHistory,
     recommendations,
     initialLoad,
+    recentlyViewed,
+    popularSearches,
+    availabilityFilters,
+    handleAvailabilityFilterChange,
+    brandFilters,
+    toggleBrandFilter,
+    discountFilters,
+    toggleDiscountFilter,
+    viewMode,
+    setViewMode,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,

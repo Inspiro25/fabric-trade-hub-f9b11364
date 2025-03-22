@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, ChevronRight } from 'lucide-react';
 import { SearchPageProduct } from './SearchProductCard';
 import SearchProductCard from './SearchProductCard';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 interface SearchRecommendationsProps {
   products: SearchPageProduct[];
@@ -23,18 +25,42 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
   onShare,
   onSelectProduct
 }) => {
-  if (products.length === 0) return null;
+  if (products.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <TrendingUp className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+        <h3 className="text-lg font-medium mb-1">No recommendations available</h3>
+        <p className="text-sm">Browse our products to get personalized recommendations</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-6">
-      <h3 className="text-lg font-medium flex items-center mb-3">
-        <TrendingUp className="h-4 w-4 mr-2 text-gray-500" />
-        Recommended For You
-      </h3>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-medium flex items-center">
+          <TrendingUp className="h-4 w-4 mr-2 text-[#9b87f5]" />
+          Recommended For You
+        </h3>
+        
+        <Button variant="link" className="text-[#9b87f5] p-0 h-auto text-sm">
+          View All <ChevronRight className="h-3 w-3 ml-1" />
+        </Button>
+      </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <motion.div 
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ staggerChildren: 0.1 }}
+      >
         {products.slice(0, 4).map((product) => (
-          <div key={product.id} onClick={() => onSelectProduct(product.id)}>
+          <motion.div 
+            key={product.id} 
+            onClick={() => onSelectProduct(product.id)}
+            whileHover={{ y: -5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
             <SearchProductCard
               product={product}
               isAddingToCart={isAddingToCart}
@@ -45,9 +71,9 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
               viewMode="grid"
               isCompact={true}
             />
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 };
