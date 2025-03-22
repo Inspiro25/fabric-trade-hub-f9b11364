@@ -21,6 +21,7 @@ import {
   Smartphone
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 
 // Create form schemas
 const loginSchema = z.object({
@@ -50,6 +51,7 @@ const Authentication = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
+  const { toast } = useToast();
   
   const from = location.state?.from?.pathname || "/";
   
@@ -99,6 +101,8 @@ const Authentication = () => {
         return "No account found with this email. Please sign up first.";
       case 'auth/wrong-password':
         return "Incorrect password. Please try again.";
+      case 'auth/invalid-credential':
+        return "Invalid email or password. Please check your credentials and try again.";
       case 'auth/too-many-requests':
         return "Too many failed attempts. Please try again later.";
       case 'auth/network-request-failed':
@@ -113,12 +117,23 @@ const Authentication = () => {
     setIsLogging(true);
     
     try {
+      console.log("Attempting login with:", values.email);
       await login(values.email, values.password);
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Login error:", error);
       const errorCode = error.code || "";
-      setError(getErrorMessage(errorCode));
+      const errorMessage = getErrorMessage(errorCode);
+      setError(errorMessage);
+      toast({
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLogging(false);
     }
@@ -129,16 +144,26 @@ const Authentication = () => {
     setIsRegistering(true);
     
     try {
+      console.log("Attempting registration with:", values.email);
       // The register function expects only email and password
       await register(values.email, values.password);
-      
+      toast({
+        title: "Registration successful",
+        description: "Your account has been created successfully!",
+      });
       // After successful registration, update the user profile with the name
       // This would require additional code if you want to store the name
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Registration error:", error);
       const errorCode = error.code || "";
-      setError(getErrorMessage(errorCode));
+      const errorMessage = getErrorMessage(errorCode);
+      setError(errorMessage);
+      toast({
+        title: "Registration failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsRegistering(false);
     }
@@ -148,11 +173,21 @@ const Authentication = () => {
     setError("");
     try {
       await loginWithGoogleProvider();
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Google login error:", error);
       const errorCode = error.code || "";
-      setError(getErrorMessage(errorCode));
+      const errorMessage = getErrorMessage(errorCode);
+      setError(errorMessage);
+      toast({
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -160,24 +195,36 @@ const Authentication = () => {
     setError("");
     try {
       await loginWithFacebookProvider();
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Facebook login error:", error);
       const errorCode = error.code || "";
-      setError(getErrorMessage(errorCode));
+      const errorMessage = getErrorMessage(errorCode);
+      setError(errorMessage);
+      toast({
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
   const handlePhoneLogin = () => {
-    // This is just a placeholder - phone authentication would require additional setup
-    alert("Phone authentication is not yet implemented. This requires additional Firebase configuration.");
+    toast({
+      title: "Coming soon",
+      description: "Phone authentication is not yet implemented. This requires additional Firebase configuration.",
+    });
   };
   
   return (
-    <div className="min-h-screen bg-gray-100 flex md:items-center md:justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex md:items-center md:justify-center p-4">
       <div className="w-full max-w-7xl flex flex-col md:flex-row md:shadow-xl md:rounded-xl overflow-hidden bg-white">
         {/* Left Side: Brand/Background */}
-        <div className="w-full md:w-5/12 bg-gradient-to-tr from-kutuku-primary to-kutuku-secondary p-8 text-white hidden md:flex flex-col justify-between">
+        <div className="w-full md:w-5/12 bg-gradient-to-tr from-orange-600 to-orange-400 p-8 text-white hidden md:flex flex-col justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-4">Vyoma</h1>
             <p className="text-xl mb-6">Your shopping companion for local discoveries</p>
@@ -213,7 +260,7 @@ const Authentication = () => {
         {/* Right Side: Auth Forms */}
         <div className="w-full md:w-7/12 p-6 md:p-10">
           <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-kutuku-primary md:hidden">Vyoma</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-orange-600 md:hidden">Vyoma</h1>
             <h2 className="text-xl md:text-2xl font-medium text-gray-800">Welcome Back</h2>
             <p className="text-gray-500 text-sm mt-1">Login or create an account to continue</p>
           </div>
@@ -226,13 +273,13 @@ const Authentication = () => {
             <TabsList className="grid grid-cols-2 mb-8 bg-gray-100 p-1 rounded-full w-full max-w-xs mx-auto">
               <TabsTrigger 
                 value="login" 
-                className="rounded-full data-[state=active]:bg-kutuku-primary data-[state=active]:text-white"
+                className="rounded-full data-[state=active]:bg-orange-500 data-[state=active]:text-white"
               >
                 Login
               </TabsTrigger>
               <TabsTrigger 
                 value="signup" 
-                className="rounded-full data-[state=active]:bg-kutuku-primary data-[state=active]:text-white"
+                className="rounded-full data-[state=active]:bg-orange-500 data-[state=active]:text-white"
               >
                 Sign Up
               </TabsTrigger>
@@ -270,7 +317,7 @@ const Authentication = () => {
                   className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
                   onClick={handlePhoneLogin}
                 >
-                  <Phone className="w-5 h-5 mr-2 text-kutuku-primary" />
+                  <Phone className="w-5 h-5 mr-2 text-orange-500" />
                   Continue with Phone
                 </Button>
               </div>
@@ -295,7 +342,7 @@ const Authentication = () => {
                               placeholder="your.email@example.com" 
                               {...field} 
                               type="email" 
-                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
                             />
                           </div>
                         </FormControl>
@@ -316,7 +363,7 @@ const Authentication = () => {
                               placeholder="••••••••" 
                               {...field} 
                               type="password" 
-                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
                             />
                           </div>
                         </FormControl>
@@ -332,20 +379,20 @@ const Authentication = () => {
                       <input 
                         type="checkbox" 
                         id="remember" 
-                        className="h-4 w-4 text-kutuku-primary border-gray-300 rounded focus:ring-0"
+                        className="h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0"
                       />
                       <label htmlFor="remember" className="ml-2 block text-sm text-gray-600">
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-sm text-kutuku-primary hover:underline">
+                    <a href="#" className="text-sm text-orange-500 hover:underline">
                       Forgot password?
                     </a>
                   </div>
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-kutuku-primary hover:bg-kutuku-secondary h-12 text-white font-medium" 
+                    className="w-full bg-orange-500 hover:bg-orange-600 h-12 text-white font-medium" 
                     disabled={isLogging}
                   >
                     {isLogging ? "Logging in..." : "Login"} 
@@ -387,7 +434,7 @@ const Authentication = () => {
                   className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
                   onClick={handlePhoneLogin}
                 >
-                  <Phone className="w-5 h-5 mr-2 text-kutuku-primary" />
+                  <Phone className="w-5 h-5 mr-2 text-orange-500" />
                   Sign up with Phone
                 </Button>
               </div>
@@ -411,7 +458,7 @@ const Authentication = () => {
                             <Input 
                               placeholder="John Doe" 
                               {...field} 
-                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
                             />
                           </div>
                         </FormControl>
@@ -432,7 +479,7 @@ const Authentication = () => {
                               placeholder="your.email@example.com" 
                               {...field} 
                               type="email" 
-                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
                             />
                           </div>
                         </FormControl>
@@ -453,7 +500,7 @@ const Authentication = () => {
                               placeholder="••••••••" 
                               {...field} 
                               type="password" 
-                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
                             />
                           </div>
                         </FormControl>
@@ -474,7 +521,7 @@ const Authentication = () => {
                               placeholder="••••••••" 
                               {...field} 
                               type="password" 
-                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
                             />
                           </div>
                         </FormControl>
@@ -489,16 +536,16 @@ const Authentication = () => {
                     <input 
                       type="checkbox" 
                       id="terms" 
-                      className="h-4 w-4 text-kutuku-primary border-gray-300 rounded focus:ring-0"
+                      className="h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0"
                     />
                     <label htmlFor="terms" className="ml-2 block text-sm text-gray-600">
-                      I agree to the <a href="#" className="text-kutuku-primary hover:underline">Terms of Service</a> and <a href="#" className="text-kutuku-primary hover:underline">Privacy Policy</a>
+                      I agree to the <a href="#" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="#" className="text-orange-500 hover:underline">Privacy Policy</a>
                     </label>
                   </div>
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-kutuku-primary hover:bg-kutuku-secondary h-12 text-white font-medium" 
+                    className="w-full bg-orange-500 hover:bg-orange-600 h-12 text-white font-medium" 
                     disabled={isRegistering}
                   >
                     {isRegistering ? "Creating Account..." : "Create Account"}
