@@ -73,6 +73,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       try {
         setIsLoadingCategories(true);
         const categoriesData = await fetchCategories();
+        console.log('Categories loaded in component:', categoriesData);
         setCategories(categoriesData);
       } catch (error) {
         console.error('Failed to load categories:', error);
@@ -234,11 +235,17 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                          {categories.length > 0 ? (
+                            categories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-categories" disabled>
+                              No categories available
                             </SelectItem>
-                          ))}
+                          )}
                         </SelectContent>
                       </Select>
                     </FormControl>
