@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/hooks/use-search';
@@ -14,15 +14,22 @@ import AuthDialog from '@/components/search/AuthDialog';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SlidersHorizontal, ArrowUpDown, Search as SearchIcon, XCircle } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, Search as SearchIcon, XCircle, Clock, History } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const searchRef = useRef<HTMLDivElement>(null);
   const searchParams = new URLSearchParams(location.search);
   const query = searchParams.get('q') || '';
   const isMobile = useIsMobile();
   const [searchInput, setSearchInput] = useState(query);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchHistory, setLocalSearchHistory] = useState<{ id: string; query: string }[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const { currentUser } = useAuth();
 
   // View mode state (grid or list)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -31,20 +38,7 @@ const Search = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   
-  // Search handling
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedSearch = searchInput.trim();
-    if (trimmedSearch) {
-      navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
-    }
-  };
-
-  // Reset pagination when query changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
-
+  // Search hooks
   const {
     products,
     categories,
@@ -67,7 +61,7 @@ const Search = () => {
     isShareDialogOpen,
     setIsShareDialogOpen,
     shareableLink,
-    searchHistory,
+    searchHistory: hookSearchHistory,
     recommendations,
     initialLoad,
     handleAddToCart,
@@ -83,15 +77,93 @@ const Search = () => {
     fetchData,
     clearSearchHistoryItem,
     clearAllSearchHistory,
+    saveSearchHistory,
   } = useSearch(query);
 
-  const handleRetry = () => {
-    toast({
-      title: "Retrying",
-      description: "Attempting to fetch products again..."
-    });
-    fetchData();
+  // Handle clicks outside search suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch search history when component mounts
+  useEffect(() => {
+    if (currentUser) {
+      fetchSearchHistory();
+    }
+  }, [currentUser]);
+
+  // Fetch search history from database
+  const fetchSearchHistory = async () => {
+    if (!currentUser) return;
+    
+    setIsLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('*')
+        .eq('user_id', currentUser.uid)
+        .order('searched_at', { ascending: false })
+        .limit(5);
+        
+      if (error) {
+        console.error('Error fetching search history:', error);
+        return;
+      }
+      
+      setLocalSearchHistory(data || []);
+    } catch (err) {
+      console.error('Error fetching search history:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
   };
+
+  // Save search query to history
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedSearch = searchInput.trim();
+    if (trimmedSearch) {
+      navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
+      if (currentUser) {
+        saveSearchHistory(trimmedSearch);
+      }
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle search suggestion selection
+  const handleSelectSuggestion = (selectedQuery: string) => {
+    setSearchInput(selectedQuery);
+    navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
+    if (currentUser) {
+      saveSearchHistory(selectedQuery);
+    }
+    setShowSuggestions(false);
+  };
+
+  // Clear a specific search history item
+  const handleClearHistoryItem = async (id: string) => {
+    await clearSearchHistoryItem(id);
+    setLocalSearchHistory(prev => prev.filter(item => item.id !== id));
+  };
+
+  // Clear all search history
+  const handleClearAllHistory = async () => {
+    await clearAllSearchHistory();
+    setLocalSearchHistory([]);
+  };
+
+  // Reset pagination when query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -172,38 +244,115 @@ const Search = () => {
     </div>
   );
 
+  // Search suggestions component
+  const SearchSuggestions = () => {
+    if (!showSuggestions) return null;
+    
+    return (
+      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
+        {isLoadingHistory ? (
+          <div className="p-3 text-center text-gray-500">Loading...</div>
+        ) : (
+          <>
+            {searchInput && (
+              <div className="p-2 border-b">
+                <div 
+                  className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                  onClick={() => handleSelectSuggestion(searchInput)}
+                >
+                  <SearchIcon className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm">Search for "{searchInput}"</span>
+                </div>
+              </div>
+            )}
+            
+            {searchHistory.length > 0 && (
+              <div className="p-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                    <History className="h-3 w-3" />
+                    <span>Recent Searches</span>
+                  </div>
+                  {searchHistory.length > 1 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleClearAllHistory}
+                      className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+                
+                {searchHistory.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                  >
+                    <div 
+                      className="flex items-center gap-2 text-sm text-gray-700"
+                      onClick={() => handleSelectSuggestion(item.query)}
+                    >
+                      <Clock className="h-3.5 w-3.5 text-gray-400" />
+                      <span>{item.query}</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearHistoryItem(item.id);
+                      }}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto px-4 py-[20px] md:py-[50px]">
       {/* Search input */}
       <div className="mb-6">
-        <form onSubmit={handleSearchSubmit} className="relative w-full max-w-lg mx-auto">
-          <Input
-            type="text"
-            placeholder="Search products, brands, categories..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="pr-20 rounded-full border-kutuku-gray focus:border-kutuku-primary"
-          />
-          {searchInput && (
+        <div ref={searchRef} className="relative w-full max-w-lg mx-auto">
+          <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <Input
+              type="text"
+              placeholder="Search products, brands, categories..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              className="pr-20 rounded-full border-kutuku-gray focus:border-kutuku-primary"
+            />
+            {searchInput && (
+              <Button 
+                type="button" 
+                size="icon" 
+                variant="ghost" 
+                onClick={() => setSearchInput('')}
+                className="absolute right-10 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
             <Button 
-              type="button" 
+              type="submit" 
               size="icon" 
               variant="ghost" 
-              onClick={() => setSearchInput('')}
-              className="absolute right-10 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
+              className="absolute right-0 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
             >
-              <XCircle className="h-4 w-4" />
+              <SearchIcon className="h-4 w-4" />
             </Button>
-          )}
-          <Button 
-            type="submit" 
-            size="icon" 
-            variant="ghost" 
-            className="absolute right-0 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
-          >
-            <SearchIcon className="h-4 w-4" />
-          </Button>
-        </form>
+          </form>
+          
+          <SearchSuggestions />
+        </div>
       </div>
       
       {/* Search header */}
@@ -232,8 +381,8 @@ const Search = () => {
                 <SearchHistory 
                   history={searchHistory}
                   onSelectHistoryItem={handleHistoryItemClick}
-                  onClearHistoryItem={clearSearchHistoryItem}
-                  onClearAllHistory={clearAllSearchHistory}
+                  onClearHistoryItem={handleClearHistoryItem}
+                  onClearAllHistory={handleClearAllHistory}
                 />
               </div>
             )}
@@ -272,8 +421,8 @@ const Search = () => {
                 <SearchHistory 
                   history={searchHistory}
                   onSelectHistoryItem={handleHistoryItemClick}
-                  onClearHistoryItem={clearSearchHistoryItem}
-                  onClearAllHistory={clearAllSearchHistory}
+                  onClearHistoryItem={handleClearHistoryItem}
+                  onClearAllHistory={handleClearAllHistory}
                 />
               )}
               

@@ -34,20 +34,23 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// Create a new SearchSuggestions component
+// Enhanced SearchSuggestions component similar to Flipkart/Amazon
 const SearchSuggestions = ({ 
   query, 
   history, 
   loading, 
   onSelectItem, 
-  onClearHistoryItem 
+  onClearHistoryItem,
+  visible
 }: { 
   query: string; 
   history: { id: string; query: string }[]; 
   loading: boolean; 
   onSelectItem: (query: string) => void; 
-  onClearHistoryItem: (id: string) => void; 
+  onClearHistoryItem: (id: string) => void;
+  visible: boolean;
 }) => {
+  if (!visible) return null;
   if (!query && history.length === 0) return null;
   
   return (
@@ -58,11 +61,12 @@ const SearchSuggestions = ({
         <>
           {query && (
             <div className="p-2 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
-                  <Search className="h-3.5 w-3.5" />
-                  <span>Search for "{query}"</span>
-                </div>
+              <div 
+                className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                onClick={() => onSelectItem(query)}
+              >
+                <Search className="h-4 w-4 text-gray-500" />
+                <span className="text-sm">Search for "{query}"</span>
               </div>
             </div>
           )}
@@ -236,14 +240,16 @@ const Navbar = () => {
     if (!currentUser) return;
     
     try {
-      await supabase.from('search_history').upsert(
-        { 
-          user_id: currentUser.uid,
-          query: query.toLowerCase(),
-          searched_at: new Date().toISOString() 
-        },
-        { onConflict: 'user_id,query', ignoreDuplicates: false }
-      );
+      const { data, error } = await supabase
+        .from('search_history')
+        .upsert(
+          { 
+            user_id: currentUser.uid,
+            query: query.toLowerCase(),
+            searched_at: new Date().toISOString() 
+          },
+          { onConflict: 'user_id,query' }
+        );
       
       // Refresh search history
       fetchSearchHistory();
@@ -376,15 +382,14 @@ const Navbar = () => {
               </Button>
             </form>
             
-            {showSuggestions && (
-              <SearchSuggestions 
-                query={searchQuery}
-                history={searchHistory}
-                loading={isLoadingHistory}
-                onSelectItem={handleSelectSuggestion}
-                onClearHistoryItem={clearSearchHistoryItem}
-              />
-            )}
+            <SearchSuggestions 
+              query={searchQuery}
+              history={searchHistory}
+              loading={isLoadingHistory}
+              onSelectItem={handleSelectSuggestion}
+              onClearHistoryItem={clearSearchHistoryItem}
+              visible={showSuggestions}
+            />
           </div>
 
           {/* Desktop Actions */}
