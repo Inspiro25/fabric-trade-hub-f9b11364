@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Star, Upload } from 'lucide-react';
 import { createReview } from '@/lib/supabase/reviews';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import AuthDialog from '@/components/search/AuthDialog';
 
 interface ReviewFormProps {
@@ -20,7 +20,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { currentUser: user } = useAuth();
 
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);

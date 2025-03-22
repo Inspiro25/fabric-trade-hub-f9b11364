@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import ReviewForm from './ReviewForm';
 import ReviewList from './ReviewList';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ShopReviewsTabProps {
   shopId: string;
 }
 
 const ShopReviewsTab: React.FC<ShopReviewsTabProps> = ({ shopId }) => {
-  const { user } = useAuth();
+  const { currentUser: user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleReviewSubmitted = () => {
