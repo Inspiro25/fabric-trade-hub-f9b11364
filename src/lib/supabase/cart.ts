@@ -7,27 +7,7 @@ import { CartItem } from '@/contexts/CartContext';
  */
 export const fetchCartItems = async (userId: string): Promise<Partial<CartItem>[]> => {
   try {
-    // Check if userId is in UUID format
-    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    
-    // If not a valid UUID, use a different query approach
-    if (!isValidUUID) {
-      console.log('Using Firebase-style user ID query');
-      // For Firebase-style IDs, use a different table or column
-      const { data, error } = await supabase
-        .from('user_carts')
-        .select('*')
-        .eq('firebase_user_id', userId);
-      
-      if (error) {
-        console.error('Error fetching cart items:', error);
-        return [];
-      }
-      
-      return data || [];
-    }
-    
-    // For UUID format user IDs
+    // For all user IDs, use cart_items table with user_id field
     const { data, error } = await supabase
       .from('cart_items')
       .select('id, product_id, quantity, color, size')
@@ -56,30 +36,7 @@ export const upsertCartItem = async (item: {
   size: string;
 }): Promise<boolean> => {
   try {
-    // Check if userId is in UUID format
-    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.user_id);
-    
-    if (!isValidUUID) {
-      // For Firebase-style IDs, use the user_carts table
-      const { error } = await supabase
-        .from('user_carts')
-        .upsert({
-          firebase_user_id: item.user_id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          color: item.color,
-          size: item.size
-        });
-      
-      if (error) {
-        console.error('Error upserting cart item:', error);
-        return false;
-      }
-      
-      return true;
-    }
-    
-    // For UUID format user IDs
+    // Use cart_items table with standard fields
     const { error } = await supabase
       .from('cart_items')
       .upsert({
@@ -112,28 +69,7 @@ export const removeCartItem = async (
   color: string
 ): Promise<boolean> => {
   try {
-    // Check if userId is in UUID format
-    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    
-    if (!isValidUUID) {
-      // For Firebase-style IDs
-      const { error } = await supabase
-        .from('user_carts')
-        .delete()
-        .eq('firebase_user_id', userId)
-        .eq('product_id', productId)
-        .eq('size', size)
-        .eq('color', color);
-      
-      if (error) {
-        console.error('Error removing cart item:', error);
-        return false;
-      }
-      
-      return true;
-    }
-    
-    // For UUID format user IDs
+    // Use cart_items table
     const { error } = await supabase
       .from('cart_items')
       .delete()
@@ -165,28 +101,7 @@ export const updateCartItemQuantity = async (
   quantity: number
 ): Promise<boolean> => {
   try {
-    // Check if userId is in UUID format
-    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    
-    if (!isValidUUID) {
-      // For Firebase-style IDs
-      const { error } = await supabase
-        .from('user_carts')
-        .update({ quantity })
-        .eq('firebase_user_id', userId)
-        .eq('product_id', productId)
-        .eq('size', size)
-        .eq('color', color);
-      
-      if (error) {
-        console.error('Error updating cart item quantity:', error);
-        return false;
-      }
-      
-      return true;
-    }
-    
-    // For UUID format user IDs
+    // Use cart_items table
     const { error } = await supabase
       .from('cart_items')
       .update({ quantity })
@@ -212,25 +127,7 @@ export const updateCartItemQuantity = async (
  */
 export const clearUserCart = async (userId: string): Promise<boolean> => {
   try {
-    // Check if userId is in UUID format
-    const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-    
-    if (!isValidUUID) {
-      // For Firebase-style IDs
-      const { error } = await supabase
-        .from('user_carts')
-        .delete()
-        .eq('firebase_user_id', userId);
-      
-      if (error) {
-        console.error('Error clearing user cart:', error);
-        return false;
-      }
-      
-      return true;
-    }
-    
-    // For UUID format user IDs
+    // Use cart_items table
     const { error } = await supabase
       .from('cart_items')
       .delete()
@@ -247,3 +144,6 @@ export const clearUserCart = async (userId: string): Promise<boolean> => {
     return false;
   }
 };
+
+// Alias for fetchCartItems for backward compatibility
+export const fetchUserCart = fetchCartItems;

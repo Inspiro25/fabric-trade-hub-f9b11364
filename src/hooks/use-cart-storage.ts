@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { CartItem } from '@/contexts/CartContext';
 import { supabase } from '@/integrations/supabase/client';
 import { 
-  fetchUserCart, 
+  fetchCartItems, 
   upsertCartItem, 
   removeCartItem, 
   clearUserCart, 
@@ -30,7 +30,7 @@ export const useCartStorage = (currentUser: any | null) => {
       try {
         if (currentUser) {
           // If user is logged in, get cart from Supabase
-          const cartData = await fetchUserCart(currentUser.uid);
+          const cartData = await fetchCartItems(currentUser.uid);
 
           if (cartData.length > 0) {
             // Fetch full product details for each cart item

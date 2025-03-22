@@ -51,7 +51,7 @@ export const useCartOperations = (
       
       // Then persist to storage (async operation)
       if (currentUser) {
-        // Save to Supabase or Firebase
+        // Save to Supabase
         await upsertCartItem({
           user_id: currentUser.uid,
           product_id: product.id,
@@ -184,11 +184,9 @@ export const useCartOperations = (
       
       // Clear the guest cart
       localStorage.removeItem(STORAGE_KEY);
-      
-      toast.success("Your items are now saved to your account");
     } catch (error) {
       console.error('Error migrating cart:', error);
-      // Silent error, don't show toast to reduce irritation
+      throw error; // Let the caller handle the error
     }
   };
 

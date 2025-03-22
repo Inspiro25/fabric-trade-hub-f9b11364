@@ -69,9 +69,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await migrateGuestCartToUser();
           setHasPendingMigration(false);
+          toast.success('Your cart has been saved to your account');
         } catch (error) {
           console.error('Failed to migrate cart:', error);
-          // Do not show toast on error to reduce notifications
+          // Silent fail - don't show error to user
           setHasPendingMigration(false);
         }
       }
