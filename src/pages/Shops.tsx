@@ -30,7 +30,7 @@ const Shops = () => {
   const filteredShops = shops.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()) || shop.description.toLowerCase().includes(searchTerm.toLowerCase()));
   return <div className="min-h-screen bg-gray-50 pb-6">
       <div className="bg-gradient-to-r from-kutuku-light to-kutuku-light/50 border-b">
-        <div className="container mx-auto px-3 py-[50px]">
+        <div className="container mx-auto px-3 py-[25px]">
           <h1 className="text-xl font-bold text-kutuku-dark mb-1">Explore Shops</h1>
           <p className="text-xs text-gray-600">Discover products from verified partners</p>
         </div>
