@@ -14,7 +14,7 @@ export const getTrendingProducts = async (
       .select(`
         *,
         product_reviews(count),
-        product_view_history(count, view_count)
+        product_view_history(count)
       `);
     
     // Apply timeframe filter
@@ -77,7 +77,7 @@ export const getTrendingProducts = async (
       
       // Calculate view counts from view history
       const viewHistoryCount = Array.isArray(product.product_view_history) 
-        ? product.product_view_history.reduce((sum: number, item: any) => sum + (item.view_count || 0), 0)
+        ? product.product_view_history.length
         : 0;
       
       // Calculate trending score - weights can be adjusted based on importance
@@ -165,7 +165,7 @@ export const recordProductView = async (productId: string, userId?: string): Pro
       const { error: updateError } = await supabase
         .from('product_view_history')
         .update({
-          view_count: existingView.view_count + 1,
+          view_count: (existingView.view_count || 0) + 1,
           last_viewed_at: new Date().toISOString()
         })
         .eq('id', existingView.id);

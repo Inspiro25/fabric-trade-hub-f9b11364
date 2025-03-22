@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { 
   getNewArrivals, 
-  getTrendingProducts, 
+  getBasicTrendingProducts, 
   getAllCategories,
   getTopRatedProducts,
   getDiscountedProducts,
@@ -27,7 +27,7 @@ export function useHomeData() {
 
   const trendingQuery = useQuery({
     queryKey: ['products', 'trending'],
-    queryFn: getTrendingProducts,
+    queryFn: () => getBasicTrendingProducts(),
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });

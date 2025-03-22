@@ -105,11 +105,15 @@ const ProductDetail = () => {
     const loadRecommendations = async () => {
       if (currentUser && id) {
         // Check if currentUser has uid/id property
-        const userId = currentUser.uid || currentUser.id;
+        const userId = currentUser.uid || currentUser.id || '';
         if (userId) {
-          const recommendations = await getPersonalizedRecommendations(userId);
-          if (recommendations) {
-            setRecommendedProducts(recommendations);
+          try {
+            const recommendations = await getPersonalizedRecommendations(userId);
+            if (recommendations) {
+              setRecommendedProducts(recommendations);
+            }
+          } catch (error) {
+            console.error('Error loading recommendations:', error);
           }
         }
       }
@@ -117,9 +121,13 @@ const ProductDetail = () => {
 		
     const loadSimilarProducts = async () => {
       if (id) {
-        const similar = await getSimilarProducts(id);
-        if (similar) {
-          setSimilarProducts(similar);
+        try {
+          const similar = await getSimilarProducts(id);
+          if (similar) {
+            setSimilarProducts(similar);
+          }
+        } catch (error) {
+          console.error('Error loading similar products:', error);
         }
       }
     };
