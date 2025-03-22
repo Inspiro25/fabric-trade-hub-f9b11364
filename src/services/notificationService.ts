@@ -112,8 +112,6 @@ export const createNotification = async (
   link?: string
 ): Promise<boolean> => {
   try {
-    // For partner requests to management, use 'admin' as the userId
-    // In a real app, you might have a specific admin ID or send to multiple admin users
     const { error } = await supabase
       .from('user_notifications')
       .insert({
@@ -155,35 +153,5 @@ export const getUnreadNotificationCount = async (userId: string): Promise<number
   } catch (error) {
     console.error('Error getting unread notification count:', error);
     return 0;
-  }
-};
-
-// Special function to fetch partner request notifications for management
-export const fetchPartnerRequestNotifications = async (): Promise<Notification[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('user_notifications')
-      .select('*')
-      .eq('user_id', 'admin') // We're using 'admin' as a generic identifier for management
-      .eq('type', 'partner-request')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching partner request notifications:', error);
-      return [];
-    }
-    
-    return data.map(notification => ({
-      id: notification.id,
-      title: notification.title,
-      message: notification.message,
-      type: notification.type,
-      read: notification.read,
-      link: notification.link,
-      createdAt: notification.created_at
-    }));
-  } catch (error) {
-    console.error('Error fetching partner request notifications:', error);
-    return [];
   }
 };

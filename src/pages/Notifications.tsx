@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/contexts/NotificationContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from '@/components/ui/use-toast';
 
 const getNotificationIcon = (type: Notification['type']) => {
   switch (type) {
@@ -50,7 +52,7 @@ const formatTimestamp = (timestamp: number) => {
 };
 
 const NotificationItem = ({ notification }: { notification: Notification }) => {
-  const { markAsRead } = useNotifications();
+  const { markAsRead, deleteUserNotification } = useNotifications();
   const navigate = useNavigate();
   
   const handleClick = () => {
@@ -64,26 +66,68 @@ const NotificationItem = ({ notification }: { notification: Notification }) => {
   };
   
   return (
-    <div 
-      className={`px-3 py-2.5 cursor-pointer transition-colors duration-200 ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
-      onClick={handleClick}
-    >
-      <div className="flex items-start gap-2">
-        {!notification.read && (
-          <div className="h-2 w-2 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
-        )}
-        {notification.read && (
-          <div className="h-2 w-2 mt-1.5 flex-shrink-0"></div>
-        )}
-        <div className="flex-1">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            {getNotificationIcon(notification.type)}
-            <h3 className={`text-xs font-semibold ${notification.read ? 'text-gray-800' : 'text-black'}`}>
-              {notification.title}
-            </h3>
+    <div className="relative px-3 py-2.5 transition-colors duration-200 group">
+      <div 
+        className={`cursor-pointer ${notification.read ? 'bg-white' : 'bg-blue-50'} p-2 rounded-md`}
+        onClick={handleClick}
+      >
+        <div className="flex items-start gap-2">
+          {!notification.read && (
+            <div className="h-2 w-2 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
+          )}
+          {notification.read && (
+            <div className="h-2 w-2 mt-1.5 flex-shrink-0"></div>
+          )}
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-1.5 mb-0.5">
+              <div className="flex items-center gap-1.5">
+                {getNotificationIcon(notification.type)}
+                <h3 className={`text-xs font-semibold ${notification.read ? 'text-gray-800' : 'text-black'}`}>
+                  {notification.title}
+                </h3>
+              </div>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="12" cy="5" r="1" />
+                      <circle cx="12" cy="19" r="1" />
+                    </svg>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  {!notification.read && (
+                    <DropdownMenuItem onClick={(e) => {
+                      e.stopPropagation();
+                      markAsRead(notification.id);
+                      toast({
+                        description: "Notification marked as read"
+                      });
+                    }}>
+                      <Check className="mr-2 h-4 w-4" />
+                      <span>Mark as read</span>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    deleteUserNotification(notification.id);
+                  }}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <p className="text-xs text-gray-600 mb-1 leading-tight">{notification.message}</p>
+            <span className="text-[10px] text-gray-500">{formatTimestamp(notification.timestamp)}</span>
           </div>
-          <p className="text-xs text-gray-600 mb-1 leading-tight">{notification.message}</p>
-          <span className="text-[10px] text-gray-500">{formatTimestamp(notification.timestamp)}</span>
         </div>
       </div>
     </div>
@@ -105,10 +149,6 @@ const EmptyNotifications = () => (
 const Notifications = () => {
   const { notifications, unreadCount, markAllAsRead, clearNotifications } = useNotifications();
   const navigate = useNavigate();
-  
-  useEffect(() => {
-    // Add page view tracking or analytics here if needed
-  }, []);
   
   return (
     <div className="pb-12 bg-gray-50 min-h-screen">
