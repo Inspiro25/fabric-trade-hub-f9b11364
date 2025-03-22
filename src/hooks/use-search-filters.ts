@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { SortOption } from '@/hooks/use-search';
+import { SortOption } from '@/lib/types/search';
 
 export const useSearchFilters = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -21,8 +21,14 @@ export const useSearchFilters = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
   
+  // Additional state for search form
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+  const [ratings, setRatings] = useState<number | null>(null);
+  
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);
+    setCategory(category); // Also update the search form state
   };
 
   const handleShopChange = (shop: string | null) => {
@@ -35,6 +41,7 @@ export const useSearchFilters = () => {
 
   const handleRatingChange = (value: number | null) => {
     setRating(value);
+    setRatings(value); // Also update the search form state
   };
 
   const handleSortChange = (value: string) => {
@@ -70,9 +77,11 @@ export const useSearchFilters = () => {
 
   const clearFilters = () => {
     setSelectedCategory(null);
+    setCategory(null);
     setSelectedShop(null);
     setPriceRange([0, 1000]);
     setRating(null);
+    setRatings(null);
     setBrandFilters([]);
     setDiscountFilters([]);
     setAvailabilityFilters({
@@ -80,7 +89,10 @@ export const useSearchFilters = () => {
       fastDelivery: false,
       dealOfDay: false
     });
+    setQuery('');
   };
+  
+  const resetFilters = clearFilters; // Alias for backward compatibility
   
   const filterProducts = (products: any[]) => {
     return products.filter(product => {
@@ -138,6 +150,7 @@ export const useSearchFilters = () => {
   };
 
   return {
+    // Original properties
     selectedCategory,
     selectedShop,
     priceRange,
@@ -162,6 +175,15 @@ export const useSearchFilters = () => {
     handleAvailabilityFilterChange,
     clearFilters,
     filterProducts,
-    sortProducts
+    sortProducts,
+    
+    // Added properties for search form compatibility
+    query,
+    setQuery,
+    category,
+    setCategory,
+    ratings,
+    setRatings,
+    resetFilters
   };
 };

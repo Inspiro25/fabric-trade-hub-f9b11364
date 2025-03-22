@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,6 +32,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { cn } from '@/lib/utils';
+import { SearchPageProduct } from '@/components/search/SearchProductCard';
 
 const Search = () => {
   const location = useLocation();
@@ -49,11 +49,12 @@ const Search = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  const searchState = useSearch();
   const {
     products,
     categories,
     shops,
-    loading,
+    isLoading: loading,
     error,
     selectedCategory,
     selectedShop,
@@ -98,7 +99,7 @@ const Search = () => {
     clearSearchHistoryItem,
     clearAllSearchHistory,
     saveSearchHistory,
-  } = useSearch(query);
+  } = searchState;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -121,7 +122,6 @@ const Search = () => {
     if (trimmedSearch) {
       navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
       if (currentUser) {
-        // Fixed: Only pass the query string (saveSearchHistory was updated to use the userId from state)
         saveSearchHistory(trimmedSearch);
       }
       setShowSuggestions(false);
@@ -132,7 +132,6 @@ const Search = () => {
     setSearchInput(selectedQuery);
     navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
     if (currentUser) {
-      // Fixed: Only pass the query string (saveSearchHistory was updated to use the userId from state)
       saveSearchHistory(selectedQuery);
     }
     setShowSuggestions(false);
@@ -150,6 +149,18 @@ const Search = () => {
 
   const handleRetry = () => {
     fetchData();
+  };
+
+  const handleAddToCartAdapter = (product: SearchPageProduct) => {
+    handleAddToCart(product);
+  };
+  
+  const handleAddToWishlistAdapter = (product: SearchPageProduct) => {
+    handleAddToWishlist(product);
+  };
+  
+  const handleShareProductAdapter = (product: SearchPageProduct) => {
+    handleShareProduct(product);
   };
 
   const paginatedProducts = products.slice(
@@ -534,88 +545,6 @@ const Search = () => {
                       products={recommendations}
                       isAddingToCart={isAddingToCart}
                       isAddingToWishlist={isAddingToWishlist}
-                      onAddToCart={handleAddToCart}
-                      onAddToWishlist={handleAddToWishlist}
-                      onShare={handleShareProduct}
-                      onSelectProduct={(id) => navigate(`/product/${id}`)}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent 
-                    value="recently-viewed" 
-                    className={cn(
-                      "rounded-b-lg shadow-sm p-3 md:p-4 mt-0",
-                      isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border-x border-b border-gray-700" : "bg-white"
-                    )}
-                  >
-                    <SearchRecommendations
-                      products={recentlyViewed}
-                      isAddingToCart={isAddingToCart}
-                      isAddingToWishlist={isAddingToWishlist}
-                      onAddToCart={handleAddToCart}
-                      onAddToWishlist={handleAddToWishlist}
-                      onShare={handleShareProduct}
-                      onSelectProduct={(id) => navigate(`/product/${id}`)}
-                      emptyStateIcon={<Eye className="h-12 w-12 mx-auto mb-2 text-gray-300" />}
-                      emptyStateTitle="No recently viewed products"
-                      emptyStateMessage="Products you view will appear here"
-                    />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : (
-              <SearchResults 
-                loading={loading} 
-                error={error} 
-                products={paginatedProducts} 
-                isAddingToCart={isAddingToCart} 
-                isAddingToWishlist={isAddingToWishlist} 
-                handleAddToCart={handleAddToCart} 
-                handleAddToWishlist={handleAddToWishlist} 
-                handleShareProduct={handleShareProduct} 
-                onRetry={handleRetry}
-                totalItems={products.length}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-              />
-            )}
-          </div>
-        </div>
+                      onAddToCart={handleAddToCartAdapter}
+                     
 
-        <SearchFilters 
-          isMobile={true} 
-          categories={categories} 
-          shops={shops} 
-          selectedCategory={selectedCategory} 
-          selectedShop={selectedShop} 
-          priceRange={priceRange} 
-          rating={rating} 
-          mobileFiltersOpen={mobileFiltersOpen} 
-          setMobileFiltersOpen={setMobileFiltersOpen} 
-          handleCategoryChange={handleCategoryChange} 
-          handleShopChange={handleShopChange} 
-          handlePriceRangeChange={handlePriceRangeChange} 
-          handleRatingChange={handleRatingChange} 
-          clearFilters={clearFilters} 
-        />
-        
-        <SearchSort 
-          isMobile={true} 
-          sortOption={sortOption} 
-          mobileSortOpen={mobileSortOpen} 
-          setMobileSortOpen={setMobileSortOpen} 
-          handleSortChange={handleSortChange} 
-        />
-
-        <AuthDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} onLogin={handleLogin} />
-        <ShareDialog isOpen={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareableLink={shareableLink} />
-      </div>
-    </div>
-  );
-};
-
-export default Search;

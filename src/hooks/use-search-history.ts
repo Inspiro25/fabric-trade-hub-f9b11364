@@ -132,6 +132,12 @@ export const useSearchHistory = (userId: string | null) => {
     }
   };
   
+  // Alias for addToSearchHistory to maintain compatibility
+  const addToSearchHistory = saveSearchHistory;
+  
+  // Alias for clearAllSearchHistory to maintain compatibility
+  const clearSearchHistory = clearAllSearchHistory;
+  
   useEffect(() => {
     if (userId) {
       fetchSearchHistory();
@@ -146,6 +152,9 @@ export const useSearchHistory = (userId: string | null) => {
     clearSearchHistoryItem,
     clearAllSearchHistory,
     saveSearchHistory,
-    fetchSearchHistory
+    fetchSearchHistory,
+    // Aliases for backward compatibility
+    addToSearchHistory,
+    clearSearchHistory
   };
 };

@@ -12,6 +12,12 @@ export const useSearchData = (query: string) => {
   const [error, setError] = useState<string | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
   
+  // Add pagination state
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resultsPerPage, setResultsPerPage] = useState(20);
+  const [pageCount, setPageCount] = useState(1);
+  
   const fetchData = async () => {
     if (initialLoad && !query) {
       setLoading(false);
@@ -58,6 +64,8 @@ export const useSearchData = (query: string) => {
       }));
       
       setProducts(formattedProducts);
+      setTotalProducts(formattedProducts.length);
+      setPageCount(Math.ceil(formattedProducts.length / resultsPerPage));
 
       // Fetch categories
       const { data: categoriesData, error: categoriesError } = await supabase
@@ -128,6 +136,12 @@ export const useSearchData = (query: string) => {
     loading,
     error,
     initialLoad,
-    fetchData
+    fetchData,
+    totalProducts,
+    pageCount,
+    currentPage,
+    setCurrentPage,
+    resultsPerPage,
+    setResultsPerPage
   };
 };
