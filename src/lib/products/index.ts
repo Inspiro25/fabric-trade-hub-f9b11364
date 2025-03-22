@@ -5,3 +5,4 @@ export * from '@/lib/products/base';
 export * from '@/lib/products/filters';
 export * from '@/lib/products/categories';
 export * from '@/lib/products/collections';
+export * from '@/lib/products/deal';
