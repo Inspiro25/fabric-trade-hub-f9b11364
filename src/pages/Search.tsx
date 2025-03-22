@@ -128,7 +128,8 @@ const Search = () => {
       ownerEmail: 'john@electrohub.com',
       owner_email: 'john@electrohub.com',
       status: 'active',
-      shopId: 'shop-1'
+      shopId: 'shop-1',
+      shop_id: 'shop-1'
     },
     {
       id: '2', 
@@ -148,7 +149,8 @@ const Search = () => {
       ownerEmail: 'jane@fashionworld.com',
       owner_email: 'jane@fashionworld.com',
       status: 'active',
-      shopId: 'shop-2'
+      shopId: 'shop-2',
+      shop_id: 'shop-2'
     },
     {
       id: '3', 
@@ -168,7 +170,8 @@ const Search = () => {
       ownerEmail: 'bob@homeessentials.com',
       owner_email: 'bob@homeessentials.com',
       status: 'active',
-      shopId: 'shop-3'
+      shopId: 'shop-3',
+      shop_id: 'shop-3'
     },
   ];
 

@@ -40,16 +40,18 @@ export const useSearchCartIntegration = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
-      toast(`${product.name} added to cart`, {
-        description: "You can view it in your cart",
-        action: {
-          label: "View Cart",
-          onClick: () => navigate('/cart')
-        },
-        // These arguments are required to fix the toast error
-        duration: 3000,
-        dismissible: true
-      });
+      toast(
+        `${product.name} added to cart`,
+        {
+          description: "You can view it in your cart",
+          action: {
+            label: "View Cart",
+            onClick: () => navigate('/cart')
+          },
+          duration: 3000,
+          dismissible: true
+        }
+      );
     }, 500);
   };
 
@@ -59,16 +61,18 @@ export const useSearchCartIntegration = () => {
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(null);
-      toast(`${product.name} added to wishlist`, {
-        description: "You can view it in your wishlist",
-        action: {
-          label: "View Wishlist",
-          onClick: () => navigate('/wishlist')
-        },
-        // These arguments are required to fix the toast error
-        duration: 3000,
-        dismissible: true
-      });
+      toast(
+        `${product.name} added to wishlist`,
+        {
+          description: "You can view it in your wishlist",
+          action: {
+            label: "View Wishlist",
+            onClick: () => navigate('/wishlist')
+          },
+          duration: 3000,
+          dismissible: true
+        }
+      );
     }, 500);
   };
 

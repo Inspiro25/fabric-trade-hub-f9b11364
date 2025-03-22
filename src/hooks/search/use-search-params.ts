@@ -1,10 +1,10 @@
 
 import { useState, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams as useReactRouterSearchParams, useNavigate } from 'react-router-dom';
 
-export const useSearchParams = () => {
+export const useSearchUrlParams = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useReactRouterSearchParams();
   
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || '';

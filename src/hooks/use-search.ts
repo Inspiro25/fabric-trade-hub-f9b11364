@@ -1,8 +1,7 @@
-
 import { useEffect } from 'react';
-import { useSearchParams } from './search/use-search-params';
+import { useSearchUrlParams } from './search/use-search-params';
 import { useSearchFilters } from './search/use-search-filters';
-import { useSearchHistory, SearchHistoryItem } from './search/use-search-history';
+import { useSearchHistory } from './search/use-search-history';
 import { useSearchCartIntegration } from './search/use-search-cart-integration';
 import { useSearchMockData } from './search/use-search-mock-data';
 import { useSearchDialogs } from './search/use-search-dialogs';
@@ -22,7 +21,7 @@ const useSearch = () => {
     viewModeParam, 
     createQueryString,
     navigate 
-  } = useSearchParams();
+  } = useSearchUrlParams();
 
   const {
     selectedCategory,
