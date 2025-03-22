@@ -3,7 +3,7 @@ import { useHomeData } from '@/hooks/use-home-data';
 import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download, Flame, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
@@ -13,19 +13,16 @@ import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import HomeHero from '@/components/home/HomeHero';
 
-// Improved lazy loaded components
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
 const HomeCategoryGrid = lazy(() => import('@/components/home/HomeCategoryGrid'));
 const HomeProductShowcase = lazy(() => import('@/components/home/HomeProductShowcase'));
 
-// Animation variants
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
 };
 
-// Animated section component
 const AnimatedSection = ({ children, delay = 0 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
@@ -44,7 +41,6 @@ const AnimatedSection = ({ children, delay = 0 }) => {
   );
 };
 
-// Fashion Trends Component - Myntra-like
 const FashionTrends = () => {
   const trends = [
     { id: 1, title: "Summer Essentials", image: "https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?q=80&w=500&auto=format&fit=crop", color: "from-yellow-500/70" },
@@ -91,7 +87,6 @@ const FashionTrends = () => {
   );
 };
 
-// Brands Spotlight - Ajio-like
 const BrandsSpotlight = () => {
   const brands = [
     { id: 1, name: "Premium Active", logo: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=150&auto=format&fit=crop&q=60" },
@@ -125,7 +120,6 @@ const BrandsSpotlight = () => {
   );
 };
 
-// App Download Banner - Common in fashion apps
 const AppDownloadBanner = () => (
   <section className="py-10 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
     <div className="container mx-auto px-4">
@@ -154,7 +148,6 @@ const AppDownloadBanner = () => (
   </section>
 );
 
-// Flash Sale Timer - Ajio inspired
 const FlashSaleTimer = () => {
   const [timeLeft, setTimeLeft] = useState({
     hours: 5,
@@ -194,42 +187,68 @@ const FlashSaleTimer = () => {
   }, []);
   
   return (
-    <section className="bg-rose-50 py-6">
-      <div className="container mx-auto px-4">
+    <section className="relative py-6 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 opacity-95"></div>
+      
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+        <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
+        <div className="absolute top-10 right-10 w-20 h-20 bg-yellow-300/20 rounded-full blur-md"></div>
+        <div className="absolute bottom-5 left-1/4 w-32 h-32 bg-rose-300/20 rounded-full blur-lg"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0 flex items-center">
-            <Percent className="h-6 w-6 mr-2 text-rose-500" />
-            <h2 className="text-2xl font-bold text-rose-600">FLASH SALE</h2>
+          <div className="mb-6 md:mb-0 flex items-center">
+            <div className="mr-3 bg-white/20 backdrop-blur-sm p-2 rounded-full">
+              <Flame className="h-7 w-7 text-white animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center">
+                FLASH SALE
+                <Zap className="h-6 w-6 ml-2 text-yellow-300 animate-pulse" />
+              </h2>
+              <p className="text-white/80 text-sm md:text-base">Crazy deals end soon!</p>
+            </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-0">
             <div className="text-center">
-              <div className="bg-white rounded-md shadow-sm p-2 w-12 font-mono font-bold text-xl">
+              <div className="bg-white rounded-lg shadow-lg p-2 md:p-3 w-14 md:w-16 font-mono font-bold text-xl md:text-2xl text-rose-600 border-b-4 border-rose-300">
                 {timeLeft.hours.toString().padStart(2, '0')}
               </div>
-              <span className="text-xs">HRS</span>
+              <span className="text-xs md:text-sm text-white font-medium mt-1 block">HOURS</span>
             </div>
-            <span className="text-xl font-bold">:</span>
+            <span className="text-xl md:text-2xl font-bold text-white">:</span>
             <div className="text-center">
-              <div className="bg-white rounded-md shadow-sm p-2 w-12 font-mono font-bold text-xl">
+              <div className="bg-white rounded-lg shadow-lg p-2 md:p-3 w-14 md:w-16 font-mono font-bold text-xl md:text-2xl text-rose-600 border-b-4 border-rose-300">
                 {timeLeft.minutes.toString().padStart(2, '0')}
               </div>
-              <span className="text-xs">MIN</span>
+              <span className="text-xs md:text-sm text-white font-medium mt-1 block">MINS</span>
             </div>
-            <span className="text-xl font-bold">:</span>
+            <span className="text-xl md:text-2xl font-bold text-white">:</span>
             <div className="text-center">
-              <div className="bg-white rounded-md shadow-sm p-2 w-12 font-mono font-bold text-xl">
+              <div className="bg-white rounded-lg shadow-lg p-2 md:p-3 w-14 md:w-16 font-mono font-bold text-xl md:text-2xl text-rose-600 border-b-4 border-rose-300">
                 {timeLeft.seconds.toString().padStart(2, '0')}
               </div>
-              <span className="text-xs">SEC</span>
+              <span className="text-xs md:text-sm text-white font-medium mt-1 block">SECS</span>
             </div>
           </div>
           
-          <Button className="bg-rose-500 hover:bg-rose-600 transition-colors" asChild>
+          <Button size="lg" className="bg-white text-rose-600 hover:bg-rose-50 transition-colors shadow-lg border-b-4 border-rose-200 font-bold" asChild>
             <Link to="/flash-sale">
-              Shop Now <ArrowRight className="ml-1 h-4 w-4" />
+              SHOP NOW <Percent className="ml-2 h-4 w-4" />
             </Link>
           </Button>
+        </div>
+        
+        <div className="mt-4 flex overflow-x-auto gap-3 pb-2 hide-scrollbar">
+          {[1, 2, 3, 4].map((item) => (
+            <div key={item} className="flex-shrink-0 bg-white/10 backdrop-blur-sm p-1.5 rounded-lg w-24">
+              <div className="bg-white/80 w-full h-20 rounded-md flex items-center justify-center">
+                <span className="font-bold text-rose-600 text-lg">-{30 + item*5}%</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -250,7 +269,6 @@ const Index = () => {
   const [isPageLoaded, setIsPageLoaded] = useState(false);
 
   useEffect(() => {
-    // Handle hash navigation
     if (window.location.hash) {
       const id = window.location.hash.replace('#', '');
       const element = document.getElementById(id);
@@ -261,12 +279,10 @@ const Index = () => {
       window.scrollTo(0, 0);
     }
     
-    // Set page as loaded after a short delay for animations
     const timer = setTimeout(() => setIsPageLoaded(true), 300);
     return () => clearTimeout(timer);
   }, []);
 
-  // Lightweight fallback loading state
   if (isLoading && !categories.length) {
     return (
       <div className="min-h-screen bg-white">
@@ -286,23 +302,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* App Header */}
       <AppHeader />
       
-      {/* Main Content */}
       <main className="pb-16">
-        {/* Using the smaller HomeHero component */}
         <HomeHero />
         
-        {/* Flash Sale Timer - Ajio-like feature */}
         <FlashSaleTimer />
         
-        {/* Brands Spotlight - Ajio-like */}
         <AnimatedSection delay={0.1}>
           <BrandsSpotlight />
         </AnimatedSection>
         
-        {/* Categories Grid */}
         <AnimatedSection delay={0.2}>
           <div className="py-6">
             <div className="container mx-auto px-4">
@@ -328,7 +338,6 @@ const Index = () => {
           </div>
         </AnimatedSection>
         
-        {/* New Arrivals */}
         <AnimatedSection delay={0.3}>
           <div className="container mx-auto px-4">
             {newArrivals.length > 0 && (
@@ -347,12 +356,10 @@ const Index = () => {
           </div>
         </AnimatedSection>
         
-        {/* Fashion Trends - Myntra-like section */}
         <AnimatedSection delay={0.4}>
           <FashionTrends />
         </AnimatedSection>
         
-        {/* Deal of the Day - Elevated Design */}
         <AnimatedSection delay={0.5}>
           <div className="py-6 bg-gray-50">
             <div className="container mx-auto px-4">
@@ -367,7 +374,6 @@ const Index = () => {
           </div>
         </AnimatedSection>
         
-        {/* Best Sellers with Enhanced Layout */}
         <AnimatedSection delay={0.6}>
           <div className="py-6">
             <div className="container mx-auto px-4">
@@ -388,12 +394,10 @@ const Index = () => {
           </div>
         </AnimatedSection>
         
-        {/* App Download Banner - Common in fashion apps */}
         <AnimatedSection delay={0.7}>
           <AppDownloadBanner />
         </AnimatedSection>
         
-        {/* Top Rated */}
         <AnimatedSection delay={0.8}>
           <div className="py-6">
             <div className="container mx-auto px-4">
@@ -412,7 +416,6 @@ const Index = () => {
           </div>
         </AnimatedSection>
         
-        {/* On Sale with Special Styling */}
         <AnimatedSection delay={0.9}>
           <div className="py-6 bg-gray-50">
             <div className="container mx-auto px-4">

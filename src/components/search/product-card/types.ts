@@ -37,11 +37,17 @@ interface Product {
   name: string;
   price: number;
   salePrice?: number;
+  sale_price?: number; // Added this property
   images: string[];
   category?: string;
   isNew?: boolean;
+  is_new?: boolean; // Added this property
   isTrending?: boolean;
+  is_trending?: boolean; // Added this property
   rating?: number;
   reviewCount?: number;
+  review_count?: number; // Added this property
   brand?: string;
+  description?: string; // Added this property
+  stock?: number; // Added this property
 }
