@@ -24,7 +24,7 @@ export default function HomeHero() {
                 </Link>
               </Button>
               <Button variant="outline" className="border-orange-200" asChild>
-                <Link to="/category/trending">Trending Now</Link>
+                <Link to="/trending">Trending Now</Link>
               </Button>
             </div>
           </div>
