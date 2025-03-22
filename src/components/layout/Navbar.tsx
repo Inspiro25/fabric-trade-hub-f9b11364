@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, 
@@ -9,7 +9,9 @@ import {
   X, 
   Percent, 
   ChevronDown,
-  User
+  User,
+  Clock,
+  History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,14 +31,114 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+
+// Create a new SearchSuggestions component
+const SearchSuggestions = ({ 
+  query, 
+  history, 
+  loading, 
+  onSelectItem, 
+  onClearHistoryItem 
+}: { 
+  query: string; 
+  history: { id: string; query: string }[]; 
+  loading: boolean; 
+  onSelectItem: (query: string) => void; 
+  onClearHistoryItem: (id: string) => void; 
+}) => {
+  if (!query && history.length === 0) return null;
+  
+  return (
+    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
+      {loading ? (
+        <div className="p-3 text-center text-gray-500">Loading...</div>
+      ) : (
+        <>
+          {query && (
+            <div className="p-2 border-b">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
+                  <Search className="h-3.5 w-3.5" />
+                  <span>Search for "{query}"</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {history.length > 0 && (
+            <div className="p-2">
+              <div className="flex items-center gap-2 mb-2 text-xs font-medium text-gray-500">
+                <History className="h-3 w-3" />
+                <span>Recent Searches</span>
+              </div>
+              
+              {history.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  <div 
+                    className="flex items-center gap-2 text-sm text-gray-700"
+                    onClick={() => onSelectItem(item.query)}
+                  >
+                    <Clock className="h-3.5 w-3.5 text-gray-400" />
+                    <span>{item.query}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClearHistoryItem(item.id);
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<{ id: string; query: string }[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
+  // Fetch search history when component mounts or currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      fetchSearchHistory();
+    } else {
+      setSearchHistory([]);
+    }
+  }, [currentUser]);
+
+  // Handle clicks outside the search component
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle scroll events
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -49,6 +151,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle body overflow for mobile menu
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -60,13 +163,104 @@ const Navbar = () => {
     };
   }, [mobileMenuOpen]);
 
+  // Fetch search history from database
+  const fetchSearchHistory = async () => {
+    if (!currentUser) return;
+    
+    setIsLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('*')
+        .eq('user_id', currentUser.uid)
+        .order('searched_at', { ascending: false })
+        .limit(5);
+        
+      if (error) {
+        console.error('Error fetching search history:', error);
+        return;
+      }
+      
+      setSearchHistory(data || []);
+    } catch (err) {
+      console.error('Error fetching search history:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Clear a specific search history item
+  const clearSearchHistoryItem = async (id: string) => {
+    if (!currentUser) return;
+    
+    try {
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.uid);
+        
+      if (error) {
+        console.error('Error deleting search history item:', error);
+        return;
+      }
+      
+      setSearchHistory(prevHistory => 
+        prevHistory.filter(item => item.id !== id)
+      );
+    } catch (err) {
+      console.error('Error deleting search history item:', err);
+    }
+  };
+
+  // Save search query to history and navigate
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      
+      // Save to search history if user is logged in
+      if (currentUser) {
+        saveSearchHistory(searchQuery.trim());
+      }
+      
       setSearchQuery('');
+      setShowSuggestions(false);
     } else {
       navigate('/search');
+    }
+  };
+
+  // Save search query to database
+  const saveSearchHistory = async (query: string) => {
+    if (!currentUser) return;
+    
+    try {
+      await supabase.from('search_history').upsert(
+        { 
+          user_id: currentUser.uid,
+          query: query.toLowerCase(),
+          searched_at: new Date().toISOString() 
+        },
+        { onConflict: 'user_id,query', ignoreDuplicates: false }
+      );
+      
+      // Refresh search history
+      fetchSearchHistory();
+    } catch (error) {
+      console.error('Error saving search history:', error);
+    }
+  };
+
+  // Handle selecting a suggestion
+  const handleSelectSuggestion = (query: string) => {
+    setSearchQuery(query);
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+    setShowSuggestions(false);
+    
+    // Save to search history if user is logged in
+    if (currentUser) {
+      saveSearchHistory(query);
     }
   };
 
@@ -161,15 +355,16 @@ const Navbar = () => {
             </NavigationMenu>
           </div>
 
-          {/* Desktop Search */}
-          <form onSubmit={handleSearch} className="relative flex-grow max-w-md mx-4">
-            <div className="relative flex items-center">
+          {/* Desktop Search with Suggestions */}
+          <div ref={searchRef} className="relative flex-grow max-w-md mx-4">
+            <form onSubmit={handleSearch} className="relative flex items-center">
               <Input
                 type="text"
                 placeholder="Search products, brands, categories..."
                 className="pr-10 rounded-full border-kutuku-gray focus:border-kutuku-primary"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
               />
               <Button 
                 type="submit" 
@@ -179,8 +374,18 @@ const Navbar = () => {
               >
                 <Search className="h-4 w-4" />
               </Button>
-            </div>
-          </form>
+            </form>
+            
+            {showSuggestions && (
+              <SearchSuggestions 
+                query={searchQuery}
+                history={searchHistory}
+                loading={isLoadingHistory}
+                onSelectItem={handleSelectSuggestion}
+                onClearHistoryItem={clearSearchHistoryItem}
+              />
+            )}
+          </div>
 
           {/* Desktop Actions */}
           <div className="flex items-center space-x-1">
