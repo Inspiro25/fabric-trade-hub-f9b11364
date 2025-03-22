@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -17,12 +16,10 @@ const Wishlist = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Simulate loading delay for smoother transitions
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 300);
 
-    // Load wishlist items from Supabase
     const fetchWishlistItems = async () => {
       if (wishlist.length === 0) {
         setWishlistItems([]);
@@ -37,7 +34,6 @@ const Wishlist = () => {
         
         if (error) {
           console.error('Error fetching wishlist products:', error);
-          // Fallback to mock data
           import('@/lib/products').then(({ mockProducts }) => {
             const productsInWishlist = mockProducts.filter(product => 
               wishlist.includes(product.id)
@@ -50,12 +46,10 @@ const Wishlist = () => {
         if (data && data.length > 0) {
           setWishlistItems(data as unknown as Product[]);
         } else {
-          // Fallback if no products found
           setWishlistItems([]);
         }
       } catch (error) {
         console.error('Error fetching products:', error);
-        // Fallback to mock data
         import('@/lib/products').then(({ mockProducts }) => {
           const productsInWishlist = mockProducts.filter(product => 
             wishlist.includes(product.id)
@@ -71,7 +65,7 @@ const Wishlist = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center">
+      <div className="container mx-auto px-4 py-12 flex items-center justify-center bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="ml-2 text-muted-foreground">Loading your wishlist...</p>
       </div>
@@ -79,7 +73,7 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-5xl">
+    <div className="container mx-auto px-4 py-6 max-w-5xl bg-gradient-to-br from-orange-50 via-orange-50/80 to-white min-h-screen">
       <div className="flex items-center mb-6">
         <Button 
           variant="ghost" 

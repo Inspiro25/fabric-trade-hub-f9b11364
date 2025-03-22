@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -53,7 +54,7 @@ const Offers = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
       <Navbar />
       
       <main className={`pt-16 pb-20 ${isMobile ? 'px-3' : 'px-4'}`}>

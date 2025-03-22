@@ -33,7 +33,7 @@ const Shops = () => {
   };
 
   return (
-    <div className="min-h-screen pb-6">
+    <div className="min-h-screen pb-6 bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
       {/* Header section */}
       <div className="bg-gradient-to-r from-kutuku-light to-kutuku-light/50 border-b">
         <div className="container mx-auto px-3 py-[25px]">

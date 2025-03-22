@@ -46,7 +46,7 @@ const Cart = () => {
   // True loading state - show only during initial load
   if (isLoading && !initialLoadDone) {
     return (
-      <div className="animate-page-transition min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="animate-page-transition min-h-screen bg-gradient-to-br from-orange-50 via-orange-50/80 to-white flex items-center justify-center">
         <Navbar />
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-kutuku-primary mx-auto" />
@@ -58,7 +58,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="animate-page-transition min-h-screen bg-gray-50">
+    <div className="animate-page-transition min-h-screen bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
       <Navbar />
       
       <main className="pt-12 pb-24 px-4 md:pt-16 md:pb-20">

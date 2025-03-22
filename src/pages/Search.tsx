@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -244,7 +243,7 @@ const Search = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-[16px] md:py-[32px] bg-orange-50/50">
+    <div className="container mx-auto px-4 py-[16px] md:py-[32px] bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
       <div className="mb-5">
         <div ref={searchRef} className="relative w-full max-w-xl mx-auto">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
