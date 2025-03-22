@@ -5,7 +5,7 @@ import { useSearchFilters } from './use-search-filters';
 import { useSearchHistory } from './use-search-history';
 import { useRecommendations } from './use-recommendations';
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
-import { Product as ImportedProduct } from '@/lib/types/product';
+import { Product } from '@/lib/types/product';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -84,7 +84,7 @@ export const useSearch = (query: string) => {
   const filteredProducts = filterProducts(rawProducts);
   const products = sortProducts(filteredProducts);
 
-  const convertToImportedProduct = (product: SearchPageProduct): ImportedProduct => {
+  const convertToImportedProduct = (product: SearchPageProduct): Product => {
     return {
       id: product.id,
       name: product.name,
@@ -99,11 +99,15 @@ export const useSearch = (query: string) => {
       isTrending: product.is_trending,
       rating: product.rating,
       reviewCount: product.review_count,
-      stock: 10,
+      stock: product.stock || 10,
       tags: [],
       shopId: product.shop_id
     };
   };
+
+  const handleProductClick = useCallback((product: SearchPageProduct) => {
+    navigate(`/product/${product.id}`);
+  }, [navigate]);
 
   const handleAddToCart = async (product: SearchPageProduct) => {
     if (!currentUser) {
@@ -225,5 +229,6 @@ export const useSearch = (query: string) => {
     clearSearchHistoryItem,
     clearAllSearchHistory,
     saveSearchHistory,
+    handleProductClick
   };
 };

@@ -18,7 +18,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
     <motion.div 
       className="group relative bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer"
       whileHover={{ y: -5 }}
-      onClick={onClick}
+      onClick={() => onClick && onClick(product)}
     >
       <AspectRatio ratio={1}>
         <img 
@@ -54,7 +54,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
             )}
           </div>
           
-          {product.rating && (
+          {product.rating > 0 && (
             <span className="text-xs text-amber-500 flex items-center">
               <Star className="h-3 w-3 mr-0.5 fill-amber-500" />
               {product.rating}

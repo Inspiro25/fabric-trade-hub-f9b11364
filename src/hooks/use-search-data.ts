@@ -53,7 +53,8 @@ export const useSearchData = (query: string) => {
         colors: product.colors || [],
         sizes: product.sizes || [],
         rating: product.rating || 0,
-        review_count: product.review_count || 0
+        review_count: product.review_count || 0,
+        stock: product.stock || 0
       }));
       
       setProducts(formattedProducts);

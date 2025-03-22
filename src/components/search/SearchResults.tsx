@@ -1,3 +1,4 @@
+
 import React from 'react';
 import SearchProductCard, { SearchPageProduct } from './SearchProductCard';
 import SearchHeader from './SearchHeader';
@@ -15,6 +16,7 @@ interface SearchResultsProps {
   handleAddToCart: (product: SearchPageProduct) => void;
   handleAddToWishlist: (product: SearchPageProduct) => void;
   handleShareProduct: (product: SearchPageProduct) => void;
+  onProductClick?: (product: SearchPageProduct) => void;
   onRetry?: () => void;
   totalItems?: number;
   currentPage?: number;
@@ -34,6 +36,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   handleAddToCart,
   handleAddToWishlist,
   handleShareProduct,
+  onProductClick,
   onRetry,
   totalItems = 0,
   currentPage = 1,
@@ -76,11 +79,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           <SearchProductCard
             key={product.id}
             product={product}
-            isAddingToCart={isAddingToCart}
-            isAddingToWishlist={isAddingToWishlist}
-            onAddToCart={handleAddToCart}
-            onAddToWishlist={handleAddToWishlist}
-            onShare={handleShareProduct}
+            isAddingToCart={isAddingToCart === product.id}
+            isAddingToWishlist={isAddingToWishlist === product.id}
+            onAddToCart={() => handleAddToCart(product)}
+            onAddToWishlist={() => handleAddToWishlist(product)}
+            onShare={() => handleShareProduct(product)}
+            onClick={() => onProductClick && onProductClick(product)}
             viewMode={viewMode}
           />
         ))}
