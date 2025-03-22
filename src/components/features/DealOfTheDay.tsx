@@ -6,6 +6,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getDealOfTheDay, DealProduct } from '@/lib/products/deal';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DealOfTheDay = () => {
   const [deal, setDeal] = useState<DealProduct | null>(null);
@@ -15,6 +22,8 @@ const DealOfTheDay = () => {
     minutes: 0,
     seconds: 0
   });
+  const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedSize, setSelectedSize] = useState<string>('');
   const { addToCart } = useCart();
   
   useEffect(() => {
@@ -23,6 +32,14 @@ const DealOfTheDay = () => {
         setIsLoading(true);
         const dealProduct = await getDealOfTheDay();
         setDeal(dealProduct);
+        
+        // Set initial selections when deal is loaded
+        if (dealProduct && dealProduct.colors.length > 0) {
+          setSelectedColor(dealProduct.colors[0]);
+        }
+        if (dealProduct && dealProduct.sizes.length > 0) {
+          setSelectedSize(dealProduct.sizes[0]);
+        }
       } catch (error) {
         console.error('Error fetching deal of the day:', error);
       } finally {
@@ -60,14 +77,18 @@ const DealOfTheDay = () => {
   const handleAddToCart = () => {
     if (!deal) return;
     
+    // Use the selected color and size
+    const colorToUse = selectedColor || deal.colors[0] || 'default';
+    const sizeToUse = selectedSize || deal.sizes[0] || 'default';
+    
     addToCart(
       deal, 
       1, 
-      deal.colors[0] || 'default', 
-      deal.sizes[0] || 'default'
+      colorToUse, 
+      sizeToUse
     );
     
-    toast.success(`Added ${deal.name} to cart`);
+    toast.success(`Added ${deal.name} to cart (${sizeToUse}, ${colorToUse})`);
   };
   
   if (isLoading) {
@@ -118,6 +139,45 @@ const DealOfTheDay = () => {
             <span className="text-lg font-bold text-kutuku-primary mr-2">₹{deal.salePrice?.toFixed(2)}</span>
             <span className="text-sm line-through text-gray-400">₹{deal.price.toFixed(2)}</span>
           </div>
+          
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {deal.colors.length > 0 && (
+              <Select
+                value={selectedColor}
+                onValueChange={setSelectedColor}
+              >
+                <SelectTrigger className="w-full text-xs h-8">
+                  <SelectValue placeholder="Select Color" />
+                </SelectTrigger>
+                <SelectContent>
+                  {deal.colors.map((color) => (
+                    <SelectItem key={color} value={color}>
+                      {color}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            
+            {deal.sizes.length > 0 && (
+              <Select
+                value={selectedSize}
+                onValueChange={setSelectedSize}
+              >
+                <SelectTrigger className="w-full text-xs h-8">
+                  <SelectValue placeholder="Select Size" />
+                </SelectTrigger>
+                <SelectContent>
+                  {deal.sizes.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+          
           <div className="grid grid-cols-4 gap-2 mb-3">
             <div className="bg-gray-100 rounded-md p-2 text-center">
               <span className="block text-sm font-bold">{timeLeft.hours.toString().padStart(2, '0')}</span>
