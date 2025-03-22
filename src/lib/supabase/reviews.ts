@@ -111,7 +111,7 @@ export const createReview = async (
     rating: number;
     comment: string;
     images?: string[];
-    userId: string;
+    userId: string; // This is now the Supabase user ID
     reviewType: 'product' | 'shop';
     productId?: string;
     shopId?: string;
@@ -125,6 +125,11 @@ export const createReview = async (
     if (reviewData.reviewType === 'shop' && !reviewData.shopId) {
       throw new Error('Shop ID is required for shop reviews');
     }
+
+    console.log('Creating review with data:', {
+      ...reviewData,
+      userId: reviewData.userId.substring(0, 10) + '...' // Log partial user ID for debugging
+    });
 
     const { data, error } = await supabase
       .from('product_reviews')

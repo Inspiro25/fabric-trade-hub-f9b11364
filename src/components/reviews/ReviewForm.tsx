@@ -7,6 +7,7 @@ import { createReview } from '@/lib/supabase/reviews';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import AuthDialog from '@/components/search/AuthDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewFormProps {
   productId?: string;
@@ -51,11 +52,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
       }
 
       const reviewType = productId ? 'product' : 'shop';
+      
+      // Get the Supabase user ID from the session
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUserId = session?.user?.id;
+      
+      if (!supabaseUserId) {
+        throw new Error('User ID not available');
+      }
 
       const result = await createReview({
         rating,
         comment,
-        userId: user.uid, // Changed from user.id to user.uid to match Firebase User type
+        userId: supabaseUserId, // Use Supabase user ID
         reviewType,
         productId,
         shopId,
