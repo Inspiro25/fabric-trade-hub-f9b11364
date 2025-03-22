@@ -95,8 +95,8 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
         
         {product.is_trending && (
           <div className="absolute left-2 bottom-2">
-            <Badge variant="outline" className="bg-purple-500/20 text-purple-800 border-purple-200">
-              <Zap className="h-3 w-3 mr-1 text-purple-600" /> Trending
+            <Badge variant="outline" className="bg-orange-500/20 text-orange-800 border-orange-200">
+              <Zap className="h-3 w-3 mr-1 text-orange-600" /> Trending
             </Badge>
           </div>
         )}
@@ -123,7 +123,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           <div>
             {product.sale_price ? (
               <div className="flex items-center gap-1">
-                <span className="text-base font-bold text-[#9b87f5]">
+                <span className="text-base font-bold text-orange-500">
                   ${product.sale_price}
                 </span>
                 <span className="text-xs text-gray-500 line-through">
@@ -142,7 +142,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           size="sm" 
           onClick={handleAddToCartClick}
           disabled={!!isAddingThisToCart}
-          className={cn("w-full h-9", buttonColor || "bg-[#9b87f5] hover:bg-[#7E69AB]")}
+          className={cn("w-full h-9", buttonColor || "bg-orange-500 hover:bg-orange-600")}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           ADD TO BAG

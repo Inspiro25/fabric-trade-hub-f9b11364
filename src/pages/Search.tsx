@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -29,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const Search = () => {
   const location = useLocation();
@@ -406,8 +406,10 @@ const Search = () => {
                     <Store className="h-4 w-4 mr-2 text-kutuku-primary" />
                     Browse Categories
                   </h2>
-                  <Button variant="link" className="text-kutuku-primary p-0 h-auto text-sm" onClick={() => navigate('/categories')}>
-                    View All <ChevronRight className="h-3 w-3 ml-1" />
+                  <Button variant="link" className="text-kutuku-primary p-0 h-auto text-sm" asChild>
+                    <Link to="/categories">
+                      View All <ChevronRight className="h-3 w-3 ml-1" />
+                    </Link>
                   </Button>
                 </div>
                 

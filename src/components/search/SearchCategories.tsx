@@ -1,9 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { Tag, Store } from 'lucide-react';
+import { Tag, Store, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
+import { Link } from 'react-router-dom';
 
 interface Category {
   id: string;
@@ -57,10 +58,16 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-      <h3 className="text-lg font-medium flex items-center mb-3">
-        <Tag className="h-4 w-4 mr-2 text-[#9b87f5]" />
-        Popular Categories
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-medium flex items-center">
+          <Tag className="h-4 w-4 mr-2 text-orange-500" />
+          Popular Categories
+        </h3>
+        
+        <Button variant="link" className="text-orange-500 p-0 h-auto text-sm" asChild>
+          <Link to="/categories">View All <ChevronRight className="h-3 w-3 ml-1" /></Link>
+        </Button>
+      </div>
       
       <div className="flex flex-wrap gap-2">
         {selectedCategory && (
@@ -84,7 +91,7 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
               onClick={() => onSelectCategory(category.id)}
               className={`text-sm rounded-full px-3 py-1 h-auto flex items-center gap-1 ${
                 selectedCategory === category.id 
-                  ? 'bg-[#9b87f5] text-white hover:bg-[#7E69AB]' 
+                  ? 'bg-orange-500 text-white hover:bg-orange-600' 
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
               variant={selectedCategory === category.id ? "default" : "ghost"}

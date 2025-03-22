@@ -45,11 +45,11 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium flex items-center">
-          <TrendingUp className="h-4 w-4 mr-2 text-[#9b87f5]" />
+          <TrendingUp className="h-4 w-4 mr-2 text-orange-500" />
           Recommended For You
         </h3>
         
-        <Button variant="link" className="text-[#9b87f5] p-0 h-auto text-sm">
+        <Button variant="link" className="text-orange-500 p-0 h-auto text-sm">
           View All <ChevronRight className="h-3 w-3 ml-1" />
         </Button>
       </div>
@@ -76,6 +76,7 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
               onShare={onShare}
               viewMode="grid"
               isCompact={true}
+              buttonColor="bg-orange-500 hover:bg-orange-600"
             />
           </motion.div>
         ))}
