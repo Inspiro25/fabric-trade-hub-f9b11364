@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -119,6 +120,18 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
   }
+  
+  .dark-gradient-bg {
+    @apply bg-gradient-to-br from-gray-900 via-[#2a2a2a] to-gray-900;
+  }
+  
+  .brown-gradient-bg {
+    @apply bg-gradient-to-br from-[#261a0d] via-[#292018] to-[#221815];
+  }
+  
+  .dark-glass {
+    @apply bg-gray-900/80 backdrop-blur-sm border border-gray-800;
+  }
 }
 
 @layer components {
@@ -237,6 +250,27 @@
   .search-bar-mobile .submit-button {
     @apply absolute right-1 top-1/2 transform -translate-y-1/2 h-8 rounded-full flex items-center justify-center;
   }
+  
+  /* Dark theme specific classes */
+  .dark-card {
+    @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg shadow-sm;
+  }
+  
+  .dark-tab-active {
+    @apply data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400;
+  }
+  
+  .dark-input {
+    @apply bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500 focus:ring-orange-500;
+  }
+  
+  .dark-button {
+    @apply bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-700 dark:hover:bg-orange-800;
+  }
+  
+  .dark-button-outline {
+    @apply border-orange-600 text-orange-500 hover:bg-orange-600/10 dark:border-orange-500 dark:text-orange-400 dark:hover:bg-orange-500/20;
+  }
 }
 
 /* Custom scrollbar */
@@ -296,4 +330,19 @@
 
 .kutuku-product-grid {
   @apply grid grid-cols-2 gap-4;
+}
+
+/* Dark mode mobile optimizations */
+@media (max-width: 768px) {
+  .dark .mobile-card {
+    @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg p-3;
+  }
+  
+  .dark .mobile-search-container {
+    @apply bg-gray-900 border-gray-700;
+  }
+  
+  .dark .mobile-tabs {
+    @apply bg-gray-800 border-gray-700;
+  }
 }

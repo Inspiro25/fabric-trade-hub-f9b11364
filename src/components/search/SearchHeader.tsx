@@ -38,7 +38,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
     <div className={cn(
       "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg shadow-sm mb-3 gap-2 border-b",
       isDarkMode 
-        ? "bg-gray-800/80 backdrop-blur-sm border-gray-700" 
+        ? "bg-gray-800/90 backdrop-blur-sm border-gray-700" 
         : "bg-white border-orange-100"
     )}>
       <div className={cn(
