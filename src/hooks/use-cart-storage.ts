@@ -24,7 +24,7 @@ export const useCartStorage = (currentUser: any | null) => {
 
   // Fetch cart from database when user logs in or out
   useEffect(() => {
-    const fetchCartItems = async () => {
+    const fetchUserCartItems = async () => {
       setIsLoading(true);
       
       try {
@@ -32,7 +32,7 @@ export const useCartStorage = (currentUser: any | null) => {
           // If user is logged in, get cart from Supabase
           const cartData = await fetchCartItems(currentUser.uid);
 
-          if (cartData.length > 0) {
+          if (cartData && cartData.length > 0) {
             // Fetch full product details for each cart item
             const cartWithProducts = await Promise.all(
               cartData.map(async (item) => {
@@ -140,7 +140,7 @@ export const useCartStorage = (currentUser: any | null) => {
     };
 
     // Only fetch cart items if auth state changed or on initial load
-    fetchCartItems();
+    fetchUserCartItems();
   }, [currentUser, retryCount]);
 
   // Save to localStorage whenever cartItems changes if user is not logged in
