@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -506,5 +507,226 @@ const ProductDetail = () => {
                   
                   <div className="grid grid-cols-4 gap-4">
                     {product.images.map((image, index) => (
-                      <div
+                      <div 
+                        key={index}
+                        className={`cursor-pointer aspect-square rounded-md overflow-hidden border-2 transition-all ${
+                          mainImage === image ? 'border-kutuku-primary' : 'border-transparent hover:border-kutuku-primary/50'
+                        }`}
+                        onClick={() => setMainImage(image)}
+                      >
+                        <img 
+                          src={image} 
+                          alt={`${product.name} - View ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bg-kutuku-light text-kutuku-primary text-xs px-2 py-0.5 rounded-full">
+                        {product.category}
+                      </span>
+                      {product.isNew && (
+                        <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">New</span>
+                      )}
+                      {product.isTrending && (
+                        <span className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">Trending</span>
+                      )}
+                    </div>
+                    
+                    <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+                    
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center">
+                        {renderRatingStars(product.rating)}
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        ({product.reviewCount} reviews)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 mb-6">
+                      {product.salePrice ? (
+                        <>
+                          <span className="text-3xl font-bold text-kutuku-primary">${product.salePrice.toFixed(2)}</span>
+                          <span className="text-lg text-gray-500 line-through">${product.price.toFixed(2)}</span>
+                          <span className="bg-kutuku-light text-kutuku-primary px-2 py-1 rounded-md text-sm">
+                            {Math.round(((product.price - product.salePrice) / product.price) * 100)}% OFF
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-3xl font-bold text-kutuku-primary">${product.price.toFixed(2)}</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p className="text-gray-600 leading-relaxed mb-6">
+                      {product.description}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-3">Color: <span className="text-kutuku-primary">{selectedColor}</span></h3>
+                    <div className="flex flex-wrap gap-3 mb-6">
+                      {product.colors.map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${
+                            selectedColor === color 
+                              ? 'border-kutuku-primary' 
+                              : 'border-muted hover:border-kutuku-primary/50'
+                          }`}
+                          onClick={() => setSelectedColor(color)}
+                          aria-label={`Select ${color} color`}
+                        >
+                          <span 
+                            className="w-10 h-10 rounded-full" 
+                            style={{ backgroundColor: color.toLowerCase() }}
+                          />
+                          {selectedColor === color && (
+                            <Check className="absolute w-4 h-4 text-white drop-shadow-md" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-medium">Size: <span className="text-kutuku-primary">{selectedSize}</span></h3>
+                      <Button variant="link" className="p-0 h-auto text-kutuku-primary" asChild>
+                        <Link to="/sizing">
+                          Size Guide
+                        </Link>
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-3 mb-6">
+                      {product.sizes.map(size => (
+                        <button
+                          key={size}
+                          type="button"
+                          className={`py-2 rounded-lg border-2 transition-all ${
+                            selectedSize === size 
+                              ? 'border-kutuku-primary bg-kutuku-light' 
+                              : 'border-muted hover:border-kutuku-primary/50'
+                          }`}
+                          onClick={() => setSelectedSize(size)}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-3">Quantity:</h3>
+                    <div className="flex items-center border border-gray-200 rounded-lg w-40 mb-6">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={decrementQuantity}
+                        disabled={quantity <= 1}
+                        className="text-kutuku-primary"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                      <span className="flex-1 text-center font-medium">{quantity}</span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={incrementQuantity}
+                        disabled={quantity >= product.stock}
+                        className="text-kutuku-primary"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3">
+                    <Button 
+                      className="flex-1 bg-kutuku-primary hover:bg-kutuku-secondary py-6 px-8"
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      Add to Cart
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-14 h-14 border-kutuku-primary text-kutuku-primary hover:bg-kutuku-light"
+                      onClick={toggleFavorite}
+                    >
+                      <Heart className={isFavorited ? 'fill-kutuku-primary' : ''} />
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-14 h-14 border-kutuku-primary text-kutuku-primary hover:bg-kutuku-light"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success('Link copied to clipboard');
+                      }}
+                    >
+                      <Share2 />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3 border-t border-gray-100 pt-4">
+                    <div className="flex items-center text-sm">
+                      <Truck className="w-4 h-4 text-kutuku-primary mr-3" />
+                      <span>Free shipping on orders over $100</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <RefreshCw className="w-4 h-4 text-kutuku-primary mr-3" />
+                      <span>Free returns within 30 days</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Check className="w-4 h-4 text-kutuku-primary mr-3" />
+                      <span>
+                        {product.stock > 10 
+                          ? 'In stock, ready to ship' 
+                          : product.stock > 0 
+                            ? `Limited stock: only ${product.stock} left` 
+                            : 'Out of stock'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-16">
+                <ProductReviews 
+                  productId={product.id} 
+                  rating={product.rating} 
+                  reviewCount={product.reviewCount}
+                />
+              </div>
+              
+              <div className="mt-16">
+                <h2 className="text-2xl font-bold mb-8">You Might Also Like</h2>
+                <ProductGrid 
+                  products={relatedProducts}
+                  columns={4}
+                  showPagination={false}
+                  title=""
+                  subtitle=""
+                />
+              </div>
+            </div>
+          </main>
+          
+          <Footer />
+        </>
+      )}
+    </div>
+  );
+};
 
+export default ProductDetail;
