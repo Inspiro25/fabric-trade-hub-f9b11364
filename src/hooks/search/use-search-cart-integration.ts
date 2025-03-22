@@ -40,6 +40,7 @@ export const useSearchCartIntegration = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
+      // Using the correct format for toast from sonner
       toast.success(`${product.name} added to cart`, {
         description: "You can view it in your cart",
         action: {
@@ -58,6 +59,7 @@ export const useSearchCartIntegration = () => {
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(null);
+      // Using the correct format for toast from sonner
       toast.success(`${product.name} added to wishlist`, {
         description: "You can view it in your wishlist",
         action: {
