@@ -364,6 +364,27 @@ export type Database = {
         }
         Relationships: []
       }
+      popular_search_terms: {
+        Row: {
+          count: number
+          created_at: string | null
+          id: string
+          query: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string | null
+          id?: string
+          query: string
+        }
+        Update: {
+          count?: number
+          created_at?: string | null
+          id?: string
+          query?: string
+        }
+        Relationships: []
+      }
       product_analytics: {
         Row: {
           created_at: string | null

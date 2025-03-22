@@ -11,11 +11,13 @@ import {
   ChevronDown,
   User,
   Clock,
-  History
+  History,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -34,29 +36,36 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// Enhanced SearchSuggestions component similar to Flipkart/Amazon
+// Enhanced SearchSuggestions component with improved loading state
 const SearchSuggestions = ({ 
   query, 
   history, 
   loading, 
   onSelectItem, 
   onClearHistoryItem,
+  popularSearches,
   visible
 }: { 
   query: string; 
-  history: { id: string; query: string }[]; 
+  history: { id: string; query: string }[];
+  popularSearches: string[];
   loading: boolean; 
   onSelectItem: (query: string) => void; 
   onClearHistoryItem: (id: string) => void;
   visible: boolean;
 }) => {
   if (!visible) return null;
-  if (!query && history.length === 0) return null;
+  if (!query && history.length === 0 && popularSearches.length === 0) return null;
   
   return (
-    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-60 overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-80 overflow-y-auto">
       {loading ? (
-        <div className="p-3 text-center text-gray-500">Loading...</div>
+        <div className="p-3 text-center text-gray-500">
+          <div className="inline-block animate-spin mr-2">
+            <Clock className="h-5 w-5" />
+          </div>
+          <span>Loading suggestions...</span>
+        </div>
       ) : (
         <>
           {query && (
@@ -65,15 +74,37 @@ const SearchSuggestions = ({
                 className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded cursor-pointer"
                 onClick={() => onSelectItem(query)}
               >
-                <Search className="h-4 w-4 text-gray-500" />
-                <span className="text-sm">Search for "{query}"</span>
+                <Search className="h-4 w-4 text-[#9b87f5]" />
+                <span className="text-sm">Search for "<span className="font-medium">{query}</span>"</span>
+              </div>
+            </div>
+          )}
+          
+          {popularSearches.length > 0 && (
+            <div className="p-2 border-b">
+              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
+                <TrendingUp className="h-3 w-3" />
+                <span>Popular Searches</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 px-2">
+                {popularSearches.map((term, idx) => (
+                  <Badge 
+                    key={idx} 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-gray-100 border-[#9b87f5] text-[#9b87f5]"
+                    onClick={() => onSelectItem(term)}
+                  >
+                    {term}
+                  </Badge>
+                ))}
               </div>
             </div>
           )}
           
           {history.length > 0 && (
             <div className="p-2">
-              <div className="flex items-center gap-2 mb-2 text-xs font-medium text-gray-500">
+              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
                 <History className="h-3 w-3" />
                 <span>Recent Searches</span>
               </div>
@@ -115,6 +146,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchHistory, setSearchHistory] = useState<{ id: string; query: string }[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -128,6 +160,7 @@ const Navbar = () => {
     } else {
       setSearchHistory([]);
     }
+    fetchPopularSearches();
   }, [currentUser]);
 
   // Handle clicks outside the search component
@@ -190,6 +223,32 @@ const Navbar = () => {
       console.error('Error fetching search history:', err);
     } finally {
       setIsLoadingHistory(false);
+    }
+  };
+
+  // Fetch popular searches
+  const fetchPopularSearches = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('popular_search_terms')
+        .select('query, count')
+        .order('count', { ascending: false })
+        .limit(5);
+      
+      if (error) {
+        console.error('Error fetching popular searches:', error);
+        setPopularSearches(['smartphone', 'headphones', 'laptop', 'watch', 'camera']);
+        return;
+      }
+      
+      if (data && data.length > 0) {
+        setPopularSearches(data.map(item => item.query));
+      } else {
+        setPopularSearches(['smartphone', 'headphones', 'laptop', 'watch', 'camera']);
+      }
+    } catch (err) {
+      console.error('Error fetching popular searches:', err);
+      setPopularSearches(['smartphone', 'headphones', 'laptop', 'watch', 'camera']);
     }
   };
 
@@ -385,6 +444,7 @@ const Navbar = () => {
             <SearchSuggestions 
               query={searchQuery}
               history={searchHistory}
+              popularSearches={popularSearches}
               loading={isLoadingHistory}
               onSelectItem={handleSelectSuggestion}
               onClearHistoryItem={clearSearchHistoryItem}
