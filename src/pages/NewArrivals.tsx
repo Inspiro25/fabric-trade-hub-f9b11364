@@ -78,13 +78,15 @@ const NewArrivals = () => {
       
       if (session?.session?.user && products && products.length > 0) {
         try {
-          // Cast the product ID to UUID using ::uuid in the RPC call
-          // This fixes the type mismatch error
-          const { error } = await supabase.rpc('record_product_view', {
+          // Create a separate object for the RPC parameters with explicit typing
+          const params = {
             p_user_id: session.session.user.id,
             p_product_id: products[0].id,
             p_view_increment: 1
-          } as any); // Use type assertion to bypass the type check temporarily
+          };
+          
+          // Call the RPC function with the params object
+          const { error } = await supabase.rpc('record_product_view', params);
           
           if (error) {
             console.error('Error recording featured product view:', error);
