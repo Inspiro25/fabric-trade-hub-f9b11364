@@ -12,7 +12,9 @@ interface SearchErrorStateProps {
 const SearchErrorState: React.FC<SearchErrorStateProps> = ({ error, onRetry }) => {
   const isApiUnavailable = error.includes('API endpoint') || 
                           error.includes('HTML instead of JSON') ||
-                          error.includes('Failed to fetch products');
+                          error.includes('Failed to fetch products') ||
+                          error.includes('database') ||
+                          error.includes('connection');
   
   return (
     <Alert variant="destructive" className="my-8">
@@ -21,7 +23,7 @@ const SearchErrorState: React.FC<SearchErrorStateProps> = ({ error, onRetry }) =
         <p className="mb-4">{error}</p>
         <p className="text-sm mb-4">
           {isApiUnavailable 
-            ? 'There was an issue connecting to the database. This could be temporary.' 
+            ? 'There was an issue connecting to the database. This could be temporary. Showing mock data instead.' 
             : 'Please try refreshing the page or try again later.'}
         </p>
         
@@ -33,7 +35,7 @@ const SearchErrorState: React.FC<SearchErrorStateProps> = ({ error, onRetry }) =
             size="sm"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
+            Retry Connection
           </Button>
         )}
       </AlertDescription>
