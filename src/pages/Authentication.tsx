@@ -9,7 +9,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Heart, ShoppingBag } from "lucide-react";
+import { 
+  Heart, 
+  ShoppingBag, 
+  Facebook, 
+  Phone, 
+  Mail, 
+  Lock, 
+  User, 
+  ArrowRight,
+  Smartphone
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 // Create form schemas
 const loginSchema = z.object({
@@ -35,16 +46,17 @@ const Authentication = () => {
   const [isLogging, setIsLogging] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register, currentUser } = useAuth();
+  const { login, register, loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
   
   const from = location.state?.from?.pathname || "/";
   
   useEffect(() => {
     // Redirect if already logged in
-    if (currentUser) {
-      navigate(from, { replace: true });
+    if (location.state?.tab === "signup") {
+      setActiveTab("signup");
     }
     
     // Simulate loading delay for smoother transitions
@@ -53,7 +65,7 @@ const Authentication = () => {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [currentUser, navigate, from]);
+  }, [location.state?.tab]);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -131,171 +143,371 @@ const Authentication = () => {
       setIsRegistering(false);
     }
   };
+
+  const handleGoogleLogin = async () => {
+    setError("");
+    try {
+      await loginWithGoogleProvider();
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      const errorCode = error.code || "";
+      setError(getErrorMessage(errorCode));
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    setError("");
+    try {
+      await loginWithFacebookProvider();
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      console.error("Facebook login error:", error);
+      const errorCode = error.code || "";
+      setError(getErrorMessage(errorCode));
+    }
+  };
+
+  const handlePhoneLogin = () => {
+    // This is just a placeholder - phone authentication would require additional setup
+    alert("Phone authentication is not yet implemented. This requires additional Firebase configuration.");
+  };
   
   return (
-    <div className={`min-h-screen bg-gray-50 flex flex-col transition-all duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="flex-1 flex flex-col">
-        {/* Auth Form Section */}
-        <div className="w-full flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 order-1">
-          <div className="max-w-md w-full">
-            <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold text-kutuku-primary">Vyoma</h1>
-              <p className="text-gray-500 text-sm">Your shopping companion</p>
+    <div className="min-h-screen bg-gray-100 flex md:items-center md:justify-center p-4">
+      <div className="w-full max-w-7xl flex flex-col md:flex-row md:shadow-xl md:rounded-xl overflow-hidden bg-white">
+        {/* Left Side: Brand/Background */}
+        <div className="w-full md:w-5/12 bg-gradient-to-tr from-kutuku-primary to-kutuku-secondary p-8 text-white hidden md:flex flex-col justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-4">Vyoma</h1>
+            <p className="text-xl mb-6">Your shopping companion for local discoveries</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="bg-white/10 p-4 rounded-lg">
+              <div className="flex items-center mb-2">
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                <h3 className="font-medium">Easy Shopping</h3>
+              </div>
+              <p className="text-sm text-white/90">
+                Discover and buy from local shops with secure checkout
+              </p>
             </div>
             
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid grid-cols-2 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="login">
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="your.email@example.com" {...field} type="email" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input placeholder="••••••••" {...field} type="password" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-kutuku-primary hover:bg-kutuku-secondary" 
-                      disabled={isLogging}
-                    >
-                      {isLogging ? "Logging in..." : "Log in"}
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <Form {...signupForm}>
-                  <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
-                    <FormField
-                      control={signupForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="your.email@example.com" {...field} type="email" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input placeholder="••••••••" {...field} type="password" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input placeholder="••••••••" {...field} type="password" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-kutuku-primary hover:bg-kutuku-secondary" 
-                      disabled={isRegistering}
-                    >
-                      {isRegistering ? "Creating Account..." : "Create Account"}
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-        
-        {/* Description Section */}
-        <div className="w-full bg-kutuku-primary text-white p-6 md:p-10 order-2">
-          <div className="max-w-md mx-auto h-full flex flex-col justify-center">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Experience Vyoma</h2>
-              <p className="text-white/80 mb-6">
-                Your one-stop destination for all your shopping needs. Discover products from local shops and businesses.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-white/10 p-4 rounded-lg">
-                  <div className="flex items-center mb-2">
-                    <ShoppingBag className="w-5 h-5 mr-2" />
-                    <h3 className="font-medium">Easy Shopping</h3>
-                  </div>
-                  <p className="text-sm text-white/70">
-                    Seamless shopping experience with secure checkout and tracking.
-                  </p>
-                </div>
-                
-                <div className="bg-white/10 p-4 rounded-lg">
-                  <div className="flex items-center mb-2">
-                    <Heart className="w-5 h-5 mr-2" />
-                    <h3 className="font-medium">Wishlist</h3>
-                  </div>
-                  <p className="text-sm text-white/70">
-                    Save your favorite items for later and share with friends.
-                  </p>
-                </div>
+            <div className="bg-white/10 p-4 rounded-lg">
+              <div className="flex items-center mb-2">
+                <Heart className="w-5 h-5 mr-2" />
+                <h3 className="font-medium">Save Favorites</h3>
               </div>
+              <p className="text-sm text-white/90">
+                Create wishlists and save items for later
+              </p>
             </div>
           </div>
+          
+          <p className="text-sm text-white/70 mt-8">
+            By continuing, you agree to Vyoma's Terms of Use and Privacy Policy
+          </p>
+        </div>
+        
+        {/* Right Side: Auth Forms */}
+        <div className="w-full md:w-7/12 p-6 md:p-10">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-kutuku-primary md:hidden">Vyoma</h1>
+            <h2 className="text-xl md:text-2xl font-medium text-gray-800">Welcome Back</h2>
+            <p className="text-gray-500 text-sm mt-1">Login or create an account to continue</p>
+          </div>
+          
+          <Tabs 
+            value={activeTab} 
+            onValueChange={setActiveTab} 
+            className="w-full"
+          >
+            <TabsList className="grid grid-cols-2 mb-8 bg-gray-100 p-1 rounded-full w-full max-w-xs mx-auto">
+              <TabsTrigger 
+                value="login" 
+                className="rounded-full data-[state=active]:bg-kutuku-primary data-[state=active]:text-white"
+              >
+                Login
+              </TabsTrigger>
+              <TabsTrigger 
+                value="signup" 
+                className="rounded-full data-[state=active]:bg-kutuku-primary data-[state=active]:text-white"
+              >
+                Sign Up
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login" className="mt-0">
+              <div className="flex flex-col space-y-4 mb-4">
+                <Button 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  onClick={handleGoogleLogin}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" className="mr-2" viewBox="0 0 186.69 190.5">
+                    <g transform="translate(1184.583 765.171)">
+                      <path fill="#4285f4" d="M-1089.333-687.239v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"/>
+                      <path fill="#34a853" d="M-1142.714-651.791l-6.972 5.337-24.679 19.223h0c15.673 31.086 47.796 52.561 85.03 52.561 25.717 0 47.278-8.486 63.038-23.033l-30.913-23.986c-8.486 5.715-19.31 9.179-32.125 9.179-24.765 0-45.806-16.712-53.34-39.226z"/>
+                      <path fill="#fbbc05" d="M-1174.365-712.61c-6.494 12.815-10.217 27.276-10.217 42.689s3.723 29.874 10.217 42.689c0 .086 31.693-24.592 31.693-24.592-1.905-5.715-3.031-11.776-3.031-18.098s1.126-12.383 3.031-18.098z"/>
+                      <path fill="#ea4335" d="M-1089.333-727.244c14.028 0 26.497 4.849 36.455 14.201l27.276-27.276c-16.539-15.413-38.013-24.852-63.731-24.852-37.234 0-69.359 21.388-85.032 52.561l31.692 24.592c7.533-22.514 28.575-39.226 53.34-39.226z"/>
+                    </g>
+                  </svg>
+                  Continue with Google
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  onClick={handleFacebookLogin}
+                >
+                  <Facebook className="w-5 h-5 mr-2 text-[#1877F2]" />
+                  Continue with Facebook
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  onClick={handlePhoneLogin}
+                >
+                  <Phone className="w-5 h-5 mr-2 text-kutuku-primary" />
+                  Continue with Phone
+                </Button>
+              </div>
+              
+              <div className="relative my-6">
+                <Separator className="absolute inset-0 flex items-center" />
+                <span className="relative z-10 bg-white px-4 text-sm text-gray-500 mx-auto">or login with email</span>
+              </div>
+              
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-gray-700">Email</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="your.email@example.com" 
+                              {...field} 
+                              type="email" 
+                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-gray-700">Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="••••••••" 
+                              {...field} 
+                              type="password" 
+                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        id="remember" 
+                        className="h-4 w-4 text-kutuku-primary border-gray-300 rounded focus:ring-0"
+                      />
+                      <label htmlFor="remember" className="ml-2 block text-sm text-gray-600">
+                        Remember me
+                      </label>
+                    </div>
+                    <a href="#" className="text-sm text-kutuku-primary hover:underline">
+                      Forgot password?
+                    </a>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-kutuku-primary hover:bg-kutuku-secondary h-12 text-white font-medium" 
+                    disabled={isLogging}
+                  >
+                    {isLogging ? "Logging in..." : "Login"} 
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+            
+            <TabsContent value="signup" className="mt-0">
+              <div className="flex flex-col space-y-4 mb-4">
+                <Button 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  onClick={handleGoogleLogin}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" className="mr-2" viewBox="0 0 186.69 190.5">
+                    <g transform="translate(1184.583 765.171)">
+                      <path fill="#4285f4" d="M-1089.333-687.239v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"/>
+                      <path fill="#34a853" d="M-1142.714-651.791l-6.972 5.337-24.679 19.223h0c15.673 31.086 47.796 52.561 85.03 52.561 25.717 0 47.278-8.486 63.038-23.033l-30.913-23.986c-8.486 5.715-19.31 9.179-32.125 9.179-24.765 0-45.806-16.712-53.34-39.226z"/>
+                      <path fill="#fbbc05" d="M-1174.365-712.61c-6.494 12.815-10.217 27.276-10.217 42.689s3.723 29.874 10.217 42.689c0 .086 31.693-24.592 31.693-24.592-1.905-5.715-3.031-11.776-3.031-18.098s1.126-12.383 3.031-18.098z"/>
+                      <path fill="#ea4335" d="M-1089.333-727.244c14.028 0 26.497 4.849 36.455 14.201l27.276-27.276c-16.539-15.413-38.013-24.852-63.731-24.852-37.234 0-69.359 21.388-85.032 52.561l31.692 24.592c7.533-22.514 28.575-39.226 53.34-39.226z"/>
+                    </g>
+                  </svg>
+                  Sign up with Google
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  onClick={handleFacebookLogin}
+                >
+                  <Facebook className="w-5 h-5 mr-2 text-[#1877F2]" />
+                  Sign up with Facebook
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  onClick={handlePhoneLogin}
+                >
+                  <Phone className="w-5 h-5 mr-2 text-kutuku-primary" />
+                  Sign up with Phone
+                </Button>
+              </div>
+              
+              <div className="relative my-6">
+                <Separator className="absolute inset-0 flex items-center" />
+                <span className="relative z-10 bg-white px-4 text-sm text-gray-500 mx-auto">or sign up with email</span>
+              </div>
+              
+              <Form {...signupForm}>
+                <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+                  <FormField
+                    control={signupForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-gray-700">Name</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="John Doe" 
+                              {...field} 
+                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signupForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-gray-700">Email</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="your.email@example.com" 
+                              {...field} 
+                              type="email" 
+                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signupForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-gray-700">Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="••••••••" 
+                              {...field} 
+                              type="password" 
+                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signupForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-gray-700">Confirm Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="••••••••" 
+                              {...field} 
+                              type="password" 
+                              className="pl-10 h-12 border-gray-200 focus:border-kutuku-primary" 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  
+                  <div className="flex items-center mt-2">
+                    <input 
+                      type="checkbox" 
+                      id="terms" 
+                      className="h-4 w-4 text-kutuku-primary border-gray-300 rounded focus:ring-0"
+                    />
+                    <label htmlFor="terms" className="ml-2 block text-sm text-gray-600">
+                      I agree to the <a href="#" className="text-kutuku-primary hover:underline">Terms of Service</a> and <a href="#" className="text-kutuku-primary hover:underline">Privacy Policy</a>
+                    </label>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-kutuku-primary hover:bg-kutuku-secondary h-12 text-white font-medium" 
+                    disabled={isRegistering}
+                  >
+                    {isRegistering ? "Creating Account..." : "Create Account"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
