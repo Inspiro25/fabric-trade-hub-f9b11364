@@ -117,79 +117,30 @@ const Authentication = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
       <Navbar />
       
       <main className="flex-1 flex items-center justify-center pt-20 pb-16 px-4">
         <div className="container max-w-5xl mx-auto">
-          <div className="grid gap-8 md:grid-cols-2 items-center">
-            {/* Left Column - Branding and Information */}
-            <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <div className="space-y-6 max-w-md">
-                <div>
-                  <h1 className="text-4xl font-bold text-blue-600 mb-2">VyomaKart</h1>
-                  <p className="text-xl text-gray-600">Your one-stop shopping destination</p>
-                </div>
-                
-                <div className="space-y-4 mt-8">
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-full mt-1">
-                      <User className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-800">Personalized Experience</h3>
-                      <p className="text-gray-600 text-sm">Tailored recommendations based on your preferences</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-full mt-1">
-                      <ShoppingBag className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-800">Order History</h3>
-                      <p className="text-gray-600 text-sm">Track your orders and view past purchases</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-full mt-1">
-                      <Heart className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-800">Saved Wishlist</h3>
-                      <p className="text-gray-600 text-sm">Save your favorite items for later</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="hidden md:block mt-10">
-                  <img 
-                    src="/images/shopping-illustration.svg" 
-                    alt="Shopping Illustration" 
-                    className="max-w-full h-auto"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Right Column - Authentication Form */}
-            <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+          <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2 items-center">
+            {/* First Column - Authentication Form */}
+            <div className={`order-1 lg:order-1 transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div className="px-6 py-8 text-center mb-4">
+                  <h1 className="text-4xl font-bold text-orange-500 mb-2">Vyoma</h1>
+                  <p className="text-lg text-gray-600">Your one-stop shopping destination</p>
+                </div>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="w-full grid grid-cols-2 h-14 rounded-none border-b bg-gray-50/80">
                     <TabsTrigger 
                       value="login" 
-                      className="font-medium data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none"
+                      className="font-medium data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:text-orange-500 rounded-none"
                     >
                       Sign In
                     </TabsTrigger>
                     <TabsTrigger 
                       value="register" 
-                      className="font-medium data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 rounded-none"
+                      className="font-medium data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:text-orange-500 rounded-none"
                     >
                       Create Account
                     </TabsTrigger>
@@ -208,7 +159,7 @@ const Authentication = () => {
                             id="email" 
                             type="email" 
                             placeholder="name@example.com" 
-                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                             value={loginEmail} 
                             onChange={e => setLoginEmail(e.target.value)} 
                           />
@@ -218,7 +169,7 @@ const Authentication = () => {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label htmlFor="password" className="text-gray-700">Password</Label>
-                          <Button variant="link" className="p-0 h-auto text-xs text-blue-600" asChild>
+                          <Button variant="link" className="p-0 h-auto text-xs text-orange-500" asChild>
                             <a href="/forgot-password">Forgot password?</a>
                           </Button>
                         </div>
@@ -230,7 +181,7 @@ const Authentication = () => {
                             id="password" 
                             type={showPassword ? "text" : "password"} 
                             placeholder="••••••••" 
-                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                             value={loginPassword} 
                             onChange={e => setLoginPassword(e.target.value)} 
                           />
@@ -251,7 +202,7 @@ const Authentication = () => {
                       
                       <Button 
                         type="submit" 
-                        className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center justify-center gap-2" 
+                        className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-medium flex items-center justify-center gap-2" 
                         disabled={isSubmitting}
                       >
                         {isSubmitting ? 'Signing In...' : 'Sign In'}
@@ -314,7 +265,7 @@ const Authentication = () => {
                             id="name" 
                             type="text" 
                             placeholder="John Doe" 
-                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                             value={name} 
                             onChange={e => setName(e.target.value)} 
                           />
@@ -331,7 +282,7 @@ const Authentication = () => {
                             id="register-email" 
                             type="email" 
                             placeholder="name@example.com" 
-                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                             value={email} 
                             onChange={e => setEmail(e.target.value)} 
                           />
@@ -348,7 +299,7 @@ const Authentication = () => {
                             id="phone" 
                             type="tel" 
                             placeholder="+1 (123) 456-7890" 
-                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                            className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                             value={phone} 
                             onChange={e => setPhone(e.target.value)} 
                           />
@@ -366,7 +317,7 @@ const Authentication = () => {
                               id="register-password" 
                               type={showPassword ? "text" : "password"} 
                               placeholder="••••••••" 
-                              className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                              className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                               value={password} 
                               onChange={e => setPassword(e.target.value)} 
                             />
@@ -383,7 +334,7 @@ const Authentication = () => {
                               id="confirm-password" 
                               type={showPassword ? "text" : "password"} 
                               placeholder="••••••••" 
-                              className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-500" 
+                              className="pl-10 py-5 h-11 border-gray-200 bg-gray-50/50 focus:bg-white focus:border-orange-500" 
                               value={confirmPassword} 
                               onChange={e => setConfirmPassword(e.target.value)} 
                             />
@@ -407,17 +358,17 @@ const Authentication = () => {
                         <input 
                           type="checkbox" 
                           id="terms" 
-                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                          className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500" 
                           required 
                         />
                         <Label htmlFor="terms" className="text-sm leading-none text-gray-700">
-                          I agree to the <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
+                          I agree to the <a href="/terms" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-orange-500 hover:underline">Privacy Policy</a>
                         </Label>
                       </div>
                       
                       <Button 
                         type="submit" 
-                        className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center justify-center gap-2" 
+                        className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-medium flex items-center justify-center gap-2" 
                         disabled={isSubmitting}
                       >
                         {isSubmitting ? 'Creating Account...' : 'Create Account'}
@@ -467,6 +418,56 @@ const Authentication = () => {
                     </form>
                   </TabsContent>
                 </Tabs>
+              </div>
+            </div>
+            
+            {/* Second Column - Branding and Information - NOW BELOW ON MOBILE, ALONGSIDE ON DESKTOP */}
+            <div className={`order-2 lg:order-2 transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <div className="space-y-6 max-w-md mx-auto">                
+                <div className="space-y-6 mt-8">
+                  <h2 className="text-2xl font-bold text-orange-500 mb-6">Why choose Vyoma?</h2>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="bg-orange-100 p-2 rounded-full mt-1">
+                      <User className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-800">Personalized Experience</h3>
+                      <p className="text-gray-600 text-sm">Tailored recommendations based on your preferences</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="bg-orange-100 p-2 rounded-full mt-1">
+                      <ShoppingBag className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-800">Order History</h3>
+                      <p className="text-gray-600 text-sm">Track your orders and view past purchases</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="bg-orange-100 p-2 rounded-full mt-1">
+                      <Heart className="h-5 w-5 text-orange-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-800">Saved Wishlist</h3>
+                      <p className="text-gray-600 text-sm">Save your favorite items for later</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="hidden md:block mt-10">
+                  <img 
+                    src="/images/shopping-illustration.svg" 
+                    alt="Shopping Illustration" 
+                    className="max-w-full h-auto"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>

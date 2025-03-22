@@ -64,8 +64,8 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				kutuku: {
-					primary: '#FE7235',
-					secondary: '#FF9D6C',
+					primary: '#FF6B00', // Changed from FE7235 to a brighter orange
+					secondary: '#FF8A3D', // Changed from FF9D6C to a slightly brighter orange
 					light: '#FFF0EA',
 					dark: '#212121',
 					gray: '#F6F6F6',
