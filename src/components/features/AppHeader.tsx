@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import NotificationBadge from '@/components/features/NotificationBadge';
 const AppHeader: React.FC = () => {
-  return <div className="sticky top-0 z-10 bg-white px-4 shadow-sm py-[50px]">
+  return <div className="sticky top-0 z-10 bg-white px-4 shadow-sm py-[25px]">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-kutuku-primary">Kutuku</h1>
