@@ -51,11 +51,11 @@ export interface Shop {
   is_verified: boolean;
   ownerName: string;
   owner_name: string;
-  ownerEmail: string; // Make required
-  owner_email: string; // Make required
-  status?: 'pending' | 'active' | 'suspended';
+  ownerEmail: string; // Required
+  owner_email: string; // Required
+  status: 'pending' | 'active' | 'suspended'; // Make required
   shopId: string;
-  shop_id: string; // Make required
+  shop_id: string; // Required
 }
 
 export interface ProductCardBaseProps {
@@ -68,5 +68,5 @@ export interface ProductCardBaseProps {
   onClick?: (product: SearchPageProduct) => void;
   buttonColor?: string;
   viewMode?: 'grid' | 'list';
-  isCompact?: boolean; // Add isCompact property
+  isCompact?: boolean; // Property for compact mode
 }
