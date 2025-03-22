@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag } from 'lucide-react';
 import { useShopSearch } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
+import SearchErrorState from '@/components/search/SearchErrorState';
 
 const Shops = () => {
   const { 
@@ -26,8 +27,14 @@ const Shops = () => {
     setSearchTerm(e.target.value);
   };
 
+  // Handle retry button click
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
+      {/* Header section */}
       <div className="bg-gradient-to-r from-kutuku-light to-kutuku-light/50 border-b">
         <div className="container mx-auto px-3 py-[25px]">
           <h1 className="text-xl font-bold text-kutuku-dark mb-1">Explore Shops</h1>
@@ -35,6 +42,7 @@ const Shops = () => {
         </div>
       </div>
       
+      {/* Search section */}
       <div className="container mx-auto px-3 -mt-3">
         <Card className="border-none shadow-sm">
           <CardContent className="p-2">
@@ -62,6 +70,14 @@ const Shops = () => {
         </Card>
       </div>
       
+      {/* Error display */}
+      {error && (
+        <div className="container mx-auto px-3 mt-4">
+          <SearchErrorState error={error} onRetry={handleRetry} />
+        </div>
+      )}
+      
+      {/* Main content section */}
       <div className="container mx-auto px-3 py-4">
         {isLoading ? (
           <div className="flex justify-center items-center py-8">
