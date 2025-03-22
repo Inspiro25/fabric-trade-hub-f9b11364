@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/contexts/CartContext';
 
 const SearchSuggestions = ({ 
   query, 
@@ -152,6 +153,8 @@ const Navbar = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const { getCartCount } = useCart();
+  const cartItemCount = getCartCount();
 
   useEffect(() => {
     if (currentUser) {
@@ -474,6 +477,11 @@ const Navbar = () => {
             <Button variant="ghost" size="icon" className="relative" asChild>
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center bg-red-500 text-white rounded-full text-xs w-5 h-5">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
+                )}
                 <span className="sr-only">Cart</span>
               </Link>
             </Button>
