@@ -373,6 +373,7 @@ const Index = () => {
                   isLoaded={dataLoaded.newArrivals}
                   layout="carousel"
                   tag="new"
+                  showViewAll={false}
                 />
               </Suspense>
             )}

@@ -16,11 +16,12 @@ interface ProductShowcaseProps {
   title: string;
   subtitle?: string;
   products: Product[];
-  linkTo: string;
+  linkTo?: string;
   isLoaded: boolean;
   layout?: 'grid' | 'carousel';
   highlight?: boolean;
   tag?: 'new' | 'sale' | 'trending';
+  showViewAll?: boolean;
 }
 
 export default function HomeProductShowcase({ 
@@ -31,7 +32,8 @@ export default function HomeProductShowcase({
   isLoaded,
   layout = 'grid',
   highlight = false,
-  tag
+  tag,
+  showViewAll = true
 }: ProductShowcaseProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
@@ -113,10 +115,12 @@ export default function HomeProductShowcase({
               </div>
               {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
             </div>
-            <Link to={linkTo} className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
-              View All
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
+            {showViewAll && linkTo && (
+              <Link to={linkTo} className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
+                View All
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            )}
           </div>
           
           {highlight && (
@@ -202,10 +206,12 @@ export default function HomeProductShowcase({
             </div>
             {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
           </div>
-          <Link to={linkTo} className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
-            View All
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
+          {showViewAll && linkTo && (
+            <Link to={linkTo} className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
+              View All
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          )}
         </div>
       </div>
       
