@@ -1,15 +1,16 @@
 
-import { useEffect, Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { useHomeData } from '@/hooks/use-home-data';
 import AppHeader from '@/components/features/AppHeader';
-import HeroBanner from '@/components/features/HeroBanner';
-import HomeCategories from '@/components/features/HomeCategories';
-import SectionLoading from '@/components/ui/SectionLoading';
+import HomeHero from '@/components/home/HomeHero';
+import HomeCategoryGrid from '@/components/home/HomeCategoryGrid';
+import HomeProductShowcase from '@/components/home/HomeProductShowcase';
+import HomePromoBanner from '@/components/home/HomePromoBanner';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Lazy loading of sections to improve initial load performance
+// Lazy loaded components for less important sections
+const SectionLoading = () => <Skeleton className="h-32 w-full" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
-const ProductSection = lazy(() => import('@/components/features/ProductSection'));
-const Hero = lazy(() => import('@/components/features/Hero'));
 
 const Index = () => {
   const { 
@@ -20,7 +21,6 @@ const Index = () => {
     discountedProducts,
     isLoading, 
     dataLoaded,
-    hasErrors
   } = useHomeData();
 
   useEffect(() => {
@@ -29,93 +29,86 @@ const Index = () => {
       const id = window.location.hash.replace('#', '');
       const element = document.getElementById(id);
       if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth'
-        });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
       window.scrollTo(0, 0);
     }
   }, []);
 
-  // If there are errors, still render the basic UI with available data
-  if (hasErrors) {
-    console.error("Some queries encountered errors but we'll show what we can");
-  }
-
-  // Show optimized loading state - but with a fallback to display at least something
-  if (isLoading && !dataLoaded.categories) {
+  // Lightweight fallback loading state
+  if (isLoading && !categories.length) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-white">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-kutuku-primary"></div>
+        <div className="py-4 px-4 space-y-4">
+          <Skeleton className="h-48 w-full rounded-lg" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-64 w-full rounded-lg" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="pb-16 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50">
       {/* App Header */}
       <AppHeader />
       
       {/* Main Content */}
-      <main className="pb-4">
-        {/* Hero Banner Carousel */}
-        <HeroBanner />
+      <main>
+        {/* Hero Section */}
+        <HomeHero />
         
-        {/* Categories - will always show first because we load them first */}
-        {dataLoaded.categories && <HomeCategories categories={categories} />}
+        {/* Categories Grid */}
+        <HomeCategoryGrid 
+          categories={categories} 
+          isLoading={!dataLoaded.categories} 
+        />
         
         {/* Deal of the Day - lazy loaded */}
         <Suspense fallback={<SectionLoading />}>
           <DealOfTheDay />
         </Suspense>
         
-        {/* New Arrivals Section - progressive loading */}
-        {dataLoaded.newArrivals && newArrivals.length > 0 && (
-          <Suspense fallback={<SectionLoading />}>
-            <ProductSection 
-              title="New Arrivals"
-              products={newArrivals.slice(0, 4)}
-              linkTo="/category/new-arrivals"
-            />
-          </Suspense>
-        )}
+        {/* Promo Banner */}
+        <HomePromoBanner />
         
-        {/* Best Sellers Section - progressive loading */}
-        {dataLoaded.bestSellers && bestSellers.length > 0 && (
-          <Suspense fallback={<SectionLoading />}>
-            <ProductSection 
-              title="Best Sellers"
-              products={bestSellers.slice(0, 4)}
-              linkTo="/category/best-sellers"
-            />
-          </Suspense>
-        )}
+        {/* New Arrivals */}
+        <HomeProductShowcase
+          title="New Arrivals"
+          products={newArrivals}
+          linkTo="/category/new-arrivals"
+          isLoaded={dataLoaded.newArrivals}
+        />
         
-        {/* Top Rated Products - lazy loaded */}
-        {dataLoaded.topRated && topRatedProducts.length > 0 && (
-          <Suspense fallback={<SectionLoading />}>
-            <ProductSection 
-              title="Top Rated"
-              products={topRatedProducts.slice(0, 4)}
-              linkTo="/category/top-rated"
-            />
-          </Suspense>
-        )}
+        {/* Best Sellers */}
+        <HomeProductShowcase
+          title="Best Sellers"
+          products={bestSellers}
+          linkTo="/category/best-sellers"
+          isLoaded={dataLoaded.bestSellers}
+        />
         
-        {/* Discounted Products - lazy loaded */}
-        {dataLoaded.discounted && discountedProducts.length > 0 && (
-          <Suspense fallback={<SectionLoading />}>
-            <ProductSection 
-              title="On Sale"
-              products={discountedProducts.slice(0, 4)}
-              linkTo="/category/sale"
-            />
-          </Suspense>
-        )}
+        {/* Top Rated */}
+        <HomeProductShowcase
+          title="Top Rated"
+          products={topRatedProducts}
+          linkTo="/category/top-rated"
+          isLoaded={dataLoaded.topRated}
+        />
+        
+        {/* On Sale */}
+        <HomeProductShowcase
+          title="On Sale"
+          products={discountedProducts}
+          linkTo="/category/sale"
+          isLoaded={dataLoaded.discounted}
+        />
       </main>
     </div>
   );

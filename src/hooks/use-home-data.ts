@@ -7,73 +7,59 @@ import {
   getTopRatedProducts, 
   getDiscountedProducts, 
   getBestSellingProducts,
-  Product
 } from '@/lib/products';
 
 export function useHomeData() {
-  // Fetch categories data with React Query
+  // Optimize stale time and caching for better performance
   const categoriesQuery = useQuery({
     queryKey: ['categories'],
     queryFn: getAllCategories,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    retry: 2, // Retry failed requests up to 2 times
+    staleTime: 15 * 60 * 1000, // 15 minutes cache
+    retry: 1,
   });
 
-  // Fetch new arrivals data with React Query
   const newArrivalsQuery = useQuery({
     queryKey: ['products', 'newArrivals'],
     queryFn: getNewArrivals,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    retry: 1,
   });
 
-  // Fetch trending products data with React Query
   const trendingQuery = useQuery({
     queryKey: ['products', 'trending'],
     queryFn: getTrendingProducts,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    retry: 2,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
-  // Fetch top rated products data with React Query
   const topRatedQuery = useQuery({
     queryKey: ['products', 'topRated'],
     queryFn: getTopRatedProducts,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    retry: 2,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    enabled: !categoriesQuery.isLoading && !newArrivalsQuery.isLoading, // Load after initial content
   });
 
-  // Fetch discounted products data with React Query
   const discountedQuery = useQuery({
     queryKey: ['products', 'discounted'],
     queryFn: getDiscountedProducts,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    retry: 2,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    enabled: !categoriesQuery.isLoading && !newArrivalsQuery.isLoading, // Load after initial content
   });
 
-  // Fetch best selling products data with React Query
   const bestSellersQuery = useQuery({
     queryKey: ['products', 'bestSellers'],
     queryFn: getBestSellingProducts,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    retry: 2,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    enabled: !categoriesQuery.isLoading && !newArrivalsQuery.isLoading, // Load after initial content
   });
 
-  // Check if any queries have errors
-  const hasErrors = 
-    categoriesQuery.error || 
-    newArrivalsQuery.error || 
-    trendingQuery.error || 
-    topRatedQuery.error || 
-    discountedQuery.error || 
-    bestSellersQuery.error;
-
-  // Combine all loading states
-  const isLoading = 
-    categoriesQuery.isLoading || 
-    newArrivalsQuery.isLoading;
-
-  // Create a dataLoaded object to track which data has been loaded
+  // Only consider initial data loading states
+  const isInitialLoading = categoriesQuery.isLoading || newArrivalsQuery.isLoading;
+  
+  // Track which data has been loaded
   const dataLoaded = {
     categories: !categoriesQuery.isLoading && !categoriesQuery.error,
     newArrivals: !newArrivalsQuery.isLoading && !newArrivalsQuery.error,
@@ -83,6 +69,7 @@ export function useHomeData() {
     discounted: !discountedQuery.isLoading && !discountedQuery.error
   };
 
+  // Return only the data we need
   return {
     categories: categoriesQuery.data || [],
     newArrivals: newArrivalsQuery.data || [],
@@ -90,8 +77,8 @@ export function useHomeData() {
     topRatedProducts: topRatedQuery.data || [],
     discountedProducts: discountedQuery.data || [],
     bestSellers: bestSellersQuery.data || [],
-    isLoading,
+    isLoading: isInitialLoading,
     dataLoaded,
-    hasErrors
+    hasErrors: categoriesQuery.error || newArrivalsQuery.error
   };
 }
