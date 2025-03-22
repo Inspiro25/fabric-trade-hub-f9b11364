@@ -1,5 +1,7 @@
 
-import { SearchPageProduct } from '@/hooks/use-search';
+import { SearchPageProduct as SearchHookProduct } from '@/hooks/use-search';
+
+export interface SearchPageProduct extends SearchHookProduct {}
 
 export interface ProductCardBaseProps {
   product: SearchPageProduct;

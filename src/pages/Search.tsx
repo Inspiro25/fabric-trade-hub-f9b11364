@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
-import useSearch, { SearchPageProduct, Category, Shop } from '@/hooks/use-search';
+import useSearch from '@/hooks/use-search';
+import type { SearchPageProduct, Category, Shop } from '@/hooks/use-search';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import SearchFilters from '@/components/search/SearchFilters';
@@ -99,6 +100,77 @@ const Search = () => {
     clearAllSearchHistory,
     saveSearchHistory,
   } = searchState;
+
+  const mockCategories: Category[] = [
+    {id: '1', name: 'Electronics', image: '/placeholder.svg', description: 'Electronic devices and gadgets'},
+    {id: '2', name: 'Fashion', image: '/placeholder.svg', description: 'Clothing and accessories'},
+    {id: '3', name: 'Home', image: '/placeholder.svg', description: 'Home appliances and furniture'},
+    {id: '4', name: 'Sports', image: '/placeholder.svg', description: 'Sports equipment and gear'},
+    {id: '5', name: 'Books', image: '/placeholder.svg', description: 'Books and reading materials'},
+  ];
+  
+  const mockShops: Shop[] = [
+    {
+      id: '1', 
+      name: 'ElectroHub', 
+      description: 'Best electronics store',
+      logo: '/placeholder.svg',
+      coverImage: '/placeholder.svg',
+      cover_image: '/placeholder.svg',
+      address: '123 Tech Street',
+      rating: 4.5,
+      reviewCount: 120,
+      review_count: 120,
+      isVerified: true,
+      is_verified: true,
+      ownerName: 'John Doe',
+      owner_name: 'John Doe',
+      ownerEmail: 'john@electrohub.com',
+      owner_email: 'john@electrohub.com',
+      status: 'active',
+      shopId: 'shop-1'
+    },
+    {
+      id: '2', 
+      name: 'Fashion World', 
+      description: 'Trendy fashion items',
+      logo: '/placeholder.svg',
+      coverImage: '/placeholder.svg',
+      cover_image: '/placeholder.svg',
+      address: '456 Style Avenue',
+      rating: 4.3,
+      reviewCount: 98,
+      review_count: 98,
+      isVerified: true,
+      is_verified: true,
+      ownerName: 'Jane Smith',
+      owner_name: 'Jane Smith',
+      ownerEmail: 'jane@fashionworld.com',
+      owner_email: 'jane@fashionworld.com',
+      status: 'active',
+      shopId: 'shop-2'
+    },
+    {
+      id: '3', 
+      name: 'Home Essentials', 
+      description: 'Everything for your home',
+      logo: '/placeholder.svg',
+      coverImage: '/placeholder.svg',
+      cover_image: '/placeholder.svg',
+      address: '789 Home Street',
+      rating: 4.2,
+      reviewCount: 76,
+      review_count: 76,
+      isVerified: true,
+      is_verified: true,
+      ownerName: 'Bob Johnson',
+      owner_name: 'Bob Johnson',
+      ownerEmail: 'bob@homeessentials.com',
+      owner_email: 'bob@homeessentials.com',
+      status: 'active',
+      shopId: 'shop-3'
+    },
+  ];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -468,7 +540,7 @@ const Search = () => {
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {categories.slice(0, 10).map((category) => (
+                    {mockCategories.slice(0, 10).map((category) => (
                       <div 
                         key={category.id}
                         className={cn(

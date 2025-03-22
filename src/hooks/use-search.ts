@@ -37,19 +37,28 @@ export interface Category {
   id: string;
   name: string;
   image?: string;
-  description?: string;
+  description: string;
 }
 
 export interface Shop {
   id: string;
   name: string;
-  description?: string;
-  logo?: string;
-  coverImage?: string;
-  address?: string;
-  rating?: number;
-  reviewCount?: number;
-  isVerified?: boolean;
+  description: string;
+  logo: string;
+  coverImage: string;
+  cover_image: string;
+  address: string;
+  rating: number;
+  reviewCount: number;
+  review_count: number;
+  isVerified: boolean;
+  is_verified: boolean;
+  ownerName?: string;
+  owner_name?: string;
+  ownerEmail?: string;
+  owner_email?: string;
+  status?: 'pending' | 'active' | 'suspended';
+  shopId?: string;
 }
 
 const useSearch = () => {
@@ -129,10 +138,19 @@ const useSearch = () => {
             description: 'Best electronics store',
             logo: '/placeholder.svg',
             coverImage: '/placeholder.svg',
+            cover_image: '/placeholder.svg',
             address: '123 Tech Street',
             rating: 4.5,
             reviewCount: 120,
-            isVerified: true
+            review_count: 120,
+            isVerified: true,
+            is_verified: true,
+            ownerName: 'John Doe',
+            owner_name: 'John Doe',
+            ownerEmail: 'john@electrohub.com',
+            owner_email: 'john@electrohub.com',
+            status: 'active',
+            shopId: 'shop-1'
           },
           {
             id: '2', 
@@ -140,10 +158,19 @@ const useSearch = () => {
             description: 'Trendy fashion items',
             logo: '/placeholder.svg',
             coverImage: '/placeholder.svg',
+            cover_image: '/placeholder.svg',
             address: '456 Style Avenue',
             rating: 4.3,
             reviewCount: 98,
-            isVerified: true
+            review_count: 98,
+            isVerified: true,
+            is_verified: true,
+            ownerName: 'Jane Smith',
+            owner_name: 'Jane Smith',
+            ownerEmail: 'jane@fashionworld.com',
+            owner_email: 'jane@fashionworld.com',
+            status: 'active',
+            shopId: 'shop-2'
           },
           {
             id: '3', 
@@ -151,10 +178,19 @@ const useSearch = () => {
             description: 'Everything for your home',
             logo: '/placeholder.svg',
             coverImage: '/placeholder.svg',
+            cover_image: '/placeholder.svg',
             address: '789 Home Street',
             rating: 4.2,
             reviewCount: 76,
-            isVerified: true
+            review_count: 76,
+            isVerified: true,
+            is_verified: true,
+            ownerName: 'Bob Johnson',
+            owner_name: 'Bob Johnson',
+            ownerEmail: 'bob@homeessentials.com',
+            owner_email: 'bob@homeessentials.com',
+            status: 'active',
+            shopId: 'shop-3'
           },
         ]);
 
@@ -236,7 +272,13 @@ const useSearch = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
-      toast.success(`${product.name} added to cart`);
+      toast(`${product.name} added to cart`, {
+        description: "You can view it in your cart",
+        action: {
+          label: "View Cart",
+          onClick: () => navigate('/cart')
+        }
+      });
     }, 500);
   };
 
@@ -246,7 +288,13 @@ const useSearch = () => {
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(null);
-      toast.success(`${product.name} added to wishlist`);
+      toast(`${product.name} added to wishlist`, {
+        description: "You can view it in your wishlist",
+        action: {
+          label: "View Wishlist",
+          onClick: () => navigate('/wishlist')
+        }
+      });
     }, 500);
   };
 
