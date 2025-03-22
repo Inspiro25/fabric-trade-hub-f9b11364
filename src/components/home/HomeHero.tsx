@@ -18,7 +18,7 @@ export default function HomeHero() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Button className="bg-orange-500 hover:bg-orange-600" asChild>
-                <Link to="/category/new-arrivals">
+                <Link to="/new-arrivals">
                   Shop New Arrivals
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
