@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getTrendingProducts } from '@/lib/products';
+import { getTrendingProducts } from '@/lib/products/trending';
 import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
@@ -13,7 +13,7 @@ const ITEMS_PER_PAGE = 12;
 
 const TrendingNow = () => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
-  const [sortOption, setSortOption] = useState<'rating' | 'popularity' | 'recent'>('popularity');
+  const [sortOption, setSortOption] = useState<'popularity' | 'rating' | 'recent'>('popularity');
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const isMobile = useIsMobile();
 
@@ -129,7 +129,7 @@ const TrendingNow = () => {
                     salePrice={product.salePrice}
                     image={product.images[0]}
                     category={product.category}
-                    isNew={product.isNew}
+                    isNew={product.isNew || false}
                     isTrending={true}
                     rating={product.rating}
                     reviewCount={product.reviewCount}

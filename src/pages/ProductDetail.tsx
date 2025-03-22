@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -41,7 +42,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { cn } from "@/lib/utils"
-import * as React from "react"
 import {
   Sheet,
   SheetContent,
@@ -52,25 +52,7 @@ import {
 } from "@/components/ui/sheet"
 import { getPersonalizedRecommendations, getSimilarProducts } from '@/services/recommendationService';
 import { toast } from '@/hooks/use-toast';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  salePrice?: number;
-  images: string[];
-  category: string;
-  colors: string[];
-  sizes: string[];
-  isNew: boolean;
-  isTrending: boolean;
-  rating: number;
-  reviewCount: number;
-  stock: number;
-  tags: string[];
-  shopId: string;
-}
+import { Product } from '@/lib/types/product';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -102,11 +84,11 @@ const ProductDetail = () => {
     recordView();
   }, [id]);
 
-  const { addItemToCart } = useCart();
+  const { addToCart } = useCart();
   const [showAllReviews, setShowAllReviews] = React.useState(false);
   const [reviews, setReviews] = React.useState([]);
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
-	const [recommendedProducts, setRecommendedProducts] = React.useState<Product[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = React.useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = React.useState<Product[]>([]);
 
   React.useEffect(() => {
@@ -121,29 +103,37 @@ const ProductDetail = () => {
 
   React.useEffect(() => {
     const loadRecommendations = async () => {
-      if (currentUser?.id && id) {
-        const recommendations = await getPersonalizedRecommendations(currentUser.id);
-        setRecommendedProducts(recommendations);
+      if (currentUser && id) {
+        // Check if currentUser has uid/id property
+        const userId = currentUser.uid || currentUser.id;
+        if (userId) {
+          const recommendations = await getPersonalizedRecommendations(userId);
+          if (recommendations) {
+            setRecommendedProducts(recommendations);
+          }
+        }
       }
     };
 		
-		const loadSimilarProducts = async () => {
+    const loadSimilarProducts = async () => {
       if (id) {
         const similar = await getSimilarProducts(id);
-        setSimilarProducts(similar);
+        if (similar) {
+          setSimilarProducts(similar);
+        }
       }
     };
 
     loadRecommendations();
-		loadSimilarProducts();
-  }, [currentUser?.id, id]);
+    loadSimilarProducts();
+  }, [currentUser, id]);
 
   const handleAddToCart = async () => {
     if (!product) return;
 
     setIsAddingToCart(true);
     try {
-      await addItemToCart(product);
+      await addToCart(product);
       toast({
         title: 'Added to cart',
         description: `${product.name} has been added to your cart.`,
@@ -349,8 +339,8 @@ const ProductDetail = () => {
                   salePrice={product.salePrice}
                   image={product.images[0]}
                   category={product.category}
-                  isNew={product.isNew}
-                  isTrending={product.isTrending}
+                  isNew={product.isNew || false}
+                  isTrending={product.isTrending || false}
                   rating={product.rating}
                   reviewCount={product.reviewCount}
                 />
@@ -373,8 +363,8 @@ const ProductDetail = () => {
                   salePrice={product.salePrice}
                   image={product.images[0]}
                   category={product.category}
-                  isNew={product.isNew}
-                  isTrending={product.isTrending}
+                  isNew={product.isNew || false}
+                  isTrending={product.isTrending || false}
                   rating={product.rating}
                   reviewCount={product.reviewCount}
                 />
