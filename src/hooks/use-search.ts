@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Product as ImportedProduct } from '@/lib/types/product';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -7,6 +7,89 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
+
+// Mock data for fallback when API is unavailable
+const mockProducts: SearchPageProduct[] = [
+  {
+    id: "1",
+    name: "Smartphone X",
+    description: "Latest smartphone with advanced features",
+    price: 599,
+    sale_price: 499,
+    images: ["/placeholder.svg"],
+    category_id: "electronics",
+    shop_id: "1",
+    is_new: true,
+    is_trending: true,
+    colors: ["Black", "White", "Blue"],
+    sizes: [],
+    rating: 4.5,
+    review_count: 120
+  },
+  {
+    id: "2",
+    name: "Laptop Pro",
+    description: "Powerful laptop for professionals",
+    price: 1299,
+    sale_price: null,
+    images: ["/placeholder.svg"],
+    category_id: "electronics",
+    shop_id: "1",
+    is_new: false,
+    is_trending: true,
+    colors: ["Silver", "Space Gray"],
+    sizes: [],
+    rating: 4.8,
+    review_count: 85
+  },
+  {
+    id: "3",
+    name: "Casual T-Shirt",
+    description: "Comfortable cotton t-shirt",
+    price: 29.99,
+    sale_price: 19.99,
+    images: ["/placeholder.svg"],
+    category_id: "fashion",
+    shop_id: "2",
+    is_new: true,
+    is_trending: false,
+    colors: ["Red", "Blue", "Black", "White"],
+    sizes: ["S", "M", "L", "XL"],
+    rating: 4.2,
+    review_count: 210
+  },
+  {
+    id: "4",
+    name: "Coffee Maker",
+    description: "Automatic coffee maker with timer",
+    price: 89.99,
+    sale_price: null,
+    images: ["/placeholder.svg"],
+    category_id: "home",
+    shop_id: "3",
+    is_new: false,
+    is_trending: false,
+    colors: ["Black", "Silver"],
+    sizes: [],
+    rating: 4.0,
+    review_count: 67
+  }
+];
+
+// Mock categories for fallback
+const mockCategories = [
+  { id: "electronics", name: "Electronics", description: "Electronic devices and gadgets", image: null },
+  { id: "fashion", name: "Fashion", description: "Clothing and accessories", image: null },
+  { id: "home", name: "Home & Kitchen", description: "Home and kitchen products", image: null },
+  { id: "beauty", name: "Beauty", description: "Beauty and personal care products", image: null }
+];
+
+// Mock shops for fallback
+const mockShops = [
+  { id: "1", name: "TechHub", description: "Your one-stop shop for technology", logo: null, cover_image: null, rating: 4.6, review_count: 245, is_verified: true, address: "123 Tech St, San Francisco", owner_name: "John Doe", owner_email: "john@techhub.com", shop_id: "th001", status: "active" },
+  { id: "2", name: "Fashion Forward", description: "Latest fashion trends", logo: null, cover_image: null, rating: 4.3, review_count: 189, is_verified: true, address: "456 Style Ave, New York", owner_name: "Jane Smith", owner_email: "jane@fashionforward.com", shop_id: "ff002", status: "active" },
+  { id: "3", name: "Home Essentials", description: "Everything for your home", logo: null, cover_image: null, rating: 4.1, review_count: 132, is_verified: false, address: "789 Home Blvd, Chicago", owner_name: "Mike Johnson", owner_email: "mike@homeessentials.com", shop_id: "he003", status: "active" }
+];
 
 export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating';
 
@@ -150,8 +233,31 @@ export const useSearch = (query: string) => {
       }
     } catch (err: any) {
       console.error('Search error:', err);
-      setError(err.message || 'Failed to fetch data');
-      setProducts([]); // Set empty array on error
+      
+      // Check if the error is related to HTML response or API unavailability
+      const errorMessage = err?.message || '';
+      if (errorMessage.includes('HTML') || errorMessage.includes('API endpoint')) {
+        setError("API endpoint is currently unavailable. Using mock data instead.");
+        
+        // Log toast notification for API unavailability
+        toast({
+          title: "API Unavailable",
+          description: "Using mock product data instead",
+          variant: "destructive"
+        });
+        
+        // Use mock data as fallback
+        setProducts(mockProducts);
+        setCategories(mockCategories);
+        setShops(mockShops);
+      } else {
+        setError(errorMessage || 'Failed to fetch data');
+        
+        // Use mock data as fallback even for other errors
+        setProducts(mockProducts);
+        setCategories(mockCategories);
+        setShops(mockShops);
+      }
     } finally {
       setLoading(false);
     }
