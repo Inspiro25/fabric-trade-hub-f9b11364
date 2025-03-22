@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   getNewArrivals, 
   getTrendingProducts, 
-  getAllCategories, 
-  getTopRatedProducts, 
-  getDiscountedProducts, 
+  getAllCategories,
+  getTopRatedProducts,
+  getDiscountedProducts,
   getBestSellingProducts,
 } from '@/lib/products';
 
@@ -32,6 +32,7 @@ export function useHomeData() {
     retry: 1,
   });
 
+  // Defer these queries to improve initial load time
   const topRatedQuery = useQuery({
     queryKey: ['products', 'topRated'],
     queryFn: getTopRatedProducts,
@@ -57,7 +58,7 @@ export function useHomeData() {
   });
 
   // Only consider initial data loading states
-  const isInitialLoading = categoriesQuery.isLoading || newArrivalsQuery.isLoading;
+  const isLoading = categoriesQuery.isLoading || newArrivalsQuery.isLoading;
   
   // Track which data has been loaded
   const dataLoaded = {
@@ -77,7 +78,7 @@ export function useHomeData() {
     topRatedProducts: topRatedQuery.data || [],
     discountedProducts: discountedQuery.data || [],
     bestSellers: bestSellersQuery.data || [],
-    isLoading: isInitialLoading,
+    isLoading,
     dataLoaded,
     hasErrors: categoriesQuery.error || newArrivalsQuery.error
   };

@@ -79,36 +79,44 @@ const Index = () => {
         <HomePromoBanner />
         
         {/* New Arrivals */}
-        <HomeProductShowcase
-          title="New Arrivals"
-          products={newArrivals}
-          linkTo="/category/new-arrivals"
-          isLoaded={dataLoaded.newArrivals}
-        />
+        {newArrivals.length > 0 && (
+          <HomeProductShowcase
+            title="New Arrivals"
+            products={newArrivals}
+            linkTo="/category/new-arrivals"
+            isLoaded={dataLoaded.newArrivals}
+          />
+        )}
         
         {/* Best Sellers */}
-        <HomeProductShowcase
-          title="Best Sellers"
-          products={bestSellers}
-          linkTo="/category/best-sellers"
-          isLoaded={dataLoaded.bestSellers}
-        />
+        {bestSellers.length > 0 && (
+          <HomeProductShowcase
+            title="Best Sellers"
+            products={bestSellers}
+            linkTo="/category/best-sellers"
+            isLoaded={dataLoaded.bestSellers}
+          />
+        )}
         
         {/* Top Rated */}
-        <HomeProductShowcase
-          title="Top Rated"
-          products={topRatedProducts}
-          linkTo="/category/top-rated"
-          isLoaded={dataLoaded.topRated}
-        />
+        {topRatedProducts.length > 0 && (
+          <HomeProductShowcase
+            title="Top Rated"
+            products={topRatedProducts}
+            linkTo="/category/top-rated"
+            isLoaded={dataLoaded.topRated}
+          />
+        )}
         
         {/* On Sale */}
-        <HomeProductShowcase
-          title="On Sale"
-          products={discountedProducts}
-          linkTo="/category/sale"
-          isLoaded={dataLoaded.discounted}
-        />
+        {discountedProducts.length > 0 && (
+          <HomeProductShowcase
+            title="On Sale"
+            products={discountedProducts}
+            linkTo="/category/sale"
+            isLoaded={dataLoaded.discounted}
+          />
+        )}
       </main>
     </div>
   );
