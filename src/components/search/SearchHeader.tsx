@@ -29,16 +29,16 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   onViewModeChange
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg shadow-sm mb-4 gap-3 border-b">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-lg shadow-sm mb-3 gap-2 border-b">
       <div className="text-sm text-gray-600 flex items-center">
-        <Badge variant="outline" className="mr-2 bg-[#E5DEFF] text-[#9b87f5] border-[#9b87f5]">
+        <Badge variant="outline" className="mr-2 bg-orange-100 text-kutuku-primary border-kutuku-primary">
           <CheckCircle className="h-3 w-3 mr-1" />
           {totalItems} items
         </Badge>
         Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} - {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
       </div>
       
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="h-4 w-4 text-gray-500" />
           <Select

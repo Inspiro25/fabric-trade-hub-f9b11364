@@ -26,7 +26,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
     <div className={cn("bg-white rounded-lg shadow-sm", className)}>
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-base font-medium flex items-center">
-          <Clock className="h-4 w-4 mr-2 text-[#9b87f5]" />
+          <Clock className="h-4 w-4 mr-2 text-kutuku-primary" />
           Recent Searches
         </h3>
         {history.length > 0 && (
@@ -47,7 +47,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
           <Badge 
             key={item.id} 
             variant="outline"
-            className="group flex items-center bg-gray-50 hover:bg-gray-100 border-[#E5DEFF] px-3 py-1.5 rounded-full"
+            className="group flex items-center bg-orange-50 hover:bg-orange-100 border-orange-200 px-3 py-1.5 rounded-full"
           >
             <button
               onClick={() => onSelectHistoryItem(item.query)}

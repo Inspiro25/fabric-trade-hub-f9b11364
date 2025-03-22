@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -46,14 +45,10 @@ const Search = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const { currentUser } = useAuth();
 
-  // View mode state (grid or list)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
-  
-  // Search hooks
+
   const {
     products,
     categories,
@@ -103,7 +98,6 @@ const Search = () => {
     saveSearchHistory,
   } = useSearch(query);
 
-  // Handle clicks outside search suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -115,14 +109,12 @@ const Search = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch search history when component mounts
   useEffect(() => {
     if (currentUser) {
       fetchSearchHistory();
     }
   }, [currentUser]);
 
-  // Fetch search history from database
   const fetchSearchHistory = async () => {
     if (!currentUser) return;
     
@@ -148,7 +140,6 @@ const Search = () => {
     }
   };
 
-  // Handle search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedSearch = searchInput.trim();
@@ -161,7 +152,6 @@ const Search = () => {
     }
   };
 
-  // Handle search suggestion selection
   const handleSelectSuggestion = (selectedQuery: string) => {
     setSearchInput(selectedQuery);
     navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
@@ -171,65 +161,53 @@ const Search = () => {
     setShowSuggestions(false);
   };
 
-  // Clear a specific search history item
   const handleClearHistoryItem = async (id: string) => {
     await clearSearchHistoryItem(id);
     setLocalSearchHistory(prev => prev.filter(item => item.id !== id));
   };
 
-  // Clear all search history
   const handleClearAllHistory = async () => {
     await clearAllSearchHistory();
     setLocalSearchHistory([]);
   };
 
-  // Reset pagination when query changes
   useEffect(() => {
     setCurrentPage(1);
   }, [query]);
 
-  // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo(0, 0);
   };
 
-  // Handle items per page change
   const handleItemsPerPageChange = (items: number) => {
     setItemsPerPage(items);
-    setCurrentPage(1); // Reset to first page when changing items per page
+    setCurrentPage(1);
   };
 
-  // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
   };
-  
-  // Handle category selection from category pills
+
   const handleCategoryPillClick = (categoryId: string | null) => {
     handleCategoryChange(categoryId);
   };
-  
-  // Handle search history item selection
+
   const handleHistoryItemClick = (historyQuery: string) => {
     setSearchInput(historyQuery);
     navigate(`/search?q=${encodeURIComponent(historyQuery)}`);
   };
-  
-  // Handle clicking on a recommended product
+
   const handleRecommendedProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
   };
 
-  // Add retry handler function
   const handleRetry = () => {
     fetchData();
   };
 
-  // Paginate products
   const paginatedProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Render mobile filter buttons
   const renderMobileFilterButtons = () => (
     <div className="flex items-center space-x-2 self-end md:self-auto">
       <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-[#9b87f5] text-[#9b87f5]">
@@ -243,7 +221,6 @@ const Search = () => {
     </div>
   );
 
-  // Render desktop filter buttons
   const renderDesktopFilterButtons = () => (
     <div className="flex items-center space-x-2">
       <SearchFilters 
@@ -272,7 +249,6 @@ const Search = () => {
     </div>
   );
 
-  // Search suggestions component
   const SearchSuggestions = () => {
     if (!showSuggestions) return null;
     
@@ -376,9 +352,8 @@ const Search = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-[20px] md:py-[40px] bg-gray-50">
-      {/* Search input */}
-      <div className="mb-6">
+    <div className="container mx-auto px-4 py-[16px] md:py-[32px] bg-orange-50/50">
+      <div className="mb-5">
         <div ref={searchRef} className="relative w-full max-w-xl mx-auto">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
             <div className="relative">
@@ -388,9 +363,9 @@ const Search = () => {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
-                className="pr-24 rounded-full border-[#9b87f5] focus:border-[#7E69AB] pl-10 h-12 focus-visible:ring-[#9b87f5]"
+                className="pr-24 rounded-full border-kutuku-primary focus:border-kutuku-secondary pl-10 h-12 focus-visible:ring-kutuku-primary"
               />
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#9b87f5]" />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-kutuku-primary" />
               
               {searchInput && (
                 <Button 
@@ -398,7 +373,7 @@ const Search = () => {
                   size="icon" 
                   variant="ghost" 
                   onClick={() => setSearchInput('')}
-                  className="absolute right-12 top-1/2 transform -translate-y-1/2 h-8 w-8 flex items-center justify-center text-gray-400 hover:text-[#9b87f5]"
+                  className="absolute right-12 top-1/2 transform -translate-y-1/2 h-8 w-8 flex items-center justify-center text-gray-400 hover:text-kutuku-primary"
                 >
                   <XCircle className="h-5 w-5" />
                 </Button>
@@ -407,7 +382,7 @@ const Search = () => {
               <Button 
                 type="submit" 
                 size="sm"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full bg-[#9b87f5] hover:bg-[#7E69AB] h-10 px-4"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full bg-kutuku-primary hover:bg-kutuku-secondary h-10 px-4"
               >
                 <SearchIcon className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Search</span>
@@ -419,12 +394,11 @@ const Search = () => {
         </div>
       </div>
       
-      {/* Search header */}
       {!initialLoad && query && (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3 bg-white p-3 md:p-4 rounded-lg shadow-sm">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold mb-1">
-              Results for "<span className="text-[#9b87f5]">{query}</span>"
+            <h1 className="text-lg md:text-xl font-bold mb-1">
+              Results for "<span className="text-kutuku-primary">{query}</span>"
             </h1>
             <p className="text-gray-500 text-sm">
               {products.length} {products.length === 1 ? 'result' : 'results'} found
@@ -435,16 +409,13 @@ const Search = () => {
         </div>
       )}
       
-      {/* Main content */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar for desktop */}
+      <div className="flex flex-col lg:flex-row gap-4">
         {!isMobile && (
-          <div className="w-full lg:w-64 shrink-0 space-y-6">
-            {/* Search history */}
+          <div className="w-full lg:w-64 shrink-0 space-y-4">
             {searchHistory.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm p-4 sticky top-4">
-                <h2 className="font-semibold text-lg mb-4 flex items-center">
-                  <History className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                <h2 className="font-semibold text-lg mb-3 flex items-center">
+                  <History className="h-4 w-4 mr-2 text-kutuku-primary" />
                   Recent Searches
                 </h2>
                 <SearchHistory 
@@ -456,10 +427,9 @@ const Search = () => {
               </div>
             )}
             
-            {/* Filters for desktop */}
             <div className="bg-white rounded-lg shadow-sm p-4 sticky top-4">
-              <h2 className="font-semibold text-lg mb-4 flex items-center">
-                <SlidersHorizontal className="h-4 w-4 mr-2 text-[#9b87f5]" />
+              <h2 className="font-semibold text-lg mb-3 flex items-center">
+                <SlidersHorizontal className="h-4 w-4 mr-2 text-kutuku-primary" />
                 Filters
               </h2>
               <SearchFilters 
@@ -483,16 +453,13 @@ const Search = () => {
           </div>
         )}
         
-        {/* Main content area */}
         <div className="flex-1">
-          {/* Show content based on state */}
           {initialLoad || !query ? (
-            <div className="space-y-6">
-              {/* Search history for mobile */}
+            <div className="space-y-4">
               {isMobile && searchHistory.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm p-4">
+                <div className="bg-white rounded-lg shadow-sm p-3 md:p-4">
                   <h2 className="font-semibold text-lg mb-2 flex items-center">
-                    <History className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                    <History className="h-4 w-4 mr-2 text-kutuku-primary" />
                     Recent Searches
                   </h2>
                   <SearchHistory 
@@ -504,33 +471,32 @@ const Search = () => {
                 </div>
               )}
               
-              {/* Browse categories */}
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <div className="flex items-center justify-between mb-4">
+              <div className="bg-white rounded-lg shadow-sm p-3 md:p-4">
+                <div className="flex items-center justify-between mb-3">
                   <h2 className="font-semibold text-lg flex items-center">
-                    <Store className="h-4 w-4 mr-2 text-[#9b87f5]" />
+                    <Store className="h-4 w-4 mr-2 text-kutuku-primary" />
                     Browse Categories
                   </h2>
-                  <Button variant="link" className="text-[#9b87f5] p-0 h-auto text-sm" onClick={() => navigate('/categories')}>
+                  <Button variant="link" className="text-kutuku-primary p-0 h-auto text-sm" onClick={() => navigate('/categories')}>
                     View All <ChevronRight className="h-3 w-3 ml-1" />
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {categories.slice(0, 10).map((category) => (
                     <div 
                       key={category.id}
-                      className="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:border-[#9b87f5] cursor-pointer transition-all hover:shadow-sm"
+                      className="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:border-kutuku-primary cursor-pointer transition-all hover:shadow-sm"
                       onClick={() => {
                         handleCategoryChange(category.id);
                         navigate(`/search?category=${category.id}`);
                       }}
                     >
-                      <div className="w-12 h-12 bg-[#E5DEFF] rounded-full flex items-center justify-center mb-2">
+                      <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
                         {category.image ? (
                           <img src={category.image} alt={category.name} className="w-6 h-6" />
                         ) : (
-                          <Store className="w-5 h-5 text-[#9b87f5]" />
+                          <Store className="w-5 h-5 text-kutuku-primary" />
                         )}
                       </div>
                       <span className="text-sm text-center line-clamp-1">{category.name}</span>
@@ -540,18 +506,18 @@ const Search = () => {
               </div>
               
               <Tabs defaultValue="recommended" className="w-full">
-                <TabsList className="w-full mb-4 bg-white border-b rounded-t-lg">
-                  <TabsTrigger value="recommended" className="flex-1 data-[state=active]:text-[#9b87f5] data-[state=active]:border-b-2 data-[state=active]:border-[#9b87f5]">
+                <TabsList className="w-full mb-3 bg-white border-b rounded-t-lg">
+                  <TabsTrigger value="recommended" className="flex-1 data-[state=active]:text-kutuku-primary data-[state=active]:border-b-2 data-[state=active]:border-kutuku-primary">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Recommended for You
                   </TabsTrigger>
-                  <TabsTrigger value="recently-viewed" className="flex-1 data-[state=active]:text-[#9b87f5] data-[state=active]:border-b-2 data-[state=active]:border-[#9b87f5]">
+                  <TabsTrigger value="recently-viewed" className="flex-1 data-[state=active]:text-kutuku-primary data-[state=active]:border-b-2 data-[state=active]:border-kutuku-primary">
                     <Eye className="h-4 w-4 mr-2" />
                     Recently Viewed
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="recommended" className="bg-white rounded-b-lg shadow-sm p-4 mt-0">
+                <TabsContent value="recommended" className="bg-white rounded-b-lg shadow-sm p-3 md:p-4 mt-0">
                   <SearchRecommendations 
                     products={recommendations}
                     isAddingToCart={isAddingToCart}
@@ -563,9 +529,9 @@ const Search = () => {
                   />
                 </TabsContent>
                 
-                <TabsContent value="recently-viewed" className="bg-white rounded-b-lg shadow-sm p-4 mt-0">
+                <TabsContent value="recently-viewed" className="bg-white rounded-b-lg shadow-sm p-3 md:p-4 mt-0">
                   {recentlyViewed.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {recentlyViewed.map((product) => (
                         <div key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
                           <SearchProductCard
@@ -582,7 +548,7 @@ const Search = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-6 text-gray-500">
                       <Eye className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                       <h3 className="text-lg font-medium mb-1">No recently viewed products</h3>
                       <p className="text-sm">Products you view will appear here</p>
@@ -593,7 +559,6 @@ const Search = () => {
             </div>
           ) : (
             <>
-              {/* Search results */}
               <SearchResults 
                 loading={loading} 
                 error={error} 
@@ -617,7 +582,6 @@ const Search = () => {
         </div>
       </div>
 
-      {/* Mobile dialogs */}
       <SearchFilters 
         isMobile={true} 
         categories={categories} 
