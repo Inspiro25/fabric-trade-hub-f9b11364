@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useHomeData } from '@/hooks/use-home-data';
 import AppHeader from '@/components/features/AppHeader';
@@ -13,11 +14,14 @@ import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import HomeHero from '@/components/home/HomeHero';
 import ShopsSpotlight from '@/components/home/ShopsSpotlight';
+import FlashSaleTimer from '@/components/home/FlashSaleTimer';
+import { AnimatedGradient } from '@/components/ui/animated-gradient';
 
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
 const HomeCategoryGrid = lazy(() => import('@/components/home/HomeCategoryGrid'));
 const HomeProductShowcase = lazy(() => import('@/components/home/HomeProductShowcase'));
+const HomePromoBanner = lazy(() => import('@/components/home/HomePromoBanner'));
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -64,23 +68,38 @@ const FashionTrends = () => {
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {trends.map(trend => (
-            <Link key={trend.id} to={`/trend/${trend.id}`} className="relative overflow-hidden rounded-xl group">
-              <AspectRatio ratio={3/4} className="bg-gray-100">
-                <img 
-                  src={trend.image} 
-                  alt={trend.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-t ${trend.color} to-transparent opacity-70`}></div>
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-white font-bold text-lg">{trend.title}</h3>
-                  <span className="text-white/80 text-sm flex items-center mt-1">
-                    Explore <ArrowRight className="ml-1 h-3 w-3" />
-                  </span>
-                </div>
-              </AspectRatio>
-            </Link>
+          {trends.map((trend, index) => (
+            <motion.div
+              key={trend.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 * index }}
+            >
+              <Link to={`/trend/${trend.id}`} className="relative overflow-hidden rounded-xl group block h-full">
+                <AspectRatio ratio={3/4} className="bg-gray-100">
+                  <img 
+                    src={trend.image} 
+                    alt={trend.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${trend.color} to-transparent opacity-70`}></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 transform transition-transform duration-300 group-hover:translate-y-0">
+                    <h3 className="text-white font-bold text-lg drop-shadow-md">{trend.title}</h3>
+                    <span className="text-white/90 text-sm flex items-center mt-1 drop-shadow-md">
+                      Explore
+                      <motion.span
+                        initial={{ x: 0 }}
+                        whileHover={{ x: 5 }}
+                        className="inline-block ml-1"
+                      >
+                        <ArrowRight className="h-3 w-3" />
+                      </motion.span>
+                    </span>
+                  </div>
+                </AspectRatio>
+              </Link>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -99,7 +118,7 @@ const BrandsSpotlight = () => {
   ];
   
   return (
-    <section className="py-10 bg-gray-50">
+    <section className="py-10 bg-gradient-to-b from-orange-50/80 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold mb-2">Top Brands For You</h2>
@@ -107,13 +126,21 @@ const BrandsSpotlight = () => {
         </div>
         
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
-          {brands.map(brand => (
-            <Link key={brand.id} to={`/brand/${brand.id}`} className="flex flex-col items-center">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white shadow-sm flex items-center justify-center p-2 mb-2 hover:shadow-md transition-shadow">
-                <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover rounded-full" />
-              </div>
-              <h3 className="text-sm font-medium text-center">{brand.name}</h3>
-            </Link>
+          {brands.map((brand, i) => (
+            <motion.div
+              key={brand.id}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 * i }}
+            >
+              <Link to={`/brand/${brand.id}`} className="flex flex-col items-center group">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white shadow-sm flex items-center justify-center p-2 mb-2 hover:shadow-md transition-all group-hover:scale-105 duration-300">
+                  <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover rounded-full" />
+                </div>
+                <h3 className="text-sm font-medium text-center group-hover:text-orange-500 transition-colors">{brand.name}</h3>
+              </Link>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -121,152 +148,92 @@ const BrandsSpotlight = () => {
   );
 };
 
-const FlashSaleTimer = () => {
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 5,
-    minutes: 30,
-    seconds: 0
-  });
-  
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        const newSeconds = prev.seconds - 1;
-        let newMinutes = prev.minutes;
-        let newHours = prev.hours;
-        
-        if (newSeconds < 0) {
-          newMinutes -= 1;
-          if (newMinutes < 0) {
-            newHours -= 1;
-            newMinutes = 59;
-          }
-          return {
-            hours: newHours,
-            minutes: newMinutes,
-            seconds: 59
-          };
-        }
-        
-        return {
-          hours: newHours,
-          minutes: newMinutes,
-          seconds: newSeconds
-        };
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, []);
-  
-  return (
-    <section className="relative py-2 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 opacity-95"></div>
-      
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
-        <div className="absolute -top-10 -left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-        <div className="absolute top-5 right-5 w-10 h-10 bg-yellow-300/20 rounded-full blur-md"></div>
-        <div className="absolute bottom-3 left-1/4 w-16 h-16 bg-rose-300/20 rounded-full blur-lg"></div>
-      </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-2">
-          <div className="md:w-auto flex items-center">
-            <div className="mr-2 bg-white/20 backdrop-blur-sm p-1 rounded-full">
-              <Flame className="h-4 w-4 text-white animate-pulse" />
-            </div>
-            <div>
-              <h2 className="text-sm md:text-base font-bold text-white flex items-center">
-                FLASH SALE
-                <Zap className="h-3 w-3 ml-1 text-yellow-300 animate-pulse" />
-              </h2>
-              <p className="text-white/80 text-[10px]">Ends soon!</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <div className="text-center">
-              <div className="bg-white rounded-md p-0.5 w-8 font-mono font-bold text-xs text-rose-600 border-b-2 border-rose-300">
-                {timeLeft.hours.toString().padStart(2, '0')}
-              </div>
-              <span className="text-[8px] text-white font-medium mt-0.5 block">HRS</span>
-            </div>
-            <span className="text-xs font-bold text-white">:</span>
-            <div className="text-center">
-              <div className="bg-white rounded-md p-0.5 w-8 font-mono font-bold text-xs text-rose-600 border-b-2 border-rose-300">
-                {timeLeft.minutes.toString().padStart(2, '0')}
-              </div>
-              <span className="text-[8px] text-white font-medium mt-0.5 block">MIN</span>
-            </div>
-            <span className="text-xs font-bold text-white">:</span>
-            <div className="text-center">
-              <div className="bg-white rounded-md p-0.5 w-8 font-mono font-bold text-xs text-rose-600 border-b-2 border-rose-300">
-                {timeLeft.seconds.toString().padStart(2, '0')}
-              </div>
-              <span className="text-[8px] text-white font-medium mt-0.5 block">SEC</span>
-            </div>
-          </div>
-          
-          <Button size="sm" className="bg-white text-rose-600 hover:bg-rose-50 transition-colors shadow-md border-b-2 border-rose-200 font-bold text-xs py-0.5 px-2" asChild>
-            <Link to="/flash-sale">
-              SHOP NOW <Percent className="ml-1 h-3 w-3" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 const ElectronicsShowcase = () => (
-  <section className="py-10 bg-gradient-to-r from-blue-50 to-white">
+  <AnimatedGradient hue="orange" intensity="soft" className="py-10 rounded-xl mx-4">
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row justify-between items-center">
         <div className="mb-6 md:mb-0 md:w-1/2">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">Electronics & More</h2>
-          <p className="mb-4 text-gray-600">Discover our wide range of electronics, home appliances, and other categories</p>
-          <div className="flex gap-3">
-            <Button className="bg-blue-600 hover:bg-blue-700" asChild>
-              <Link to="/category/electronics">
-                <Laptop className="h-4 w-4 mr-2" />
-                Shop Electronics
-              </Link>
-            </Button>
-            <Button variant="outline" className="border-blue-200" asChild>
-              <Link to="/category/smartphones">
-                <Smartphone className="h-4 w-4 mr-2" />
-                Smartphones
-              </Link>
-            </Button>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Electronics & More</h2>
+            <p className="mb-4 text-gray-600">Discover our wide range of electronics, home appliances, and other categories</p>
+            <div className="flex gap-3">
+              <Button className="bg-orange-500 hover:bg-orange-600" asChild>
+                <Link to="/category/electronics">
+                  <Laptop className="h-4 w-4 mr-2" />
+                  Shop Electronics
+                </Link>
+              </Button>
+              <Button variant="outline" className="border-orange-200" asChild>
+                <Link to="/category/smartphones">
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Smartphones
+                </Link>
+              </Button>
+            </div>
+          </motion.div>
         </div>
         <div className="md:w-1/2 grid grid-cols-2 gap-3">
-          <div className="bg-white p-3 rounded-lg shadow-sm">
-            <img 
-              src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=300&auto=format&fit=crop" 
-              alt="Laptop" 
-              className="w-full h-auto rounded-md mb-2"
-            />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow group"
+          >
+            <div className="overflow-hidden rounded-md mb-2">
+              <img 
+                src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=300&auto=format&fit=crop" 
+                alt="Laptop" 
+                className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
             <h3 className="font-medium text-sm">Laptops & Computers</h3>
-            <p className="text-blue-600 text-xs flex items-center mt-1">
-              Shop Now <ArrowRight className="ml-1 h-3 w-3" />
+            <p className="text-orange-500 text-xs flex items-center mt-1 group-hover:font-medium">
+              Shop Now 
+              <motion.span
+                initial={{ x: 0 }}
+                whileHover={{ x: 3 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ArrowRight className="ml-1 h-3 w-3 group-hover:ml-2 transition-all" />
+              </motion.span>
             </p>
-          </div>
-          <div className="bg-white p-3 rounded-lg shadow-sm">
-            <img 
-              src="https://images.unsplash.com/photo-1546027658-7aa750153465?q=80&w=300&auto=format&fit=crop" 
-              alt="Headphones" 
-              className="w-full h-auto rounded-md mb-2"
-            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow group"
+          >
+            <div className="overflow-hidden rounded-md mb-2">
+              <img 
+                src="https://images.unsplash.com/photo-1546027658-7aa750153465?q=80&w=300&auto=format&fit=crop" 
+                alt="Headphones" 
+                className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
             <h3 className="font-medium text-sm">Audio & Accessories</h3>
-            <p className="text-blue-600 text-xs flex items-center mt-1">
-              Shop Now <ArrowRight className="ml-1 h-3 w-3" />
+            <p className="text-orange-500 text-xs flex items-center mt-1 group-hover:font-medium">
+              Shop Now 
+              <motion.span
+                initial={{ x: 0 }}
+                whileHover={{ x: 3 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ArrowRight className="ml-1 h-3 w-3 group-hover:ml-2 transition-all" />
+              </motion.span>
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
-  </section>
+  </AnimatedGradient>
 );
 
 const Index = () => {
@@ -299,7 +266,7 @@ const Index = () => {
 
   if (isLoading && !categories.length) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen">
         <AppHeader />
         <div className="py-4 px-4 space-y-6">
           <Skeleton className="h-48 w-full rounded-xl" />
@@ -315,7 +282,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       <AppHeader />
       
       <main className="pb-16">
@@ -324,11 +291,26 @@ const Index = () => {
         <FlashSaleTimer />
         
         <AnimatedSection delay={0.1}>
-          <section className="py-10 bg-gray-50">
+          <section className="py-10 bg-gradient-to-b from-orange-50/60 to-white">
             <div className="container mx-auto px-4">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">Popular Shops For You</h2>
-                <p className="text-gray-500">Discover top-rated shops with great products</p>
+                <motion.h2 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-2xl font-bold mb-2"
+                >
+                  Popular Shops For You
+                </motion.h2>
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="text-gray-500"
+                >
+                  Discover top-rated shops with great products
+                </motion.p>
               </div>
               
               <ShopsSpotlight />
@@ -385,7 +367,7 @@ const Index = () => {
         </AnimatedSection>
         
         <AnimatedSection delay={0.5}>
-          <div className="py-6 bg-gray-50">
+          <div className="py-6 bg-gradient-to-b from-orange-50/30 to-white">
             <div className="container mx-auto px-4">
               <div className="flex items-center mb-4">
                 <Clock className="text-orange-500 mr-2 h-5 w-5" />
@@ -425,6 +407,16 @@ const Index = () => {
         <AnimatedSection delay={0.8}>
           <div className="py-6">
             <div className="container mx-auto px-4">
+              <Suspense fallback={<SectionLoading />}>
+                <HomePromoBanner />
+              </Suspense>
+            </div>
+          </div>
+        </AnimatedSection>
+        
+        <AnimatedSection delay={0.9}>
+          <div className="py-6">
+            <div className="container mx-auto px-4">
               {topRatedProducts.length > 0 && (
                 <Suspense fallback={<SectionLoading />}>
                   <HomeProductShowcase
@@ -440,8 +432,8 @@ const Index = () => {
           </div>
         </AnimatedSection>
         
-        <AnimatedSection delay={0.9}>
-          <div className="py-6 bg-gray-50">
+        <AnimatedSection delay={1.0}>
+          <div className="py-6 bg-gradient-to-b from-orange-50/40 to-white">
             <div className="container mx-auto px-4">
               {discountedProducts.length > 0 && (
                 <Suspense fallback={<SectionLoading />}>
