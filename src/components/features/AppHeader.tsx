@@ -15,10 +15,10 @@ const AppHeader: React.FC = () => {
   
   return (
     <div className={cn(
-      "sticky top-0 z-10 px-4 py-4 shadow-sm",
+      "sticky top-0 z-50 px-4 py-4 shadow-sm",
       isDarkMode 
-        ? "bg-gradient-to-r from-orange-900/90 to-orange-950/90 backdrop-blur-sm" 
-        : "bg-gradient-to-r from-orange-50 to-white"
+        ? "bg-gradient-to-r from-orange-900/95 to-orange-950/95 backdrop-blur-sm" 
+        : "bg-gradient-to-r from-orange-50/95 to-white/95 backdrop-blur-sm"
     )}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
