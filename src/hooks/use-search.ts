@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams as useReactRouterSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -26,8 +27,8 @@ export interface SearchPageProduct {
 }
 
 const useSearch = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useReactRouterSearchParams();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
   const [loading, setLoading] = useState(false);
@@ -97,7 +98,7 @@ const useSearch = () => {
     setIsAddingToCart(product.id);
 
     // Convert SearchPageProduct to the Product type expected by addToCart
-    const productForCart = {
+    const productForCart: Product = {
       id: product.id,
       name: product.name,
       price: product.price,
@@ -149,12 +150,12 @@ const useSearch = () => {
         toast.error('Failed to share product');
       });
     } else {
-      toast.warn('Web Share API not supported');
+      toast.error('Web Share API not supported');
     }
   };
   
   const handleRetry = () => {
-    router.refresh();
+    navigate(0); // Refresh the current page
   };
 
   return {

@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
 import {
   Card,
   CardContent,
@@ -57,7 +57,7 @@ import { fetchShops } from '@/lib/supabase/shops';
 import { Shop } from '@/lib/shops/types';
 
 const AdminDashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
   const isMobile = useIsMobile();
@@ -66,12 +66,12 @@ const AdminDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    if (!user) {
+    if (!currentUser) {
       navigate('/auth/sign-in');
     } else {
       loadShops();
     }
-  }, [user, navigate]);
+  }, [currentUser, navigate]);
   
   const loadShops = async () => {
     setIsLoading(true);
@@ -83,11 +83,7 @@ const AdminDashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading shops:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load shops',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load shops');
     } finally {
       setIsLoading(false);
     }
@@ -95,15 +91,11 @@ const AdminDashboard: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await logout();
       navigate('/auth/sign-in');
     } catch (error) {
       console.error('Sign out failed:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to sign out',
-        variant: 'destructive',
-      });
+      toast.error('Failed to sign out');
     }
   };
   
@@ -115,7 +107,7 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
-  if (!user) {
+  if (!currentUser) {
     return null;
   }
 
