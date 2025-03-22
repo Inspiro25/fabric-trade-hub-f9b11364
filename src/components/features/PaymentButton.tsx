@@ -16,6 +16,7 @@ interface PaymentButtonProps {
     email?: string;
     phone?: string;
   };
+  buttonText?: string;
 }
 
 const PaymentButton = ({
@@ -24,7 +25,8 @@ const PaymentButton = ({
   onFailure,
   className = '',
   disabled = false,
-  customerInfo = {}
+  customerInfo = {},
+  buttonText = "Pay Now"
 }: PaymentButtonProps) => {
   const [loading, setLoading] = useState(false);
 
@@ -95,7 +97,7 @@ const PaymentButton = ({
           Processing...
         </>
       ) : (
-        "Pay Now"
+        buttonText
       )}
     </Button>
   );

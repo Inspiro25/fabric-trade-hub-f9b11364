@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -265,7 +264,9 @@ const Checkout = () => {
                         onClick={initiateRazorpayPayment}
                       >
                         <div className="flex-shrink-0">
-                          <img src="https://cdn.razorpay.com/static/assets/logo/payment-method.svg" alt="Razorpay" className="h-6" />
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#072654" className="w-6 h-6">
+                            <path d="M8.584 18.368c-.995.58-2.39.58-3.38 0L.595 15.08a2.09 2.09 0 0 1-.594-2.95L7.41.59C8.005-.17 9.198-.18 9.802.58l8.41 11.66c.6.82.37 1.97-.494 2.53l-9.134 3.598Z" />
+                          </svg>
                         </div>
                         <div className="flex-grow">
                           <p className="text-sm font-medium">Razorpay</p>
