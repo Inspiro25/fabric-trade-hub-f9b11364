@@ -4,11 +4,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 type ThemeContextType = {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  primaryColor: string;
 };
 
 const ThemeContext = createContext<ThemeContextType>({
   isDarkMode: false,
   toggleDarkMode: () => {},
+  primaryColor: '#FF6B00', // Default primary color (orange)
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -28,6 +30,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     return false;
   });
+
+  // Set primary color based on dark mode
+  const primaryColor = isDarkMode ? '#FF8A3D' : '#FF6B00';
 
   // Toggle the dark mode state
   const toggleDarkMode = () => {
@@ -52,7 +57,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [isDarkMode]);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode, primaryColor }}>
       {children}
     </ThemeContext.Provider>
   );

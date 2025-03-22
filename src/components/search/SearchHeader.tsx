@@ -34,7 +34,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-lg shadow-sm mb-3 gap-2 border-b">
       <div className="text-sm text-gray-600 flex flex-wrap items-center">
-        <Badge variant="outline" className="mr-2 bg-purple-50 text-[#9b87f5] border-purple-200">
+        <Badge variant="outline" className="mr-2 bg-orange-50 text-kutuku-primary border-orange-200">
           <CheckCircle className="h-3 w-3 mr-1" />
           {totalItems} items
         </Badge>
@@ -45,12 +45,12 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
       
       <div className="flex items-center gap-3 mt-1 sm:mt-0">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-[#9b87f5]" />
+          <SlidersHorizontal className="h-4 w-4 text-kutuku-primary" />
           <Select
             value={itemsPerPage.toString()}
             onValueChange={(value) => onItemsPerPageChange(Number(value))}
           >
-            <SelectTrigger className={`${isMobile ? 'w-[100px] h-8' : 'w-[120px]'} text-xs border-gray-200 focus:ring-[#9b87f5]`}>
+            <SelectTrigger className={`${isMobile ? 'w-[100px] h-8' : 'w-[120px]'} text-xs border-gray-200 focus:ring-kutuku-primary`}>
               <SelectValue placeholder="20 per page" />
             </SelectTrigger>
             <SelectContent>

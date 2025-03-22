@@ -21,7 +21,7 @@ const MobileNavItem = ({
     to={to} 
     className={cn(
       "flex flex-col items-center justify-center text-[10px] font-medium",
-      isActive ? "text-[#9b87f5]" : "text-gray-500"
+      isActive ? "text-kutuku-primary" : "text-gray-500"
     )}
   >
     <div className={cn(
@@ -68,8 +68,8 @@ const MobileAppLayout: React.FC<{
             <Link
               to="/cart"
               className={cn(
-                "flex items-center justify-center w-12 h-12 rounded-full bg-[#9b87f5] text-white -mt-6 shadow-md",
-                pathname === '/cart' ? "bg-[#8B5CF6]" : "bg-[#9b87f5]"
+                "flex items-center justify-center w-12 h-12 rounded-full bg-kutuku-primary text-white -mt-6 shadow-md",
+                pathname === '/cart' ? "bg-kutuku-secondary" : "bg-kutuku-primary"
               )}
             >
               <ShoppingBag size={20} />

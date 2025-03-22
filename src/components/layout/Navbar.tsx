@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -12,7 +11,9 @@ import {
   User,
   Clock,
   History,
-  TrendingUp
+  TrendingUp,
+  Sun,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -36,7 +37,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// Enhanced SearchSuggestions component with improved loading state
 const SearchSuggestions = ({ 
   query, 
   history, 
@@ -153,7 +153,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  // Fetch search history when component mounts or currentUser changes
   useEffect(() => {
     if (currentUser) {
       fetchSearchHistory();
@@ -163,7 +162,6 @@ const Navbar = () => {
     fetchPopularSearches();
   }, [currentUser]);
 
-  // Handle clicks outside the search component
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -175,7 +173,6 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle scroll events
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -188,7 +185,6 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle body overflow for mobile menu
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -200,7 +196,6 @@ const Navbar = () => {
     };
   }, [mobileMenuOpen]);
 
-  // Fetch search history from database
   const fetchSearchHistory = async () => {
     if (!currentUser) return;
     
@@ -226,7 +221,6 @@ const Navbar = () => {
     }
   };
 
-  // Fetch popular searches
   const fetchPopularSearches = async () => {
     try {
       const { data, error } = await supabase
@@ -252,7 +246,6 @@ const Navbar = () => {
     }
   };
 
-  // Clear a specific search history item
   const clearSearchHistoryItem = async (id: string) => {
     if (!currentUser) return;
     
@@ -276,13 +269,11 @@ const Navbar = () => {
     }
   };
 
-  // Save search query to history and navigate
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       
-      // Save to search history if user is logged in
       if (currentUser) {
         saveSearchHistory(searchQuery.trim());
       }
@@ -294,7 +285,6 @@ const Navbar = () => {
     }
   };
 
-  // Save search query to database
   const saveSearchHistory = async (query: string) => {
     if (!currentUser) return;
     
@@ -310,26 +300,22 @@ const Navbar = () => {
           { onConflict: 'user_id,query' }
         );
       
-      // Refresh search history
       fetchSearchHistory();
     } catch (error) {
       console.error('Error saving search history:', error);
     }
   };
 
-  // Handle selecting a suggestion
   const handleSelectSuggestion = (query: string) => {
     setSearchQuery(query);
     navigate(`/search?q=${encodeURIComponent(query)}`);
     setShowSuggestions(false);
     
-    // Save to search history if user is logged in
     if (currentUser) {
       saveSearchHistory(query);
     }
   };
 
-  // Don't render Navbar on mobile since we use bottom navigation instead
   if (isMobile) {
     return null;
   }
@@ -369,8 +355,13 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="text-xl font-bold transition-transform hover:scale-105 text-kutuku-primary">
-              VYOMAKART
+            <Link to="/" className="flex items-center text-xl font-bold transition-transform hover:scale-105 text-kutuku-primary">
+              <Sun className="h-6 w-6 mr-1.5" />
+              <Sparkles className="h-3.5 w-3.5 absolute ml-1 -mt-3" />
+              <span className="relative">
+                VYOMA
+                <span className="absolute -top-1 right-0 h-1.5 w-1.5 bg-kutuku-primary rounded-full"></span>
+              </span>
             </Link>
 
             <NavigationMenu className="hidden md:flex">
@@ -420,7 +411,6 @@ const Navbar = () => {
             </NavigationMenu>
           </div>
 
-          {/* Desktop Search with Suggestions */}
           <div ref={searchRef} className="relative flex-grow max-w-md mx-4">
             <form onSubmit={handleSearch} className="relative flex items-center">
               <Input
@@ -452,7 +442,6 @@ const Navbar = () => {
             />
           </div>
 
-          {/* Desktop Actions */}
           <div className="flex items-center space-x-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
