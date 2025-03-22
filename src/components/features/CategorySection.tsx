@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
 interface CategorySectionProps {
@@ -26,6 +26,7 @@ const CategorySection = ({
 }: CategorySectionProps) => {
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchCategories = async () => {
@@ -42,6 +43,10 @@ const CategorySection = ({
     
     fetchCategories();
   }, []);
+  
+  const handleCategoryClick = (category: CategoryType) => {
+    navigate(`/search?category=${category.id}`);
+  };
   
   if (isLoading) {
     return (
@@ -65,10 +70,10 @@ const CategorySection = ({
       {layout === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categories.map(category => (
-            <Link 
+            <div 
               key={category.id}
-              to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
-              className="group relative h-40 overflow-hidden rounded-lg bg-gray-100 hover:bg-gray-200 transition-all"
+              onClick={() => handleCategoryClick(category)}
+              className="group relative h-40 overflow-hidden rounded-lg bg-gray-100 hover:bg-gray-200 transition-all cursor-pointer"
             >
               {category.image && (
                 <img 
@@ -81,20 +86,20 @@ const CategorySection = ({
                 <span className="text-lg font-medium text-white">{category.name}</span>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-            </Link>
+            </div>
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {categories.map(category => (
-            <Link 
+            <div 
               key={category.id}
-              to={`/category/${category.name.toLowerCase().replace(/\s+/g, '-')}`}
-              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-primary transition-colors"
+              onClick={() => handleCategoryClick(category)}
+              className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-primary transition-colors cursor-pointer"
             >
               <span>{category.name}</span>
               <ArrowRight className="h-4 w-4 text-primary" />
-            </Link>
+            </div>
           ))}
         </div>
       )}

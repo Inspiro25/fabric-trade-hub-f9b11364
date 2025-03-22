@@ -1,44 +1,34 @@
 
-import { useState, useCallback } from 'react';
-import { useSearchData } from './use-search-data';
-import { useSearchFilters } from './use-search-filters';
-import { useSearchHistory } from './use-search-history';
-import { useRecommendations } from './use-recommendations';
-import { SearchPageProduct } from '@/components/search/SearchProductCard';
-import { Product } from '@/lib/types/product';
-import { useCart } from '@/contexts/CartContext';
-import { useWishlist } from '@/contexts/WishlistContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { SearchPageProduct } from '@/components/search/product-card/types';
+import { useSearchFilters } from './use-search-filters';
+import { useSearchData } from './use-search-data';
 
-export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity' | 'relevance';
+export type SortOption = 'relevance' | 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity';
 
-export const useSearch = (query: string) => {
-  const navigate = useNavigate();
-  const { currentUser } = useAuth();
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
-  
-  // State for UI interactions
+export const useSearch = (initialQuery: string) => {
+  const [query, setQuery] = useState(initialQuery);
+  const [inputValue, setInputValue] = useState(initialQuery);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<SearchPageProduct | null>(null);
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<any[]>([]);
+  const [popularSearches, setPopularSearches] = useState<any[]>([]);
   
-  // Hook composition for modular functionality
   const { 
-    products: rawProducts, 
+    products: fetchedProducts, 
     categories, 
     shops, 
     loading, 
-    error,
-    initialLoad,
-    fetchData
+    error, 
+    fetchData 
   } = useSearchData(query);
-  
+
   const {
     selectedCategory,
     selectedShop,
@@ -46,9 +36,6 @@ export const useSearch = (query: string) => {
     rating,
     sortOption,
     viewMode,
-    brandFilters,
-    discountFilters,
-    availabilityFilters,
     mobileFiltersOpen,
     setMobileFiltersOpen,
     mobileSortOpen,
@@ -59,158 +46,177 @@ export const useSearch = (query: string) => {
     handleRatingChange,
     handleSortChange,
     handleViewModeChange,
-    toggleBrandFilter,
-    toggleDiscountFilter,
-    handleAvailabilityFilterChange,
     clearFilters,
     filterProducts,
     sortProducts
   } = useSearchFilters();
-  
-  const {
-    searchHistory,
-    popularSearches,
-    clearSearchHistoryItem,
-    clearAllSearchHistory,
-    saveSearchHistory
-  } = useSearchHistory(currentUser?.uid || null);
-  
-  const {
-    recommendations,
-    recentlyViewed
-  } = useRecommendations(currentUser?.uid || null);
 
-  // Apply filters and sorting
-  const filteredProducts = filterProducts(rawProducts);
+  const timeoutRef = useRef<number | null>(null);
+
+  // Parse URL params for category filter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    
+    if (categoryParam) {
+      handleCategoryChange(categoryParam);
+    }
+  }, []);
+
+  // Filter and sort products
+  const filteredProducts = filterProducts(fetchedProducts);
   const products = sortProducts(filteredProducts);
-
-  const convertToImportedProduct = (product: SearchPageProduct): Product => {
-    return {
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      salePrice: product.sale_price || undefined,
-      images: product.images,
-      category: product.category_id || "uncategorized",
-      colors: product.colors || [],
-      sizes: product.sizes || [],
-      isNew: product.is_new,
-      isTrending: product.is_trending,
-      rating: product.rating,
-      reviewCount: product.review_count,
-      stock: product.stock || 10,
-      tags: [],
-      shopId: product.shop_id
-    };
+  
+  const handleSearch = (newQuery: string) => {
+    setQuery(newQuery);
+    setShowSuggestions(false);
+    
+    // Update URL with search query
+    const url = new URL(window.location.href);
+    if (newQuery) {
+      url.searchParams.set('q', newQuery);
+    } else {
+      url.searchParams.delete('q');
+    }
+    window.history.pushState({}, '', url.toString());
   };
 
-  const handleProductClick = useCallback((product: SearchPageProduct) => {
-    navigate(`/product/${product.id}`);
-  }, [navigate]);
-
-  const handleAddToCart = async (product: SearchPageProduct) => {
-    if (!currentUser) {
-      setSelectedProduct(product);
-      setIsDialogOpen(true);
-      return;
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    setShowSuggestions(value.length > 0);
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
+  };
 
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    handleSearch(inputValue);
+  };
+
+  const handleAutocomplete = (suggestion: string) => {
+    setInputValue(suggestion);
+    setShowSuggestions(false);
+    handleSearch(suggestion);
+  };
+  
+  const handleClear = () => {
+    setInputValue('');
+    setQuery('');
+    setShowSuggestions(false);
+    
+    // Update URL to remove search query
+    const url = new URL(window.location.href);
+    url.searchParams.delete('q');
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const handleAddToCart = (product: SearchPageProduct) => {
     setIsAddingToCart(product.id);
-    try {
-      const convertedProduct = convertToImportedProduct(product);
-      await addToCart(convertedProduct, 1, convertedProduct.colors[0] || null, convertedProduct.sizes[0] || null);
-      toast({
-        title: "Success",
-        description: `${product.name} added to cart.`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add item to cart.",
-      });
-    } finally {
+    
+    setTimeout(() => {
       setIsAddingToCart(null);
-    }
+      toast({
+        title: "Added to Cart",
+        description: `${product.name} has been added to your cart.`,
+      });
+    }, 500);
   };
 
-  const handleAddToWishlist = async (product: SearchPageProduct) => {
-    if (!currentUser) {
-      setSelectedProduct(product);
-      setIsDialogOpen(true);
-      return;
-    }
-
+  const handleAddToWishlist = (product: SearchPageProduct) => {
     setIsAddingToWishlist(product.id);
-    try {
-      const convertedProduct = convertToImportedProduct(product);
-      await addToWishlist(convertedProduct);
-      toast({
-        title: "Success",
-        description: `${product.name} added to wishlist.`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add item to wishlist.",
-      });
-    } finally {
+    
+    setTimeout(() => {
       setIsAddingToWishlist(null);
-    }
+      toast({
+        title: "Added to Wishlist",
+        description: `${product.name} has been added to your wishlist.`,
+      });
+    }, 500);
   };
 
   const handleShareProduct = (product: SearchPageProduct) => {
-    const productLink = `${window.location.origin}/product/${product.id}`;
-    setShareableLink(productLink);
+    const shareUrl = `${window.location.origin}/product/${product.id}`;
+    setShareableLink(shareUrl);
     setIsShareDialogOpen(true);
   };
 
-  const handleLogin = () => {
-    setIsDialogOpen(false);
-    navigate('/auth');
+  const saveSearchHistory = async (query: string, userId: string) => {
+    try {
+      await supabase.from('search_history').insert({
+        user_id: userId,
+        query: query.toLowerCase().trim(),
+      });
+    } catch (error) {
+      console.error('Error saving search history:', error);
+    }
   };
 
+  // Fetch search history and popular searches
+  useEffect(() => {
+    const fetchSearchData = async () => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (session?.session?.user) {
+          const { data: history } = await supabase
+            .from('search_history')
+            .select('*')
+            .eq('user_id', session.session.user.id)
+            .order('searched_at', { ascending: false })
+            .limit(10);
+          
+          setSearchHistory(history || []);
+        }
+        
+        const { data: popular } = await supabase
+          .from('popular_search_terms')
+          .select('*')
+          .order('count', { ascending: false })
+          .limit(10);
+        
+        setPopularSearches(popular || []);
+      } catch (error) {
+        console.error('Error fetching search history:', error);
+      }
+    };
+    
+    fetchSearchData();
+  }, []);
+
   return {
-    // Data
-    products,
+    query,
+    inputValue,
+    showSuggestions,
     categories,
     shops,
+    products,
     loading,
     error,
-    searchHistory,
-    recommendations,
-    initialLoad,
-    recentlyViewed,
-    popularSearches,
-    
-    // Filters and sorting
+    isAddingToCart,
+    isAddingToWishlist,
+    shareableLink,
+    isDialogOpen,
+    setIsDialogOpen,
+    isShareDialogOpen,
+    setIsShareDialogOpen,
     selectedCategory,
     selectedShop,
     priceRange,
     rating,
     sortOption,
     viewMode,
-    brandFilters,
-    discountFilters,
-    availabilityFilters,
-    
-    // UI state
+    searchHistory,
+    popularSearches,
     mobileFiltersOpen,
     setMobileFiltersOpen,
     mobileSortOpen,
     setMobileSortOpen,
-    isAddingToCart,
-    isAddingToWishlist,
-    isDialogOpen,
-    setIsDialogOpen,
-    selectedProduct,
-    isShareDialogOpen,
-    setIsShareDialogOpen,
-    shareableLink,
-    
-    // Actions
+    handleInputChange,
+    handleSearchSubmit,
+    handleAutocomplete,
+    handleClear,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,
@@ -220,15 +226,8 @@ export const useSearch = (query: string) => {
     handleRatingChange,
     handleSortChange,
     handleViewModeChange,
-    toggleBrandFilter,
-    toggleDiscountFilter,
-    handleAvailabilityFilterChange,
     clearFilters,
-    handleLogin,
     fetchData,
-    clearSearchHistoryItem,
-    clearAllSearchHistory,
     saveSearchHistory,
-    handleProductClick
   };
 };

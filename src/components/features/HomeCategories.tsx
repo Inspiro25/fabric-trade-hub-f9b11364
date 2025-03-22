@@ -1,9 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { getCategoriesWithDetails } from '@/lib/products/categories';
 
 interface HomeCategoriesProps {
-  categories: string[];
+  categories?: string[];
+}
+
+interface Category {
+  id: string;
+  name: string;
+  description: string | null;
+  image: string | null;
 }
 
 // Verified working image URLs with direct paths rather than API calls
@@ -28,18 +36,33 @@ const CategoryFallbackImages: Record<string, string> = {
   'Electronics': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&auto=format&fit=crop&q=60',
 };
 
-const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories }) => {
+const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategories }) => {
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [categories, setCategories] = useState<Category[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategoriesWithDetails();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
 
   // Pre-load all images
   useEffect(() => {
     const preloadImages = async () => {
       categories.forEach(category => {
         const img = new Image();
-        img.src = getCategoryImage(category);
-        img.onload = () => setLoadedImages(prev => ({ ...prev, [category]: true }));
-        img.onerror = () => setImageErrors(prev => ({ ...prev, [category]: true }));
+        img.src = getCategoryImage(category.name);
+        img.onload = () => setLoadedImages(prev => ({ ...prev, [category.name]: true }));
+        img.onerror = () => setImageErrors(prev => ({ ...prev, [category.name]: true }));
       });
     };
     
@@ -70,6 +93,12 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories }) => {
     return `https://placehold.co/100x100/orange/white?text=${encodeURIComponent(category)}`;
   };
 
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/search?category=${categoryId}`);
+  };
+
+  if (categories.length === 0) return null;
+
   return (
     <section className="mb-6 px-4">
       <div className="flex items-center justify-between mb-3">
@@ -77,23 +106,33 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories }) => {
       </div>
       
       <div className="grid grid-cols-4 gap-3">
-        {categories.slice(0, 8).map((category, index) => (
-          <Link 
-            key={category} 
-            to={`/category/${category.toLowerCase().replace(/\s+/g, '-')}`}
-            className="flex flex-col items-center"
+        {categories.slice(0, 8).map((category) => (
+          <div 
+            key={category.id} 
+            onClick={() => handleCategoryClick(category.id)}
+            className="flex flex-col items-center cursor-pointer"
           >
             <div className="w-16 h-16 rounded-full overflow-hidden mb-2 border-2 border-white shadow-sm bg-gray-100 flex items-center justify-center">
-              <img 
-                src={getCategoryImage(category)}
-                alt={category}
-                className="w-full h-full object-cover"
-                onError={() => handleImageError(category)}
-                loading="lazy"
-              />
+              {category.image ? (
+                <img 
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-cover"
+                  onError={() => handleImageError(category.name)}
+                  loading="lazy"
+                />
+              ) : (
+                <img 
+                  src={getCategoryImage(category.name)}
+                  alt={category.name}
+                  className="w-full h-full object-cover"
+                  onError={() => handleImageError(category.name)}
+                  loading="lazy"
+                />
+              )}
             </div>
-            <span className="text-xs text-center font-medium">{category}</span>
-          </Link>
+            <span className="text-xs text-center font-medium">{category.name}</span>
+          </div>
         ))}
       </div>
     </section>

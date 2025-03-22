@@ -4,7 +4,7 @@ import { Tag, Store, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +29,7 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,6 +57,14 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
 
     fetchCategories();
   }, [propCategories]);
+
+  const handleCategoryClick = (categoryId: string) => {
+    // If we're already on the search page, just update the filter
+    onSelectCategory(categoryId);
+    
+    // If we're on another page, navigate to search with the category parameter
+    navigate(`/search?category=${categoryId}`);
+  };
 
   if (isLoading || categories.length === 0) return null;
 
@@ -105,7 +114,7 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
             whileTap={{ scale: 0.95 }}
           >
             <Button
-              onClick={() => onSelectCategory(category.id)}
+              onClick={() => handleCategoryClick(category.id)}
               className={cn(
                 "text-sm rounded-full px-3 py-1 h-auto flex items-center gap-1",
                 selectedCategory === category.id 
