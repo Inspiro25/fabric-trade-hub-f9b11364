@@ -6,6 +6,8 @@ import SearchPagination from './SearchPagination';
 import SearchLoadingState from './SearchLoadingState';
 import SearchErrorState from './SearchErrorState';
 import SearchEmptyState from './SearchEmptyState';
+import { useTheme } from '@/contexts/ThemeContext';
+import { motion } from 'framer-motion';
 
 interface SearchResultsProps {
   loading: boolean;
@@ -46,6 +48,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   viewMode = 'grid',
   onViewModeChange = () => {}
 }) => {
+  const { isDarkMode } = useTheme();
+  
   if (loading) {
     return <SearchLoadingState />;
   }
@@ -71,24 +75,39 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         onViewModeChange={onViewModeChange}
       />
       
-      <div className={viewMode === 'grid' 
-        ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
-        : "flex flex-col space-y-4"
-      }>
+      <motion.div 
+        className={viewMode === 'grid' 
+          ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+          : "flex flex-col space-y-4"
+        }
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ staggerChildren: 0.05 }}
+      >
         {products.map(product => (
-          <SearchProductCard
+          <motion.div
             key={product.id}
-            product={product}
-            isAddingToCart={isAddingToCart === product.id}
-            isAddingToWishlist={isAddingToWishlist === product.id}
-            onAddToCart={() => handleAddToCart(product)}
-            onAddToWishlist={() => handleAddToWishlist(product)}
-            onShare={() => handleShareProduct(product)}
-            onClick={onProductClick ? () => onProductClick(product) : undefined}
-            viewMode={viewMode}
-          />
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SearchProductCard
+              product={{
+                ...product,
+                // Override product colors to use orange for add to cart buttons
+                addToCartButtonColor: isDarkMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-kutuku-primary hover:bg-kutuku-secondary'
+              }}
+              isAddingToCart={isAddingToCart === product.id}
+              isAddingToWishlist={isAddingToWishlist === product.id}
+              onAddToCart={() => handleAddToCart(product)}
+              onAddToWishlist={() => handleAddToWishlist(product)}
+              onShare={() => handleShareProduct(product)}
+              onClick={onProductClick ? () => onProductClick(product) : undefined}
+              viewMode={viewMode}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
       
       <SearchPagination 
         currentPage={currentPage}

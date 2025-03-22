@@ -7,6 +7,7 @@ type ThemeContextType = {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
+  orangeGradient: string;
 };
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -15,6 +16,7 @@ const ThemeContext = createContext<ThemeContextType>({
   primaryColor: '#FF6B00', // Default primary color (orange)
   secondaryColor: '#FF8A3D', // Default secondary color (lighter orange)
   accentColor: '#FFF0EA', // Default accent color (very light orange)
+  orangeGradient: 'linear-gradient(to right, #FF6B00, #FF8A3D)'
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -39,6 +41,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const primaryColor = isDarkMode ? '#FF8A3D' : '#FF6B00';
   const secondaryColor = isDarkMode ? '#FFA264' : '#FF8A3D';
   const accentColor = isDarkMode ? '#433127' : '#FFF0EA';
+  const orangeGradient = isDarkMode 
+    ? 'linear-gradient(to right, #FF8A3D, #FFA264)' 
+    : 'linear-gradient(to right, #FF6B00, #FF8A3D)';
 
   // Toggle the dark mode state
   const toggleDarkMode = () => {
@@ -68,7 +73,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       toggleDarkMode, 
       primaryColor, 
       secondaryColor, 
-      accentColor 
+      accentColor,
+      orangeGradient
     }}>
       {children}
     </ThemeContext.Provider>

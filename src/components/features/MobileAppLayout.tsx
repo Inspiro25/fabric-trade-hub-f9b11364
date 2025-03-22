@@ -4,6 +4,7 @@ import { Home, Search, ShoppingBag, Percent, Store } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface MobileNavItemProps {
   to: string;
@@ -19,28 +20,34 @@ const MobileNavItem = ({
   label,
   isActive,
   badgeCount
-}: MobileNavItemProps) => (
-  <Link 
-    to={to} 
-    className={cn(
-      "flex flex-col items-center justify-center text-[10px] font-medium",
-      isActive ? "text-kutuku-primary" : "text-gray-500"
-    )}
-  >
-    <div className={cn(
-      "mb-1 flex items-center justify-center transition-transform relative",
-      isActive ? "scale-110" : ""
-    )}>
-      {icon}
-      {badgeCount !== undefined && badgeCount > 0 && (
-        <span className="absolute -top-2 -right-2 flex items-center justify-center bg-red-500 text-white rounded-full text-xs w-4 h-4 text-[10px]">
-          {badgeCount > 99 ? '99+' : badgeCount}
-        </span>
+}: MobileNavItemProps) => {
+  const { isDarkMode } = useTheme();
+  
+  return (
+    <Link 
+      to={to} 
+      className={cn(
+        "flex flex-col items-center justify-center text-[10px] font-medium",
+        isActive 
+          ? isDarkMode ? "text-orange-300" : "text-kutuku-primary" 
+          : isDarkMode ? "text-gray-400" : "text-gray-500"
       )}
-    </div>
-    <span>{label}</span>
-  </Link>
-);
+    >
+      <div className={cn(
+        "mb-1 flex items-center justify-center transition-transform relative",
+        isActive ? "scale-110" : ""
+      )}>
+        {icon}
+        {badgeCount !== undefined && badgeCount > 0 && (
+          <span className="absolute -top-2 -right-2 flex items-center justify-center bg-red-500 text-white rounded-full text-xs w-4 h-4 text-[10px]">
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </span>
+        )}
+      </div>
+      <span>{label}</span>
+    </Link>
+  );
+};
 
 const MobileAppLayout: React.FC<{
   children: React.ReactNode;
@@ -50,17 +57,26 @@ const MobileAppLayout: React.FC<{
   const location = useLocation();
   const pathname = location.pathname;
   const { getCartCount } = useCart();
+  const { isDarkMode } = useTheme();
   const cartItemCount = getCartCount();
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
+    <div className={cn(
+      "flex flex-col min-h-screen", 
+      isDarkMode 
+        ? "bg-gradient-to-br from-orange-950/90 via-orange-900/70 to-gray-900" 
+        : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
+    )}>
       {/* Content area */}
       <main className="flex-1 pb-16">
         {children}
       </main>
 
       {/* Bottom navigation bar - Mobile app style */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50">
+      <div className={cn(
+        "fixed bottom-0 left-0 right-0 shadow-lg z-50",
+        isDarkMode ? "bg-gray-900" : "bg-white"
+      )}>
         <div className="flex h-16 items-center justify-around px-2">
           <MobileNavItem 
             to="/" 
@@ -79,7 +95,9 @@ const MobileAppLayout: React.FC<{
               to="/cart"
               className={cn(
                 "flex items-center justify-center w-12 h-12 rounded-full text-white -mt-6 shadow-md relative",
-                pathname === '/cart' ? "bg-kutuku-secondary" : "bg-kutuku-primary"
+                pathname === '/cart' 
+                  ? isDarkMode ? "bg-orange-600" : "bg-kutuku-secondary" 
+                  : isDarkMode ? "bg-orange-500" : "bg-kutuku-primary"
               )}
             >
               <ShoppingBag size={20} />
@@ -89,7 +107,10 @@ const MobileAppLayout: React.FC<{
                 </span>
               )}
             </Link>
-            <span className="text-[10px] font-medium mt-1 text-gray-500">Cart</span>
+            <span className={cn(
+              "text-[10px] font-medium mt-1",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>Cart</span>
           </div>
           <MobileNavItem 
             to="/offers" 
