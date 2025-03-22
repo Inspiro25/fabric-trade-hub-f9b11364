@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import ReviewForm from './ReviewForm';
 import ReviewList from './ReviewList';
-import { useAuth } from '@/hooks/useAuthProvider';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ShopReviewsTabProps {
   shopId: string;

@@ -5,13 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag } from 'lucide-react';
-import { Shop, mockShops, fetchShops } from '@/lib/shops';
+import { Shop, fetchShops } from '@/lib/shops';
+import { shops as mockShops } from '@/lib/shops/mockData';
 import { useIsMobile } from '@/hooks/use-mobile';
+
 const Shops = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
+
   useEffect(() => {
     const loadShops = async () => {
       setIsLoading(true);
@@ -27,7 +30,9 @@ const Shops = () => {
     };
     loadShops();
   }, []);
+
   const filteredShops = shops.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()) || shop.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
   return <div className="min-h-screen bg-gray-50 pb-6">
       <div className="bg-gradient-to-r from-kutuku-light to-kutuku-light/50 border-b">
         <div className="container mx-auto px-3 py-[25px]">
@@ -108,4 +113,5 @@ const Shops = () => {
       </div>
     </div>;
 };
+
 export default Shops;
