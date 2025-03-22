@@ -51,6 +51,9 @@ import ManagementShopPerformance from "./pages/ManagementShopPerformance";
 // Import New Arrivals page
 import NewArrivals from "./pages/NewArrivals";
 
+// Import Trending Now page
+import TrendingNow from "./pages/TrendingNow";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -87,6 +90,8 @@ const AppContent = () => {
             <Route path="/category/:categoryName" element={<CategorySection />} />
             {/* Add route for new arrivals */}
             <Route path="/new-arrivals" element={<NewArrivals />} />
+            {/* Add route for trending now */}
+            <Route path="/trending" element={<TrendingNow />} />
             {/* Add admin routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -128,6 +133,8 @@ const AppContent = () => {
           <Route path="/category/:categoryName" element={<CategorySection />} />
           {/* Add route for new arrivals */}
           <Route path="/new-arrivals" element={<NewArrivals />} />
+          {/* Add route for trending now */}
+          <Route path="/trending" element={<TrendingNow />} />
           {/* Add admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

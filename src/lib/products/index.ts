@@ -6,3 +6,4 @@ export * from '@/lib/products/filters';
 export * from '@/lib/products/categories';
 export * from '@/lib/products/collections';
 export * from '@/lib/products/deal';
+export * from '@/lib/products/trending';

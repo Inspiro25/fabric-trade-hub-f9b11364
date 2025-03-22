@@ -7,6 +7,8 @@ import HomeCategoryGrid from '@/components/home/HomeCategoryGrid';
 import HomeProductShowcase from '@/components/home/HomeProductShowcase';
 import HomePromoBanner from '@/components/home/HomePromoBanner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from 'react-router-dom';
+import { Flame } from 'lucide-react';
 
 // Lazy loaded components for less important sections
 const SectionLoading = () => <Skeleton className="h-32 w-full" />;
@@ -69,6 +71,20 @@ const Index = () => {
           categories={categories} 
           isLoading={!dataLoaded.categories} 
         />
+        
+        {/* Trending Now Banner */}
+        <Link to="/trending" className="block mx-4 my-4">
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-4 shadow-md text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Flame className="h-6 w-6 mr-2" />
+                <h2 className="text-lg font-bold">Trending Now</h2>
+              </div>
+              <span className="text-sm font-medium">See All →</span>
+            </div>
+            <p className="text-sm mt-1 text-white/80">Discover what's hot right now</p>
+          </div>
+        </Link>
         
         {/* Deal of the Day - lazy loaded */}
         <Suspense fallback={<SectionLoading />}>
