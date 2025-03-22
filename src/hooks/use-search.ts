@@ -4,13 +4,12 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useSearchFilters } from './use-search-filters';
 import { useSearchData } from './use-search-data';
-import { fetchProducts } from '@/lib/products/base'; // Changed from getProducts to fetchProducts
-import { ProductFilters } from '@/lib/types/search';
+import { fetchProducts } from '@/lib/products/base'; 
+import { ProductFilters, SortOption, SearchReturn } from '@/lib/types/search';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchHistory } from './use-search-history';
 import { useRecommendations } from './use-recommendations';
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
-import { SearchReturn } from '@/lib/types/search';
 
 export const useSearch = (): SearchReturn => {
   const location = useLocation();
@@ -25,22 +24,12 @@ export const useSearch = (): SearchReturn => {
   // Initialize search filters state
   const filters = useSearchFilters();
   const {
-    query,
-    setQuery,
-    category,
-    setCategory,
-    priceRange,
-    setPriceRange,
-    ratings,
-    setRatings,
-    sortOption,
-    setSortOption,
-    viewMode,
-    setViewMode,
-    resetFilters,
     selectedCategory,
     selectedShop,
+    priceRange,
     rating,
+    sortOption,
+    viewMode,
     brandFilters,
     discountFilters,
     availabilityFilters,
@@ -58,14 +47,23 @@ export const useSearch = (): SearchReturn => {
     toggleDiscountFilter,
     handleAvailabilityFilterChange,
     clearFilters,
+    resetFilters
   } = filters;
+  
+  // Custom state needed for useSearch
+  const [query, setQuery] = useState(urlQuery);
+  const [category, setCategory] = useState('');
+  const [setPriceRange] = useState<(range: number[]) => void>(() => () => {});
+  const [ratings, setRatings] = useState(0);
+  const [setSortOption] = useState<(option: SortOption) => void>(() => () => {});
+  const [setViewMode] = useState<(mode: 'list' | 'grid') => void>(() => () => {});
   
   // Initialize URL query if present
   useEffect(() => {
     if (urlQuery && !query) {
       setQuery(urlQuery);
     }
-  }, [urlQuery]);
+  }, [urlQuery, query]);
   
   // Search data state
   const searchData = useSearchData(query);
@@ -73,17 +71,17 @@ export const useSearch = (): SearchReturn => {
     products,
     categories,
     shops,
-    loading: isLoading,
+    loading,
     error,
-    totalProducts,
-    pageCount,
-    currentPage,
-    setCurrentPage,
-    resultsPerPage,
-    setResultsPerPage,
-    fetchData,
-    initialLoad
+    initialLoad,
+    fetchData
   } = searchData;
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [resultsPerPage, setResultsPerPage] = useState(20);
+  const totalProducts = products.length;
+  const pageCount = Math.ceil(totalProducts / resultsPerPage);
   
   // Search execution state
   const [hasSearched, setHasSearched] = useState(false);
@@ -104,11 +102,10 @@ export const useSearch = (): SearchReturn => {
   const { 
     searchHistory,
     popularSearches,
-    addToSearchHistory,
-    clearSearchHistory,
     clearSearchHistoryItem,
     clearAllSearchHistory,
-    saveSearchHistory
+    saveSearchHistory,
+    fetchSearchHistory
   } = searchHistoryUtils;
   
   // Product recommendations
@@ -136,7 +133,7 @@ export const useSearch = (): SearchReturn => {
       
       // Add search to history if this is a new search
       if (query && !searchExecuted && userId) {
-        addToSearchHistory(query);
+        saveSearchHistory(query);
       }
       
       setSearchExecuted(true);
@@ -156,8 +153,10 @@ export const useSearch = (): SearchReturn => {
     currentPage, 
     resultsPerPage,
     searchExecuted,
-    addToSearchHistory,
-    userId
+    saveSearchHistory,
+    userId,
+    products,
+    fetchData
   ]);
   
   // Execute search when filters change
@@ -218,7 +217,7 @@ export const useSearch = (): SearchReturn => {
     
     // Results state
     products,
-    isLoading,
+    isLoading: loading,
     error,
     totalProducts,
     pageCount,
@@ -239,7 +238,6 @@ export const useSearch = (): SearchReturn => {
     
     // Search history
     searchHistory,
-    clearSearchHistory,
     clearSearchHistoryItem,
     clearAllSearchHistory,
     saveSearchHistory,
@@ -290,6 +288,3 @@ export const useSearch = (): SearchReturn => {
     shops
   };
 };
-
-// Re-export SortOption for backward compatibility
-export type { SortOption } from '@/lib/types/search';
