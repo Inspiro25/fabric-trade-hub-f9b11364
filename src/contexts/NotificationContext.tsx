@@ -37,33 +37,6 @@ interface NotificationProviderProps {
   children: ReactNode;
 }
 
-// Demo notifications for testing
-const demoNotifications: Omit<Notification, 'id'>[] = [
-  {
-    title: 'Order Confirmed',
-    message: 'Your order #12345 has been confirmed and is being processed.',
-    type: 'order',
-    read: false,
-    timestamp: Date.now() - 3600000, // 1 hour ago
-    link: '/orders/12345'
-  },
-  {
-    title: 'Summer Sale',
-    message: 'Enjoy up to 50% off on our summer collection!',
-    type: 'promo',
-    read: false,
-    timestamp: Date.now() - 86400000, // 1 day ago
-    link: '/category/sale'
-  },
-  {
-    title: 'Welcome to Kutuku',
-    message: 'Thank you for joining Kutuku. Explore our collection and enjoy shopping!',
-    type: 'system',
-    read: true,
-    timestamp: Date.now() - 259200000, // 3 days ago
-  }
-];
-
 export const NotificationProvider = ({ children }: NotificationProviderProps) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -78,26 +51,11 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         setUnreadCount(parsedNotifications.filter((n: Notification) => !n.read).length);
       } catch (error) {
         console.error('Error parsing notifications from localStorage:', error);
-        // If there's an error, initialize with demo notifications
-        initializeWithDemoNotifications();
+        // Initialize with empty notifications instead of demo notifications
+        setNotifications([]);
       }
-    } else {
-      // If no notifications in localStorage, initialize with demo notifications
-      initializeWithDemoNotifications();
     }
   }, []);
-
-  // Initialize with demo notifications
-  const initializeWithDemoNotifications = () => {
-    const initialNotifications = demoNotifications.map(notification => ({
-      ...notification,
-      id: generateId()
-    }));
-    setNotifications(initialNotifications);
-    setUnreadCount(initialNotifications.filter(n => !n.read).length);
-    // Save to localStorage
-    localStorage.setItem('notifications', JSON.stringify(initialNotifications));
-  };
 
   // Save notifications to localStorage when changed
   useEffect(() => {
@@ -140,20 +98,20 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     
     setNotifications(prevNotifications => [newNotification, ...prevNotifications]);
     
-    // Show toast for new notification
+    // Show toast for new notification - making it more subtle
     toast({
       title: notification.title,
       description: notification.message,
+      duration: 3000, // Shorter duration
     });
   };
 
-  // New function to broadcast a notification to all users
+  // Function to broadcast a notification to all users
   const broadcastNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    // In a real app with a backend, you'd call an API to broadcast this to all users
-    // For now, we'll just add it to the current user's notifications
+    // Add it to the current user's notifications
     addNotification(notification);
     
-    // Also store in localStorage as a "broadcast" notification so we can show it to other users
+    // Also store in localStorage as a "broadcast" notification
     try {
       const existingBroadcasts = JSON.parse(localStorage.getItem('broadcastNotifications') || '[]');
       const newBroadcast = {
@@ -167,11 +125,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     } catch (error) {
       console.error('Error storing broadcast notification:', error);
     }
-    
-    toast({
-      title: "Notification Broadcast",
-      description: "This notification has been sent to all users",
-    });
   };
 
   const value = {
