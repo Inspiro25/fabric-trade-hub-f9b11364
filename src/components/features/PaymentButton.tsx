@@ -1,9 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { initializeRazorpay, RazorpayResponse } from '@/lib/razorpay';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PaymentButtonProps {
   amount: number;
@@ -29,6 +31,8 @@ const PaymentButton = ({
   buttonText = "Pay Now"
 }: PaymentButtonProps) => {
   const [loading, setLoading] = useState(false);
+  const { addNotification } = useNotifications();
+  const { currentUser } = useAuth();
 
   const handlePayment = async () => {
     setLoading(true);
@@ -55,6 +59,16 @@ const PaymentButton = ({
             description: `Payment ID: ${response.razorpay_payment_id}`,
           });
           
+          // Add notification for successful payment
+          if (currentUser) {
+            addNotification({
+              title: "Payment Successful",
+              message: `Your payment of ₹${(amount).toFixed(2)} was successful. Payment ID: ${response.razorpay_payment_id.slice(0, 8)}...`,
+              type: "order",
+              link: "/orders"
+            });
+          }
+          
           if (onSuccess) {
             onSuccess(response);
           }
@@ -77,6 +91,16 @@ const PaymentButton = ({
         description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
+      
+      // Add notification for failed payment
+      if (currentUser) {
+        addNotification({
+          title: "Payment Failed",
+          message: error instanceof Error ? error.message : "Your payment could not be processed. Please try again.",
+          type: "system",
+          link: "/cart"
+        });
+      }
       
       if (onFailure && error instanceof Error) {
         onFailure(error);

@@ -155,3 +155,53 @@ export const getUnreadNotificationCount = async (userId: string): Promise<number
     return 0;
   }
 };
+
+// Get notifications by type
+export const getNotificationsByType = async (userId: string, type: string): Promise<Notification[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('user_notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('type', type)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error(`Error fetching ${type} notifications:`, error);
+      return [];
+    }
+    
+    return data.map(notification => ({
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      read: notification.read,
+      link: notification.link,
+      createdAt: notification.created_at
+    }));
+  } catch (error) {
+    console.error(`Error fetching ${type} notifications:`, error);
+    return [];
+  }
+};
+
+// Delete all notifications for a user
+export const deleteAllNotifications = async (userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('user_notifications')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error deleting all notifications:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting all notifications:', error);
+    return false;
+  }
+};
