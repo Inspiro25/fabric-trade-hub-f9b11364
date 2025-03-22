@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Home, Search, ShoppingBag, Percent, Store } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -53,7 +52,7 @@ const MobileAppLayout: React.FC<{
   const cartItemCount = getCartCount();
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       {/* Content area */}
       <main className="flex-1 pb-16">
         {children}
