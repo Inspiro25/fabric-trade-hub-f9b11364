@@ -1,17 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSearch } from '@/hooks/use-search';
 import SearchFilters from '@/components/search/SearchFilters';
 import SearchSort from '@/components/search/SearchSort';
 import SearchResults from '@/components/search/SearchResults';
+import SearchHistory from '@/components/search/SearchHistory';
+import SearchCategories from '@/components/search/SearchCategories';
+import SearchRecommendations from '@/components/search/SearchRecommendations';
 import ShareDialog from '@/components/search/ShareDialog';
 import AuthDialog from '@/components/search/AuthDialog';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SlidersHorizontal, ArrowUpDown, Search as SearchIcon } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, Search as SearchIcon, XCircle } from 'lucide-react';
 
 const Search = () => {
   const location = useLocation();
@@ -32,8 +35,15 @@ const Search = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedSearch = searchInput.trim();
-    navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
+    if (trimmedSearch) {
+      navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
+    }
   };
+
+  // Reset pagination when query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
 
   const {
     products,
@@ -57,6 +67,9 @@ const Search = () => {
     isShareDialogOpen,
     setIsShareDialogOpen,
     shareableLink,
+    searchHistory,
+    recommendations,
+    initialLoad,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,
@@ -67,7 +80,9 @@ const Search = () => {
     handleSortChange,
     clearFilters,
     handleLogin,
-    fetchData
+    fetchData,
+    clearSearchHistoryItem,
+    clearAllSearchHistory,
   } = useSearch(query);
 
   const handleRetry = () => {
@@ -93,6 +108,22 @@ const Search = () => {
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
+  };
+  
+  // Handle category selection from category pills
+  const handleCategoryPillClick = (categoryId: string | null) => {
+    handleCategoryChange(categoryId);
+  };
+  
+  // Handle search history item selection
+  const handleHistoryItemClick = (historyQuery: string) => {
+    setSearchInput(historyQuery);
+    navigate(`/search?q=${encodeURIComponent(historyQuery)}`);
+  };
+  
+  // Handle clicking on a recommended product
+  const handleRecommendedProductClick = (productId: string) => {
+    navigate(`/product/${productId}`);
   };
 
   // Paginate products
@@ -142,7 +173,7 @@ const Search = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-[50px]">
+    <div className="container mx-auto px-4 py-[20px] md:py-[50px]">
       {/* Search input */}
       <div className="mb-6">
         <form onSubmit={handleSearchSubmit} className="relative w-full max-w-lg mx-auto">
@@ -151,8 +182,19 @@ const Search = () => {
             placeholder="Search products, brands, categories..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pr-10 rounded-full border-kutuku-gray focus:border-kutuku-primary"
+            className="pr-20 rounded-full border-kutuku-gray focus:border-kutuku-primary"
           />
+          {searchInput && (
+            <Button 
+              type="button" 
+              size="icon" 
+              variant="ghost" 
+              onClick={() => setSearchInput('')}
+              className="absolute right-10 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
+          )}
           <Button 
             type="submit" 
             size="icon" 
@@ -165,22 +207,38 @@ const Search = () => {
       </div>
       
       {/* Search header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Search Results for "{query}"</h1>
-          <p className="text-gray-500 text-sm">
-            {products.length} {products.length === 1 ? 'result' : 'results'} found
-          </p>
+      {!initialLoad && query && (
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold mb-1">Search Results for "{query}"</h1>
+            <p className="text-gray-500 text-sm">
+              {products.length} {products.length === 1 ? 'result' : 'results'} found
+            </p>
+          </div>
+          
+          {isMobile ? renderMobileFilterButtons() : renderDesktopFilterButtons()}
         </div>
-        
-        {isMobile ? renderMobileFilterButtons() : renderDesktopFilterButtons()}
-      </div>
+      )}
       
       {/* Main content */}
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar filters for desktop */}
+        {/* Sidebar for desktop */}
         {!isMobile && (
           <div className="w-full lg:w-64 shrink-0">
+            {/* Search history */}
+            {searchHistory.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-4 mb-6 sticky top-4">
+                <h2 className="font-semibold text-lg mb-4">Recent Searches</h2>
+                <SearchHistory 
+                  history={searchHistory}
+                  onSelectHistoryItem={handleHistoryItemClick}
+                  onClearHistoryItem={clearSearchHistoryItem}
+                  onClearAllHistory={clearAllSearchHistory}
+                />
+              </div>
+            )}
+            
+            {/* Filters for desktop */}
             <div className="bg-white rounded-lg shadow p-4 sticky top-4">
               <h2 className="font-semibold text-lg mb-4">Filters</h2>
               <SearchFilters 
@@ -204,26 +262,62 @@ const Search = () => {
           </div>
         )}
         
-        {/* Search results */}
+        {/* Main content area */}
         <div className="flex-1">
-          <SearchResults 
-            loading={loading} 
-            error={error} 
-            products={paginatedProducts} 
-            isAddingToCart={isAddingToCart} 
-            isAddingToWishlist={isAddingToWishlist} 
-            handleAddToCart={handleAddToCart} 
-            handleAddToWishlist={handleAddToWishlist} 
-            handleShareProduct={handleShareProduct} 
-            onRetry={handleRetry}
-            totalItems={products.length}
-            currentPage={currentPage}
-            onPageChange={handlePageChange}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={handleItemsPerPageChange}
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-          />
+          {/* Show content based on state */}
+          {initialLoad || !query ? (
+            <>
+              {/* Search history for mobile */}
+              {isMobile && searchHistory.length > 0 && (
+                <SearchHistory 
+                  history={searchHistory}
+                  onSelectHistoryItem={handleHistoryItemClick}
+                  onClearHistoryItem={clearSearchHistoryItem}
+                  onClearAllHistory={clearAllSearchHistory}
+                />
+              )}
+              
+              {/* Category pills */}
+              <SearchCategories 
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleCategoryPillClick}
+              />
+              
+              {/* Recommendations */}
+              <SearchRecommendations 
+                products={recommendations}
+                isAddingToCart={isAddingToCart}
+                isAddingToWishlist={isAddingToWishlist}
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+                onShare={handleShareProduct}
+                onSelectProduct={handleRecommendedProductClick}
+              />
+            </>
+          ) : (
+            <>
+              {/* Search results */}
+              <SearchResults 
+                loading={loading} 
+                error={error} 
+                products={paginatedProducts} 
+                isAddingToCart={isAddingToCart} 
+                isAddingToWishlist={isAddingToWishlist} 
+                handleAddToCart={handleAddToCart} 
+                handleAddToWishlist={handleAddToWishlist} 
+                handleShareProduct={handleShareProduct} 
+                onRetry={handleRetry}
+                totalItems={products.length}
+                currentPage={currentPage}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={handleItemsPerPageChange}
+                viewMode={viewMode}
+                onViewModeChange={handleViewModeChange}
+              />
+            </>
+          )}
         </div>
       </div>
 

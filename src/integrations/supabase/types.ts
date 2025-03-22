@@ -583,6 +583,27 @@ export type Database = {
           },
         ]
       }
+      search_history: {
+        Row: {
+          id: string
+          query: string
+          searched_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          query: string
+          searched_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          query?: string
+          searched_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       shop_analytics: {
         Row: {
           conversion_rate: number | null

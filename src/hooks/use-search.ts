@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Product as ImportedProduct } from '@/lib/types/product';
 import { useCart } from '@/contexts/CartContext';
@@ -8,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
 import { supabase } from '@/integrations/supabase/client';
+import { getPersonalizedRecommendations } from '@/services/recommendationService';
 
 // Mock data for fallback when API is unavailable
 const mockProducts: SearchPageProduct[] = [
@@ -117,6 +117,12 @@ interface Shop {
   status: string | null;
 }
 
+interface SearchHistoryItem {
+  id: string;
+  query: string;
+  searched_at: string;
+}
+
 export const useSearch = (query: string) => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<SearchPageProduct[]>([]);
@@ -142,6 +148,10 @@ export const useSearch = (query: string) => {
   
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
+  
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [recommendations, setRecommendations] = useState<SearchPageProduct[]>([]);
+  const [initialLoad, setInitialLoad] = useState(true);
   
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
@@ -171,6 +181,11 @@ export const useSearch = (query: string) => {
 
   // Fetch products function that can be called to retry
   const fetchData = async () => {
+    if (initialLoad && !query) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
 
@@ -234,6 +249,27 @@ export const useSearch = (query: string) => {
       } else {
         setShops(shopsData || []);
       }
+      
+      // Save search to history if there's a query and user is logged in
+      if (query && currentUser) {
+        try {
+          await supabase.from('search_history').upsert(
+            { 
+              user_id: currentUser.id, 
+              query: query.toLowerCase().trim(),
+              searched_at: new Date().toISOString() 
+            },
+            { onConflict: 'user_id,query', ignoreDuplicates: false }
+          );
+          
+          // Refresh search history
+          fetchSearchHistory();
+        } catch (historyError) {
+          console.error('Error saving search history:', historyError);
+        }
+      }
+      
+      setInitialLoad(false);
     } catch (err: any) {
       console.error('Search error:', err);
       
@@ -266,10 +302,158 @@ export const useSearch = (query: string) => {
     }
   };
 
+  // Fetch search history
+  const fetchSearchHistory = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('search_history')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('searched_at', { ascending: false })
+        .limit(5);
+        
+      if (error) {
+        console.error('Error fetching search history:', error);
+        return;
+      }
+      
+      setSearchHistory(data || []);
+    } catch (err) {
+      console.error('Error fetching search history:', err);
+    }
+  };
+  
+  // Fetch recommendations
+  const fetchRecommendations = async () => {
+    if (!currentUser) {
+      // For non-logged in users, show trending products
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_trending', true)
+          .limit(4);
+          
+        if (error) {
+          console.error('Error fetching trending products:', error);
+          return;
+        }
+        
+        const formattedRecommendations: SearchPageProduct[] = (data || []).map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: Number(product.price),
+          sale_price: product.sale_price ? Number(product.sale_price) : null,
+          images: product.images || ['/placeholder.svg'],
+          category_id: product.category_id || '',
+          shop_id: product.shop_id,
+          is_new: product.is_new || false,
+          is_trending: product.is_trending || false,
+          colors: product.colors || [],
+          sizes: product.sizes || [],
+          rating: product.rating || 0,
+          review_count: product.review_count || 0
+        }));
+        
+        setRecommendations(formattedRecommendations);
+      } catch (err) {
+        console.error('Error fetching trending products:', err);
+      }
+      return;
+    }
+    
+    try {
+      // Get personalized recommendations
+      const recommendedProducts = await getPersonalizedRecommendations(currentUser.id, 4);
+      
+      // Format to SearchPageProduct type
+      const formattedRecommendations: SearchPageProduct[] = recommendedProducts.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: Number(product.price),
+        sale_price: product.salePrice ? Number(product.salePrice) : null,
+        images: product.images || ['/placeholder.svg'],
+        category_id: product.category || '',
+        shop_id: product.shopId || '',
+        is_new: product.isNew || false,
+        is_trending: product.isTrending || false,
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        rating: product.rating || 0,
+        review_count: product.reviewCount || 0
+      }));
+      
+      setRecommendations(formattedRecommendations);
+    } catch (err) {
+      console.error('Error fetching recommendations:', err);
+    }
+  };
+
+  // Clear search history item
+  const clearSearchHistoryItem = async (id: string) => {
+    if (!currentUser) return;
+    
+    try {
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', currentUser.id);
+        
+      if (error) {
+        console.error('Error deleting search history item:', error);
+        return;
+      }
+      
+      setSearchHistory(prevHistory => 
+        prevHistory.filter(item => item.id !== id)
+      );
+    } catch (err) {
+      console.error('Error deleting search history item:', err);
+    }
+  };
+  
+  // Clear all search history
+  const clearAllSearchHistory = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('user_id', currentUser.id);
+        
+      if (error) {
+        console.error('Error clearing search history:', error);
+        return;
+      }
+      
+      setSearchHistory([]);
+      toast({
+        title: "Search history cleared",
+        description: "Your search history has been deleted"
+      });
+    } catch (err) {
+      console.error('Error clearing search history:', err);
+    }
+  };
+
   // Fetch products on mount and when query changes
   useEffect(() => {
     fetchData();
   }, [query]);
+  
+  // Fetch search history and recommendations on mount
+  useEffect(() => {
+    if (currentUser) {
+      fetchSearchHistory();
+    }
+    fetchRecommendations();
+  }, [currentUser]);
 
   // Filter and sort products
   const filteredProducts = products.filter(product => {
@@ -423,6 +607,9 @@ export const useSearch = (query: string) => {
     isShareDialogOpen,
     setIsShareDialogOpen,
     shareableLink,
+    searchHistory,
+    recommendations,
+    initialLoad,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,
@@ -434,6 +621,8 @@ export const useSearch = (query: string) => {
     clearFilters,
     handleAuthDialogClose,
     handleLogin,
-    fetchData, // Expose fetchData for retry capability
+    fetchData,
+    clearSearchHistoryItem,
+    clearAllSearchHistory,
   };
 };
