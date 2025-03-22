@@ -244,7 +244,7 @@ const Search = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-[16px] md:py-[32px] bg-gradient-to-br from-orange-50 via-orange-50/80 to-white">
+    <div className="container mx-auto px-4 py-[16px] md:py-[32px] bg-gradient-to-br from-orange-50 via-orange-50/80 to-white dark:from-gray-900 dark:via-gray-900/80 dark:to-gray-900">
       <div className="mb-5">
         <div ref={searchRef} className="relative w-full max-w-xl mx-auto">
           <form onSubmit={handleSearchSubmit} className="relative w-full">
@@ -402,7 +402,7 @@ const Search = () => {
               
               <div className="bg-white rounded-lg shadow-sm p-3 md:p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-lg flex items-center">
+                  <h2 className="font-semibold text-lg flex items-center dark:text-white">
                     <Store className="h-4 w-4 mr-2 text-kutuku-primary" />
                     Browse Categories
                   </h2>
@@ -417,27 +417,27 @@ const Search = () => {
                   {categories.slice(0, 10).map((category) => (
                     <div 
                       key={category.id}
-                      className="flex flex-col items-center p-3 rounded-lg border border-gray-100 hover:border-kutuku-primary cursor-pointer transition-all hover:shadow-sm"
+                      className="flex flex-col items-center p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-kutuku-primary dark:hover:border-kutuku-primary cursor-pointer transition-all hover:shadow-sm"
                       onClick={() => {
                         handleCategoryChange(category.id);
                         navigate(`/search?category=${category.id}`);
                       }}
                     >
-                      <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
+                      <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mb-2">
                         {category.image ? (
                           <img src={category.image} alt={category.name} className="w-6 h-6" />
                         ) : (
                           <Store className="w-5 h-5 text-kutuku-primary" />
                         )}
                       </div>
-                      <span className="text-sm text-center line-clamp-1">{category.name}</span>
+                      <span className="text-sm text-center line-clamp-1 dark:text-gray-200">{category.name}</span>
                     </div>
                   ))}
                 </div>
               </div>
               
               <Tabs defaultValue="recommended" className="w-full">
-                <TabsList className="w-full mb-3 bg-white border-b rounded-t-lg">
+                <TabsList className="w-full mb-3 bg-white dark:bg-gray-800 border-b dark:border-gray-700 rounded-t-lg grid grid-cols-2">
                   <TabsTrigger value="recommended" className="flex-1 data-[state=active]:text-kutuku-primary data-[state=active]:border-b-2 data-[state=active]:border-kutuku-primary">
                     <TrendingUp className="h-4 w-4 mr-2" />
                     Recommended for You

@@ -93,7 +93,7 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-orange-50 via-orange-50/80 to-white text-foreground;
+    @apply bg-gradient-to-br from-orange-50 via-orange-50/80 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: 'Poppins', sans-serif;
     min-height: 100vh;
@@ -183,7 +183,7 @@
   }
   
   .category-chip {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-gray-700 dark:text-gray-100;
   }
   
   .product-card-container {
@@ -203,19 +203,19 @@
   }
 
   .kutuku-card {
-    @apply rounded-xl overflow-hidden bg-white shadow-subtle;
+    @apply rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-subtle;
   }
 
   .kutuku-input {
-    @apply rounded-full border border-kutuku-gray px-4 py-2 focus:border-kutuku-primary focus:ring-1 focus:ring-kutuku-primary;
+    @apply rounded-full border border-kutuku-gray dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 px-4 py-2 focus:border-kutuku-primary focus:ring-1 focus:ring-kutuku-primary;
   }
 
   .kutuku-badge {
-    @apply bg-kutuku-light text-kutuku-primary text-xs font-medium px-2 py-1 rounded-full;
+    @apply bg-kutuku-light dark:bg-orange-900/30 text-kutuku-primary dark:text-orange-300 text-xs font-medium px-2 py-1 rounded-full;
   }
 
   .kutuku-searchbar {
-    @apply bg-kutuku-gray rounded-full px-4 py-2 text-sm w-full focus:outline-none;
+    @apply bg-kutuku-gray dark:bg-gray-800 rounded-full px-4 py-2 text-sm w-full focus:outline-none dark:text-gray-200;
   }
 
   .search-bar-mobile {
@@ -223,15 +223,15 @@
   }
   
   .search-bar-mobile input {
-    @apply h-10 pl-9 pr-12 rounded-full text-sm;
+    @apply h-10 pl-9 pr-12 rounded-full text-sm dark:bg-gray-800 dark:text-gray-200;
   }
   
   .search-bar-mobile .search-icon {
-    @apply absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4;
+    @apply absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 dark:text-gray-400;
   }
   
   .search-bar-mobile .clear-icon {
-    @apply absolute right-11 top-1/2 transform -translate-y-1/2 h-4 w-4;
+    @apply absolute right-11 top-1/2 transform -translate-y-1/2 h-4 w-4 dark:text-gray-400;
   }
   
   .search-bar-mobile .submit-button {
@@ -283,11 +283,11 @@
 
 /* Kutuku specific styles */
 .kutuku-bottom-tab {
-  @apply flex flex-col items-center justify-center text-xs font-medium py-2;
+  @apply flex flex-col items-center justify-center text-xs font-medium py-2 dark:text-gray-300;
 }
 
 .kutuku-bottom-tab.active {
-  @apply text-kutuku-primary;
+  @apply text-kutuku-primary dark:text-orange-400;
 }
 
 .kutuku-bottom-tab-icon {
