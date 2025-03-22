@@ -79,7 +79,10 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
                 )}
                 onClick={handleAddToWishlistClick}
               >
-                <Heart className={`h-4 w-4 ${isAddingThisToWishlist ? 'fill-red-500 text-red-500' : ''}`} />
+                <Heart className={cn(
+                  "h-4 w-4",
+                  isAddingThisToWishlist ? 'fill-red-500 text-red-500' : isDarkMode ? 'text-gray-300' : ''
+                )} />
               </Button>
               
               <Button 

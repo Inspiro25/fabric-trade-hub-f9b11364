@@ -15,7 +15,7 @@ import React from 'react';
 interface SearchProductCardProps extends ProductCardBaseProps {
   viewMode?: 'grid' | 'list';
   isCompact?: boolean;
-  buttonColor?: string; // Add the new buttonColor prop
+  buttonColor?: string;
 }
 
 const SearchProductCard: React.FC<SearchProductCardProps> = ({
@@ -28,7 +28,7 @@ const SearchProductCard: React.FC<SearchProductCardProps> = ({
   onClick,
   viewMode = 'grid',
   isCompact = false,
-  buttonColor // Include buttonColor in the props
+  buttonColor
 }) => {
   if (isCompact) {
     return (
@@ -40,7 +40,7 @@ const SearchProductCard: React.FC<SearchProductCardProps> = ({
         onAddToWishlist={onAddToWishlist}
         onShare={onShare}
         onClick={onClick}
-        buttonColor={buttonColor} // Pass buttonColor to CompactProductCard
+        buttonColor={buttonColor}
       />
     );
   }
@@ -55,7 +55,7 @@ const SearchProductCard: React.FC<SearchProductCardProps> = ({
         onAddToWishlist={onAddToWishlist}
         onShare={onShare}
         onClick={onClick}
-        buttonColor={buttonColor} // Pass buttonColor to ListProductCard
+        buttonColor={buttonColor}
       />
     );
   }
@@ -70,7 +70,7 @@ const SearchProductCard: React.FC<SearchProductCardProps> = ({
       onAddToWishlist={onAddToWishlist}
       onShare={onShare}
       onClick={onClick}
-      buttonColor={buttonColor} // Pass buttonColor to GridProductCard
+      buttonColor={buttonColor}
     />
   );
 };

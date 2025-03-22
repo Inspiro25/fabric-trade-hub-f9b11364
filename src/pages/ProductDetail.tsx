@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -52,10 +53,12 @@ import {
 import { getPersonalizedRecommendations, getSimilarProducts } from '@/services/recommendationService';
 import { toast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types/product';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
   
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -175,26 +178,56 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className={cn(
+        "min-h-screen",
+        isDarkMode ? "bg-slate-900" : "bg-slate-50"
+      )}>
         <AppHeader />
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <Skeleton className="w-full aspect-square rounded-lg" />
+              <Skeleton className={cn(
+                "w-full aspect-square rounded-lg",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
             </div>
             <div>
-              <Skeleton className="h-8 w-3/4 mb-4" />
-              <Skeleton className="h-6 w-1/2 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-4" />
-              <Skeleton className="h-10 w-1/2" />
+              <Skeleton className={cn(
+                "h-8 w-3/4 mb-4",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
+              <Skeleton className={cn(
+                "h-6 w-1/2 mb-4",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
+              <Skeleton className={cn(
+                "h-4 w-full mb-2",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
+              <Skeleton className={cn(
+                "h-4 w-full mb-2",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
+              <Skeleton className={cn(
+                "h-4 w-full mb-4",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
+              <Skeleton className={cn(
+                "h-10 w-1/2",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
             </div>
           </div>
-          <Skeleton className="h-12 w-1/4 mt-8 mb-4" />
+          <Skeleton className={cn(
+            "h-12 w-1/4 mt-8 mb-4",
+            isDarkMode ? "bg-gray-800" : ""
+          )} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-48 w-full rounded-lg" />
+              <Skeleton key={i} className={cn(
+                "h-48 w-full rounded-lg",
+                isDarkMode ? "bg-gray-800" : ""
+              )} />
             ))}
           </div>
         </div>
@@ -204,7 +237,10 @@ const ProductDetail = () => {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className={cn(
+        "min-h-screen",
+        isDarkMode ? "bg-slate-900" : "bg-slate-50"
+      )}>
         <AppHeader />
         <div className="container mx-auto px-4 py-8 text-center">
           <p className="text-red-500">Failed to load product. Please try again.</p>
@@ -217,7 +253,10 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode ? "bg-slate-900" : "bg-slate-50"
+    )}>
       <AppHeader />
       
       <div className="container mx-auto px-4 py-8">
@@ -251,36 +290,59 @@ const ProductDetail = () => {
 
           {/* Product Info */}
           <div>
-            <h1 className="text-2xl font-bold mb-2">{product?.name}</h1>
+            <h1 className={cn(
+              "text-2xl font-bold mb-2",
+              isDarkMode && "text-white"
+            )}>{product?.name}</h1>
             <div className="flex items-center mb-4">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${i < Math.floor(product?.rating || 0) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                    className={`h-4 w-4 ${i < Math.floor(product?.rating || 0) ? 'text-yellow-500 fill-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-500 ml-2">
+              <span className={cn(
+                "text-sm ml-2",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
                 {product?.rating} ({product?.reviewCount} reviews)
               </span>
             </div>
             
             {product?.salePrice !== undefined && product.salePrice > 0 ? (
               <div className="flex items-center mb-4">
-                <span className="text-xl font-semibold text-gray-900">{formatCurrency(product.salePrice)}</span>
-                <span className="text-gray-500 ml-2 line-through">{formatCurrency(product.price)}</span>
+                <span className={cn(
+                  "text-xl font-semibold",
+                  isDarkMode ? "text-orange-400" : "text-gray-900"
+                )}>{formatCurrency(product.salePrice)}</span>
+                <span className={cn(
+                  "ml-2 line-through",
+                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                )}>{formatCurrency(product.price)}</span>
                 <Badge className="ml-2">Sale</Badge>
               </div>
             ) : (
-              <span className="text-xl font-semibold text-gray-900 mb-4">{product && formatCurrency(product.price)}</span>
+              <span className={cn(
+                "text-xl font-semibold mb-4",
+                isDarkMode ? "text-white" : "text-gray-900"
+              )}>{product && formatCurrency(product.price)}</span>
             )}
 
-            <p className="text-gray-700 mb-6">{product?.description}</p>
+            <p className={cn(
+              "mb-6",
+              isDarkMode ? "text-gray-300" : "text-gray-700"
+            )}>{product?.description}</p>
 
             {/* Add to Cart Button */}
             <Button 
-              className="w-full bg-kutuku-primary hover:bg-kutuku-secondary text-sm"
+              className={cn(
+                "w-full text-sm",
+                isDarkMode 
+                  ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                  : "bg-kutuku-primary hover:bg-kutuku-secondary text-white"
+              )}
               onClick={handleAddToCart}
               disabled={isAddingToCart}
             >
@@ -292,7 +354,10 @@ const ProductDetail = () => {
 
         {/* Reviews Section */}
         <section className="mt-12">
-          <h2 className="text-xl font-bold mb-4">Reviews</h2>
+          <h2 className={cn(
+            "text-xl font-bold mb-4",
+            isDarkMode && "text-white"
+          )}>Reviews</h2>
           
           {/* Review Form */}
           {currentUser && (
@@ -304,24 +369,35 @@ const ProductDetail = () => {
 
           {/* Display Reviews */}
           {reviews.length === 0 ? (
-            <p className="text-gray-500">No reviews yet. Be the first to write one!</p>
+            <p className={cn(
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>No reviews yet. Be the first to write one!</p>
           ) : (
             <div>
               {reviews.slice(0, showAllReviews ? reviews.length : 3).map((review) => (
-                <Card key={review.id} className="mb-4">
+                <Card key={review.id} className={cn(
+                  "mb-4",
+                  isDarkMode && "bg-gray-800 border-gray-700"
+                )}>
                   <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{review.userName || 'Anonymous'}</CardTitle>
+                    <CardTitle className={cn(
+                      "text-sm font-medium",
+                      isDarkMode && "text-white"
+                    )}>{review.userName || 'Anonymous'}</CardTitle>
                     <div className="ml-auto flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-3 w-3 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                          className={`h-3 w-3 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}
                         />
                       ))}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-gray-600">{review.comment}</p>
+                    <p className={cn(
+                      "text-sm",
+                      isDarkMode ? "text-gray-300" : "text-gray-600"
+                    )}>{review.comment}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -332,7 +408,10 @@ const ProductDetail = () => {
                   variant="outline" 
                   size="sm"
                   onClick={() => setShowAllReviews(true)}
-                  className="w-full mt-2 text-sm"
+                  className={cn(
+                    "w-full mt-2 text-sm",
+                    isDarkMode && "border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800"
+                  )}
                 >
                   Show All Reviews
                 </Button>
@@ -344,7 +423,10 @@ const ProductDetail = () => {
 				{/* Recommended Products Section */}
         {recommendedProducts.length > 0 && (
           <section className="mt-12">
-            <h2 className="text-xl font-bold mb-4">Recommended For You</h2>
+            <h2 className={cn(
+              "text-xl font-bold mb-4",
+              isDarkMode && "text-white"
+            )}>Recommended For You</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {recommendedProducts.map(product => (
                 <ProductCard
@@ -368,7 +450,10 @@ const ProductDetail = () => {
 				{/* Similar Products Section */}
         {similarProducts.length > 0 && (
           <section className="mt-12">
-            <h2 className="text-xl font-bold mb-4">You might also like</h2>
+            <h2 className={cn(
+              "text-xl font-bold mb-4",
+              isDarkMode && "text-white"
+            )}>You might also like</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {similarProducts.map(product => (
                 <ProductCard

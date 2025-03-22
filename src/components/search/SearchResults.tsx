@@ -8,6 +8,7 @@ import SearchErrorState from './SearchErrorState';
 import SearchEmptyState from './SearchEmptyState';
 import { useTheme } from '@/contexts/ThemeContext';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface SearchResultsProps {
   loading: boolean;
@@ -65,7 +66,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   
   return (
-    <div className="space-y-6">
+    <div className={cn(
+      "space-y-6",
+      isDarkMode && "text-white"
+    )}>
       <SearchHeader 
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}

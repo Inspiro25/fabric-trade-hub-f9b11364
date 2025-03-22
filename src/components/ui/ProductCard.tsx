@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
@@ -8,6 +9,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from "sonner";
 import { Product } from '@/lib/products';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProductCardProps {
   id?: string;
@@ -40,6 +42,7 @@ const ProductCard = ({
   reviewCount = 0,
   product,
 }: ProductCardProps) => {
+  const { isDarkMode } = useTheme();
   const productId = product?.id || id || '';
   const productName = product?.name || name || '';
   const productPrice = product?.price || price || 0;
@@ -103,7 +106,10 @@ const ProductCard = ({
 
   if (isMobile) {
     return (
-      <div className="product-card-container animate-fade-in border rounded-lg overflow-hidden bg-white">
+      <div className={cn(
+        "product-card-container animate-fade-in border rounded-lg overflow-hidden",
+        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
+      )}>
         <div className="relative">
           <Link to={`/product/${productId}`}>
             <div className={cn("aspect-square w-full", isLoading && "image-loading")}>
@@ -117,7 +123,10 @@ const ProductCard = ({
           </Link>
           
           <button
-            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
+            className={cn(
+              "absolute top-1 right-1 h-6 w-6 rounded-full flex items-center justify-center shadow-sm",
+              isDarkMode ? "bg-gray-700/90" : "bg-white/90"
+            )}
             onClick={toggleWishlist}
           >
             <Heart 
@@ -137,10 +146,16 @@ const ProductCard = ({
         
         <div className="p-2">
           <div className="mb-0.5">
-            <span className="text-[10px] text-muted-foreground">{productCategory}</span>
+            <span className={cn(
+              "text-[10px]",
+              isDarkMode ? "text-gray-400" : "text-muted-foreground"
+            )}>{productCategory}</span>
           </div>
           <Link to={`/product/${productId}`} className="block mb-0.5">
-            <h3 className="font-medium text-xs line-clamp-1">{productName}</h3>
+            <h3 className={cn(
+              "font-medium text-xs line-clamp-1",
+              isDarkMode && "text-gray-200"
+            )}>{productName}</h3>
           </Link>
           
           {productRating > 0 && (
@@ -148,18 +163,30 @@ const ProductCard = ({
               <div className="bg-green-600 text-white text-[10px] px-1 py-0.5 rounded flex items-center">
                 {productRating.toFixed(1)} <Star className="h-2 w-2 ml-0.5 fill-white" />
               </div>
-              <span className="text-[10px] text-muted-foreground">({productReviewCount})</span>
+              <span className={cn(
+                "text-[10px]",
+                isDarkMode ? "text-gray-400" : "text-muted-foreground"
+              )}>({productReviewCount})</span>
             </div>
           )}
           
           <div className="flex items-center">
             {productSalePrice ? (
               <>
-                <span className="font-bold text-xs">₹{productSalePrice.toFixed(2)}</span>
-                <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{productPrice.toFixed(2)}</span>
+                <span className={cn(
+                  "font-bold text-xs",
+                  isDarkMode ? "text-orange-400" : ""
+                )}>₹{productSalePrice.toFixed(2)}</span>
+                <span className={cn(
+                  "ml-1 text-[10px] line-through",
+                  isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                )}>₹{productPrice.toFixed(2)}</span>
               </>
             ) : (
-              <span className="font-bold text-xs">₹{productPrice.toFixed(2)}</span>
+              <span className={cn(
+                "font-bold text-xs",
+                isDarkMode && "text-gray-200"
+              )}>₹{productPrice.toFixed(2)}</span>
             )}
           </div>
         </div>
@@ -170,7 +197,10 @@ const ProductCard = ({
   if (layout === 'horizontal') {
     return (
       <div 
-        className="product-card-container animate-fade-in border rounded-lg overflow-hidden"
+        className={cn(
+          "product-card-container animate-fade-in border rounded-lg overflow-hidden",
+          isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
+        )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -209,10 +239,19 @@ const ProductCard = ({
           <div className="p-3 flex flex-col justify-between flex-grow">
             <div>
               <div className="mb-0.5">
-                <span className="category-chip text-xs">{productCategory}</span>
+                <span className={cn(
+                  "category-chip text-xs",
+                  isDarkMode && "text-gray-400"
+                )}>{productCategory}</span>
               </div>
-              <Link to={`/product/${productId}`} className="block mb-1 hover:text-primary transition-colors">
-                <h3 className="font-medium text-sm line-clamp-1">{productName}</h3>
+              <Link to={`/product/${productId}`} className={cn(
+                "block mb-1 transition-colors",
+                isDarkMode ? "hover:text-orange-400" : "hover:text-primary"
+              )}>
+                <h3 className={cn(
+                  "font-medium text-sm line-clamp-1",
+                  isDarkMode && "text-gray-200"
+                )}>{productName}</h3>
               </Link>
               
               {productRating > 0 && (
@@ -232,25 +271,40 @@ const ProductCard = ({
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-muted-foreground">({productReviewCount})</span>
+                  <span className={cn(
+                    "text-xs",
+                    isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                  )}>({productReviewCount})</span>
                 </div>
               )}
               
               <div className="flex items-center mb-2">
                 {productSalePrice ? (
                   <>
-                    <span className="font-semibold text-sm">₹{productSalePrice.toFixed(2)}</span>
-                    <span className="ml-2 text-xs text-muted-foreground line-through">₹{productPrice.toFixed(2)}</span>
+                    <span className={cn(
+                      "font-semibold text-sm",
+                      isDarkMode ? "text-orange-400" : ""
+                    )}>₹{productSalePrice.toFixed(2)}</span>
+                    <span className={cn(
+                      "ml-2 text-xs line-through",
+                      isDarkMode ? "text-gray-400" : "text-muted-foreground"
+                    )}>₹{productPrice.toFixed(2)}</span>
                   </>
                 ) : (
-                  <span className="font-semibold text-sm">₹{productPrice.toFixed(2)}</span>
+                  <span className={cn(
+                    "font-semibold text-sm",
+                    isDarkMode && "text-gray-200"
+                  )}>₹{productPrice.toFixed(2)}</span>
                 )}
               </div>
             </div>
             
             <div className="flex items-center gap-2 mt-1">
               <Button 
-                className="flex-grow text-xs py-1 px-2 h-8"
+                className={cn(
+                  "flex-grow text-xs py-1 px-2 h-8",
+                  isDarkMode && "bg-orange-600 hover:bg-orange-700"
+                )}
                 onClick={(e) => {
                   e.preventDefault();
                   console.log(`Added ${productName} to cart`);
@@ -262,7 +316,10 @@ const ProductCard = ({
               <Button
                 variant="outline"
                 size="icon"
-                className="h-8 w-8"
+                className={cn(
+                  "h-8 w-8",
+                  isDarkMode && "border-gray-700 hover:border-gray-600 hover:bg-gray-700"
+                )}
                 onClick={toggleWishlist}
               >
                 <Heart 
@@ -282,7 +339,10 @@ const ProductCard = ({
 
   return (
     <div 
-      className="product-card-container animate-fade-in"
+      className={cn(
+        "product-card-container animate-fade-in",
+        isDarkMode && "border border-gray-700 rounded-lg overflow-hidden"
+      )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -328,7 +388,10 @@ const ProductCard = ({
           <Button
             variant="secondary"
             size="icon"
-            className="h-7 w-7 rounded-full shadow-subtle bg-background/80 backdrop-blur-sm"
+            className={cn(
+              "h-7 w-7 rounded-full shadow-subtle",
+              isDarkMode ? "bg-gray-800/80 backdrop-blur-sm" : "bg-background/80 backdrop-blur-sm"
+            )}
             onClick={toggleWishlist}
           >
             <Heart 
@@ -348,7 +411,12 @@ const ProductCard = ({
           )}
         >
           <Button 
-            className="w-full rounded-md shadow-subtle glass-morphism bg-background/80 backdrop-blur-sm text-xs h-8"
+            className={cn(
+              "w-full rounded-md shadow-subtle glass-morphism text-xs h-8 backdrop-blur-sm",
+              isDarkMode 
+                ? "bg-gray-800/80 text-gray-100" 
+                : "bg-background/80 text-foreground"
+            )}
             onClick={handleAddToCart}
           >
             <ShoppingCart className="h-3 w-3 mr-1" />
@@ -357,12 +425,24 @@ const ProductCard = ({
         </div>
       </div>
       
-      <div className="p-2">
+      <div className={cn(
+        "p-2",
+        isDarkMode && "bg-gray-800"
+      )}>
         <div className="mb-0.5">
-          <span className="category-chip text-[10px]">{productCategory}</span>
+          <span className={cn(
+            "category-chip text-[10px]",
+            isDarkMode && "text-gray-400"
+          )}>{productCategory}</span>
         </div>
-        <Link to={`/product/${productId}`} className="block mb-1 hover:text-primary transition-colors">
-          <h3 className="font-medium text-xs line-clamp-1">{productName}</h3>
+        <Link to={`/product/${productId}`} className={cn(
+          "block mb-1 transition-colors",
+          isDarkMode ? "hover:text-orange-400" : "hover:text-primary"
+        )}>
+          <h3 className={cn(
+            "font-medium text-xs line-clamp-1",
+            isDarkMode && "text-gray-200"
+          )}>{productName}</h3>
         </Link>
         
         {productRating > 0 && (
@@ -377,23 +457,35 @@ const ProductCard = ({
                       ? "text-yellow-400 fill-yellow-400" 
                       : i < productRating 
                         ? "text-yellow-400 fill-yellow-400" 
-                        : "text-gray-300"
+                        : isDarkMode ? "text-gray-600" : "text-gray-300"
                   )}
                 />
               ))}
             </div>
-            <span className="text-[10px] text-muted-foreground">({productReviewCount})</span>
+            <span className={cn(
+              "text-[10px]",
+              isDarkMode ? "text-gray-400" : "text-muted-foreground"
+            )}>({productReviewCount})</span>
           </div>
         )}
         
         <div className="flex items-center">
           {productSalePrice ? (
             <>
-              <span className="font-semibold text-xs">₹{productSalePrice.toFixed(2)}</span>
-              <span className="ml-1 text-[10px] text-muted-foreground line-through">₹{productPrice.toFixed(2)}</span>
+              <span className={cn(
+                "font-semibold text-xs",
+                isDarkMode ? "text-orange-400" : ""
+              )}>₹{productSalePrice.toFixed(2)}</span>
+              <span className={cn(
+                "ml-1 text-[10px] line-through",
+                isDarkMode ? "text-gray-400" : "text-muted-foreground"
+              )}>₹{productPrice.toFixed(2)}</span>
             </>
           ) : (
-            <span className="font-semibold text-xs">₹{productPrice.toFixed(2)}</span>
+            <span className={cn(
+              "font-semibold text-xs",
+              isDarkMode && "text-gray-200"
+            )}>₹{productPrice.toFixed(2)}</span>
           )}
         </div>
       </div>
