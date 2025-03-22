@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Mail, Lock, User, Eye, EyeOff, Phone, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Phone, ArrowRight, Heart, ShoppingBag } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const Authentication = () => {
