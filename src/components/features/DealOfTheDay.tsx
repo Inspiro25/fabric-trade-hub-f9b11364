@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -6,6 +7,7 @@ import { getDealOfTheDay, DealProduct } from '@/lib/products/deal';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useTheme } from '@/contexts/ThemeContext';
+import { formatCurrency } from '@/lib/utils';
 import { 
   Select,
   SelectContent,
@@ -116,7 +118,7 @@ const DealOfTheDay = () => {
         </a>
       </div>
       
-      <div className={`rounded-lg overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}`}>
+      <div className={`rounded-lg overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'}`}>
         <div className="relative aspect-[5/3] w-full">
           <Link to={`/product/${deal.id}`}>
             <img 
@@ -135,8 +137,8 @@ const DealOfTheDay = () => {
             <h3 className="text-base font-medium mb-1">{deal.name}</h3>
           </Link>
           <div className="flex items-center mb-2">
-            <span className="text-lg font-bold text-kutuku-primary mr-2">₹{deal.salePrice?.toFixed(2)}</span>
-            <span className="text-sm line-through text-gray-400">₹{deal.price.toFixed(2)}</span>
+            <span className="text-lg font-bold text-kutuku-primary mr-2">{formatCurrency(deal.salePrice || 0)}</span>
+            <span className="text-sm line-through text-gray-400">{formatCurrency(deal.price)}</span>
           </div>
           
           {deal.colors.length > 0 && (

@@ -14,12 +14,12 @@ interface ProductSectionProps {
 }
 
 const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo }) => {
-  const { isDarkMode, primaryColor, textColor, mutedTextColor } = useTheme();
+  const { isDarkMode } = useTheme();
   
   return (
     <section className={cn(
       "mb-6 px-4 py-3 rounded-lg",
-      isDarkMode ? "bg-gray-800/50" : "bg-white"
+      isDarkMode ? "bg-gray-800/50" : "bg-white shadow-sm"
     )}>
       <div className="flex items-center justify-between mb-3">
         <h2 className={cn(
@@ -41,12 +41,20 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo
       </div>
       
       <div className="grid grid-cols-2 gap-3">
-        {products.map(product => (
+        {products.slice(0, 4).map(product => (
           <ProductCard 
-            key={product.id} 
-            product={product} 
-            variant="compact"
-            gridCols={2}
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            price={product.price}
+            salePrice={product.salePrice}
+            image={product.images[0]}
+            category={product.category}
+            isNew={product.isNew}
+            isTrending={product.isTrending}
+            rating={product.rating}
+            reviewCount={product.reviewCount}
+            layout="compact"
           />
         ))}
       </div>

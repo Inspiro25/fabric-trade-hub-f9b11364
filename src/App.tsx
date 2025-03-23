@@ -16,6 +16,7 @@ import ShopDetail from '@/pages/ShopDetail';
 import Shops from '@/pages/Shops';
 import Cart from '@/pages/Cart';
 import Categories from '@/pages/NewArrivals'; // Using NewArrivals as Categories page
+import CategoryPage from '@/pages/CategoryPage'; // New category page
 import Login from '@/pages/Authentication'; // Using Authentication for Login
 import Register from '@/pages/Authentication'; // Using Authentication for Register too
 import ForgotPassword from '@/pages/Authentication'; // Using Authentication for ForgotPassword
@@ -57,6 +58,7 @@ function App() {
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="categories" element={<Categories />} />
+        <Route path="category/:categorySlug" element={<CategoryPage />} /> {/* New category page route */}
         <Route path="search" element={<Search />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />

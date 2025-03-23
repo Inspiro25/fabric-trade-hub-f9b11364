@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BadgePercent, ShieldCheck } from 'lucide-react';
@@ -11,7 +12,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -39,14 +40,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
   return (
     <div className={`transition-all duration-500 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
       <Card className={cn(
-        "border-none rounded-xl overflow-hidden sticky top-20",
-        isDarkMode ? "shadow-lg shadow-black/20" : "shadow-sm"
+        "border rounded-xl overflow-hidden sticky top-20",
+        isDarkMode 
+          ? "bg-gray-800 shadow-lg shadow-black/20 border-gray-700" 
+          : "bg-white shadow-sm border-gray-200"
       )}>
         <CardHeader className={cn(
           "border-b p-3",
           isDarkMode 
             ? "bg-gray-800 border-gray-700" 
-            : "bg-white border-gray-100"
+            : "bg-gray-50 border-gray-100"
         )}>
           <CardTitle className={cn(
             "text-sm md:text-base font-medium",
@@ -63,7 +66,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
               <span className={cn(
                 "font-medium",
                 isDarkMode ? "text-gray-200" : ""
-              )}>₹{subtotal.toFixed(2)}</span>
+              )}>{formatCurrency(subtotal)}</span>
             </div>
             
             {isPromoApplied && (
@@ -72,7 +75,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
                   <BadgePercent className="w-3 h-3" />
                   Discount (10%)
                 </span>
-                <span>-₹{discount.toFixed(2)}</span>
+                <span>-{formatCurrency(discount)}</span>
               </div>
             )}
             
@@ -82,7 +85,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
                 "font-medium",
                 isDarkMode ? "text-gray-200" : ""
               )}>
-                {shipping > 0 ? `₹${shipping.toFixed(2)}` : 'Free'}
+                {shipping > 0 ? formatCurrency(shipping) : 'Free'}
               </span>
             </div>
             
@@ -97,7 +100,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
               <span className={cn(
                 "font-bold",
                 isDarkMode ? "text-orange-400" : "text-kutuku-primary"
-              )}>₹{total.toFixed(2)}</span>
+              )}>{formatCurrency(total)}</span>
             </div>
           </div>
           
@@ -105,7 +108,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             "p-3 rounded-lg",
             isDarkMode 
               ? "bg-gray-700/50" 
-              : "bg-kutuku-light bg-opacity-50"
+              : "bg-orange-50"
           )}>
             <div className="flex items-center gap-2 mb-2">
               <BadgePercent className={cn(

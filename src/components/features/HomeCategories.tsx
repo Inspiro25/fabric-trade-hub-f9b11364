@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { cn, categoryToSlug } from '@/lib/utils';
 
 interface HomeCategoriesProps {
   categories?: string[];
@@ -96,8 +96,9 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
     return `https://placehold.co/100x100/orange/white?text=${encodeURIComponent(category)}`;
   };
 
-  const handleCategoryClick = (categoryId: string) => {
-    navigate(`/search?category=${categoryId}`);
+  const handleCategoryClick = (category: Category) => {
+    const slug = categoryToSlug(category.name);
+    navigate(`/category/${slug}`);
   };
 
   if (categories.length === 0) return null;
@@ -114,13 +115,22 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
         )}>
           Categories
         </h2>
+        <Link 
+          to="/categories" 
+          className={cn(
+            "text-sm font-medium",
+            isDarkMode ? "text-orange-400" : "text-orange-500"
+          )}
+        >
+          See All
+        </Link>
       </div>
       
       <div className="grid grid-cols-4 gap-3">
         {categories.slice(0, 8).map((category) => (
           <div 
             key={category.id} 
-            onClick={() => handleCategoryClick(category.id)}
+            onClick={() => handleCategoryClick(category)}
             className="flex flex-col items-center cursor-pointer group"
           >
             <div className={cn(

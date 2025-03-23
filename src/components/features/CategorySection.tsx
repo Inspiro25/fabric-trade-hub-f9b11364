@@ -4,7 +4,7 @@ import { getCategoriesWithDetails } from '@/lib/products/categories';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { cn, categoryToSlug } from '@/lib/utils';
 
 interface CategorySectionProps {
   title?: string;
@@ -48,7 +48,8 @@ const CategorySection = ({
   }, []);
   
   const handleCategoryClick = (category: CategoryType) => {
-    navigate(`/search?category=${category.id}`);
+    const slug = categoryToSlug(category.name);
+    navigate(`/category/${slug}`);
   };
   
   if (isLoading) {
