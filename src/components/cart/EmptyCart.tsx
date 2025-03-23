@@ -13,12 +13,12 @@ const EmptyCart: React.FC = () => {
     <div className={cn(
       "text-center py-10 rounded-xl p-6 max-w-md mx-auto",
       isDarkMode 
-        ? "bg-gray-800 border border-gray-700 shadow-lg" 
+        ? "bg-gray-800 border border-gray-700 shadow-lg shadow-black/20" 
         : "bg-white shadow-sm"
     )}>
       <div className={cn(
         "inline-flex justify-center items-center p-3 rounded-full mb-4",
-        isDarkMode ? "bg-orange-900/40" : "bg-kutuku-light"
+        isDarkMode ? "bg-gray-700" : "bg-kutuku-light"
       )}>
         <ShoppingCart className={cn(
           "w-8 h-8",

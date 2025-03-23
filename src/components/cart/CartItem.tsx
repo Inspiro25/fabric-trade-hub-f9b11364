@@ -3,6 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { CartItem as CartItemType } from '@/contexts/CartContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface CartItemProps {
   item: CartItemType;
@@ -15,46 +17,88 @@ const CartItem: React.FC<CartItemProps> = ({
   updateQuantity, 
   removeFromCart 
 }) => {
+  const { isDarkMode } = useTheme();
+  
   return (
-    <li className="flex items-center gap-3 p-3 transition-colors hover:bg-gray-50">
+    <li className={cn(
+      "flex items-center gap-3 p-3 transition-colors",
+      isDarkMode 
+        ? "hover:bg-gray-700/50" 
+        : "hover:bg-gray-50"
+    )}>
       <div className="flex-shrink-0">
         <Link to={`/product/${item.id}`}>
           <img 
             src={item.product.images[0]} 
             alt={item.product.name} 
-            className="w-16 h-16 object-cover rounded-lg shadow-sm" 
+            className={cn(
+              "w-16 h-16 object-cover rounded-lg",
+              isDarkMode ? "shadow-md shadow-black/20" : "shadow-sm"
+            )} 
           />
         </Link>
       </div>
       
       <div className="flex-grow min-w-0">
-        <Link to={`/product/${item.id}`} className="font-medium text-sm text-gray-800 hover:text-kutuku-primary transition-colors truncate block">
+        <Link 
+          to={`/product/${item.id}`} 
+          className={cn(
+            "font-medium text-sm hover:text-kutuku-primary transition-colors truncate block",
+            isDarkMode ? "text-gray-200" : "text-gray-800"
+          )}
+        >
           {item.product.name}
         </Link>
-        <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-1">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-100 text-xs">
+        <div className="text-xs mt-0.5 flex flex-wrap gap-1">
+          <span className={cn(
+            "inline-flex items-center px-1.5 py-0.5 rounded-full text-xs",
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-muted-foreground"
+          )}>
             {item.size}
           </span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-100 text-xs">
+          <span className={cn(
+            "inline-flex items-center px-1.5 py-0.5 rounded-full text-xs",
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-muted-foreground"
+          )}>
             {item.color}
           </span>
         </div>
         
         <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center border rounded-full overflow-hidden bg-white shadow-sm h-6">
+          <div className={cn(
+            "flex items-center border rounded-full overflow-hidden h-6",
+            isDarkMode 
+              ? "bg-gray-700 border-gray-600" 
+              : "bg-white shadow-sm border-gray-200"
+          )}>
             <button 
               type="button" 
-              className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className={cn(
+                "w-6 h-6 flex items-center justify-center transition-colors",
+                isDarkMode 
+                  ? "text-gray-400 hover:text-gray-200" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
               onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity - 1)} 
               disabled={item.quantity <= 1}
             >
               <Minus className="w-2.5 h-2.5" />
               <span className="sr-only">Decrease quantity</span>
             </button>
-            <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+            <span className={cn(
+              "w-6 text-center text-xs font-medium",
+              isDarkMode && "text-gray-200"
+            )}>
+              {item.quantity}
+            </span>
             <button 
               type="button" 
-              className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className={cn(
+                "w-6 h-6 flex items-center justify-center transition-colors",
+                isDarkMode 
+                  ? "text-gray-400 hover:text-gray-200" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
               onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity + 1)}
             >
               <Plus className="w-2.5 h-2.5" />
@@ -64,7 +108,12 @@ const CartItem: React.FC<CartItemProps> = ({
           
           <button 
             type="button" 
-            className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-red-50"
+            className={cn(
+              "w-6 h-6 flex items-center justify-center transition-colors rounded-full",
+              isDarkMode 
+                ? "text-gray-400 hover:text-red-400 hover:bg-gray-700" 
+                : "text-muted-foreground hover:text-destructive hover:bg-red-50"
+            )}
             onClick={() => removeFromCart(`${item.id}-${item.size}-${item.color}`)}
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -74,10 +123,16 @@ const CartItem: React.FC<CartItemProps> = ({
       </div>
       
       <div className="text-right">
-        <span className="font-medium text-gray-800 text-sm min-w-14 block">
+        <span className={cn(
+          "font-medium text-sm min-w-14 block",
+          isDarkMode ? "text-gray-200" : "text-gray-800"
+        )}>
           ₹{((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className={cn(
+          "text-xs",
+          isDarkMode ? "text-gray-400" : "text-muted-foreground"
+        )}>
           ₹{(item.product.salePrice || item.product.price).toFixed(2)} each
         </span>
       </div>

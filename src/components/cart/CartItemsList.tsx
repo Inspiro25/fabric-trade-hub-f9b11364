@@ -12,6 +12,8 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Loader2, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface CartItemsListProps {
   cartItems: CartItemType[];
@@ -27,6 +29,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   isLoaded
 }) => {
   const [mounted, setMounted] = useState(false);
+  const { isDarkMode } = useTheme();
   
   // Use useEffect to set mounted state after initial render
   useEffect(() => {
@@ -44,27 +47,53 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   
   return (
     <div className={`transition-all duration-300 ${visibilityClass}`}>
-      <Card className="overflow-hidden border-none shadow-sm rounded-xl">
-        <CardHeader className="bg-white border-b border-gray-100 p-3">
-          <CardTitle className="text-sm md:text-base font-medium text-gray-800 flex items-center">
-            <div className="h-5 w-5 bg-kutuku-light rounded-full flex items-center justify-center mr-2">
-              <ShoppingBag className="h-3 w-3 text-kutuku-primary" />
+      <Card className={cn(
+        "overflow-hidden border-none shadow-sm rounded-xl",
+        isDarkMode && "bg-transparent"
+      )}>
+        <CardHeader className={cn(
+          "p-3 border-b",
+          isDarkMode 
+            ? "bg-gray-800 border-gray-700" 
+            : "bg-white border-gray-100"
+        )}>
+          <CardTitle className={cn(
+            "text-sm md:text-base font-medium flex items-center",
+            isDarkMode ? "text-gray-100" : "text-gray-800"
+          )}>
+            <div className={cn(
+              "h-5 w-5 rounded-full flex items-center justify-center mr-2",
+              isDarkMode ? "bg-gray-700" : "bg-kutuku-light"
+            )}>
+              <ShoppingBag className={cn(
+                "h-3 w-3",
+                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              )} />
             </div>
             Items ({cartItems.length})
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className={cn(
+          "p-0",
+          isDarkMode ? "bg-gray-800" : ""
+        )}>
           {!isLoaded ? (
             <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-kutuku-primary mb-4" />
-              <p className="text-muted-foreground">Loading your cart items...</p>
+              <Loader2 className={cn(
+                "h-8 w-8 animate-spin mb-4",
+                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              )} />
+              <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>Loading your cart items...</p>
             </div>
           ) : cartItems.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground">Your cart is empty</p>
+              <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>Your cart is empty</p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className={cn(
+              "divide-y",
+              isDarkMode ? "divide-gray-700" : "divide-gray-100"
+            )}>
               {cartItems.map((item) => (
                 <CartItem 
                   key={`${item.id}-${item.size}-${item.color}`}
@@ -76,8 +105,21 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             </ul>
           )}
         </CardContent>
-        <CardFooter className="p-3 bg-gray-50 flex justify-between">
-          <Button variant="outline" size="sm" asChild className="text-xs rounded-full">
+        <CardFooter className={cn(
+          "p-3 flex justify-between",
+          isDarkMode 
+            ? "bg-gray-700" 
+            : "bg-gray-50"
+        )}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            asChild 
+            className={cn(
+              "text-xs rounded-full",
+              isDarkMode && "border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-gray-200"
+            )}
+          >
             <Link to="/" className="flex items-center gap-1">
               <ArrowLeft className="h-3 w-3" />
               Continue Shopping

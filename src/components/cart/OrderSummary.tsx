@@ -11,6 +11,8 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface OrderSummaryProps {
   subtotal: number;
@@ -20,6 +22,7 @@ interface OrderSummaryProps {
 const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
   const [promoCode, setPromoCode] = useState('');
   const [isPromoApplied, setIsPromoApplied] = useState(false);
+  const { isDarkMode } = useTheme();
   
   const discount = isPromoApplied ? subtotal * 0.1 : 0; // 10% discount for demo
   const shipping = subtotal > 100 ? 0 : 10;
@@ -36,15 +39,32 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
 
   return (
     <div className={`transition-all duration-500 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-      <Card className="border-none shadow-sm rounded-xl overflow-hidden sticky top-20">
-        <CardHeader className="bg-white border-b border-gray-100 p-3">
-          <CardTitle className="text-sm md:text-base font-medium text-gray-800">Order Summary</CardTitle>
+      <Card className={cn(
+        "border-none rounded-xl overflow-hidden sticky top-20",
+        isDarkMode ? "shadow-lg shadow-black/20" : "shadow-sm"
+      )}>
+        <CardHeader className={cn(
+          "border-b p-3",
+          isDarkMode 
+            ? "bg-gray-800 border-gray-700" 
+            : "bg-white border-gray-100"
+        )}>
+          <CardTitle className={cn(
+            "text-sm md:text-base font-medium",
+            isDarkMode ? "text-gray-100" : "text-gray-800"
+          )}>Order Summary</CardTitle>
         </CardHeader>
-        <CardContent className="p-4 space-y-4">
+        <CardContent className={cn(
+          "p-4 space-y-4",
+          isDarkMode ? "bg-gray-800" : ""
+        )}>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium">₹{subtotal.toFixed(2)}</span>
+              <span className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>Subtotal</span>
+              <span className={cn(
+                "font-medium",
+                isDarkMode ? "text-gray-200" : ""
+              )}>₹{subtotal.toFixed(2)}</span>
             </div>
             
             {isPromoApplied && (
@@ -58,34 +78,69 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             )}
             
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Shipping</span>
-              <span className="font-medium">
+              <span className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>Shipping</span>
+              <span className={cn(
+                "font-medium",
+                isDarkMode ? "text-gray-200" : ""
+              )}>
                 {shipping > 0 ? `₹${shipping.toFixed(2)}` : 'Free'}
               </span>
             </div>
             
-            <div className="border-t border-dashed border-gray-200 pt-2 mt-2 flex justify-between">
-              <span className="font-medium">Total</span>
-              <span className="font-bold text-kutuku-primary">₹{total.toFixed(2)}</span>
+            <div className={cn(
+              "border-t border-dashed pt-2 mt-2 flex justify-between",
+              isDarkMode ? "border-gray-700" : "border-gray-200"
+            )}>
+              <span className={cn(
+                "font-medium",
+                isDarkMode ? "text-gray-200" : ""
+              )}>Total</span>
+              <span className={cn(
+                "font-bold",
+                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              )}>₹{total.toFixed(2)}</span>
             </div>
           </div>
           
-          <div className="bg-kutuku-light bg-opacity-50 p-3 rounded-lg">
+          <div className={cn(
+            "p-3 rounded-lg",
+            isDarkMode 
+              ? "bg-gray-700/50" 
+              : "bg-kutuku-light bg-opacity-50"
+          )}>
             <div className="flex items-center gap-2 mb-2">
-              <BadgePercent className="w-4 h-4 text-kutuku-primary" />
-              <span className="text-sm font-medium text-gray-800">Apply Promo Code</span>
+              <BadgePercent className={cn(
+                "w-4 h-4",
+                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              )} />
+              <span className={cn(
+                "text-sm font-medium",
+                isDarkMode ? "text-gray-200" : "text-gray-800"
+              )}>Apply Promo Code</span>
             </div>
             <div className="flex">
               <Input 
                 value={promoCode} 
                 onChange={e => setPromoCode(e.target.value)} 
                 placeholder="Enter code" 
-                className="rounded-r-none h-8 text-xs focus-visible:ring-kutuku-primary" 
+                className={cn(
+                  "rounded-r-none h-8 text-xs",
+                  isDarkMode 
+                    ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                    : "focus-visible:ring-kutuku-primary"
+                )} 
                 disabled={isPromoApplied} 
               />
               <Button 
                 variant={isPromoApplied ? "secondary" : "default"} 
-                className={`rounded-l-none h-8 text-xs ${!isPromoApplied ? "bg-kutuku-primary hover:bg-kutuku-secondary" : ""}`}
+                className={cn(
+                  "rounded-l-none h-8 text-xs",
+                  !isPromoApplied && isDarkMode
+                    ? "bg-orange-600 hover:bg-orange-700" 
+                    : !isPromoApplied 
+                      ? "bg-kutuku-primary hover:bg-kutuku-secondary"
+                      : isDarkMode && "bg-gray-700 text-gray-300"
+                )}
                 onClick={applyPromoCode} 
                 disabled={isPromoApplied || !promoCode}
               >
@@ -98,20 +153,31 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
               </p>
             )}
             {!isPromoApplied && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className={cn(
+                "text-xs mt-1",
+                isDarkMode ? "text-gray-400" : "text-muted-foreground"
+              )}>
                 Try "DISCOUNT10" for 10% off your order
               </p>
             )}
           </div>
           
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className={cn(
+              "flex items-center gap-2 text-xs",
+              isDarkMode ? "text-gray-400" : "text-muted-foreground"
+            )}>
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Secure checkout with payment protection</span>
             </div>
             
             <Button 
-              className="w-full bg-kutuku-primary hover:bg-kutuku-secondary rounded-full" 
+              className={cn(
+                "w-full rounded-full",
+                isDarkMode 
+                  ? "bg-orange-600 hover:bg-orange-700" 
+                  : "bg-kutuku-primary hover:bg-kutuku-secondary"
+              )} 
               size="sm"
               asChild
             >
