@@ -32,9 +32,9 @@ const Search = () => {
   const { isDarkMode } = useTheme();
   const isMobile = useIsMobile();
   
-  // Get query params
-  const [searchParams, setSearchParams] = useSearchUrlParams();
-  const queryParam = searchParams.get('q') || '';
+  // Get query params - Fix: use the hook as an object instead of array destructuring
+  const searchParamsData = useSearchUrlParams();
+  const queryParam = searchParamsData.query || '';
   
   // State for search input
   const [searchInput, setSearchInput] = useState(queryParam);
@@ -155,7 +155,9 @@ const Search = () => {
     if (e) e.preventDefault();
     
     if (searchInput.trim()) {
-      setSearchParams({ q: searchInput.trim() });
+      // Use the navigate function from the useSearchUrlParams hook
+      const queryString = searchParamsData.createQueryString('q', searchInput.trim());
+      navigate(`/search?${queryString}`);
       setHasSearched(true);
       saveSearchHistory(searchInput.trim());
     }
@@ -164,7 +166,7 @@ const Search = () => {
   // Handle clear search
   const handleClearSearch = () => {
     setSearchInput('');
-    setSearchParams({});
+    navigate('/search');
     setHasSearched(false);
   };
   
@@ -276,7 +278,8 @@ const Search = () => {
                   history={searchHistory}
                   onSelectHistoryItem={(query) => {
                     setSearchInput(query);
-                    setSearchParams({ q: query });
+                    const queryString = searchParamsData.createQueryString('q', query);
+                    navigate(`/search?${queryString}`);
                   }}
                   onClearHistoryItem={clearSearchHistoryItem}
                   onClearAllHistory={clearAllSearchHistory}

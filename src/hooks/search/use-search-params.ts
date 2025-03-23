@@ -1,10 +1,10 @@
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useSearchParams as useReactRouterSearchParams, useNavigate } from 'react-router-dom';
 
 export const useSearchUrlParams = () => {
   const navigate = useNavigate();
-  const [searchParams] = useReactRouterSearchParams();
+  const [searchParams, setSearchParams] = useReactRouterSearchParams();
   
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || '';
@@ -30,6 +30,8 @@ export const useSearchUrlParams = () => {
     sort,
     viewModeParam,
     createQueryString,
-    navigate
+    navigate,
+    searchParams,
+    setSearchParams
   };
 };
