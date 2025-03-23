@@ -27,6 +27,7 @@ import Help from "./pages/Help";
 import { lazy, Suspense } from "react";
 import MobileAppLayout from "./components/features/MobileAppLayout";
 import { useIsMobile } from "./hooks/use-mobile";
+import Navbar from "./components/layout/Navbar";
 
 // Import the CategorySection component for category routes
 import CategorySection from "./components/features/CategorySection";
@@ -110,10 +111,18 @@ const AppContent = () => {
         <div className="animate-pulse-subtle">Loading...</div>
       </div>
     }>
-      {/* Apply layout to all routes */}
-      <MobileAppLayout>
-        {routeElements}
-      </MobileAppLayout>
+      {isMobile ? (
+        <MobileAppLayout>
+          {routeElements}
+        </MobileAppLayout>
+      ) : (
+        <>
+          <Navbar />
+          <main className="pt-16">
+            {routeElements}
+          </main>
+        </>
+      )}
     </Suspense>
   );
 };

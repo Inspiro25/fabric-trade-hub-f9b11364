@@ -2,7 +2,6 @@
 import React from 'react';
 import AppHeader from './AppHeader';
 import MobileNavigation from './MobileNavigation';
-import Navbar from '@/components/layout/Navbar';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -17,19 +16,21 @@ const MobileAppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   // Don't show mobile navigation on management or admin routes
   const showMobileNavigation = !isManagementRoute && !isAdminRoute;
   
+  if (!isMobile) {
+    // Return just the children without the mobile layout for desktop
+    return <>{children}</>;
+  }
+  
   return (
     <div className="flex flex-col min-h-screen">
       {/* Show AppHeader for mobile */}
-      {isMobile && <AppHeader />}
-      
-      {/* Show Navbar for desktop */}
-      {!isMobile && <Navbar />}
+      <AppHeader />
       
       <main className="flex-1 pt-16">
         {children}
       </main>
       
-      {showMobileNavigation && isMobile && <MobileNavigation />}
+      {showMobileNavigation && <MobileNavigation />}
     </div>
   );
 };
