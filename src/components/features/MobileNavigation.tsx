@@ -1,33 +1,30 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, ShoppingBag, Heart, User } from 'lucide-react';
+import { Home, Search, ShoppingCart, Tag, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
-import { useWishlist } from '@/contexts/WishlistContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 const MobileNavigation: React.FC = () => {
   const location = useLocation();
   const { getCartCount } = useCart();
-  const { wishlist } = useWishlist();
   const { isDarkMode } = useTheme();
   
   const cartCount = getCartCount();
-  const wishlistCount = wishlist.length;
   
   const navItems = [
     { icon: Home, path: '/', label: 'Home' },
     { icon: Search, path: '/search', label: 'Search' },
-    { icon: ShoppingBag, path: '/cart', label: 'Cart', count: cartCount },
-    { icon: Heart, path: '/wishlist', label: 'Wishlist', count: wishlistCount },
-    { icon: User, path: '/profile', label: 'Profile' },
+    { icon: ShoppingCart, path: '/cart', label: 'Cart', count: cartCount },
+    { icon: Tag, path: '/offers', label: 'Offers' },
+    { icon: Store, path: '/shops', label: 'Shops' },
   ];
   
   return (
     <div className={cn(
-      "fixed bottom-0 left-0 right-0 h-16 bg-white z-40 border-t flex items-center justify-around px-2",
-      isDarkMode && "bg-gray-900 border-gray-800"
+      "fixed bottom-0 left-0 right-0 h-16 z-40 border-t flex items-center justify-around px-2",
+      isDarkMode ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"
     )}>
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
