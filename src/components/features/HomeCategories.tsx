@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface HomeCategoriesProps {
   categories?: string[];
@@ -102,9 +103,17 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
   if (categories.length === 0) return null;
 
   return (
-    <section className="mb-6 px-4">
+    <section className={cn(
+      "mb-6 px-4 py-4 rounded-lg",
+      isDarkMode ? "bg-gray-800/70" : "bg-white shadow-sm"
+    )}>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold">Categories</h2>
+        <h2 className={cn(
+          "text-lg font-bold",
+          isDarkMode ? "text-white" : "text-gray-800"
+        )}>
+          Categories
+        </h2>
       </div>
       
       <div className="grid grid-cols-4 gap-3">
@@ -112,13 +121,14 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
           <div 
             key={category.id} 
             onClick={() => handleCategoryClick(category.id)}
-            className="flex flex-col items-center cursor-pointer"
+            className="flex flex-col items-center cursor-pointer group"
           >
-            <div className={`w-16 h-16 rounded-full overflow-hidden mb-2 shadow-sm flex items-center justify-center ${
+            <div className={cn(
+              "w-16 h-16 rounded-full overflow-hidden mb-2 flex items-center justify-center transform transition-transform duration-300 group-hover:scale-110", 
               isDarkMode 
-                ? 'border-2 border-gray-700 bg-gray-800' 
-                : 'border-2 border-white bg-gray-100'
-            }`}>
+                ? "border-2 border-gray-700 bg-gray-800/80 shadow-md" 
+                : "border-2 border-white bg-gray-100/80 shadow-sm"
+            )}>
               {category.image ? (
                 <img 
                   src={category.image}
@@ -137,7 +147,12 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
                 />
               )}
             </div>
-            <span className={`text-xs text-center font-medium ${isDarkMode ? 'text-gray-300' : ''}`}>
+            <span className={cn(
+              "text-xs text-center font-medium transition-colors",
+              isDarkMode 
+                ? "text-gray-300 group-hover:text-orange-400" 
+                : "text-gray-700 group-hover:text-orange-500"
+            )}>
               {category.name}
             </span>
           </div>

@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useHomeData } from '@/hooks/use-home-data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,7 +16,10 @@ import ShopsSpotlight from '@/components/home/ShopsSpotlight';
 import FlashSaleTimer from '@/components/home/FlashSaleTimer';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import ElectronicsShowcase from '@/components/home/ElectronicsShowcase';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
+// Lazy loaded components
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
 const HomeCategoryGrid = lazy(() => import('@/components/home/HomeCategoryGrid'));
@@ -53,15 +57,31 @@ const FashionTrends = () => {
     { id: 4, title: "Weekend Casuals", image: "https://images.unsplash.com/photo-1479064555552-3ef4979f8908?q=80&w=500&auto=format&fit=crop", color: "from-green-500/70" },
   ];
   
+  const { isDarkMode } = useTheme();
+  
   return (
-    <section className="py-10">
-      <div className="container mx-auto px-4">
+    <section className={cn(
+      "py-10 px-4 rounded-xl",
+      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/60 to-white"
+    )}>
+      <div className="container mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-orange-500" />
-            <h2 className="text-2xl font-bold">Fashion Trends</h2>
+            <TrendingUp className={cn(
+              "h-5 w-5",
+              isDarkMode ? "text-orange-400" : "text-orange-500"
+            )} />
+            <h2 className={cn(
+              "text-2xl font-bold",
+              isDarkMode ? "text-white" : "text-gray-800"
+            )}>
+              Fashion Trends
+            </h2>
           </div>
-          <Link to="/trends" className="text-orange-500 font-medium flex items-center hover:text-orange-600 transition-colors">
+          <Link to="/trends" className={cn(
+            "font-medium flex items-center transition-colors",
+            isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
+          )}>
             View All <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
@@ -76,7 +96,10 @@ const FashionTrends = () => {
               transition={{ delay: 0.1 * index }}
             >
               <Link to={`/trend/${trend.id}`} className="relative overflow-hidden rounded-xl group block h-full">
-                <AspectRatio ratio={3/4} className="bg-gray-100">
+                <AspectRatio ratio={3/4} className={cn(
+                  "overflow-hidden",
+                  isDarkMode ? "bg-gray-700" : "bg-gray-100"
+                )}>
                   <img 
                     src={trend.image} 
                     alt={trend.title} 
@@ -116,12 +139,24 @@ const BrandsSpotlight = () => {
     { id: 6, name: "Seasonal", logo: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=150&auto=format&fit=crop&q=60" },
   ];
   
+  const { isDarkMode } = useTheme();
+  
   return (
-    <section className="py-10 bg-gradient-to-b from-orange-50/80 to-white">
+    <section className={cn(
+      "py-10 rounded-xl",
+      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/80 to-white"
+    )}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold mb-2">Top Brands For You</h2>
-          <p className="text-gray-500">Curated collections from premium brands</p>
+          <h2 className={cn(
+            "text-2xl font-bold mb-2",
+            isDarkMode ? "text-white" : "text-gray-800"
+          )}>
+            Top Brands For You
+          </h2>
+          <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
+            Curated collections from premium brands
+          </p>
         </div>
         
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
@@ -134,10 +169,22 @@ const BrandsSpotlight = () => {
               transition={{ delay: 0.05 * i }}
             >
               <Link to={`/brand/${brand.id}`} className="flex flex-col items-center group">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white shadow-sm flex items-center justify-center p-2 mb-2 hover:shadow-md transition-all group-hover:scale-105 duration-300">
+                <div className={cn(
+                  "w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center p-2 mb-2 transition-all group-hover:scale-105 duration-300",
+                  isDarkMode 
+                    ? "bg-gray-700 shadow-md hover:shadow-lg" 
+                    : "bg-white shadow-sm hover:shadow-md"
+                )}>
                   <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover rounded-full" />
                 </div>
-                <h3 className="text-sm font-medium text-center group-hover:text-orange-500 transition-colors">{brand.name}</h3>
+                <h3 className={cn(
+                  "text-sm font-medium text-center transition-colors",
+                  isDarkMode 
+                    ? "text-gray-300 group-hover:text-orange-400" 
+                    : "group-hover:text-orange-500"
+                )}>
+                  {brand.name}
+                </h3>
               </Link>
             </motion.div>
           ))}
@@ -159,6 +206,7 @@ const Index = () => {
   } = useHomeData();
   
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     if (window.location.hash) {
@@ -179,34 +227,52 @@ const Index = () => {
     return (
       <div className="min-h-screen pt-2">
         <div className="py-4 px-4 space-y-6">
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className={cn(
+            "h-48 w-full rounded-xl", 
+            isDarkMode ? "bg-gray-800" : "bg-gray-200"
+          )} />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-xl" />
+              <Skeleton key={i} className={cn(
+                "h-32 rounded-xl", 
+                isDarkMode ? "bg-gray-800" : "bg-gray-200"
+              )} />
             ))}
           </div>
-          <Skeleton className="h-80 w-full rounded-xl" />
+          <Skeleton className={cn(
+            "h-80 w-full rounded-xl", 
+            isDarkMode ? "bg-gray-800" : "bg-gray-200"
+          )} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <main className="pb-16 pt-2">
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode && "text-gray-100"
+    )}>
+      <main className="pb-16 pt-2 space-y-6">
         <HomeHero />
         
         <FlashSaleTimer />
         
         <AnimatedSection delay={0.1}>
-          <section className="py-10 bg-gradient-to-b from-orange-50/60 to-white">
+          <section className={cn(
+            "py-10",
+            isDarkMode ? "bg-gradient-to-b from-gray-800/60 to-gray-900" : "bg-gradient-to-b from-orange-50/60 to-white"
+          )}>
             <div className="container mx-auto px-4">
               <div className="text-center mb-8">
                 <motion.h2 
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="text-2xl font-bold mb-2"
+                  className={cn(
+                    "text-2xl font-bold mb-2",
+                    isDarkMode ? "text-white" : "text-gray-800"
+                  )}
                 >
                   Popular Shops For You
                 </motion.h2>
@@ -215,7 +281,7 @@ const Index = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.1 }}
-                  className="text-gray-500"
+                  className={isDarkMode ? "text-gray-400" : "text-gray-500"}
                 >
                   Discover top-rated shops with great products
                 </motion.p>
@@ -231,15 +297,26 @@ const Index = () => {
             <div className="container mx-auto px-4">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold">Shop by Category</h2>
+                  <h2 className={cn(
+                    "text-xl font-bold",
+                    isDarkMode ? "text-white" : "text-gray-800"
+                  )}>
+                    Shop by Category
+                  </h2>
                 </div>
-                <Link to="/categories" className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
+                <Link to="/categories" className={cn(
+                  "text-sm font-medium flex items-center transition-colors",
+                  isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
+                )}>
                   View All <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </div>
               <Suspense fallback={<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="h-32 rounded-xl" />
+                  <Skeleton key={i} className={cn(
+                    "h-32 rounded-xl", 
+                    isDarkMode ? "bg-gray-800" : "bg-gray-200"
+                  )} />
                 ))}
               </div>}>
                 <HomeCategoryGrid 
@@ -275,11 +352,22 @@ const Index = () => {
         </AnimatedSection>
         
         <AnimatedSection delay={0.5}>
-          <div className="py-6 bg-gradient-to-b from-orange-50/30 to-white">
+          <div className={cn(
+            "py-6 rounded-xl mx-4",
+            isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/30 to-white"
+          )}>
             <div className="container mx-auto px-4">
               <div className="flex items-center mb-4">
-                <Clock className="text-orange-500 mr-2 h-5 w-5" />
-                <h2 className="text-xl font-bold">Deal of the Day</h2>
+                <Clock className={cn(
+                  "mr-2 h-5 w-5",
+                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                )} />
+                <h2 className={cn(
+                  "text-xl font-bold",
+                  isDarkMode ? "text-white" : "text-gray-800"
+                )}>
+                  Deal of the Day
+                </h2>
               </div>
               <Suspense fallback={<SectionLoading />}>
                 <DealOfTheDay />
@@ -341,7 +429,10 @@ const Index = () => {
         </AnimatedSection>
         
         <AnimatedSection delay={1.0}>
-          <div className="py-6 bg-gradient-to-b from-orange-50/40 to-white">
+          <div className={cn(
+            "py-6 mx-4 rounded-xl",
+            isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/40 to-white"
+          )}>
             <div className="container mx-auto px-4">
               {discountedProducts.length > 0 && (
                 <Suspense fallback={<SectionLoading />}>

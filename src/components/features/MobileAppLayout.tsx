@@ -13,7 +13,7 @@ const MobileAppLayout: React.FC<{
 }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, sectionBgColor } = useTheme();
 
   // Check if current route is a management or admin route
   const isManagementRoute = location.pathname.startsWith('/management');
@@ -28,7 +28,11 @@ const MobileAppLayout: React.FC<{
   }
   
   return (
-    <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900' : ''}`}>
+    <div className={`flex flex-col min-h-screen ${
+      isDarkMode 
+        ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100' 
+        : 'bg-gradient-to-b from-orange-50/60 via-white to-white text-gray-900'
+    }`}>
       {/* Show AppHeader for mobile */}
       <AppHeader />
       

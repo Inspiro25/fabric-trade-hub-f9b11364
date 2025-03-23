@@ -11,6 +11,7 @@ import { useInView } from 'framer-motion';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProductShowcaseProps {
   title: string;
@@ -37,6 +38,7 @@ export default function HomeProductShowcase({
 }: ProductShowcaseProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
+  const { isDarkMode } = useTheme();
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -68,9 +70,9 @@ export default function HomeProductShowcase({
 
   const getBadgeColor = () => {
     switch(tag) {
-      case 'new': return 'bg-emerald-500';
-      case 'sale': return 'bg-rose-500';
-      case 'trending': return 'bg-purple-500';
+      case 'new': return isDarkMode ? 'bg-emerald-600' : 'bg-emerald-500';
+      case 'sale': return isDarkMode ? 'bg-rose-600' : 'bg-rose-500';
+      case 'trending': return isDarkMode ? 'bg-purple-600' : 'bg-purple-500';
       default: return '';
     }
   }
@@ -79,12 +81,21 @@ export default function HomeProductShowcase({
     return (
       <div className="px-4 py-6">
         <div className="flex flex-col mb-6">
-          <Skeleton className="h-8 w-40 mb-2" />
-          <Skeleton className="h-4 w-60" />
+          <Skeleton className={cn(
+            "h-8 w-40 mb-2", 
+            isDarkMode ? "bg-gray-700" : "bg-gray-200"
+          )} />
+          <Skeleton className={cn(
+            "h-4 w-60", 
+            isDarkMode ? "bg-gray-700" : "bg-gray-200"
+          )} />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} className="h-64 rounded-xl" />
+            <Skeleton key={i} className={cn(
+              "h-64 rounded-xl", 
+              isDarkMode ? "bg-gray-700" : "bg-gray-200"
+            )} />
           ))}
         </div>
       </div>
@@ -99,24 +110,43 @@ export default function HomeProductShowcase({
   if (layout === 'carousel') {
     return (
       <section ref={ref} className={cn(
-        "py-8 relative",
-        highlight ? "bg-gradient-to-b from-orange-50 to-white rounded-2xl p-6" : ""
+        "py-8 relative px-4 rounded-xl",
+        highlight ? (
+          isDarkMode 
+            ? "bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg border border-gray-700" 
+            : "bg-gradient-to-b from-orange-50 to-white shadow-sm border border-orange-100"
+        ) : ""
       )}>
         <div className="flex flex-col mb-6">
           <div className="flex justify-between items-center">
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-bold">{title}</h2>
+                <h2 className={cn(
+                  "text-2xl font-bold",
+                  isDarkMode ? "text-white" : "text-gray-800"
+                )}>
+                  {title}
+                </h2>
                 {tag && (
                   <Badge className={cn("text-xs font-semibold px-2", getBadgeColor())}>
                     {getBadgeText()}
                   </Badge>
                 )}
               </div>
-              {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
+              {subtitle && <p className={cn(
+                "mt-1",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
+                {subtitle}
+              </p>}
             </div>
             {showViewAll && linkTo && (
-              <Link to={linkTo} className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
+              <Link to={linkTo} className={cn(
+                "text-sm font-medium flex items-center transition-colors",
+                isDarkMode 
+                  ? "text-orange-400 hover:text-orange-300" 
+                  : "text-orange-500 hover:text-orange-600"
+              )}>
                 View All
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
@@ -125,16 +155,34 @@ export default function HomeProductShowcase({
           
           {highlight && (
             <div className="flex flex-wrap gap-4 mt-4 mb-6">
-              <div className="flex items-center text-sm">
-                <Truck className="h-4 w-4 text-orange-500 mr-1" />
+              <div className={cn(
+                "flex items-center text-sm",
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              )}>
+                <Truck className={cn(
+                  "h-4 w-4 mr-1",
+                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                )} />
                 <span>Free Shipping</span>
               </div>
-              <div className="flex items-center text-sm">
-                <Timer className="h-4 w-4 text-orange-500 mr-1" />
+              <div className={cn(
+                "flex items-center text-sm",
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              )}>
+                <Timer className={cn(
+                  "h-4 w-4 mr-1",
+                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                )} />
                 <span>Limited Time Offers</span>
               </div>
-              <div className="flex items-center text-sm">
-                <Shield className="h-4 w-4 text-orange-500 mr-1" />
+              <div className={cn(
+                "flex items-center text-sm",
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              )}>
+                <Shield className={cn(
+                  "h-4 w-4 mr-1",
+                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                )} />
                 <span>Quality Guarantee</span>
               </div>
             </div>
@@ -168,16 +216,28 @@ export default function HomeProductShowcase({
             ))}
           </CarouselContent>
           <div className="flex justify-end gap-2 mt-4">
-            <CarouselPrevious className="relative inset-0 translate-y-0 bg-white" />
-            <CarouselNext className="relative inset-0 translate-y-0 bg-white" />
+            <CarouselPrevious className={cn(
+              "relative inset-0 translate-y-0",
+              isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-white hover:bg-gray-100"
+            )} />
+            <CarouselNext className={cn(
+              "relative inset-0 translate-y-0",
+              isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-white hover:bg-gray-100"
+            )} />
           </div>
         </Carousel>
 
         {/* Decorative elements */}
         {highlight && (
           <>
-            <div className="absolute top-10 right-10 w-20 h-20 rounded-full border border-orange-200 opacity-50" />
-            <div className="absolute bottom-10 left-10 w-32 h-32 rounded-full border border-orange-200 opacity-30" />
+            <div className={cn(
+              "absolute top-10 right-10 w-20 h-20 rounded-full border opacity-50",
+              isDarkMode ? "border-gray-600" : "border-orange-200"
+            )} />
+            <div className={cn(
+              "absolute bottom-10 left-10 w-32 h-32 rounded-full border opacity-30",
+              isDarkMode ? "border-gray-600" : "border-orange-200"
+            )} />
           </>
         )}
       </section>
@@ -189,25 +249,44 @@ export default function HomeProductShowcase({
     <section 
       ref={ref}
       className={cn(
-        "py-8 relative",
-        highlight ? "bg-gradient-to-b from-orange-50 to-white rounded-2xl p-6" : ""
+        "py-8 relative px-4 rounded-xl",
+        highlight ? (
+          isDarkMode 
+            ? "bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg border border-gray-700" 
+            : "bg-gradient-to-b from-orange-50 to-white shadow-sm border border-orange-100"
+        ) : ""
       )}
     >
       <div className="flex flex-col mb-6">
         <div className="flex justify-between items-center">
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-bold">{title}</h2>
+              <h2 className={cn(
+                "text-2xl font-bold",
+                isDarkMode ? "text-white" : "text-gray-800"
+              )}>
+                {title}
+              </h2>
               {tag && (
                 <Badge className={cn("text-xs font-semibold px-2", getBadgeColor())}>
                   {getBadgeText()}
                 </Badge>
               )}
             </div>
-            {subtitle && <p className="text-gray-500 mt-1">{subtitle}</p>}
+            {subtitle && <p className={cn(
+              "mt-1",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>
+              {subtitle}
+            </p>}
           </div>
           {showViewAll && linkTo && (
-            <Link to={linkTo} className="text-orange-500 text-sm font-medium flex items-center hover:text-orange-600 transition-colors">
+            <Link to={linkTo} className={cn(
+              "text-sm font-medium flex items-center transition-colors",
+              isDarkMode 
+                ? "text-orange-400 hover:text-orange-300" 
+                : "text-orange-500 hover:text-orange-600"
+            )}>
               View All
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
@@ -246,8 +325,14 @@ export default function HomeProductShowcase({
       {/* Decorative elements */}
       {highlight && (
         <>
-          <div className="absolute top-10 right-10 w-20 h-20 rounded-full border border-orange-200 opacity-50" />
-          <div className="absolute bottom-10 left-10 w-32 h-32 rounded-full border border-orange-200 opacity-30" />
+          <div className={cn(
+            "absolute top-10 right-10 w-20 h-20 rounded-full border opacity-50",
+            isDarkMode ? "border-gray-600" : "border-orange-200"
+          )} />
+          <div className={cn(
+            "absolute bottom-10 left-10 w-32 h-32 rounded-full border opacity-30",
+            isDarkMode ? "border-gray-600" : "border-orange-200"
+          )} />
         </>
       )}
     </section>
