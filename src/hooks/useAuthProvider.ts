@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -17,6 +16,7 @@ import {
   logout, 
   forgotPassword 
 } from '@/services/authService';
+import { toast } from 'sonner';
 
 export const useAuthProvider = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -25,11 +25,18 @@ export const useAuthProvider = () => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      console.log("Auth state changed:", user ? "Logged in" : "Logged out");
       setCurrentUser(user);
       
       if (user) {
-        const profile = await fetchUserProfile(user.uid, user);
-        setUserProfile(profile);
+        try {
+          const profile = await fetchUserProfile(user.uid, user);
+          setUserProfile(profile);
+          console.log("User profile fetched:", profile);
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          toast.error("Failed to load user profile");
+        }
       } else {
         setUserProfile(null);
       }
@@ -43,11 +50,17 @@ export const useAuthProvider = () => {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
+      console.log("Attempting email login");
       const user = await loginWithEmailPassword(email, password);
       // Fetch user profile after login
       if (user) {
-        await fetchUserProfile(user.uid, user);
+        const profile = await fetchUserProfile(user.uid, user);
+        setUserProfile(profile);
       }
+      return user;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -56,8 +69,13 @@ export const useAuthProvider = () => {
   const register = async (email: string, password: string) => {
     setLoading(true);
     try {
+      console.log("Attempting registration");
       const { profile } = await registerWithEmailPassword(email, password);
       setUserProfile(profile);
+      return profile;
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -66,8 +84,13 @@ export const useAuthProvider = () => {
   const loginWithGoogleProvider = async () => {
     setLoading(true);
     try {
+      console.log("Attempting Google login");
       const { profile } = await loginWithGoogleAuth();
       setUserProfile(profile);
+      return profile;
+    } catch (error) {
+      console.error("Google login error:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -76,25 +99,46 @@ export const useAuthProvider = () => {
   const loginWithFacebookProvider = async () => {
     setLoading(true);
     try {
+      console.log("Attempting Facebook login");
       const { profile } = await loginWithFacebookAuth();
       setUserProfile(profile);
+      return profile;
+    } catch (error) {
+      console.error("Facebook login error:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    await logout();
-    setUserProfile(null);
+    try {
+      await logout();
+      setUserProfile(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
+    }
   };
 
   const handleForgotPassword = async (email: string) => {
-    await forgotPassword(email);
+    try {
+      await forgotPassword(email);
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      throw error;
+    }
   };
 
   const handleUpdateUserProfile = async (data: Partial<UserProfile>) => {
-    const updatedProfile = await updateUserProfile(currentUser, userProfile, data);
-    setUserProfile(updatedProfile);
+    try {
+      const updatedProfile = await updateUserProfile(currentUser, userProfile, data);
+      setUserProfile(updatedProfile);
+      return updatedProfile;
+    } catch (error) {
+      console.error("Update profile error:", error);
+      throw error;
+    }
   };
 
   const handleAddAddress = async (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => {

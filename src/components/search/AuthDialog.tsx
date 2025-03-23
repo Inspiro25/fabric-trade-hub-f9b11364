@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight } from 'lucide-react';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
+import { toast } from 'sonner';
 
 interface AuthDialogProps {
   open: boolean;
@@ -23,16 +24,23 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   message = "You need to be logged in to perform this action.",
   title = "Login Required"
 }) => {
-  const { loginWithGoogleProvider } = useAuth();
+  const { loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
   const { isDarkMode, primaryColor } = useTheme();
 
-  const handleLogin = async () => {
+  const handleLogin = async (provider: 'google' | 'facebook') => {
     try {
-      await loginWithGoogleProvider();
+      if (provider === 'google') {
+        await loginWithGoogleProvider();
+      } else if (provider === 'facebook') {
+        await loginWithFacebookProvider();
+      }
+      
+      toast.success("Login successful!");
       onLogin();
       onOpenChange(false);
     } catch (error) {
       console.error("Login failed:", error);
+      toast.error("Login failed. Please try again.");
     }
   };
 
@@ -51,14 +59,14 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
         {/* Animated header with gradient */}
         <AnimatedGradient 
           className="py-8 px-6"
-          hue="orange"
+          hue={primaryColor}
           intensity={isDarkMode ? "medium" : "soft"}
           speed="medium"
         >
           <div className="flex flex-col items-center justify-center relative z-10">
             <div className={cn(
               "bg-white/20 p-3 rounded-full mb-4 backdrop-blur-sm",
-              isDarkMode ? "shadow-[0_0_15px_rgba(255,165,0,0.15)]" : ""
+              isDarkMode ? `shadow-[0_0_15px_rgba(255,255,255,0.15)]` : ""
             )}>
               <LogIn className="h-6 w-6 text-white" />
             </div>
@@ -106,12 +114,12 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
           {/* Action buttons */}
           <div className="mt-6 space-y-3">
             <Button 
-              onClick={handleLogin}
+              onClick={() => handleLogin('google')}
               className={cn(
                 "w-full relative h-11 rounded-full transition-all duration-300",
                 isDarkMode 
-                  ? "bg-orange-500/90 hover:bg-orange-600 text-white shadow-[0_0_15px_rgba(249,115,22,0.2)]" 
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                  ? `bg-${primaryColor}-500/90 hover:bg-${primaryColor}-600 text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]` 
+                  : `bg-${primaryColor}-500 hover:bg-${primaryColor}-600 text-white`
               )}
             >
               Continue with Google
@@ -162,8 +170,8 @@ const FeatureItem = ({
       <div className={cn(
         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
         isDarkMode 
-          ? "bg-orange-500/10 text-orange-400" 
-          : "bg-orange-100 text-orange-600"
+          ? "bg-blue-500/10 text-blue-400" 
+          : "bg-blue-100 text-blue-600"
       )}>
         {icon}
       </div>
