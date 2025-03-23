@@ -31,9 +31,11 @@ export const fetchUserProfile = async (uid: string, currentUser: User | null): P
         return userDoc.data() as UserProfile;
       } else if (currentUser) {
         // If no profile exists in Firebase either, create one with basic info
+        // Try to use the photoURL from the auth provider if available
         const newProfile: UserProfile = {
           displayName: currentUser.displayName || 'Guest User',
           email: currentUser.email || '',
+          avatarUrl: currentUser.photoURL || undefined
         };
         
         // Save to Firebase as fallback
@@ -434,6 +436,7 @@ export const registerWithEmailPassword = async (email: string, password: string)
 // Login with Google
 export const loginWithGoogleAuth = async (): Promise<{userCredential: User, profile: UserProfile | null}> => {
   try {
+    console.log("Attempting Google login");
     const userCredential = await loginWithGoogle();
     
     // Check if user profile exists
@@ -447,15 +450,51 @@ export const loginWithGoogleAuth = async (): Promise<{userCredential: User, prof
     
     if (error || !userProfile) {
       console.log('User profile not found or error:', error);
-      // Profile will be created by the trigger in Supabase
+      // Get the photo URL from Google authentication if available
+      const photoURL = userCredential.photoURL;
+      
+      // Create a new profile with the photo URL
+      profile = {
+        displayName: userCredential.displayName || 'Google User',
+        email: userCredential.email || '',
+        avatarUrl: photoURL || undefined
+      };
+      
+      // Try to update the profile with the avatar URL
+      try {
+        await supabase
+          .from('user_profiles')
+          .upsert({
+            id: userCredential.uid,
+            display_name: profile.displayName,
+            email: profile.email,
+            avatar_url: profile.avatarUrl
+          });
+      } catch (upsertError) {
+        console.error('Error upserting profile with avatar:', upsertError);
+      }
     } else {
       profile = {
         displayName: userProfile.display_name || userCredential.displayName || 'Google User',
         email: userProfile.email || userCredential.email || '',
         phone: userProfile.phone || undefined,
         address: userProfile.address || undefined,
-        avatarUrl: userProfile.avatar_url || undefined,
+        avatarUrl: userProfile.avatar_url || userCredential.photoURL || undefined,
       };
+      
+      // Update the avatar URL if it's not set but available from auth
+      if (!userProfile.avatar_url && userCredential.photoURL) {
+        try {
+          await supabase
+            .from('user_profiles')
+            .update({ avatar_url: userCredential.photoURL })
+            .eq('id', userCredential.uid);
+            
+          profile.avatarUrl = userCredential.photoURL;
+        } catch (updateError) {
+          console.error('Error updating avatar URL:', updateError);
+        }
+      }
     }
     
     toast({
@@ -478,6 +517,7 @@ export const loginWithGoogleAuth = async (): Promise<{userCredential: User, prof
 // Login with Facebook
 export const loginWithFacebookAuth = async (): Promise<{userCredential: User, profile: UserProfile | null}> => {
   try {
+    console.log("Attempting Facebook login");
     const userCredential = await loginWithFacebook();
     
     // Check if user profile exists
@@ -491,15 +531,51 @@ export const loginWithFacebookAuth = async (): Promise<{userCredential: User, pr
     
     if (error || !userProfile) {
       console.log('User profile not found or error:', error);
-      // Profile will be created by the trigger in Supabase
+      // Get the photo URL from Facebook authentication if available
+      const photoURL = userCredential.photoURL;
+      
+      // Create a new profile with the photo URL
+      profile = {
+        displayName: userCredential.displayName || 'Facebook User',
+        email: userCredential.email || '',
+        avatarUrl: photoURL || undefined
+      };
+      
+      // Try to update the profile with the avatar URL
+      try {
+        await supabase
+          .from('user_profiles')
+          .upsert({
+            id: userCredential.uid,
+            display_name: profile.displayName,
+            email: profile.email,
+            avatar_url: profile.avatarUrl
+          });
+      } catch (upsertError) {
+        console.error('Error upserting profile with avatar:', upsertError);
+      }
     } else {
       profile = {
         displayName: userProfile.display_name || userCredential.displayName || 'Facebook User',
         email: userProfile.email || userCredential.email || '',
         phone: userProfile.phone || undefined,
         address: userProfile.address || undefined,
-        avatarUrl: userProfile.avatar_url || undefined,
+        avatarUrl: userProfile.avatar_url || userCredential.photoURL || undefined,
       };
+      
+      // Update the avatar URL if it's not set but available from auth
+      if (!userProfile.avatar_url && userCredential.photoURL) {
+        try {
+          await supabase
+            .from('user_profiles')
+            .update({ avatar_url: userCredential.photoURL })
+            .eq('id', userCredential.uid);
+            
+          profile.avatarUrl = userCredential.photoURL;
+        } catch (updateError) {
+          console.error('Error updating avatar URL:', updateError);
+        }
+      }
     }
     
     toast({

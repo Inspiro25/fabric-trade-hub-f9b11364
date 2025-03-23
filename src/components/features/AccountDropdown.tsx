@@ -38,7 +38,7 @@ const AccountDropdown = () => {
   const isLoggedIn = !!currentUser;
   const userName = userProfile?.displayName || currentUser?.email?.split('@')[0] || 'Guest';
   const userEmail = currentUser?.email || '';
-  const avatarUrl = userProfile?.photoURL || '';
+  const avatarUrl = userProfile?.avatarUrl || '';
   
   const handleLogin = () => {
     navigate('/profile');
