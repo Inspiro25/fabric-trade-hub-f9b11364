@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet } from 'react-router-dom';
 import { 
@@ -17,11 +16,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [username, setUsername] = useState<string>('');
   const [adminRole, setAdminRole] = useState<string>('');
   const [activePath, setActivePath] = useState('/management/dashboard');
@@ -32,10 +30,8 @@ const DashboardLayout = () => {
     const storedRole = sessionStorage.getItem('adminRole');
     
     if (!storedUsername || !storedRole || storedRole !== 'main') {
-      toast({
-        title: "Access denied",
-        description: "You must be logged in as an administrator",
-        variant: "destructive",
+      toast.error("Access denied", {
+        description: "You must be logged in as an administrator"
       });
       navigate('/management/login');
       return;
@@ -46,15 +42,14 @@ const DashboardLayout = () => {
     
     // Set active path based on current location
     setActivePath(window.location.pathname);
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('adminUsername');
     sessionStorage.removeItem('adminRole');
     
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
+    toast.success("Logged out", {
+      description: "You have been logged out successfully"
     });
     
     navigate('/management/login');

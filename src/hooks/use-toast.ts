@@ -1,6 +1,6 @@
-
 // Implement Sonner toast with shadcn/ui compatibility layer
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast, ToastT } from "sonner";
+import { useState, useEffect } from "react";
 
 type ToastProps = {
   title?: string;
@@ -9,10 +9,46 @@ type ToastProps = {
   action?: React.ReactNode;
 };
 
+// Create a toast type that matches both our needs and shadcn's expectations
+export type Toast = ToastT & {
+  id: string;
+  title?: string;
+  description?: string;
+  action?: React.ReactNode;
+  variant?: "default" | "destructive";
+};
+
+// Maintain a list of active toasts for Shadcn compatibility
+let toastList: Toast[] = [];
+
+// Track toast IDs
+let uniqueToastId = 0;
+
+// Function to add a toast to our list
+const addToast = (toast: Omit<Toast, "id">): string => {
+  const id = String(uniqueToastId++);
+  const newToast = { ...toast, id };
+  toastList = [...toastList, newToast];
+  return id;
+};
+
+// Function to dismiss a toast
+const dismissToast = (id?: string) => {
+  if (id) {
+    toastList = toastList.filter(toast => toast.id !== id);
+    sonnerToast.dismiss(id);
+  } else {
+    toastList = [];
+    sonnerToast.dismiss();
+  }
+};
+
 export const toast = {
   // Base toast function
   default: (props: ToastProps) => {
+    const id = addToast({ ...props, variant: "default" });
     return sonnerToast(props.title, {
+      id,
       description: props.description,
       action: props.action,
     });
@@ -20,7 +56,9 @@ export const toast = {
   
   // Success toast
   success: (title: string, props?: Omit<ToastProps, "title">) => {
+    const id = addToast({ title, ...props, variant: "default" });
     return sonnerToast.success(title, {
+      id,
       description: props?.description,
       action: props?.action,
     });
@@ -28,7 +66,9 @@ export const toast = {
   
   // Error toast
   error: (title: string, props?: Omit<ToastProps, "title">) => {
+    const id = addToast({ title, ...props, variant: "destructive" });
     return sonnerToast.error(title, {
+      id,
       description: props?.description,
       action: props?.action,
     });
@@ -36,7 +76,9 @@ export const toast = {
   
   // Info toast
   info: (title: string, props?: Omit<ToastProps, "title">) => {
+    const id = addToast({ title, ...props, variant: "default" });
     return sonnerToast.info(title, {
+      id,
       description: props?.description,
       action: props?.action,
     });
@@ -44,7 +86,9 @@ export const toast = {
 
   // Warning toast
   warning: (title: string, props?: Omit<ToastProps, "title">) => {
+    const id = addToast({ title, ...props, variant: "default" });
     return sonnerToast.warning(title, {
+      id,
       description: props?.description,
       action: props?.action,
     });
@@ -53,6 +97,23 @@ export const toast = {
 
 // useToast hook for shadcn compatibility
 export const useToast = () => {
+  const [toasts, setToasts] = useState<Toast[]>(toastList);
+  
+  // Keep the local state in sync with the global toastList
+  useEffect(() => {
+    // Update local state when the component mounts
+    setToasts([...toastList]);
+    
+    // Set up an interval to check for changes to toastList
+    const intervalId = setInterval(() => {
+      if (JSON.stringify(toasts) !== JSON.stringify(toastList)) {
+        setToasts([...toastList]);
+      }
+    }, 100);
+    
+    return () => clearInterval(intervalId);
+  }, [toasts]);
+
   return {
     toast: {
       // Methods to match shadcn/ui toast API
@@ -60,17 +121,15 @@ export const useToast = () => {
       // For direct calls like toast({ title: "..." })
       callToast: (props: ToastProps) => {
         if (props.variant === "destructive") {
-          return sonnerToast.error(props.title, {
+          return toast.error(props.title || "", {
             description: props.description,
             action: props.action,
           });
         }
-        return sonnerToast(props.title, {
-          description: props.description,
-          action: props.action,
-        });
+        return toast.default(props);
       },
     },
-    dismiss: (id?: string) => sonnerToast.dismiss(id),
+    dismiss: dismissToast,
+    toasts, // Expose the toasts array for Shadcn compatibility
   };
 };
