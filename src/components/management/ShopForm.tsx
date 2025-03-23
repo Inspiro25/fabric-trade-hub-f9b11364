@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { z } from 'zod';
+import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -27,22 +26,35 @@ import { Checkbox } from '@/components/ui/checkbox';
 import FileUpload from '@/components/ui/file-upload';
 
 // Schema for form validation
-const formSchema = z.object({
-  name: z.string().min(2, 'Shop name must be at least 2 characters'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  address: z.string().min(5, 'Address must be at least 5 characters'),
-  isVerified: z.boolean().default(false),
-  shopId: z.string().min(4, 'Shop ID must be at least 4 characters'),
-  ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
-  ownerEmail: z.string().email('Must be a valid email'),
-  status: z.enum(['pending', 'active', 'suspended']).default('pending'),
-  password: z.string().min(6, 'Password must be at least 6 characters').optional(),
-});
-
-export type ShopFormValues = z.infer<typeof formSchema> & {
+export interface ShopFormValues {
+  name: string;
+  description: string;
   logo?: string;
   coverImage?: string;
-};
+  address: string;
+  isVerified?: boolean;
+  shopId?: string;
+  ownerName: string;
+  ownerEmail: string;
+  status?: 'active' | 'pending' | 'suspended';
+  password?: string;
+  phoneNumber: string;
+}
+
+export const shopFormSchema = z.object({
+  name: z.string().min(3, { message: 'Shop name must be at least 3 characters' }),
+  description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
+  logo: z.string().optional(),
+  coverImage: z.string().optional(),
+  address: z.string().min(5, { message: 'Address must be at least 5 characters' }),
+  isVerified: z.boolean().optional(),
+  shopId: z.string().optional(),
+  ownerName: z.string().min(3, { message: 'Owner name must be at least 3 characters' }),
+  ownerEmail: z.string().email({ message: 'Must be a valid email address' }),
+  status: z.enum(['active', 'pending', 'suspended']).optional(),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }).optional(),
+  phoneNumber: z.string().min(10, { message: 'Phone number must be at least 10 characters' }),
+});
 
 interface ShopFormProps {
   shop?: Shop;
@@ -61,7 +73,7 @@ export const ShopForm: React.FC<ShopFormProps> = ({
   const [coverImage, setCoverImage] = React.useState<string>(shop?.coverImage || '');
 
   const form = useForm<ShopFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(shopFormSchema),
     defaultValues: {
       name: shop?.name || '',
       description: shop?.description || '',
@@ -72,6 +84,7 @@ export const ShopForm: React.FC<ShopFormProps> = ({
       ownerEmail: shop?.ownerEmail || '',
       status: shop?.status || 'pending',
       password: '',  // Don't pre-fill password
+      phoneNumber: shop?.phoneNumber || '',
     },
   });
 

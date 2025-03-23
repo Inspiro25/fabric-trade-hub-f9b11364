@@ -10,7 +10,8 @@ import {
   Settings, 
   HelpCircle, 
   LogIn,
-  User
+  User,
+  Percent
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -29,7 +30,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onClose }) => {
   
   const menuItems = [
     { icon: <Home size={18} />, label: 'Home', path: '/' },
-    { icon: <ShoppingBag size={18} />, label: 'Products', path: '/products' },
+    { icon: <Percent size={18} />, label: 'Offers', path: '/offers' },
     { icon: <Store size={18} />, label: 'Shops', path: '/shops' },
     { icon: <Heart size={18} />, label: 'Wishlist', path: '/account/wishlist' },
     { icon: <Bell size={18} />, label: 'Notifications', path: '/notifications' },

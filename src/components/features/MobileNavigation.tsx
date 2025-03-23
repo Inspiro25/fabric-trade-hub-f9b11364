@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, ShoppingCart, Tag, Store } from 'lucide-react';
+import { Home, Search, ShoppingCart, Percent, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -35,7 +35,7 @@ const MobileNavigation: React.FC = () => {
       isCart: true,
       customStyles: true 
     },
-    { icon: Tag, path: '/products', label: 'Products' }, // Updated from /offers to /products
+    { icon: Percent, path: '/offers', label: 'Offers' },
     { icon: Store, path: '/shops', label: 'Shops' },
   ];
   

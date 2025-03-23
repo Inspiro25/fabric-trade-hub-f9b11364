@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Shop } from "@/lib/shops/types";
 
@@ -180,4 +179,39 @@ export const deleteShop = async (id: string): Promise<boolean> => {
     console.error('Error deleting shop:', error);
     return false;
   }
+};
+
+// Function to get shop data
+export const getShopData = async (shopId: string) => {
+  const { data, error } = await supabase
+    .from('shops')
+    .select('*')
+    .eq('id', shopId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching shop:', error);
+    throw new Error('Failed to fetch shop data');
+  }
+
+  // Transform the shop data to match our frontend data structure
+  const transformedShop = {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    logo: data.logo,
+    coverImage: data.cover_image,
+    address: data.address,
+    isVerified: data.is_verified,
+    followersCount: data.followers_count,
+    reviewCount: data.review_count,
+    rating: data.rating,
+    status: data.status,
+    ownerName: data.owner_name,
+    ownerEmail: data.owner_email,
+    phoneNumber: data.phone_number || '', // Added fallback for phoneNumber
+    createdAt: data.created_at
+  };
+
+  return transformedShop;
 };
