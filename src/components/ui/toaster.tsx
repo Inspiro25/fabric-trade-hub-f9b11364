@@ -14,7 +14,7 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {Array.isArray(toasts) && toasts.map(function ({ id, title, description, action, ...props }) {
+      {Array.isArray(toasts) && toasts.map(function ({ id, title, description, action, variant, ...props }) {
         return (
           <Toast key={id} {...props} className="group shadow-sm border-slate-200">
             <div className="grid gap-1">

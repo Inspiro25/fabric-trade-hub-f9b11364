@@ -1,3 +1,4 @@
+
 // Implement Sonner toast with shadcn/ui compatibility layer
 import { toast as sonnerToast, type ToastT } from "sonner";
 import { useState, useEffect } from "react";
@@ -7,6 +8,7 @@ type ToastProps = {
   description?: string;
   variant?: "default" | "destructive";
   action?: React.ReactNode;
+  duration?: number; // Add duration property
 };
 
 // Create a toast type that matches both our needs and shadcn's expectations
@@ -16,6 +18,7 @@ export type Toast = ToastT & {
   description?: string;
   action?: React.ReactNode;
   variant?: "default" | "destructive";
+  duration?: number; // Add duration property
 };
 
 // Maintain a list of active toasts for Shadcn compatibility
@@ -50,6 +53,7 @@ export function toast(props: ToastProps) {
     id,
     description: props.description,
     action: props.action,
+    duration: props.duration,
   });
 }
 
@@ -60,6 +64,7 @@ toast.success = (title: string, props?: Omit<ToastProps, "title">) => {
     id,
     description: props?.description,
     action: props?.action,
+    duration: props?.duration,
   });
 };
 
@@ -69,6 +74,7 @@ toast.error = (title: string, props?: Omit<ToastProps, "title">) => {
     id,
     description: props?.description,
     action: props?.action,
+    duration: props?.duration,
   });
 };
 
@@ -78,6 +84,7 @@ toast.info = (title: string, props?: Omit<ToastProps, "title">) => {
     id,
     description: props?.description,
     action: props?.action,
+    duration: props?.duration,
   });
 };
 
@@ -87,6 +94,7 @@ toast.warning = (title: string, props?: Omit<ToastProps, "title">) => {
     id,
     description: props?.description,
     action: props?.action,
+    duration: props?.duration,
   });
 };
 

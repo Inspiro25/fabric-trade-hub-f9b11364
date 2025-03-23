@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { auth } from '@/lib/firebase';
 import { toast } from '@/components/ui/use-toast';
@@ -45,11 +44,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const [isInitialized, setIsInitialized] = useState(false);
   
-  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       setCurrentUser(user);
-      // Clear notifications when user logs out
       if (!user) {
         setNotifications([]);
         setUnreadCount(0);
@@ -59,14 +56,12 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     return unsubscribe;
   }, []);
 
-  // Fetch notifications when user changes
   useEffect(() => {
     const loadNotifications = async () => {
       if (currentUser) {
         try {
           const userNotifications = await fetchUserNotifications(currentUser.uid);
           
-          // Convert to our notification format
           const formattedNotifications: Notification[] = userNotifications.map(n => ({
             id: n.id,
             title: n.title,
@@ -80,15 +75,12 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
           setNotifications(formattedNotifications);
           setUnreadCount(formattedNotifications.filter(n => !n.read).length);
 
-          // If this is the first login and we haven't shown welcome notification yet
           if (!isInitialized) {
-            // Check if user already has a welcome notification
             const hasWelcomeNotification = formattedNotifications.some(
               n => n.type === 'system' && n.title.includes('Welcome to Vyoma')
             );
             
             if (!hasWelcomeNotification) {
-              // Add welcome notification
               await createNotification(
                 currentUser.uid,
                 'Welcome to Vyoma',
@@ -97,7 +89,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
                 '/'
               );
               
-              // Refresh notifications after adding welcome message
               const updatedNotifications = await fetchUserNotifications(currentUser.uid);
               const updatedFormattedNotifications = updatedNotifications.map(n => ({
                 id: n.id,
@@ -124,7 +115,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     loadNotifications();
   }, [currentUser, isInitialized]);
 
-  // Set up real-time subscription for new notifications
   useEffect(() => {
     if (!currentUser) return;
 
@@ -139,7 +129,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
           filter: `user_id=eq.${currentUser.uid}`
         },
         async () => {
-          // Refresh notifications when there's a change
           const userNotifications = await fetchUserNotifications(currentUser.uid);
           const formattedNotifications = userNotifications.map(n => ({
             id: n.id,
@@ -204,7 +193,6 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     if (!currentUser) return;
     
     try {
-      // Delete all notifications one by one
       const deletePromises = notifications.map(notification => 
         deleteNotification(currentUser.uid, notification.id)
       );
@@ -271,12 +259,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       );
       
       if (success) {
-        // The notification will be added via the realtime subscription
-        // Show toast for immediate feedback
         toast({
           title: notification.title,
-          description: notification.message,
-          duration: 3000,
+          description: notification.message
         });
       }
     } catch (error) {

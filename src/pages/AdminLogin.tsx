@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -16,7 +15,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-// Validation schema
 const formSchema = z.object({
   shopId: z.string().min(1, "Shop ID is required"),
   password: z.string().min(1, "Password is required"),
@@ -24,7 +22,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// Mock admin credentials (in a real app, this would be validated against a database)
 const ADMIN_CREDENTIALS = [
   { shopId: 'shop-1', password: 'electronics123' },
   { shopId: 'shop-2', password: 'fashion123' },
@@ -61,8 +58,7 @@ const AdminLogin = () => {
         sessionStorage.setItem('adminShopId', data.shopId);
         toast({
           title: "Login successful",
-          description: "Welcome to your admin panel",
-          duration: 3000,
+          description: "Welcome to your admin panel"
         });
         navigate('/admin/dashboard');
         return;
@@ -80,8 +76,7 @@ const AdminLogin = () => {
           sessionStorage.setItem('adminShopId', shop.id);
           toast({
             title: "Login successful",
-            description: "Welcome to your admin panel",
-            duration: 3000,
+            description: "Welcome to your admin panel"
           });
           navigate('/admin/dashboard');
         } else {
@@ -97,8 +92,7 @@ const AdminLogin = () => {
       toast({
         title: "Login failed",
         description: "Invalid shop ID or password",
-        variant: "destructive",
-        duration: 3000,
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -117,8 +111,7 @@ const AdminLogin = () => {
     setIsPartnerDialogOpen(false);
     toast({
       title: "Request submitted",
-      description: "Thank you for your interest. Our team will contact you soon.",
-      duration: 5000,
+      description: "Thank you for your interest. Our team will contact you soon."
     });
   };
 

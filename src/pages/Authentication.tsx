@@ -54,7 +54,6 @@ const Authentication = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
-  const { toast } = useToast();
   const { isDarkMode } = useTheme();
   
   const from = location.state?.from?.pathname || "/";
@@ -654,57 +653,4 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
-                                  : "border-gray-200 focus:border-orange-500"
-                              )} 
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {error && <p className="text-red-500 text-sm">{error}</p>}
-                  
-                  <div className="flex items-center mt-2">
-                    <input 
-                      type="checkbox" 
-                      id="terms" 
-                      className={cn(
-                        "h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0",
-                        isDarkMode ? "border-gray-600 bg-gray-700" : ""
-                      )}
-                    />
-                    <label htmlFor="terms" className={cn(
-                      "ml-2 block text-sm",
-                      isDarkMode ? "text-gray-400" : "text-gray-600"
-                    )}>
-                      I agree to the <a href="#" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="#" className="text-orange-500 hover:underline">Privacy Policy</a>
-                    </label>
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className={cn(
-                      "w-full h-12 text-white font-medium",
-                      isDarkMode
-                        ? "bg-orange-500 hover:bg-orange-600"
-                        : "bg-orange-500 hover:bg-orange-600"
-                    )}
-                    disabled={isRegistering}
-                  >
-                    {isRegistering ? "Creating Account..." : "Create Account"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
-              </Form>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Authentication;
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-5
