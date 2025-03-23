@@ -11,14 +11,24 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import RequireAuth from '@/components/auth/RequireAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import AuthDialog from '@/components/search/AuthDialog';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const { wishlist, isLoading } = useWishlist();
+  const { currentUser, loading: authLoading } = useAuth();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!authLoading && !currentUser) {
+      setShowAuthDialog(true);
+    }
+  }, [authLoading, currentUser]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -77,8 +87,12 @@ const Wishlist = () => {
     fetchWishlistItems();
     return () => clearTimeout(timer);
   }, [wishlist]);
+  
+  const handleLogin = () => {
+    window.location.href = '/auth';
+  };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className={cn(
         "container mx-auto px-4 py-12 flex items-center justify-center",
@@ -98,7 +112,7 @@ const Wishlist = () => {
     );
   }
 
-  const wishlistContent = (
+  return (
     <div className={cn(
       "container mx-auto px-4 py-6 max-w-5xl min-h-screen",
       isDarkMode 
@@ -157,10 +171,18 @@ const Wishlist = () => {
           </div>
         </div>
       )}
+      
+      {showAuthDialog && (
+        <AuthDialog
+          open={showAuthDialog}
+          onOpenChange={setShowAuthDialog}
+          onLogin={handleLogin}
+          title="Authentication Required"
+          message="You need to be logged in to view your wishlist."
+        />
+      )}
     </div>
   );
-
-  return <RequireAuth>{wishlistContent}</RequireAuth>;
 };
 
 export default Wishlist;

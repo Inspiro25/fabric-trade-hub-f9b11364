@@ -12,18 +12,28 @@ import OrderSummary from '@/components/cart/OrderSummary';
 import { Loader2, ShoppingBag } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import RequireAuth from '@/components/auth/RequireAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import AuthDialog from '@/components/search/AuthDialog';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
+  const { currentUser, loading: authLoading } = useAuth();
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
   
   const subtotal = getCartTotal();
   const total = subtotal - (subtotal * 0.1) + (subtotal > 100 ? 0 : 10);
   const itemCount = getCartCount();
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!authLoading && !currentUser) {
+      setShowAuthDialog(true);
+    }
+  }, [authLoading, currentUser]);
 
   // Handle initial loading
   useEffect(() => {
@@ -46,9 +56,13 @@ const Cart = () => {
       return () => clearTimeout(contentTimer);
     }
   }, [isLoading, initialLoadDone]);
+  
+  const handleLogin = () => {
+    window.location.href = '/auth';
+  };
 
   // True loading state - show only during initial load
-  if (isLoading && !initialLoadDone) {
+  if ((isLoading && !initialLoadDone) || authLoading) {
     return (
       <div className={cn(
         "animate-page-transition min-h-screen flex items-center justify-center",
@@ -72,7 +86,7 @@ const Cart = () => {
     );
   }
 
-  const cartContent = (
+  return (
     <div className={cn(
       "animate-page-transition min-h-screen",
       isDarkMode 
@@ -132,10 +146,18 @@ const Cart = () => {
       )}
       
       <Footer />
+      
+      {showAuthDialog && (
+        <AuthDialog
+          open={showAuthDialog}
+          onOpenChange={setShowAuthDialog}
+          onLogin={handleLogin}
+          title="Authentication Required"
+          message="You need to be logged in to view your cart."
+        />
+      )}
     </div>
   );
-
-  return <RequireAuth>{cartContent}</RequireAuth>;
 };
 
 export default Cart;

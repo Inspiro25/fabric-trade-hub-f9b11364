@@ -83,9 +83,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     migrateCart();
   }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
-  // Wrap original operations to check for authentication
+  // Updated to fix the cart authentication issue - don't block operations for non-authenticated users
   const addToCart = (product: Product, quantity: number, color: string, size: string) => {
     if (!currentUser) {
+      // Allow adding to cart for non-authenticated users (will be stored in localStorage)
+      addToCartOp(product, quantity, color, size);
+      // Just show the auth dialog but don't block the operation
       setShowAuthDialog(true);
       return;
     }
@@ -94,6 +97,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFromCart = (itemId: string) => {
     if (!currentUser) {
+      // Allow removing from cart for non-authenticated users
+      removeFromCartOp(itemId);
       setShowAuthDialog(true);
       return;
     }
@@ -102,6 +107,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateQuantity = (itemId: string, quantity: number) => {
     if (!currentUser) {
+      // Allow updating cart for non-authenticated users
+      updateQuantityOp(itemId, quantity);
       setShowAuthDialog(true);
       return;
     }
@@ -110,6 +117,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearCart = () => {
     if (!currentUser) {
+      // Allow clearing cart for non-authenticated users
+      clearCartOp();
       setShowAuthDialog(true);
       return;
     }

@@ -11,11 +11,17 @@ interface RequireAuthProps {
 const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
   const { currentUser, loading } = useAuth();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     // Only show dialog if not loading and user is not authenticated
-    if (!loading && !currentUser) {
-      setShowAuthDialog(true);
+    if (!loading) {
+      if (currentUser) {
+        setShowContent(true);
+      } else {
+        setShowAuthDialog(true);
+        setShowContent(false);
+      }
     }
   }, [currentUser, loading]);
 
@@ -24,19 +30,15 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
     window.location.href = redirectTo;
   };
 
-  // Don't render children until auth check is complete
+  // Don't render anything until auth check is complete
   if (loading) {
     return null;
   }
 
-  // If user is authenticated, render children
-  if (currentUser) {
-    return <>{children}</>;
-  }
-
-  // Show auth dialog if user is not authenticated
   return (
     <>
+      {showContent && children}
+      
       {showAuthDialog && (
         <AuthDialog
           open={showAuthDialog}

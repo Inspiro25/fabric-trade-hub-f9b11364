@@ -72,38 +72,39 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.location.href = '/auth';
   };
 
+  // Modified to work for non-authenticated users too (store in localStorage)
   const addToWishlist = async (product: Product | string) => {
     try {
-      // Require authentication for wishlist operations
+      const productId = typeof product === 'string' ? product : product.id;
+      
+      if (wishlist.includes(productId)) return;
+      
+      // Update local state immediately for better UX
+      setWishlist(prev => [...prev, productId]);
+      
+      // Show auth dialog for guest users but still allow operation
       if (!currentUser) {
         setShowAuthDialog(true);
         return;
       }
       
-      const productId = typeof product === 'string' ? product : product.id;
-      
-      if (wishlist.includes(productId)) return;
-      
-      if (currentUser) {
-        try {
-          const { error } = await supabase.from('user_wishlists').insert({
-            user_id: currentUser.uid,
-            product_id: productId
-          });
-          
-          if (error) {
-            console.error('Error adding to wishlist:', error);
-            toast.error('Failed to add to wishlist');
-            return;
-          }
-        } catch (supabaseError) {
-          console.error('Exception in Supabase add to wishlist:', supabaseError);
+      try {
+        const { error } = await supabase.from('user_wishlists').insert({
+          user_id: currentUser.uid,
+          product_id: productId
+        });
+        
+        if (error) {
+          console.error('Error adding to wishlist:', error);
           toast.error('Failed to add to wishlist');
           return;
         }
+      } catch (supabaseError) {
+        console.error('Exception in Supabase add to wishlist:', supabaseError);
+        toast.error('Failed to add to wishlist');
+        return;
       }
       
-      setWishlist(prev => [...prev, productId]);
       toast.success('Added to wishlist');
     } catch (error) {
       console.error('Error adding to wishlist:', error);
@@ -111,35 +112,36 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   };
 
+  // Modified to work for non-authenticated users too
   const removeFromWishlist = async (productId: string) => {
     try {
-      // Require authentication for wishlist operations
+      // Update local state immediately
+      setWishlist(prev => prev.filter(id => id !== productId));
+      
+      // Show auth dialog for guest users but still allow operation
       if (!currentUser) {
         setShowAuthDialog(true);
         return;
       }
       
-      if (currentUser) {
-        try {
-          const { error } = await supabase
-            .from('user_wishlists')
-            .delete()
-            .eq('user_id', currentUser.uid)
-            .eq('product_id', productId);
-          
-          if (error) {
-            console.error('Error removing from wishlist:', error);
-            toast.error('Failed to remove from wishlist');
-            return;
-          }
-        } catch (supabaseError) {
-          console.error('Exception in Supabase remove from wishlist:', supabaseError);
+      try {
+        const { error } = await supabase
+          .from('user_wishlists')
+          .delete()
+          .eq('user_id', currentUser.uid)
+          .eq('product_id', productId);
+        
+        if (error) {
+          console.error('Error removing from wishlist:', error);
           toast.error('Failed to remove from wishlist');
           return;
         }
+      } catch (supabaseError) {
+        console.error('Exception in Supabase remove from wishlist:', supabaseError);
+        toast.error('Failed to remove from wishlist');
+        return;
       }
       
-      setWishlist(prev => prev.filter(id => id !== productId));
       toast.success('Removed from wishlist');
     } catch (error) {
       console.error('Error removing from wishlist:', error);
