@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 // Function to check if a user follows a shop
 export const checkFollowStatus = async (shopId: string): Promise<boolean> => {
@@ -10,6 +10,7 @@ export const checkFollowStatus = async (shopId: string): Promise<boolean> => {
     if (!session) return false;
 
     const userId = session.user.id;
+    console.log("Checking follow status for user:", userId, "shop:", shopId);
     
     // Check if the relationship exists
     const { data, error } = await supabase
@@ -46,6 +47,7 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     }
 
     const userId = session.user.id;
+    console.log("Following shop:", shopId, "for user:", userId);
     
     // Insert the follow relationship
     const { error } = await supabase
@@ -106,6 +108,7 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     }
 
     const userId = session.user.id;
+    console.log("Unfollowing shop:", shopId, "for user:", userId);
     
     // Delete the follow relationship
     const { error } = await supabase

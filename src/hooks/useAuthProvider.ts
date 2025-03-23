@@ -24,6 +24,7 @@ export const useAuthProvider = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Setting up auth state change listener");
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       console.log("Auth state changed:", user ? "Logged in" : "Logged out");
       setCurrentUser(user);
@@ -52,6 +53,8 @@ export const useAuthProvider = () => {
     try {
       console.log("Attempting email login");
       const user = await loginWithEmailPassword(email, password);
+      toast.success("Login successful!");
+      
       // Fetch user profile after login
       if (user) {
         const profile = await fetchUserProfile(user.uid, user);
@@ -60,6 +63,7 @@ export const useAuthProvider = () => {
       return user;
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("Login failed: " + (error instanceof Error ? error.message : "Unknown error"));
       throw error;
     } finally {
       setLoading(false);
@@ -72,9 +76,11 @@ export const useAuthProvider = () => {
       console.log("Attempting registration");
       const { profile } = await registerWithEmailPassword(email, password);
       setUserProfile(profile);
+      toast.success("Registration successful!");
       return profile;
     } catch (error) {
       console.error("Registration error:", error);
+      toast.error("Registration failed: " + (error instanceof Error ? error.message : "Unknown error"));
       throw error;
     } finally {
       setLoading(false);
@@ -115,8 +121,10 @@ export const useAuthProvider = () => {
     try {
       await logout();
       setUserProfile(null);
+      toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);
+      toast.error("Logout failed: " + (error instanceof Error ? error.message : "Unknown error"));
       throw error;
     }
   };

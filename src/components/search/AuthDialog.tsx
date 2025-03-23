@@ -5,9 +5,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight, AlertTriangle } from 'lucide-react';
+import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthDialogProps {
   open: boolean;
@@ -27,10 +28,13 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   const { loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
   const { isDarkMode, primaryColor } = useTheme();
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (provider: 'google' | 'facebook') => {
     try {
       setAuthError(null);
+      setIsLoading(true);
       if (provider === 'google') {
         await loginWithGoogleProvider();
       } else if (provider === 'facebook') {
@@ -40,6 +44,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       toast.success("Login successful!");
       onLogin();
       onOpenChange(false);
+      // Navigate to home page after successful login
+      navigate('/');
     } catch (error: any) {
       console.error("Login failed:", error);
       
@@ -51,11 +57,14 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
         setAuthError(error.message || "Login failed. Please try again.");
         toast.error("Login failed. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleRedirectToAuth = () => {
-    window.location.href = '/auth';
+    navigate('/auth');
+    onOpenChange(false);
   };
 
   // Convert the primaryColor string to one of the accepted hue values
@@ -142,6 +151,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
           <div className="mt-6 space-y-3">
             <Button 
               onClick={() => handleLogin('google')}
+              disabled={isLoading}
               className={cn(
                 "w-full relative h-11 rounded-full transition-all duration-300",
                 isDarkMode 
@@ -149,12 +159,22 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
                   : "bg-orange-500 hover:bg-orange-600 text-white"
               )}
             >
-              Continue with Google
-              <ArrowRight className="ml-2 h-4 w-4" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Continue with Google
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
             
             <Button 
               onClick={handleRedirectToAuth}
+              disabled={isLoading}
               variant="outline"
               className={cn(
                 "w-full h-11 font-medium rounded-full transition-all duration-300",
