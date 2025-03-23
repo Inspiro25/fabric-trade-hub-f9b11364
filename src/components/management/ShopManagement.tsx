@@ -16,8 +16,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ShopFormValues } from '@/components/management/ShopForm';
 
-// Create a schema that matches the ShopFormValues type exactly
-const shopSchema = yup.object().shape({
+const shopSchema = yup.object({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().url('Logo must be a valid URL').required('Logo URL is required'),
@@ -32,6 +31,8 @@ const shopSchema = yup.object().shape({
   phoneNumber: yup.string().required('Phone number is required'),
 });
 
+type ShopSchemaType = yup.InferType<typeof shopSchema>;
+
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema),
+    resolver: yupResolver<ShopSchemaType>(shopSchema),
     defaultValues: {
       name: '',
       description: '',

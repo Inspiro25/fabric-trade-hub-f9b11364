@@ -29,15 +29,15 @@ import FileUpload from '@/components/ui/file-upload';
 export interface ShopFormValues {
   name: string;
   description: string;
-  logo?: string;
-  coverImage?: string;
+  logo: string;
+  coverImage: string;
   address: string;
-  isVerified?: boolean;
-  shopId?: string;
+  isVerified: boolean;
+  shopId: string;
   ownerName: string;
   ownerEmail: string;
-  status?: 'active' | 'pending' | 'suspended';
-  password?: string;
+  status: 'active' | 'pending' | 'suspended';
+  password: string;
   phoneNumber: string;
 }
 
