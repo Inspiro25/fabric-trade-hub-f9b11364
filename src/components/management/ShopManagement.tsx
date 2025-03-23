@@ -78,11 +78,13 @@ const ShopManagement: React.FC = () => {
         isVerified: data.isVerified || false,
         rating: 0,
         reviewCount: 0,
+        followers: 0,
         productIds: [],
         createdAt: new Date().toISOString(),
         shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
+        phoneNumber: data.phoneNumber || '',
         status: data.status,
         password: data.password,
       };

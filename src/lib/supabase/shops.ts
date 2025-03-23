@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Shop } from "@/lib/shops/types";
 
@@ -35,6 +34,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
       password: shop?.password || '', // Include password field from database
+      followers_count: shop?.followers_count || 0, // Add this for compatibility
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -77,6 +77,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
       password: shop?.password || '', // Include password field from database
+      followers_count: shop?.followers_count || 0, // Add this for compatibility
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);

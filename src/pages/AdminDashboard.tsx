@@ -83,7 +83,8 @@ const AdminDashboard = () => {
             isVerified: data[0].is_verified || false,
             status: (data[0].status as 'active' | 'pending' | 'suspended') || 'pending',
             createdAt: data[0].created_at,
-            shopId: data[0].shop_id || ''
+            shopId: data[0].shop_id || '',
+            followers_count: data[0].followers_count || 0, // Add this for compatibility
           };
           setShopData(shop);
         } else {

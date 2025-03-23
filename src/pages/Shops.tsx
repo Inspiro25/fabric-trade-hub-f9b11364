@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -203,7 +202,7 @@ const Shops = () => {
                           <span className={cn(
                             "text-xs",
                             isDarkMode && "text-gray-300"
-                          )}>{shop.followers_count || 0}</span>
+                          )}>{shop.followers || shop.followers_count || 0}</span>
                         </div>
                       </div>
                     </div>

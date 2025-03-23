@@ -20,7 +20,8 @@ export const mockShops: Shop[] = [
     isVerified: true,
     status: 'active',
     createdAt: '2023-01-15',
-    shopId: 'electronics-hub'
+    shopId: 'electronics-hub',
+    followers_count: 120
   },
   {
     id: 'shop-2',
@@ -39,7 +40,8 @@ export const mockShops: Shop[] = [
     isVerified: true,
     status: 'active',
     createdAt: '2023-03-22',
-    shopId: 'fashion-trends'
+    shopId: 'fashion-trends',
+    followers_count: 85
   },
   {
     id: 'shop-3',
@@ -58,7 +60,8 @@ export const mockShops: Shop[] = [
     isVerified: false,
     status: 'pending',
     createdAt: '2023-05-07',
-    shopId: 'home-essentials'
+    shopId: 'home-essentials',
+    followers_count: 62
   }
 ];
 
