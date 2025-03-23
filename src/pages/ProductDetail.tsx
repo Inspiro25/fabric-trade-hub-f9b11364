@@ -54,7 +54,6 @@ import { getPersonalizedRecommendations, getSimilarProducts } from '@/services/r
 import { toast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types/product';
 import { useTheme } from '@/contexts/ThemeContext';
-import ProductReviews from '@/components/reviews/ProductReviews';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -334,16 +333,7 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Reviews Section */}
-        <section className="mt-12">
-          {product && (
-            <ProductReviews 
-              productId={product.id} 
-              rating={product.rating} 
-              reviewCount={product.reviewCount} 
-            />
-          )}
-        </section>
+        {/* Removed the Reviews Section */}
 				
 				{/* Recommended Products Section */}
         {recommendedProducts.length > 0 && (
