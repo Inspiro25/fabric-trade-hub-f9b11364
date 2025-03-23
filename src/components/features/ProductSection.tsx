@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Product } from '@/lib/products';
 import ProductCard from '@/components/ui/ProductCard';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ProductSectionProps {
   title: string;
@@ -12,6 +13,8 @@ interface ProductSectionProps {
 }
 
 const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo }) => {
+  const { isDarkMode } = useTheme();
+  
   return (
     <section className="mb-6 px-4">
       <div className="flex items-center justify-between mb-3">

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -10,6 +11,7 @@ type ThemeContextType = {
   accentColor: string;
   orangeGradient: string;
   setTheme: (theme: Theme) => void;
+  currentTheme: Theme;
 };
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -19,7 +21,8 @@ const ThemeContext = createContext<ThemeContextType>({
   secondaryColor: '#FF8A3D',
   accentColor: '#FFF0EA',
   orangeGradient: 'linear-gradient(to right, #FF6B00, #FF8A3D)',
-  setTheme: () => {}
+  setTheme: () => {},
+  currentTheme: 'system'
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -63,6 +66,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // For dark mode, we'll use slightly brighter orange colors to improve contrast
   const primaryColor = isDarkMode ? '#FF8A3D' : '#FF6B00';
   const secondaryColor = isDarkMode ? '#FFA264' : '#FF8A3D';
   const accentColor = isDarkMode ? '#433127' : '#FFF0EA';
@@ -108,7 +112,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       secondaryColor, 
       accentColor,
       orangeGradient,
-      setTheme
+      setTheme,
+      currentTheme: theme
     }}>
       {children}
     </ThemeContext.Provider>

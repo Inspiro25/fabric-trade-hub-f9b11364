@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getDealOfTheDay, DealProduct } from '@/lib/products/deal';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
+import { useTheme } from '@/contexts/ThemeContext';
 import { 
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ const DealOfTheDay = () => {
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
   const { addToCart } = useCart();
+  const { isDarkMode } = useTheme();
   
   useEffect(() => {
     const fetchDeal = async () => {
@@ -117,7 +119,7 @@ const DealOfTheDay = () => {
         </a>
       </div>
       
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+      <div className={`rounded-lg overflow-hidden shadow-sm ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}`}>
         <div className="relative aspect-[5/3] w-full">
           <Link to={`/product/${deal.id}`}>
             <img 
@@ -146,7 +148,7 @@ const DealOfTheDay = () => {
                 value={selectedColor}
                 onValueChange={setSelectedColor}
               >
-                <SelectTrigger className="w-full text-xs h-8">
+                <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
                   <SelectValue placeholder="Select Color" />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,7 +166,7 @@ const DealOfTheDay = () => {
                 value={selectedSize}
                 onValueChange={setSelectedSize}
               >
-                <SelectTrigger className="w-full text-xs h-8">
+                <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
                   <SelectValue placeholder="Select Size" />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,17 +181,17 @@ const DealOfTheDay = () => {
           </div>
           
           <div className="grid grid-cols-4 gap-2 mb-3">
-            <div className="bg-gray-100 rounded-md p-2 text-center">
+            <div className={`rounded-md p-2 text-center ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
               <span className="block text-sm font-bold">{timeLeft.hours.toString().padStart(2, '0')}</span>
-              <span className="text-xs text-gray-500">Hours</span>
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>Hours</span>
             </div>
-            <div className="bg-gray-100 rounded-md p-2 text-center">
+            <div className={`rounded-md p-2 text-center ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
               <span className="block text-sm font-bold">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-              <span className="text-xs text-gray-500">Mins</span>
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>Mins</span>
             </div>
-            <div className="bg-gray-100 rounded-md p-2 text-center">
+            <div className={`rounded-md p-2 text-center ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
               <span className="block text-sm font-bold">{timeLeft.seconds.toString().padStart(2, '0')}</span>
-              <span className="text-xs text-gray-500">Secs</span>
+              <span className={`text-xs ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>Secs</span>
             </div>
             <Button 
               className="bg-kutuku-primary hover:bg-kutuku-secondary text-white w-full"

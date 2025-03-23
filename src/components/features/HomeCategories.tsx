@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getCategoriesWithDetails } from '@/lib/products/categories';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface HomeCategoriesProps {
   categories?: string[];
@@ -41,6 +42,7 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -112,7 +114,11 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
             onClick={() => handleCategoryClick(category.id)}
             className="flex flex-col items-center cursor-pointer"
           >
-            <div className="w-16 h-16 rounded-full overflow-hidden mb-2 border-2 border-white shadow-sm bg-gray-100 flex items-center justify-center">
+            <div className={`w-16 h-16 rounded-full overflow-hidden mb-2 shadow-sm flex items-center justify-center ${
+              isDarkMode 
+                ? 'border-2 border-gray-700 bg-gray-800' 
+                : 'border-2 border-white bg-gray-100'
+            }`}>
               {category.image ? (
                 <img 
                   src={category.image}
@@ -131,7 +137,9 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
                 />
               )}
             </div>
-            <span className="text-xs text-center font-medium">{category.name}</span>
+            <span className={`text-xs text-center font-medium ${isDarkMode ? 'text-gray-300' : ''}`}>
+              {category.name}
+            </span>
           </div>
         ))}
       </div>
