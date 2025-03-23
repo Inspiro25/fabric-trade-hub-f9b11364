@@ -29,6 +29,8 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
   }, [currentUser, loading]);
 
   const handleLogin = () => {
+    // Close the dialog first
+    setShowAuthDialog(false);
     // Use navigate for client-side routing
     navigate(redirectTo);
   };

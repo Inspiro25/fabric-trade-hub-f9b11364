@@ -1,12 +1,11 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
-import { AnimatedGradient } from '@/components/ui/animated-gradient';
+import { LogIn, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,21 +24,15 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   message = "You need to be logged in to perform this action.",
   title = "Login Required"
 }) => {
-  const { loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
-  const { isDarkMode, primaryColor } = useTheme();
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { loginWithGoogleProvider } = useAuth();
+  const { isDarkMode } = useTheme();
+  const [isLoading, setIsLoading] = React.useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (provider: 'google' | 'facebook') => {
+  const handleLogin = async () => {
     try {
-      setAuthError(null);
       setIsLoading(true);
-      if (provider === 'google') {
-        await loginWithGoogleProvider();
-      } else if (provider === 'facebook') {
-        await loginWithFacebookProvider();
-      }
+      await loginWithGoogleProvider();
       
       toast.success("Login successful!");
       onLogin();
@@ -48,15 +41,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       navigate('/');
     } catch (error: any) {
       console.error("Login failed:", error);
-      
-      // Handle unauthorized domain error specifically
-      if (error.code === 'auth/unauthorized-domain') {
-        setAuthError("This domain is not authorized for Firebase authentication. If you're running in development or preview mode, please add this domain to your Firebase console.");
-        toast.error("Domain not authorized for authentication");
-      } else {
-        setAuthError(error.message || "Login failed. Please try again.");
-        toast.error("Login failed. Please try again.");
-      }
+      toast.error(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -67,96 +52,50 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     onOpenChange(false);
   };
 
-  // Convert the primaryColor string to one of the accepted hue values
-  const getHueValue = (): 'orange' | 'blue' | 'green' | 'purple' => {
-    // Always return orange for the login and auth dialog
-    return 'orange';
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "sm:max-w-[425px] p-0 overflow-hidden border-0 rounded-xl shadow-xl",
+        "sm:max-w-[360px] p-0 overflow-hidden rounded-lg",
         isDarkMode 
-          ? "bg-gray-900/95 text-white border border-gray-800" 
-          : "bg-white"
+          ? "bg-gray-800 text-white border border-gray-700" 
+          : "bg-white border border-gray-100"
       )}>
-        {/* Animated header with gradient */}
-        <AnimatedGradient 
-          className="py-8 px-6"
-          hue={getHueValue()}
-          intensity={isDarkMode ? "medium" : "soft"}
-          speed="medium"
-        >
-          <div className="flex flex-col items-center justify-center relative z-10">
-            <div className={cn(
-              "bg-white/20 p-3 rounded-full mb-4 backdrop-blur-sm",
-              isDarkMode ? `shadow-[0_0_15px_rgba(255,255,255,0.15)]` : ""
-            )}>
-              <LogIn className="h-6 w-6 text-white" />
+        <div className={cn(
+          "py-5 px-5",
+          isDarkMode ? "bg-gray-800" : "bg-white"
+        )}>
+          <DialogHeader className="space-y-3">
+            <div className="flex justify-center">
+              <div className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center",
+                isDarkMode ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-600"
+              )}>
+                <LogIn className="h-5 w-5" />
+              </div>
             </div>
-            <DialogTitle className="text-white text-xl font-bold text-center">{title}</DialogTitle>
-            <DialogDescription className="text-white/90 text-center mt-2 max-w-[300px]">
+            <DialogTitle className={cn(
+              "text-center text-lg",
+              isDarkMode ? "text-white" : "text-gray-900"
+            )}>
+              {title}
+            </DialogTitle>
+            <DialogDescription className={cn(
+              "text-center text-sm",
+              isDarkMode ? "text-gray-300" : "text-gray-500"
+            )}>
               {message}
             </DialogDescription>
-          </div>
-        </AnimatedGradient>
-        
-        {/* Display auth error if present */}
-        {authError && (
-          <div className={cn(
-            "px-6 py-3 mb-2 text-sm rounded-md mx-6 flex items-start gap-2",
-            isDarkMode ? "bg-red-900/30 text-red-200 border border-red-800/50" : "bg-red-50 text-red-700 border border-red-100"
-          )}>
-            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <p>{authError}</p>
-          </div>
-        )}
-        
-        {/* Body with feature list */}
-        <div className="p-6">
-          <div className="space-y-5">
-            <p className={cn(
-              "text-sm font-medium",
-              isDarkMode ? "text-slate-300" : "text-slate-700"
-            )}>
-              Join for exclusive benefits:
-            </p>
-            
-            <div className="space-y-3">
-              <FeatureItem 
-                icon={<Heart size={16} />}
-                text="Save favorites to your wishlist"
-                isDarkMode={isDarkMode}
-              />
-              <FeatureItem 
-                icon={<ShoppingBag size={16} />}
-                text="Access your order history anytime"
-                isDarkMode={isDarkMode}
-              />
-              <FeatureItem 
-                icon={<Bell size={16} />}
-                text="Get personalized recommendations"
-                isDarkMode={isDarkMode}
-              />
-              <FeatureItem 
-                icon={<UserCircle size={16} />}
-                text="Create your personal profile"
-                isDarkMode={isDarkMode}
-              />
-            </div>
-          </div>
+          </DialogHeader>
           
-          {/* Action buttons */}
-          <div className="mt-6 space-y-3">
+          <div className="mt-5 space-y-3">
             <Button 
-              onClick={() => handleLogin('google')}
+              onClick={handleLogin}
               disabled={isLoading}
               className={cn(
-                "w-full relative h-11 rounded-full transition-all duration-300",
+                "w-full relative h-10 rounded-md transition-all duration-300",
                 isDarkMode 
-                  ? "bg-orange-500/90 hover:bg-orange-600 text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                  ? "bg-purple-600 hover:bg-purple-700 text-white" 
+                  : "bg-purple-600 hover:bg-purple-700 text-white"
               )}
             >
               {isLoading ? (
@@ -177,58 +116,28 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               disabled={isLoading}
               variant="outline"
               className={cn(
-                "w-full h-11 font-medium rounded-full transition-all duration-300",
+                "w-full h-10 font-medium rounded-md transition-all duration-300",
                 isDarkMode 
-                  ? "border-gray-700 hover:bg-gray-800 text-white" 
+                  ? "border-gray-700 hover:bg-gray-700 text-white" 
                   : "border-gray-200 hover:bg-gray-50 text-gray-800"
               )}
             >
+              <Mail className="mr-2 h-4 w-4" />
               Sign up with Email
             </Button>
           </div>
         </div>
         
-        {/* Footer */}
         <div className={cn(
-          "px-6 py-4 text-xs text-center border-t",
+          "px-5 py-3 text-xs text-center border-t",
           isDarkMode 
-            ? "bg-gray-900/80 text-gray-500 border-gray-800" 
+            ? "bg-gray-900/60 text-gray-400 border-gray-700" 
             : "bg-gray-50 text-gray-500 border-gray-100"
         )}>
-          By continuing, you agree to our Terms of Service and Privacy Policy
+          By continuing, you agree to our Terms and Privacy Policy
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
-
-// Helper component for feature items
-const FeatureItem = ({ 
-  icon, 
-  text, 
-  isDarkMode 
-}: { 
-  icon: React.ReactNode; 
-  text: string; 
-  isDarkMode: boolean 
-}) => {
-  return (
-    <div className="flex items-center space-x-3">
-      <div className={cn(
-        "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
-        isDarkMode 
-          ? "bg-orange-500/10 text-orange-400" 
-          : "bg-orange-100 text-orange-600"
-      )}>
-        {icon}
-      </div>
-      <span className={cn(
-        "text-sm",
-        isDarkMode ? "text-gray-300" : "text-gray-700"
-      )}>
-        {text}
-      </span>
-    </div>
   );
 };
 

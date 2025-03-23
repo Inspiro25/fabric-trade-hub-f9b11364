@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
@@ -31,16 +30,16 @@ const ShopDetail = () => {
   const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check Supabase authentication status
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session);
       setSupabaseUserId(session?.user?.id || null);
     };
     
     checkSession();
     
-    // Set up auth state listener for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", session ? "Logged in" : "Logged out");
       setSupabaseUserId(session?.user?.id || null);
     });
     
@@ -62,13 +61,12 @@ const ShopDetail = () => {
           const productsData = await getShopProducts(id);
           setShopProducts(productsData);
           
-          // Fetch initial follow status when shop data is loaded
           if (supabaseUserId) {
+            console.log("Checking follow status for logged-in user:", supabaseUserId);
             const isUserFollowing = await checkFollowStatus(shopData.id);
             setIsFollowing(isUserFollowing);
           }
           
-          // Fetch followers count
           const count = await getShopFollowersCount(shopData.id);
           setFollowersCount(count);
         }
@@ -85,8 +83,8 @@ const ShopDetail = () => {
   const handleFollow = async () => {
     if (!id || !shop) return;
     
-    // Check if user is logged in
     if (!supabaseUserId) {
+      console.log("User not logged in, showing auth dialog");
       setIsAuthDialogOpen(true);
       return;
     }
@@ -113,11 +111,10 @@ const ShopDetail = () => {
 
   const handleLogin = async () => {
     setIsAuthDialogOpen(false);
-    // Force a check for the updated session
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
+      console.log("User logged in successfully:", session.user.id);
       setSupabaseUserId(session.user.id);
-      // After login, let's check follow status
       if (shop) {
         const isUserFollowing = await checkFollowStatus(shop.id);
         setIsFollowing(isUserFollowing);
