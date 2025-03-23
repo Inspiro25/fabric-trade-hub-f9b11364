@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner'; // Changed from react-hot-toast to sonner
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -80,7 +81,7 @@ const AdminDashboard: React.FC = () => {
         followersCount: data.followers_count,
         reviewCount: data.review_count,
         rating: data.rating,
-        status: data.status,
+        status: data.status as 'active' | 'pending' | 'suspended', // Fixed casting here
         ownerName: data.owner_name,
         ownerEmail: data.owner_email,
         phoneNumber: data.phone_number || '', // Added fallback for phoneNumber

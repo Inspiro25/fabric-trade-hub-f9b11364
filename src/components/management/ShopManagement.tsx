@@ -14,21 +14,7 @@ import { Shop } from '@/lib/shops/types';
 import { createShop, updateShop, getShopById } from '@/lib/supabase/shops';
 import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-interface ShopFormValues {
-  name: string;
-  description: string;
-  logo: string;
-  coverImage: string;
-  address: string;
-  isVerified: boolean;
-  shopId: string;
-  ownerName: string;
-  ownerEmail: string;
-  status: 'active' | 'pending' | 'suspended';
-  password: string;
-  phoneNumber: string;
-}
+import { ShopFormValues } from '@/components/management/ShopForm';
 
 const shopSchema = yup.object({
   name: yup.string().required('Shop name is required'),
@@ -43,7 +29,9 @@ const shopSchema = yup.object({
   status: yup.string().oneOf(['active', 'pending', 'suspended']).default('pending'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-});
+}).required();
+
+type ShopSchemaType = yup.InferType<typeof shopSchema>;
 
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +46,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema),
+    resolver: yupResolver<ShopFormValues>(shopSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -129,7 +117,6 @@ const ShopManagement: React.FC = () => {
       };
     
       if (shopId) {
-        // Update existing shop
         const success = await updateShop(shopId, shopData);
         if (success) {
           toast.success('Shop updated successfully');
@@ -137,7 +124,6 @@ const ShopManagement: React.FC = () => {
           toast.error('Failed to update shop');
         }
       } else {
-        // Create new shop
         const newShopId = await createShop(shopData);
         if (newShopId) {
           toast.success('Shop created successfully');
