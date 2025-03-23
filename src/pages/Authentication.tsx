@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,13 +242,13 @@ const Authentication = () => {
       "min-h-screen flex md:items-center md:justify-center p-4",
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950" 
-        : "bg-gradient-to-br from-blue-50 to-white"
+        : "bg-gradient-to-br from-orange-50 to-white"
     )}>
       <div className={cn(
         "w-full max-w-7xl flex flex-col md:flex-row md:shadow-xl md:rounded-xl overflow-hidden",
         isDarkMode ? "bg-gray-900 border border-gray-800" : "bg-white"
       )}>
-        <div className="w-full md:w-5/12 p-8 text-white hidden md:flex flex-col justify-between bg-gradient-to-tr from-blue-600 to-blue-400">
+        <div className="w-full md:w-5/12 p-8 text-white hidden md:flex flex-col justify-between bg-gradient-to-tr from-orange-600 to-orange-400">
           <div>
             <h1 className="text-4xl font-bold mb-4">Vyoma</h1>
             <p className="text-xl mb-6">Your shopping companion for local discoveries</p>
@@ -287,7 +288,7 @@ const Authentication = () => {
           <div className="text-center mb-6 md:mb-8">
             <h1 className={cn(
               "text-2xl md:text-3xl font-bold md:hidden",
-              isDarkMode ? "text-blue-400" : "text-blue-600"
+              isDarkMode ? "text-orange-400" : "text-orange-600"
             )}>Vyoma</h1>
             <h2 className={cn(
               "text-xl md:text-2xl font-medium",
@@ -313,8 +314,8 @@ const Authentication = () => {
                 className={cn(
                   "rounded-full",
                   isDarkMode 
-                    ? "data-[state=active]:bg-blue-500 data-[state=active]:text-white" 
-                    : "data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                    ? "data-[state=active]:bg-orange-500 data-[state=active]:text-white" 
+                    : "data-[state=active]:bg-orange-500 data-[state=active]:text-white"
                 )}
               >
                 Login
@@ -324,8 +325,8 @@ const Authentication = () => {
                 className={cn(
                   "rounded-full",
                   isDarkMode 
-                    ? "data-[state=active]:bg-blue-500 data-[state=active]:text-white" 
-                    : "data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                    ? "data-[state=active]:bg-orange-500 data-[state=active]:text-white" 
+                    : "data-[state=active]:bg-orange-500 data-[state=active]:text-white"
                 )}
               >
                 Sign Up
@@ -379,7 +380,7 @@ const Authentication = () => {
                   )}
                   onClick={handlePhoneLogin}
                 >
-                  <Phone className="w-5 h-5 mr-2 text-blue-500" />
+                  <Phone className="w-5 h-5 mr-2 text-orange-500" />
                   Continue with Phone
                 </Button>
               </div>
@@ -416,8 +417,8 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500" 
-                                  : "border-gray-200 focus:border-blue-500"
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
                               )} 
                             />
                           </div>
@@ -445,8 +446,8 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500" 
-                                  : "border-gray-200 focus:border-blue-500"
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
                               )} 
                             />
                           </div>
@@ -464,7 +465,7 @@ const Authentication = () => {
                         type="checkbox" 
                         id="remember" 
                         className={cn(
-                          "h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-0",
+                          "h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0",
                           isDarkMode ? "border-gray-600 bg-gray-700" : ""
                         )}
                       />
@@ -475,7 +476,7 @@ const Authentication = () => {
                         Remember me
                       </label>
                     </div>
-                    <a href="#" className="text-sm text-blue-500 hover:underline">
+                    <a href="#" className="text-sm text-orange-500 hover:underline">
                       Forgot password?
                     </a>
                   </div>
@@ -485,8 +486,8 @@ const Authentication = () => {
                     className={cn(
                       "w-full h-12 text-white font-medium",
                       isDarkMode
-                        ? "bg-blue-500 hover:bg-blue-600"
-                        : "bg-blue-500 hover:bg-blue-600"
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-orange-500 hover:bg-orange-600"
                     )}
                     disabled={isLogging}
                   >
@@ -544,7 +545,7 @@ const Authentication = () => {
                   )}
                   onClick={handlePhoneLogin}
                 >
-                  <Phone className="w-5 h-5 mr-2 text-blue-500" />
+                  <Phone className="w-5 h-5 mr-2 text-orange-500" />
                   Sign up with Phone
                 </Button>
               </div>
@@ -580,8 +581,8 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500" 
-                                  : "border-gray-200 focus:border-blue-500"
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
                               )} 
                             />
                           </div>
@@ -610,8 +611,8 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500" 
-                                  : "border-gray-200 focus:border-blue-500"
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
                               )} 
                             />
                           </div>
@@ -639,8 +640,8 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500" 
-                                  : "border-gray-200 focus:border-blue-500"
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
                               )} 
                             />
                           </div>
@@ -668,8 +669,8 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500" 
-                                  : "border-gray-200 focus:border-blue-500"
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
                               )} 
                             />
                           </div>
@@ -686,7 +687,7 @@ const Authentication = () => {
                       type="checkbox" 
                       id="terms" 
                       className={cn(
-                        "h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-0",
+                        "h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0",
                         isDarkMode ? "border-gray-600 bg-gray-700" : ""
                       )}
                     />
@@ -694,7 +695,7 @@ const Authentication = () => {
                       "ml-2 block text-sm",
                       isDarkMode ? "text-gray-400" : "text-gray-600"
                     )}>
-                      I agree to the <a href="#" className="text-blue-500 hover:underline">Terms of Service</a> and <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>
+                      I agree to the <a href="#" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="#" className="text-orange-500 hover:underline">Privacy Policy</a>
                     </label>
                   </div>
                   
@@ -703,8 +704,8 @@ const Authentication = () => {
                     className={cn(
                       "w-full h-12 text-white font-medium",
                       isDarkMode
-                        ? "bg-blue-500 hover:bg-blue-600"
-                        : "bg-blue-500 hover:bg-blue-600"
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-orange-500 hover:bg-orange-600"
                     )}
                     disabled={isRegistering}
                   >
@@ -722,4 +723,3 @@ const Authentication = () => {
 };
 
 export default Authentication;
-
