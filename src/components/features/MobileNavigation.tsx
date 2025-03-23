@@ -32,7 +32,8 @@ const MobileNavigation: React.FC = () => {
       path: '/cart', 
       label: 'Cart', 
       count: cartCount,
-      isCart: true 
+      isCart: true,
+      customStyles: true 
     },
     { icon: Tag, path: '/offers', label: 'Offers' },
     { icon: Store, path: '/shops', label: 'Shops' },
@@ -46,7 +47,72 @@ const MobileNavigation: React.FC = () => {
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
         const isCart = item.isCart;
+        const isCustomStyled = item.customStyles;
         
+        // Special case for the cart (middle item)
+        if (isCustomStyled) {
+          return (
+            <Link 
+              key={item.path} 
+              to={item.path} 
+              className="flex flex-col items-center justify-center relative"
+              aria-label={item.label}
+            >
+              <motion.div 
+                className={cn(
+                  "flex items-center justify-center rounded-full w-12 h-12 -mt-6 shadow-md relative",
+                  isDarkMode 
+                    ? "bg-gradient-to-br from-orange-500 to-orange-600" 
+                    : "bg-gradient-to-br from-kutuku-primary to-kutuku-secondary"
+                )}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ShoppingCart 
+                  size={20} 
+                  className="text-white" 
+                />
+                {cartCount > 0 && (
+                  <motion.span 
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ 
+                      scale: showPulse ? [1, 1.2, 1] : 1, 
+                      opacity: 1 
+                    }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 500, 
+                      damping: 15,
+                      scale: { 
+                        duration: showPulse ? 0.5 : 0.3,
+                        ease: "easeInOut"
+                      }
+                    }}
+                    className={cn(
+                      "absolute -top-1 -right-1 text-white text-xs font-bold rounded-full flex items-center justify-center bg-red-500",
+                      cartCount > 9 ? "h-5 w-5 text-[10px]" : "h-4 w-4 text-[9px]"
+                    )}
+                  >
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </motion.span>
+                )}
+              </motion.div>
+              <span className={cn(
+                "text-xs mt-4",
+                isActive
+                  ? isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                  : isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        }
+        
+        // Regular nav items
         return (
           <Link 
             key={item.path} 
@@ -57,60 +123,27 @@ const MobileNavigation: React.FC = () => {
                 ? isDarkMode ? "text-orange-400" : "text-kutuku-primary"
                 : isDarkMode ? "text-gray-400" : "text-gray-500"
             )}
+            aria-label={item.label}
           >
-            <div className="relative">
-              {isCart && isActive ? (
-                <motion.div
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 400, 
-                    damping: 10
-                  }}
-                >
-                  <item.icon size={20} />
-                </motion.div>
-              ) : isCart && showPulse ? (
-                <motion.div
-                  animate={{ 
-                    scale: [1, 1.2, 1],
-                  }}
-                  transition={{ 
-                    duration: 0.5,
-                    ease: "easeInOut"
-                  }}
-                >
-                  <item.icon size={20} />
-                </motion.div>
-              ) : (
-                <item.icon size={20} />
-              )}
-              
-              {(item.count && item.count > 0) && (
-                <motion.span 
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                  className={cn(
-                    "absolute -top-2 -right-2 text-white text-xs rounded-full flex items-center justify-center",
-                    isDarkMode 
-                      ? "bg-gradient-to-br from-orange-500 to-red-500" 
-                      : "bg-gradient-to-br from-kutuku-primary to-red-500",
-                    item.count > 9 ? "h-5 w-5 text-[10px]" : "h-4 w-4 text-[9px]"
-                  )}
-                >
-                  {item.count > 99 ? '99+' : item.count}
-                </motion.span>
-              )}
-            </div>
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+            >
+              <item.icon size={20} />
+            </motion.div>
             <span className="text-xs mt-1">{item.label}</span>
             
             {isActive && (
-              <span className={cn(
-                "absolute -bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 w-10",
-                isDarkMode ? "bg-orange-400" : "bg-kutuku-primary"
-              )}></span>
+              <motion.span 
+                initial={{ width: 0 }}
+                animate={{ width: 8 }}
+                transition={{ duration: 0.2 }}
+                className={cn(
+                  "absolute -bottom-0 rounded-full h-1 transform -translate-x-1/2 left-1/2",
+                  isDarkMode ? "bg-orange-400" : "bg-kutuku-primary"
+                )}
+              />
             )}
           </Link>
         );
