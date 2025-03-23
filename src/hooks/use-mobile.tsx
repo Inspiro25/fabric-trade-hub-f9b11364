@@ -18,3 +18,8 @@ export function useMediaQuery(query: string): boolean {
 
   return matches;
 }
+
+// Add the useIsMobile hook that's being referenced in many components
+export function useIsMobile(): boolean {
+  return useMediaQuery('(max-width: 768px)');
+}

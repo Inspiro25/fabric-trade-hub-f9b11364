@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/contexts/CartContext';
+import { fetchProductById } from '@/lib/products'; // We need this to get product details
 
 export const useCartStorage = (currentUser: any) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -22,8 +23,30 @@ export const useCartStorage = (currentUser: any) => {
           if (error) {
             console.error('Error loading cart:', error);
             setCartItems([]);
-          } else {
-            setCartItems(data || []);
+          } else if (data) {
+            // Convert database items to CartItems by fetching product details
+            const cartItemsPromises = data.map(async (item) => {
+              try {
+                const product = await fetchProductById(item.product_id);
+                if (product) {
+                  return {
+                    id: item.id,
+                    product,
+                    quantity: item.quantity,
+                    color: item.color,
+                    size: item.size
+                  } as CartItem;
+                }
+                return null;
+              } catch (err) {
+                console.error(`Error fetching product ${item.product_id}:`, err);
+                return null;
+              }
+            });
+            
+            const resolvedItems = await Promise.all(cartItemsPromises);
+            const validItems = resolvedItems.filter(item => item !== null) as CartItem[];
+            setCartItems(validItems);
           }
         } else {
           // Load cart from localStorage for guests
