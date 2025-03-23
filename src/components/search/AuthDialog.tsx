@@ -60,11 +60,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
 
   // Convert the primaryColor string to one of the accepted hue values
   const getHueValue = (): 'orange' | 'blue' | 'green' | 'purple' => {
-    // Map the theme's primaryColor to one of the accepted hues
-    if (primaryColor.includes('blue')) return 'blue';
-    if (primaryColor.includes('green')) return 'green';
-    if (primaryColor.includes('purple')) return 'purple';
-    // Default to orange for any other color
+    // Always return orange for the login and auth dialog
     return 'orange';
   };
 
@@ -149,8 +145,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               className={cn(
                 "w-full relative h-11 rounded-full transition-all duration-300",
                 isDarkMode 
-                  ? `bg-${primaryColor}-500/90 hover:bg-${primaryColor}-600 text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]` 
-                  : `bg-${primaryColor}-500 hover:bg-${primaryColor}-600 text-white`
+                  ? "bg-orange-500/90 hover:bg-orange-600 text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                  : "bg-orange-500 hover:bg-orange-600 text-white"
               )}
             >
               Continue with Google
@@ -201,8 +197,8 @@ const FeatureItem = ({
       <div className={cn(
         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
         isDarkMode 
-          ? "bg-blue-500/10 text-blue-400" 
-          : "bg-blue-100 text-blue-600"
+          ? "bg-orange-500/10 text-orange-400" 
+          : "bg-orange-100 text-orange-600"
       )}>
         {icon}
       </div>
