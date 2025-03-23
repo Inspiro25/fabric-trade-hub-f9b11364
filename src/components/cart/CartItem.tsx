@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { CartItem as CartItemType } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface CartItemProps {
   item: CartItemType;
@@ -18,6 +18,26 @@ const CartItem: React.FC<CartItemProps> = ({
   removeFromCart 
 }) => {
   const { isDarkMode } = useTheme();
+  
+  // Pre-compute values to avoid recalculation during render
+  const itemId = `${item.id}-${item.size}-${item.color}`;
+  const itemPrice = item.product.salePrice || item.product.price;
+  const totalPrice = itemPrice * item.quantity;
+  
+  // Handle quantity changes
+  const handleDecreaseQuantity = () => {
+    if (item.quantity > 1) {
+      updateQuantity(itemId, item.quantity - 1);
+    }
+  };
+  
+  const handleIncreaseQuantity = () => {
+    updateQuantity(itemId, item.quantity + 1);
+  };
+  
+  const handleRemoveItem = () => {
+    removeFromCart(itemId);
+  };
   
   return (
     <li className={cn(
@@ -35,6 +55,7 @@ const CartItem: React.FC<CartItemProps> = ({
               "w-16 h-16 object-cover rounded-lg",
               isDarkMode ? "shadow-md shadow-black/20" : "shadow-sm"
             )} 
+            loading="lazy" // Add lazy loading for images
           />
         </Link>
       </div>
@@ -77,9 +98,10 @@ const CartItem: React.FC<CartItemProps> = ({
                 "w-6 h-6 flex items-center justify-center transition-colors",
                 isDarkMode 
                   ? "text-gray-400 hover:text-gray-200" 
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+                item.quantity <= 1 && "opacity-50 cursor-not-allowed"
               )}
-              onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity - 1)} 
+              onClick={handleDecreaseQuantity} 
               disabled={item.quantity <= 1}
             >
               <Minus className="w-2.5 h-2.5" />
@@ -99,7 +121,7 @@ const CartItem: React.FC<CartItemProps> = ({
                   ? "text-gray-400 hover:text-gray-200" 
                   : "text-muted-foreground hover:text-foreground"
               )}
-              onClick={() => updateQuantity(`${item.id}-${item.size}-${item.color}`, item.quantity + 1)}
+              onClick={handleIncreaseQuantity}
             >
               <Plus className="w-2.5 h-2.5" />
               <span className="sr-only">Increase quantity</span>
@@ -114,7 +136,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 ? "text-gray-400 hover:text-red-400 hover:bg-gray-700" 
                 : "text-muted-foreground hover:text-destructive hover:bg-red-50"
             )}
-            onClick={() => removeFromCart(`${item.id}-${item.size}-${item.color}`)}
+            onClick={handleRemoveItem}
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span className="sr-only">Remove item</span>
@@ -127,17 +149,18 @@ const CartItem: React.FC<CartItemProps> = ({
           "font-medium text-sm min-w-14 block",
           isDarkMode ? "text-gray-200" : "text-gray-800"
         )}>
-          ₹{((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
+          ₹{totalPrice.toFixed(2)}
         </span>
         <span className={cn(
           "text-xs",
           isDarkMode ? "text-gray-400" : "text-muted-foreground"
         )}>
-          ₹{(item.product.salePrice || item.product.price).toFixed(2)} each
+          ₹{itemPrice.toFixed(2)} each
         </span>
       </div>
     </li>
   );
 };
 
-export default CartItem;
+// Use memo to prevent unnecessary re-renders when parent components change
+export default memo(CartItem);

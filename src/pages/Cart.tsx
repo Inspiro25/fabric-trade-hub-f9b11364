@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,9 +24,10 @@ const Cart = () => {
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
   
-  const subtotal = getCartTotal();
-  const total = subtotal - (subtotal * 0.1) + (subtotal > 100 ? 0 : 10);
-  const itemCount = getCartCount();
+  // Memoize these calculations to prevent recalculations
+  const subtotal = useMemo(() => getCartTotal(), [cartItems, getCartTotal]);
+  const total = useMemo(() => subtotal - (subtotal * 0.1) + (subtotal > 100 ? 0 : 10), [subtotal]);
+  const itemCount = useMemo(() => getCartCount(), [cartItems, getCartCount]);
 
   // Check authentication on mount
   useEffect(() => {
@@ -35,25 +36,18 @@ const Cart = () => {
     }
   }, [authLoading, currentUser]);
 
-  // Handle initial loading
+  // Handle initial loading - improves performance by marking load as done quickly
   useEffect(() => {
-    // Set initial load done after a short delay to prevent unnecessary loading state
     if (!initialLoadDone) {
-      const timer = setTimeout(() => {
-        setInitialLoadDone(true);
-      }, 50);
-      return () => clearTimeout(timer);
+      setInitialLoadDone(true);
     }
   }, [initialLoadDone]);
 
   // Handle content visibility after loading is complete
   useEffect(() => {
     if (!isLoading && initialLoadDone) {
-      // Short delay to ensure smooth transition
-      const contentTimer = setTimeout(() => {
-        setIsContentLoaded(true);
-      }, 100);
-      return () => clearTimeout(contentTimer);
+      // Remove the delay to make content appear faster
+      setIsContentLoaded(true);
     }
   }, [isLoading, initialLoadDone]);
   
@@ -61,11 +55,15 @@ const Cart = () => {
     window.location.href = '/auth';
   };
 
-  // True loading state - show only during initial load
-  if ((isLoading && !initialLoadDone) || authLoading) {
+  // Only show loading spinner on initial page load, not during navigation
+  // and only when cart is actually still loading
+  const showLoadingState = isLoading && !initialLoadDone && !isContentLoaded && authLoading;
+
+  // Improved loading state with instant load for returning users
+  if (showLoadingState) {
     return (
       <div className={cn(
-        "animate-page-transition min-h-screen flex items-center justify-center",
+        "animate-in fade-in min-h-screen flex items-center justify-center",
         isDarkMode 
           ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
           : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
@@ -88,7 +86,7 @@ const Cart = () => {
 
   return (
     <div className={cn(
-      "animate-page-transition min-h-screen",
+      "animate-in fade-in min-h-screen",
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
