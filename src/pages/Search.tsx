@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { SearchResults } from '@/components/search/SearchResults';
+import SearchResults from '@/components/search/SearchResults';
 import SearchCategories from '@/components/search/SearchCategories';
 import SearchFilters from '@/components/search/SearchFilters';
 import SearchHistory from '@/components/search/SearchHistory';
@@ -18,7 +18,7 @@ import AuthDialog from '@/components/search/AuthDialog';
 import ShareDialog from '@/components/search/ShareDialog';
 import { useSearchData } from '@/hooks/use-search-data';
 import { useSearchRecommendations } from '@/hooks/use-search-recommendations';
-import { useSearchParams } from '@/hooks/search/use-search-params';
+import { useSearchUrlParams } from '@/hooks/search/use-search-params';
 import { useSearchFilters } from '@/hooks/search/use-search-filters';
 import { useSearchCartIntegration } from '@/hooks/search/use-search-cart-integration';
 import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
@@ -33,7 +33,7 @@ const Search = () => {
   const isMobile = useIsMobile();
   
   // Get query params
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchUrlParams();
   const queryParam = searchParams.get('q') || '';
   
   // State for search input
@@ -81,9 +81,7 @@ const Search = () => {
     handleRatingChange,
     handleSortChange,
     handleViewModeChange,
-    clearFilters,
-    filterProducts,
-    sortProducts
+    clearFilters
   } = useSearchFilters();
   
   // Get integrations for cart and wishlist
@@ -101,7 +99,8 @@ const Search = () => {
     setIsDialogOpen,
     isShareDialogOpen,
     setIsShareDialogOpen,
-    shareableLink
+    shareableLink,
+    handleLogin
   } = useSearchDialogs();
   
   // Search history
@@ -113,7 +112,43 @@ const Search = () => {
   } = useSearchHistory();
   
   // Filter and sort products
-  const filteredAndSortedProducts = sortProducts(filterProducts(products));
+  const filteredAndSortedProducts = (() => {
+    // First filter products based on criteria
+    const filtered = products.filter(product => {
+      if (selectedCategory && product.category_id !== selectedCategory) {
+        return false;
+      }
+      if (selectedShop && product.shop_id !== selectedShop) {
+        return false;
+      }
+      if (product.price < priceRange[0] || product.price > priceRange[1]) {
+        return false;
+      }
+      if (rating && (!product.rating || product.rating < rating)) {
+        return false;
+      }
+      return true;
+    });
+    
+    // Then sort the filtered products
+    return [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'newest':
+          return 0; // Would normally sort by created_at
+        case 'price-asc':
+          return (a.sale_price || a.price) - (b.sale_price || b.price);
+        case 'price-desc':
+          return (b.sale_price || b.price) - (a.sale_price || a.price);
+        case 'rating':
+          return (b.rating || 0) - (a.rating || 0);
+        case 'popularity':
+          return (b.review_count || 0) - (a.review_count || 0);
+        case 'relevance':
+        default:
+          return 0;
+      }
+    });
+  })();
   
   // Handle search submit
   const handleSearch = (e?: React.FormEvent) => {
@@ -192,15 +227,20 @@ const Search = () => {
             />
             
             <SearchFilters
+              isMobile={false}
+              categories={categories}
               priceRange={priceRange}
-              onPriceRangeChange={handlePriceRangeChange}
+              handlePriceRangeChange={handlePriceRangeChange}
               rating={rating}
-              onRatingChange={handleRatingChange}
+              handleRatingChange={handleRatingChange}
               selectedShop={selectedShop}
               shops={shops}
-              onShopChange={handleShopChange}
-              onClearFilters={clearFilters}
-              totalResults={filteredAndSortedProducts.length}
+              handleShopChange={handleShopChange}
+              clearFilters={clearFilters}
+              selectedCategory={selectedCategory}
+              mobileFiltersOpen={mobileFiltersOpen}
+              setMobileFiltersOpen={setMobileFiltersOpen}
+              handleCategoryChange={handleCategoryChange}
             />
           </div>
         )}
@@ -234,12 +274,12 @@ const Search = () => {
               {searchHistory.length > 0 && (
                 <SearchHistory 
                   history={searchHistory}
-                  onClickItem={(item) => {
-                    setSearchInput(item.query);
-                    setSearchParams({ q: item.query });
+                  onSelectHistoryItem={(query) => {
+                    setSearchInput(query);
+                    setSearchParams({ q: query });
                   }}
-                  onClearItem={clearSearchHistoryItem}
-                  onClearAll={clearAllSearchHistory}
+                  onClearHistoryItem={clearSearchHistoryItem}
+                  onClearAllHistory={clearAllSearchHistory}
                 />
               )}
               
@@ -275,7 +315,11 @@ const Search = () => {
       </div>
       
       {/* Auth Dialog */}
-      <AuthDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+      <AuthDialog 
+        open={isDialogOpen} 
+        onOpenChange={setIsDialogOpen} 
+        onLogin={handleLogin} 
+      />
       
       {/* Share Dialog */}
       <ShareDialog 
