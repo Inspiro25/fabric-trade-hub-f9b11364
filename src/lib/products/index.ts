@@ -39,7 +39,7 @@ export const fetchProductById = async (productId: string): Promise<Product | nul
       return {
         id: data.id,
         name: data.name,
-        description: data.description,
+        description: data.description || '',
         price: data.price,
         salePrice: data.sale_price,
         rating: data.rating,
@@ -47,13 +47,12 @@ export const fetchProductById = async (productId: string): Promise<Product | nul
         images: data.images || [],
         colors: data.colors || [],
         sizes: data.sizes || [],
-        category: data.category,
+        category: data.category_id || '',
         tags: data.tags || [],
-        stock: data.stock,
+        stock: data.stock || 0,
         shopId: data.shop_id,
-        isNew: data.is_new,
-        isFeatured: data.is_featured,
-        createdAt: data.created_at,
+        isNew: data.is_new || false,
+        isTrending: data.is_trending || false
       };
     }
     
