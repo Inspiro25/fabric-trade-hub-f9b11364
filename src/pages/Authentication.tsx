@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -653,4 +654,60 @@ const Authentication = () => {
                               className={cn(
                                 "pl-10 h-12",
                                 isDarkMode 
-                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-5
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  
+                  {authError?.isFirebaseConfig && (
+                    <Alert className={cn(
+                      "bg-amber-50 border-amber-200 text-amber-800",
+                      isDarkMode && "bg-amber-900/20 border-amber-700/50 text-amber-200"
+                    )}>
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      <AlertDescription className="text-xs">
+                        {authError.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  <div className="text-xs mt-4">
+                    <p className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
+                      By signing up, you agree to our 
+                      <a href="#" className="text-orange-500 hover:underline"> Terms of Service</a> and 
+                      <a href="#" className="text-orange-500 hover:underline"> Privacy Policy</a>
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className={cn(
+                      "w-full h-12 text-white font-medium mt-2",
+                      isDarkMode
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    )}
+                    disabled={isRegistering}
+                  >
+                    {isRegistering ? "Creating Account..." : "Create Account"}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Authentication;
