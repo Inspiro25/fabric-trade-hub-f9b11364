@@ -1,178 +1,247 @@
 
 import React from 'react';
+import { formatCurrency, cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { useTheme } from '@/contexts/ThemeContext';
-import { formatCurrency } from '@/lib/utils';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import type { SearchPageProduct } from '@/hooks/search/types';
+import { SearchPageProduct } from '@/hooks/search/types';
+import { PlusCircle, Heart, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { StarRating } from '@/components/ui/star-rating';
+import { Badge } from '@/components/ui/badge';
 
+// Define the props for the product card
 interface ProductCardProps {
   product: SearchPageProduct;
-  variant?: 'default' | 'compact';
+  isAddingToCart?: boolean;
+  isAddingToWishlist?: boolean;
+  onAddToCart: () => void;
+  onAddToWishlist: () => void;
+  onShare: () => void;
+  onClick?: () => void;
+  viewMode: 'list' | 'grid';
+  buttonColor?: string;
 }
 
-const SearchProductCard: React.FC<ProductCardProps> = ({ 
-  product,
-  variant = 'default'
-}) => {
-  const { isDarkMode } = useTheme();
+export function SearchProductCard({ 
+  product, 
+  isAddingToCart = false,
+  isAddingToWishlist = false,
+  onAddToCart, 
+  onAddToWishlist, 
+  onShare,
+  onClick,
+  viewMode,
+  buttonColor = 'bg-blue-500 hover:bg-blue-600'
+}: ProductCardProps) {
+  if (!product) return null;
   
-  if (variant === 'compact') {
+  // Fix: Changed product.image to product.images[0]
+  const productImage = product.images && product.images.length > 0 
+    ? product.images[0] 
+    : '/placeholder.svg';
+    
+  const discountPercentage = product.salePrice && product.price 
+    ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
+    : 0;
+  
+  const handleCardClick = () => {
+    if (onClick) onClick();
+  };
+
+  // Grid view layout
+  if (viewMode === 'grid') {
     return (
-      <Link to={`/product/${product.id}`}>
-        <Card className={cn(
-          "h-28 overflow-hidden border",
-          isDarkMode ? "bg-gray-800 border-gray-700" : "border-gray-200 hover:shadow-md"
-        )}>
-          <div className="flex h-full">
-            <div className="w-28 h-full">
-              <img 
-                src={product.image || '/placeholder.svg'} 
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <CardContent className="flex-1 p-3">
-              <h3 className={cn(
-                "text-sm font-medium line-clamp-1",
-                isDarkMode ? "text-gray-100" : "text-gray-800"
-              )}>
-                {product.name}
-              </h3>
-              <div className="flex items-center mt-1">
-                <span className={cn(
-                  "text-sm font-bold",
-                  isDarkMode ? "text-orange-400" : "text-orange-600"
-                )}>
-                  {formatCurrency(product.salePrice || product.price)}
-                </span>
-                {product.salePrice && (
-                  <span className="text-xs line-through text-gray-400 ml-2">
-                    {formatCurrency(product.price)}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center text-xs text-gray-500">
-                  <Star className="h-3 w-3 text-yellow-400 mr-1" />
-                  <span>{product.rating} ({product.reviewCount})</span>
-                </div>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
-                  <ShoppingCart className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </div>
-        </Card>
-      </Link>
-    );
-  }
-  
-  return (
-    <Link to={`/product/${product.id}`}>
-      <Card className={cn(
-        "overflow-hidden border transition-all hover:-translate-y-1 duration-300",
-        isDarkMode ? "bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-gray-700/30" : "border-gray-200 hover:shadow-lg"
-      )}>
-        <div className="relative aspect-square">
-          <img 
-            src={product.image || '/placeholder.svg'} 
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-          {product.isNew && (
-            <Badge className="absolute top-2 left-2 bg-blue-500 hover:bg-blue-600">New</Badge>
-          )}
-          {product.salePrice && (
-            <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600">
-              Sale
-            </Badge>
-          )}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className={cn(
-              "absolute top-2 right-2 h-8 w-8 rounded-full", 
-              isDarkMode ? "bg-gray-900/50 text-white hover:text-rose-400" : "bg-white/50 hover:bg-white hover:text-rose-500"
+      <div 
+        className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+        onClick={handleCardClick}
+      >
+        <Link to={`/product/${product.id}`} className="block">
+          <div className="relative aspect-square overflow-hidden">
+            {/* Fix: Changed product.image to product.images[0] */}
+            <img 
+              src={productImage} 
+              alt={product.name} 
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+            />
+            {product.isNew && (
+              <Badge className="absolute top-2 left-2 bg-green-500">New</Badge>
             )}
+            {discountPercentage > 0 && (
+              <Badge className="absolute top-2 right-2 bg-red-500">{discountPercentage}% OFF</Badge>
+            )}
+          </div>
+          
+          <div className="p-3">
+            <h3 className="text-sm font-medium line-clamp-2 mb-1 dark:text-white">{product.name}</h3>
+            <div className="flex items-center gap-1.5 mb-1">
+              <StarRating rating={product.rating || 0} size="small" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">({product.reviewCount || 0})</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {product.salePrice ? (
+                <>
+                  <span className="font-bold text-gray-900 dark:text-white">₹{product.salePrice}</span>
+                  <span className="text-sm text-gray-500 line-through dark:text-gray-400">₹{product.price}</span>
+                </>
+              ) : (
+                <span className="font-bold text-gray-900 dark:text-white">₹{product.price}</span>
+              )}
+            </div>
+          </div>
+        </Link>
+        
+        <div className="flex p-2 pt-0 gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart();
+            }}
+            className="flex-1 h-8"
+            disabled={isAddingToCart}
+          >
+            <PlusCircle className="h-4 w-4 mr-1" />
+            <span className="text-xs">Add</span>
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToWishlist();
+            }}
+            className="h-8 w-8"
+            disabled={isAddingToWishlist}
           >
             <Heart className="h-4 w-4" />
           </Button>
-        </div>
-        <CardContent className="p-3">
-          <h3 className={cn(
-            "text-sm font-medium line-clamp-2",
-            isDarkMode ? "text-gray-100" : "text-gray-800"
-          )}>
-            {product.name}
-          </h3>
-          <div className="flex items-center mt-1 mb-1">
-            <span className={cn(
-              "text-sm font-bold",
-              isDarkMode ? "text-orange-400" : "text-orange-600"
-            )}>
-              {formatCurrency(product.salePrice || product.price)}
-            </span>
-            {product.salePrice && (
-              <span className="text-xs line-through text-gray-400 ml-2">
-                {formatCurrency(product.price)}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-xs text-gray-500">
-              <Star className="h-3 w-3 text-yellow-400 mr-1" />
-              <span>{product.rating} ({product.reviewCount})</span>
-            </div>
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <ShoppingCart className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-};
-
-export const ProductCardSkeleton = ({ variant = 'default' }: { variant?: 'default' | 'compact' }) => {
-  if (variant === 'compact') {
-    return (
-      <div className="h-28 rounded-md overflow-hidden border border-gray-200">
-        <div className="flex h-full">
-          <Skeleton className="w-28 h-full" />
-          <div className="flex-1 p-3">
-            <Skeleton className="h-4 w-3/4 mb-2" />
-            <Skeleton className="h-4 w-1/3 mb-2" />
-            <div className="flex items-center justify-between mt-2">
-              <Skeleton className="h-3 w-1/4" />
-              <Skeleton className="h-6 w-6 rounded-full" />
-            </div>
-          </div>
+          <Button 
+            size="icon"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare();
+            }}
+            className="h-8 w-8"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     );
   }
-  
+
+  // List view layout (horizontal card)
   return (
-    <div className="overflow-hidden rounded-md border border-gray-200">
-      <Skeleton className="aspect-square w-full" />
-      <div className="p-3">
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-4 w-1/3 mb-2" />
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-3 w-1/4" />
-          <Skeleton className="h-6 w-6 rounded-full" />
+    <div
+      className="flex bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+      onClick={handleCardClick}
+    >
+      <Link to={`/product/${product.id}`} className="shrink-0">
+        <div className="relative w-24 h-24 sm:w-32 sm:h-32">
+          <img 
+            src={productImage} 
+            alt={product.name} 
+            className="w-full h-full object-cover" 
+          />
+          {product.isNew && (
+            <Badge className="absolute top-1 left-1 text-xs bg-green-500">New</Badge>
+          )}
+          {discountPercentage > 0 && (
+            <Badge className="absolute top-1 right-1 text-xs bg-red-500">{discountPercentage}%</Badge>
+          )}
+        </div>
+      </Link>
+      
+      <div className="flex-1 p-3 min-w-0">
+        <Link to={`/product/${product.id}`}>
+          <h3 className="text-sm font-medium line-clamp-1 mb-1 dark:text-white">{product.name}</h3>
+          <div className="flex items-center gap-1 mb-1">
+            <StarRating rating={product.rating || 0} size="small" />
+            <span className="text-xs text-gray-500 dark:text-gray-400">({product.reviewCount || 0})</span>
+          </div>
+          <div className="flex items-center gap-1 mb-2">
+            {product.salePrice ? (
+              <>
+                <span className="font-bold text-gray-900 dark:text-white">₹{product.salePrice}</span>
+                <span className="text-sm text-gray-500 line-through dark:text-gray-400">₹{product.price}</span>
+              </>
+            ) : (
+              <span className="font-bold text-gray-900 dark:text-white">₹{product.price}</span>
+            )}
+          </div>
+        </Link>
+        
+        <div className="flex gap-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart();
+            }}
+            className="flex-1 h-7 text-xs"
+            disabled={isAddingToCart}
+          >
+            <PlusCircle className="h-3 w-3 mr-1" />
+            Add
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToWishlist();
+            }}
+            className="h-7 w-7"
+            disabled={isAddingToWishlist}
+          >
+            <Heart className="h-3 w-3" />
+          </Button>
+          <Button 
+            size="icon"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare();
+            }}
+            className="h-7 w-7"
+          >
+            <Share2 className="h-3 w-3" />
+          </Button>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export type { SearchPageProduct };
-export { ProductCardSkeleton as SearchProductSkeleton };
-export default SearchProductCard;
+export function SearchProductCardSkeleton({ viewMode }: { viewMode: 'list' | 'grid' }) {
+  if (viewMode === 'grid') {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
+        <Skeleton className="aspect-square w-full" />
+        <div className="p-3">
+          <Skeleton className="h-4 w-full mb-2" />
+          <Skeleton className="h-3 w-24 mb-2" />
+          <Skeleton className="h-5 w-20" />
+        </div>
+        <div className="p-2 pt-0">
+          <Skeleton className="h-8 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
+      <Skeleton className="w-24 h-24 sm:w-32 sm:h-32 shrink-0" />
+      <div className="flex-1 p-3">
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-3 w-24 mb-2" />
+        <Skeleton className="h-5 w-20 mb-2" />
+        <Skeleton className="h-7 w-full" />
+      </div>
+    </div>
+  );
+}

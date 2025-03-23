@@ -1,41 +1,16 @@
 
 import React, { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getNewArrivals } from '@/lib/products';
 import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
 import { Flame, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types/product';
-
-// Define a proper type for the products returned from Supabase
-interface SupabaseProduct {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  sale_price: number | null;
-  images: string[];
-  category_id: string;
-  shop_id: string;
-  is_new: boolean;
-  is_trending: boolean;
-  colors: string[];
-  sizes: string[];
-  rating: number;
-  review_count: number;
-  stock?: number;
-  created_at?: string;
-  tags?: string[];
-}
-
-// Create a union type that can be either a Product or SupabaseProduct
-type ProductUnion = Product | SupabaseProduct;
 
 const NewArrivals = () => {
   const { isDarkMode } = useTheme();
@@ -44,7 +19,12 @@ const NewArrivals = () => {
     queryKey: ['products', 'newArrivals'],
     queryFn: async () => {
       try {
-        // Fetch new arrivals directly from Supabase
+        // Get current date and date 30 days ago
+        const currentDate = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        // Fetch new arrivals from Supabase
         const { data, error } = await supabase
           .from('products')
           .select('*')
@@ -57,11 +37,28 @@ const NewArrivals = () => {
           throw new Error(error.message);
         }
         
-        return data as SupabaseProduct[] || [];
+        // Map the database products to our Product type
+        return data.map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: product.price,
+          salePrice: product.sale_price,
+          images: product.images || [],
+          category: product.category_id || '',
+          colors: product.colors || [],
+          sizes: product.sizes || [],
+          isNew: product.is_new || false,
+          isTrending: product.is_trending || false,
+          rating: product.rating || 0,
+          reviewCount: product.review_count || 0,
+          stock: product.stock || 0,
+          tags: product.tags || [],
+          shopId: product.shop_id || '',
+        }));
       } catch (err) {
         console.error('Failed to fetch new arrivals:', err);
-        // Fall back to the existing implementation
-        return getNewArrivals();
+        throw err;
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -78,7 +75,7 @@ const NewArrivals = () => {
       
       if (session?.session?.user && products && products.length > 0) {
         try {
-          // Use a raw SQL-like query to avoid TypeScript errors with RPC
+          // Update product view history for the current user
           const { error } = await supabase
             .from('product_view_history')
             .upsert({
@@ -103,16 +100,10 @@ const NewArrivals = () => {
     updateProductViews();
   }, [products]);
 
-  // Helper function to get sale price safely
-  const getSalePrice = (product: ProductUnion): number | null => {
-    return 'sale_price' in product ? product.sale_price : product.salePrice || null;
-  };
-
   // Helper function to calculate discount percentage
-  const calculateDiscount = (product: ProductUnion): number => {
-    const salePrice = getSalePrice(product);
-    if (!salePrice) return 0;
-    return Math.round(((product.price - salePrice) / product.price) * 100);
+  const calculateDiscount = (product: Product): number => {
+    if (!product.salePrice) return 0;
+    return Math.round(((product.price - product.salePrice) / product.price) * 100);
   };
 
   return (
@@ -201,12 +192,12 @@ const NewArrivals = () => {
                         {products[0].description || "Experience our newest arrival, crafted with exceptional quality and style."}
                       </p>
                       <div className="flex items-center gap-2 mb-4">
-                        {getSalePrice(products[0]) ? (
+                        {products[0].salePrice ? (
                           <>
                             <span className={cn(
                               "text-xl font-bold",
                               isDarkMode ? "text-orange-400" : ""
-                            )}>₹{getSalePrice(products[0])}</span>
+                            )}>₹{products[0].salePrice}</span>
                             <span className={cn(
                               "line-through",
                               isDarkMode ? "text-gray-400" : "text-muted-foreground"
@@ -254,7 +245,16 @@ const NewArrivals = () => {
                 {products.map(product => (
                   <ProductCard
                     key={product.id}
-                    product={product as any}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    salePrice={product.salePrice}
+                    image={product.images[0]}
+                    category={product.category}
+                    isNew={product.isNew}
+                    isTrending={product.isTrending}
+                    rating={product.rating}
+                    reviewCount={product.reviewCount}
                   />
                 ))}
               </div>

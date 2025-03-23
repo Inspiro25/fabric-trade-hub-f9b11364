@@ -62,3 +62,48 @@ export const fetchProductById = async (productId: string): Promise<Product | nul
     return null;
   }
 };
+
+// Add a specialized function to get the latest new arrivals
+export const getLatestNewArrivals = async (limit = 8): Promise<Product[]> => {
+  try {
+    // Get products marked as new, ordered by created_at date
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_new', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching latest new arrivals:', error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    // Map database products to our Product type
+    return data.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      price: product.price,
+      salePrice: product.sale_price,
+      images: product.images || [],
+      category: product.category_id || '',
+      colors: product.colors || [],
+      sizes: product.sizes || [],
+      isNew: product.is_new || false,
+      isTrending: product.is_trending || false,
+      rating: product.rating || 0,
+      reviewCount: product.review_count || 0,
+      stock: product.stock || 0,
+      tags: product.tags || [],
+      shopId: product.shop_id || '',
+    }));
+  } catch (error) {
+    console.error('Error in getLatestNewArrivals:', error);
+    return [];
+  }
+};

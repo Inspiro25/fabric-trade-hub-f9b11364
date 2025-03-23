@@ -53,6 +53,11 @@ export const getRelatedProducts = async (currentProductId: string, category: str
 // Utility functions to get filtered products
 export const getNewArrivals = async (): Promise<Product[]> => {
   try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
     const { data, error } = await supabase
       .from('products')
       .select('*')

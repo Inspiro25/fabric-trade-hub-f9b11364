@@ -1,120 +1,191 @@
 
-import React from 'react';
-import SearchProductCard, { SearchPageProduct } from './SearchProductCard';
-import SearchHeader from './SearchHeader';
-import SearchPagination from './SearchPagination';
-import SearchLoadingState from './SearchLoadingState';
-import SearchErrorState from './SearchErrorState';
-import SearchEmptyState from './SearchEmptyState';
-import { useTheme } from '@/contexts/ThemeContext';
-import { motion } from 'framer-motion';
+import React, { useCallback } from 'react';
+import { SearchProductCard, SearchProductCardSkeleton } from './SearchProductCard';
+import { SearchPageProduct } from '@/hooks/search/types';
+import { useSearchViewMode } from '@/hooks/search/use-search-filters';
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
+import { Grid, ListFilter, LayoutGrid, LayoutList } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SearchResultsProps {
-  loading: boolean;
-  error: string | null;
   products: SearchPageProduct[];
-  totalProducts: number;
-  isAddingToCart: string | null;
-  isAddingToWishlist: string | null;
-  onAddToCart: (product: SearchPageProduct) => void;
-  onAddToWishlist: (product: SearchPageProduct) => void;
-  onShareProduct: (product: SearchPageProduct) => void;
-  onProductClick?: (product: SearchPageProduct) => void;
-  onRetry?: () => void;
-  currentPage?: number;
-  onPageChange?: (page: number) => void;
-  itemsPerPage?: number;
-  onItemsPerPageChange?: (items: number) => void;
-  viewMode?: 'grid' | 'list';
-  onViewModeChange?: (mode: 'grid' | 'list') => void;
+  isLoading: boolean;
 }
 
-const SearchResults: React.FC<SearchResultsProps> = ({
-  loading,
-  error,
-  products,
-  totalProducts,
-  isAddingToCart,
-  isAddingToWishlist,
-  onAddToCart,
-  onAddToWishlist,
-  onShareProduct,
-  onProductClick,
-  onRetry,
-  currentPage = 1,
-  onPageChange = () => {},
-  itemsPerPage = 20,
-  onItemsPerPageChange = () => {},
-  viewMode = 'grid',
-  onViewModeChange = () => {}
-}) => {
+const SearchResults: React.FC<SearchResultsProps> = ({ products, isLoading }) => {
+  const navigate = useNavigate();
+  const { viewMode, setViewMode } = useSearchViewMode();
+  const { addToCart, isAddingToCart, isProductInCart } = useCart();
+  const { addToWishlist, isAddingToWishlist, isProductInWishlist } = useWishlist();
+  const { showShareDialog, showAuthDialog } = useSearchDialogs();
   const { isDarkMode } = useTheme();
-  
-  if (loading) {
-    return <SearchLoadingState />;
+  const { isAuthenticated } = useAuth();
+
+  const handleProductClick = useCallback((productId: string) => {
+    navigate(`/product/${productId}`);
+  }, [navigate]);
+
+  const handleAddToCart = useCallback((product: SearchPageProduct) => {
+    if (!isAuthenticated) {
+      showAuthDialog();
+      return;
+    }
+    
+    if (isProductInCart(product.id)) {
+      toast({
+        title: "Already in cart",
+        description: "This product is already in your cart",
+        variant: "default",
+      });
+      return;
+    }
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.salePrice || product.price,
+      image: product.images[0],
+      quantity: 1,
+      color: product.colors ? product.colors[0] : null,
+      size: product.sizes ? product.sizes[0] : null,
+    });
+  }, [addToCart, isAuthenticated, isProductInCart, showAuthDialog]);
+
+  const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
+    if (!isAuthenticated) {
+      showAuthDialog();
+      return;
+    }
+    
+    if (isProductInWishlist(product.id)) {
+      toast({
+        title: "Already in wishlist",
+        description: "This product is already in your wishlist",
+        variant: "default",
+      });
+      return;
+    }
+    
+    addToWishlist({
+      id: product.id,
+      name: product.name,
+      price: product.salePrice || product.price,
+      image: product.images[0],
+    });
+  }, [addToWishlist, isAuthenticated, isProductInWishlist, showAuthDialog]);
+
+  const handleShare = useCallback((product: SearchPageProduct) => {
+    showShareDialog({
+      title: product.name,
+      image: product.images[0],
+      url: `/product/${product.id}`,
+    });
+  }, [showShareDialog]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <div className="flex justify-end mb-4">
+          <div className="flex items-center gap-2">
+            <span className={cn("text-xs", isDarkMode ? "text-gray-400" : "text-gray-500")}>View:</span>
+            <div className="flex border rounded-md overflow-hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-none",
+                  viewMode === 'grid' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+                )}
+                onClick={() => setViewMode('grid')}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-none",
+                  viewMode === 'list' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+                )}
+                onClick={() => setViewMode('list')}
+              >
+                <LayoutList className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <div className={cn(
+          viewMode === 'grid'
+            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+            : "flex flex-col gap-4"
+        )}>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <SearchProductCardSkeleton key={index} viewMode={viewMode} />
+          ))}
+        </div>
+      </div>
+    );
   }
-  
-  if (error) {
-    return <SearchErrorState error={error} onRetry={onRetry} />;
-  }
-  
-  if (products.length === 0) {
-    return <SearchEmptyState />;
-  }
-  
-  const totalPages = Math.ceil(totalProducts / itemsPerPage) || 1;
-  
+
   return (
-    <div className={cn(
-      "space-y-6",
-      isDarkMode && "text-white"
-    )}>
-      <SearchHeader 
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        totalItems={totalProducts}
-        onItemsPerPageChange={onItemsPerPageChange}
-        viewMode={viewMode}
-        onViewModeChange={onViewModeChange}
-      />
+    <div className="w-full">
+      <div className="flex justify-end mb-4">
+        <div className="flex items-center gap-2">
+          <span className={cn("text-xs", isDarkMode ? "text-gray-400" : "text-gray-500")}>View:</span>
+          <div className="flex border rounded-md overflow-hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-8 w-8 rounded-none",
+                viewMode === 'grid' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => setViewMode('grid')}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-8 w-8 rounded-none",
+                viewMode === 'list' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => setViewMode('list')}
+            >
+              <LayoutList className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
       
-      <motion.div 
-        className={viewMode === 'grid' 
-          ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
-          : "flex flex-col space-y-4"
-        }
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ staggerChildren: 0.05 }}
-      >
+      <div className={cn(
+        viewMode === 'grid'
+          ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          : "flex flex-col gap-4"
+      )}>
         {products.map(product => (
-          <motion.div
+          <SearchProductCard
             key={product.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <SearchProductCard
-              product={product}
-              isAddingToCart={isAddingToCart === product.id}
-              isAddingToWishlist={isAddingToWishlist === product.id}
-              onAddToCart={() => onAddToCart(product)}
-              onAddToWishlist={() => onAddToWishlist(product)}
-              onShare={() => onShareProduct(product)}
-              onClick={onProductClick ? () => onProductClick(product) : undefined}
-              viewMode={viewMode}
-              buttonColor={isDarkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'}
-            />
-          </motion.div>
+            product={product}
+            onAddToCart={() => handleAddToCart(product)}
+            onAddToWishlist={() => handleAddToWishlist(product)}
+            onShare={() => handleShare(product)}
+            onClick={() => handleProductClick(product.id)}
+            viewMode={viewMode}
+            buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+          />
         ))}
-      </motion.div>
-      
-      <SearchPagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
+      </div>
     </div>
   );
 };

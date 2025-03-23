@@ -54,7 +54,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo
             isTrending={product.isTrending}
             rating={product.rating}
             reviewCount={product.reviewCount}
-            layout="compact"
+            layout="vertical"
           />
         ))}
       </div>

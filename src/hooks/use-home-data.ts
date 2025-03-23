@@ -7,6 +7,7 @@ import {
   getTopRatedProducts,
   getDiscountedProducts,
   getBestSellingProducts,
+  getLatestNewArrivals,
 } from '@/lib/products';
 
 export function useHomeData() {
@@ -20,7 +21,7 @@ export function useHomeData() {
 
   const newArrivalsQuery = useQuery({
     queryKey: ['products', 'newArrivals'],
-    queryFn: getNewArrivals,
+    queryFn: () => getLatestNewArrivals(8),
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     retry: 1,
   });
