@@ -49,7 +49,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
           "mr-2",
           isDarkMode 
             ? "bg-orange-900/50 text-orange-300 border-orange-700" 
-            : "bg-orange-50 text-kutuku-primary border-orange-200"
+            : "bg-orange-50 text-vyoma-primary border-orange-200"
         )}>
           <CheckCircle className="h-3 w-3 mr-1" />
           <span className="flex items-center">
@@ -69,7 +69,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className={cn(
             "h-4 w-4",
-            isDarkMode ? "text-orange-300" : "text-kutuku-primary"
+            isDarkMode ? "text-orange-300" : "text-vyoma-primary"
           )} />
           <Select
             value={itemsPerPage.toString()}
@@ -79,7 +79,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
               `${isMobile ? 'w-[90px] h-8 text-xs' : 'w-[120px] text-sm'}`,
               isDarkMode 
                 ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-orange-500" 
-                : "border-gray-200 focus:ring-kutuku-primary"
+                : "border-gray-200 focus:ring-vyoma-primary"
             )}>
               <SelectValue placeholder="20 per page" />
             </SelectTrigger>

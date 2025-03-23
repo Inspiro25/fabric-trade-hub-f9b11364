@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -64,8 +63,8 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				vyoma: {
-					primary: '#FF6B00', // Kept the same bright orange
-					secondary: '#FF8A3D', // Kept the same slightly brighter orange
+					primary: '#FF6B00', // Bright orange
+					secondary: '#FF8A3D', // Slightly brighter orange
 					light: '#FFF0EA',
 					dark: '#212121',
 					gray: '#F6F6F6',
@@ -215,4 +214,3 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
