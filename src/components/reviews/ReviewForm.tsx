@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import AuthDialog from '@/components/search/AuthDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface ReviewFormProps {
   productId?: string;
@@ -22,6 +25,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const { currentUser: user } = useAuth();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const checkSession = async () => {
@@ -47,6 +51,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // First check if user is logged in
     if (!user && !supabaseUserId) {
       setIsAuthDialogOpen(true);
       return;
@@ -70,36 +75,63 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
       const reviewType = productId ? 'product' : 'shop';
       
-      if (!supabaseUserId) {
-        const { data: { session } } = await supabase.auth.getSession();
-        const userId = session?.user?.id;
-        
-        if (!userId) {
+      // Check Supabase session 
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      if (!userId) {
+        // Use Firebase user UID if available as a fallback
+        const firebaseUid = user?.uid;
+        if (!firebaseUid) {
           throw new Error('User ID not available. Please log in again.');
         }
         
-        setSupabaseUserId(userId);
-      }
-
-      console.log('Submitting review with user ID:', supabaseUserId ? `${supabaseUserId.substring(0, 6)}...` : 'No user ID');
-
-      const result = await createReview({
-        rating,
-        comment,
-        userId: supabaseUserId!,
-        reviewType,
-        productId,
-        shopId,
-      });
-
-      if (result) {
-        setRating(0);
-        setComment('');
-        onReviewSubmitted();
-        toast({
-          title: 'Review submitted',
-          description: 'Thank you for your feedback!',
+        // Create the review with Firebase UID
+        console.log('Using Firebase UID for review:', firebaseUid.substring(0, 6) + '...');
+        
+        // For Supabase, we'll use a consistent UUID format derived from the Firebase UID
+        // This is a simple way to make Firebase UIDs compatible with Supabase UUID columns
+        // In production, you'd want a more robust solution
+        const result = await createReview({
+          rating,
+          comment,
+          userId: firebaseUid, // Using Firebase UID 
+          reviewType,
+          productId,
+          shopId,
         });
+        
+        if (result) {
+          setRating(0);
+          setComment('');
+          onReviewSubmitted();
+          toast({
+            title: 'Review submitted',
+            description: 'Thank you for your feedback!',
+          });
+        }
+      } else {
+        // Use Supabase user ID 
+        console.log('Using Supabase ID for review:', userId.substring(0, 6) + '...');
+        
+        const result = await createReview({
+          rating,
+          comment,
+          userId: userId,
+          reviewType,
+          productId,
+          shopId,
+        });
+        
+        if (result) {
+          setRating(0);
+          setComment('');
+          onReviewSubmitted();
+          toast({
+            title: 'Review submitted',
+            description: 'Thank you for your feedback!',
+          });
+        }
       }
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -120,12 +152,23 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-      <h3 className="text-sm font-medium mb-3">Write a Review</h3>
+    <div className={cn(
+      "rounded-lg shadow-sm p-4 mb-4",
+      isDarkMode 
+        ? "bg-gray-800 border border-gray-700" 
+        : "bg-white"
+    )}>
+      <h3 className={cn(
+        "text-sm font-medium mb-3",
+        isDarkMode && "text-gray-200"
+      )}>Write a Review</h3>
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <p className="text-xs text-gray-500 mb-2">Select your rating:</p>
+          <p className={cn(
+            "text-xs mb-2",
+            isDarkMode ? "text-gray-400" : "text-gray-500"
+          )}>Select your rating:</p>
           <div className="flex items-center">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
@@ -136,12 +179,17 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
               >
                 <Star
                   className={`h-5 w-5 ${
-                    star <= rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'
+                    star <= rating 
+                      ? 'text-yellow-500 fill-yellow-500' 
+                      : isDarkMode ? 'text-gray-600' : 'text-gray-300'
                   }`}
                 />
               </button>
             ))}
-            <span className="text-xs text-gray-500 ml-2">
+            <span className={cn(
+              "text-xs ml-2",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>
               {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : 'Tap to rate'}
             </span>
           </div>
@@ -152,7 +200,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
             placeholder="Share your experience (optional)"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full resize-none text-sm"
+            className={cn(
+              "w-full resize-none text-sm",
+              isDarkMode && "bg-gray-700 border-gray-600 text-gray-200"
+            )}
             rows={4}
           />
         </div>
@@ -161,7 +212,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
           <Button 
             type="submit" 
             disabled={isSubmitting || rating === 0}
-            className="bg-kutuku-primary hover:bg-kutuku-secondary text-xs"
+            className={cn(
+              "text-xs",
+              isDarkMode 
+                ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                : "bg-kutuku-primary hover:bg-kutuku-secondary"
+            )}
             size="sm"
           >
             {isSubmitting ? 'Submitting...' : 'Submit Review'}

@@ -5,6 +5,8 @@ import { Review, fetchProductReviews, fetchShopReviews, markReviewAsHelpful } fr
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface ReviewListProps {
   productId?: string;
@@ -18,6 +20,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
   const { toast } = useToast();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const loadReviews = async () => {
@@ -76,7 +79,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
   if (loading) {
     return (
       <div className="flex justify-center items-center p-6">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-kutuku-primary"></div>
+        <div className={cn(
+          "animate-spin rounded-full h-8 w-8 border-t-2 border-b-2",
+          isDarkMode ? "border-orange-500" : "border-kutuku-primary"
+        )}></div>
       </div>
     );
   }
@@ -84,7 +90,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
   if (reviews.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-sm text-gray-500">No reviews yet. Be the first to leave a review!</p>
+        <p className={cn(
+          "text-sm",
+          isDarkMode ? "text-gray-400" : "text-gray-500"
+        )}>No reviews yet. Be the first to leave a review!</p>
       </div>
     );
   }
@@ -92,27 +101,48 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
   return (
     <div className="space-y-4">
       {displayedReviews.map((review) => (
-        <div key={review.id} className="border border-gray-100 rounded-lg p-3 bg-white shadow-sm">
+        <div key={review.id} className={cn(
+          "border rounded-lg p-3 shadow-sm",
+          isDarkMode 
+            ? "bg-gray-800 border-gray-700" 
+            : "bg-white border-gray-100"
+        )}>
           <div className="flex justify-between items-start">
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                <User className="h-4 w-4 text-gray-500" />
+              <div className={cn(
+                "h-8 w-8 rounded-full flex items-center justify-center",
+                isDarkMode ? "bg-gray-700" : "bg-gray-200"
+              )}>
+                <User className={cn(
+                  "h-4 w-4",
+                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                )} />
               </div>
               <div className="ml-2">
-                <p className="text-xs font-medium">Anonymous User</p>
+                <p className={cn(
+                  "text-xs font-medium",
+                  isDarkMode && "text-gray-200"
+                )}>
+                  {review.userName || 'Anonymous User'}
+                </p>
                 <div className="flex items-center mt-0.5">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
                       className={`h-3 w-3 ${
-                        i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'
+                        i < review.rating 
+                          ? 'text-yellow-500 fill-yellow-500' 
+                          : isDarkMode ? 'text-gray-600' : 'text-gray-300'
                       }`} 
                     />
                   ))}
                 </div>
               </div>
             </div>
-            <div className="flex items-center text-xs text-gray-500">
+            <div className={cn(
+              "flex items-center text-xs",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>
               <Calendar className="h-3 w-3 mr-1" />
               <span>
                 {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
@@ -122,16 +152,21 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
           
           {review.comment && (
             <div className="mt-2">
-              <p className={`text-xs text-gray-700 ${
+              <p className={cn(
+                "text-xs",
+                isDarkMode ? "text-gray-300" : "text-gray-700",
                 expandedReviews.includes(review.id) ? '' : 'line-clamp-3'
-              }`}>
+              )}>
                 {review.comment}
               </p>
               
               {review.comment.length > 150 && (
                 <button 
                   onClick={() => toggleExpandReview(review.id)} 
-                  className="text-xs text-kutuku-primary hover:underline mt-1"
+                  className={cn(
+                    "text-xs hover:underline mt-1",
+                    isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                  )}
                 >
                   {expandedReviews.includes(review.id) ? 'Show less' : 'Read more'}
                 </button>
@@ -143,7 +178,12 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-7 text-xs px-2 text-gray-500 hover:text-kutuku-primary"
+              className={cn(
+                "h-7 text-xs px-2",
+                isDarkMode 
+                  ? "text-gray-400 hover:text-orange-400 hover:bg-gray-700" 
+                  : "text-gray-500 hover:text-kutuku-primary"
+              )}
               onClick={() => handleMarkHelpful(review.id)}
             >
               <ThumbsUp className="h-3 w-3 mr-1" />
@@ -159,7 +199,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
             variant="outline" 
             size="sm" 
             onClick={() => setShowAll(true)}
-            className="text-xs"
+            className={cn(
+              "text-xs",
+              isDarkMode && "border-gray-700 text-gray-300 hover:bg-gray-700"
+            )}
           >
             View all {reviews.length} reviews
           </Button>

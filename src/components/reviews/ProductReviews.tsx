@@ -4,6 +4,8 @@ import { Star } from 'lucide-react';
 import ReviewForm from './ReviewForm';
 import ReviewList from './ReviewList';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface ProductReviewsProps {
   productId: string;
@@ -14,6 +16,7 @@ interface ProductReviewsProps {
 const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, rating, reviewCount }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const { isDarkMode } = useTheme();
 
   const handleReviewSubmitted = () => {
     setShowReviewForm(false);
@@ -21,8 +24,14 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, rating, revi
   };
 
   return (
-    <div className="border-t border-border pt-8">
-      <h2 className="heading-md mb-6">Customer Reviews</h2>
+    <div className={cn(
+      "pt-8",
+      isDarkMode ? "border-t border-gray-700" : "border-t border-border"
+    )}>
+      <h2 className={cn(
+        "heading-md mb-6",
+        isDarkMode && "text-white"
+      )}>Customer Reviews</h2>
       
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div className="flex items-center mb-4 md:mb-0">
@@ -31,13 +40,18 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, rating, revi
               <Star 
                 key={i} 
                 className={`h-5 w-5 ${
-                  i < Math.floor(rating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'
+                  i < Math.floor(rating) 
+                    ? 'text-yellow-500 fill-yellow-500' 
+                    : isDarkMode ? 'text-gray-600' : 'text-gray-300'
                 }`} 
               />
             ))}
             {rating % 1 > 0 && (
               <div className="relative">
-                <Star className="h-5 w-5 text-gray-300" />
+                <Star className={cn(
+                  "h-5 w-5",
+                  isDarkMode ? "text-gray-600" : "text-gray-300"
+                )} />
                 <div 
                   className="absolute top-0 left-0 overflow-hidden" 
                   style={{ width: `${(rating % 1) * 100}%` }}
@@ -48,8 +62,14 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, rating, revi
             )}
           </div>
           <div>
-            <span className="font-medium">{rating.toFixed(1)}</span>
-            <span className="text-muted-foreground ml-1">({reviewCount} reviews)</span>
+            <span className={cn(
+              "font-medium",
+              isDarkMode && "text-white"
+            )}>{rating.toFixed(1)}</span>
+            <span className={cn(
+              "ml-1",
+              isDarkMode ? "text-gray-400" : "text-muted-foreground"
+            )}>({reviewCount} reviews)</span>
           </div>
         </div>
         
@@ -57,6 +77,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, rating, revi
           onClick={() => setShowReviewForm(!showReviewForm)}
           variant={showReviewForm ? "secondary" : "default"}
           size="sm"
+          className={isDarkMode ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}
         >
           {showReviewForm ? "Cancel" : "Write a Review"}
         </Button>

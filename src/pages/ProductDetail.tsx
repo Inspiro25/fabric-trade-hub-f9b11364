@@ -54,6 +54,7 @@ import { getPersonalizedRecommendations, getSimilarProducts } from '@/services/r
 import { toast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types/product';
 import { useTheme } from '@/contexts/ThemeContext';
+import ProductReviews from '@/components/reviews/ProductReviews';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,21 +88,9 @@ const ProductDetail = () => {
   }, [id]);
 
   const { addToCart } = useCart();
-  const [showAllReviews, setShowAllReviews] = React.useState(false);
-  const [reviews, setReviews] = React.useState([]);
   const [isAddingToCart, setIsAddingToCart] = React.useState(false);
   const [recommendedProducts, setRecommendedProducts] = React.useState<Product[]>([]);
   const [similarProducts, setSimilarProducts] = React.useState<Product[]>([]);
-
-  React.useEffect(() => {
-    const fetchReviews = async () => {
-      if (product?.id) {
-        const productReviews = await fetchProductReviews(product.id);
-        setReviews(productReviews);
-      }
-    };
-    fetchReviews();
-  }, [product?.id]);
 
   React.useEffect(() => {
     const loadRecommendations = async () => {
@@ -166,13 +155,6 @@ const ProductDetail = () => {
       });
     } finally {
       setIsAddingToCart(false);
-    }
-  };
-
-  const handleReviewSubmitted = async () => {
-    if (product?.id) {
-      const productReviews = await fetchProductReviews(product.id);
-      setReviews(productReviews);
     }
   };
 
@@ -354,69 +336,12 @@ const ProductDetail = () => {
 
         {/* Reviews Section */}
         <section className="mt-12">
-          <h2 className={cn(
-            "text-xl font-bold mb-4",
-            isDarkMode && "text-white"
-          )}>Reviews</h2>
-          
-          {/* Review Form */}
-          {currentUser && (
-            <ReviewForm 
+          {product && (
+            <ProductReviews 
               productId={product.id} 
-              onReviewSubmitted={handleReviewSubmitted} 
+              rating={product.rating} 
+              reviewCount={product.reviewCount} 
             />
-          )}
-
-          {/* Display Reviews */}
-          {reviews.length === 0 ? (
-            <p className={cn(
-              isDarkMode ? "text-gray-400" : "text-gray-500"
-            )}>No reviews yet. Be the first to write one!</p>
-          ) : (
-            <div>
-              {reviews.slice(0, showAllReviews ? reviews.length : 3).map((review) => (
-                <Card key={review.id} className={cn(
-                  "mb-4",
-                  isDarkMode && "bg-gray-800 border-gray-700"
-                )}>
-                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                    <CardTitle className={cn(
-                      "text-sm font-medium",
-                      isDarkMode && "text-white"
-                    )}>{review.userName || 'Anonymous'}</CardTitle>
-                    <div className="ml-auto flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : isDarkMode ? 'text-gray-600' : 'text-gray-300'}`}
-                        />
-                      ))}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className={cn(
-                      "text-sm",
-                      isDarkMode ? "text-gray-300" : "text-gray-600"
-                    )}>{review.comment}</p>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {/* Show All Reviews Button */}
-              {reviews.length > 3 && !showAllReviews && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowAllReviews(true)}
-                  className={cn(
-                    "w-full mt-2 text-sm",
-                    isDarkMode && "border-gray-700 text-gray-300 hover:text-white hover:bg-gray-800"
-                  )}
-                >
-                  Show All Reviews
-                </Button>
-              )}
-            </div>
           )}
         </section>
 				

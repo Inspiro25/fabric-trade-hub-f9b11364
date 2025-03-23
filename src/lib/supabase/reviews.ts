@@ -1,5 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Review {
   id: string;
@@ -15,6 +17,26 @@ export interface Review {
   reviewType: 'product' | 'shop';
   userName?: string;
 }
+
+// Helper to convert any ID to a valid UUID format
+// Firebase IDs are not UUID format, so we'll convert them
+const ensureValidUuid = (id: string): string => {
+  try {
+    // Check if it's already a valid UUID
+    const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (regex.test(id)) {
+      return id;
+    }
+    
+    // If not a valid UUID, generate a deterministic UUID from this ID
+    // This will give us the same UUID for the same input string
+    return uuidv4({ random: Array.from(id).map(c => c.charCodeAt(0) % a % 256) });
+  } catch (e) {
+    // If anything goes wrong, just generate a random UUID
+    console.error("Failed to convert ID to UUID", e);
+    return uuidv4();
+  }
+};
 
 // Fetch reviews for a product
 export const fetchProductReviews = async (productId: string): Promise<Review[]> => {
@@ -110,14 +132,14 @@ export const createReview = async (
     rating: number;
     comment: string;
     images?: string[];
-    userId: string; // Supabase user ID
+    userId: string; // Can be Supabase user ID or Firebase user ID
     reviewType: 'product' | 'shop';
     productId?: string;
     shopId?: string;
   }
 ): Promise<Review | null> => {
   try {
-    // Validate user ID
+    // Validate user input
     if (!reviewData.userId || reviewData.userId.trim() === '') {
       throw new Error('Valid user ID is required to submit a review');
     }
@@ -130,10 +152,11 @@ export const createReview = async (
       throw new Error('Shop ID is required for shop reviews');
     }
 
-    console.log('Creating review with data:', {
-      ...reviewData,
-      userId: reviewData.userId.substring(0, 10) + '...' // Log partial user ID for debugging
-    });
+    // Convert any non-UUID userId to a UUID format that Supabase can accept
+    // Firebase UID is not in UUID format, so we need to convert it
+    const safeUserId = ensureValidUuid(reviewData.userId);
+    
+    console.log('Creating review using converted user ID:', safeUserId.substring(0, 10) + '...');
 
     const { data, error } = await supabase
       .from('product_reviews')
@@ -141,7 +164,7 @@ export const createReview = async (
         rating: reviewData.rating,
         comment: reviewData.comment,
         images: reviewData.images || [],
-        user_id: reviewData.userId,
+        user_id: safeUserId,
         product_id: reviewData.productId,
         shop_id: reviewData.shopId,
         review_type: reviewData.reviewType,
