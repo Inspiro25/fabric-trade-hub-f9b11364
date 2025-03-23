@@ -1,80 +1,122 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Shop } from '@/lib/shops/types';
-import { useNotifications } from '@/contexts/NotificationContext';
-import ShopManagementHeader from './ShopManagementHeader';
-import ShopFilters from './ShopFilters';
-import ShopTabContent from './ShopTabContent';
-import ShopDialogs from './ShopDialogs';
-import { ShopFormValues } from './ShopForm';
-import { fetchShops, createShop, updateShop, deleteShop } from '@/lib/supabase/shops';
+import { createShop, updateShop, getShopById } from '@/lib/supabase/shops';
+import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+interface ShopFormValues {
+  name: string;
+  description: string;
+  logo: string;
+  coverImage: string;
+  address: string;
+  isVerified: boolean;
+  shopId: string;
+  ownerName: string;
+  ownerEmail: string;
+  status: 'active' | 'pending' | 'suspended';
+  password: string;
+  phoneNumber: string; // Add this field to fix the TypeScript error
+}
+
+const shopSchema = yup.object({
+  name: yup.string().required('Shop name is required'),
+  description: yup.string().required('Description is required'),
+  logo: yup.string().url('Logo must be a valid URL').required('Logo URL is required'),
+  coverImage: yup.string().url('Cover image must be a valid URL').required('Cover image URL is required'),
+  address: yup.string().required('Address is required'),
+  isVerified: yup.boolean().default(false),
+  shopId: yup.string().required('Shop ID is required'),
+  ownerName: yup.string().required('Owner name is required'),
+  ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
+  status: yup.string().oneOf(['active', 'pending', 'suspended']).default('pending'),
+  password: yup.string().required('Password is required'),
+  phoneNumber: yup.string().required('Phone number is required'),
+}).required();
+
 const ShopManagement: React.FC = () => {
-  const { toast } = useToast();
-  const { addNotification } = useNotifications();
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [filteredShops, setFilteredShops] = useState<Shop[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [shopToDelete, setShopToDelete] = useState<string | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [shopToEdit, setShopToEdit] = useState<Shop | null>(null);
-  const [activeTab, setActiveTab] = useState('all');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const [shopData, setShopData] = useState<Shop | null>(null);
+  const shopId = sessionStorage.getItem('adminShopId');
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    loadShops();
-    
-    const shouldOpenAddDialog = sessionStorage.getItem('openAddShopDialog');
-    if (shouldOpenAddDialog === 'true') {
-      setIsAddDialogOpen(true);
-      sessionStorage.removeItem('openAddShopDialog');
-    }
-  }, []);
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ShopFormValues>({
+    resolver: yupResolver(shopSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      logo: '',
+      coverImage: '',
+      address: '',
+      isVerified: false,
+      shopId: '',
+      ownerName: '',
+      ownerEmail: '',
+      status: 'pending',
+      password: '',
+      phoneNumber: '',
+    },
+  });
 
   useEffect(() => {
-    if (shops.length > 0) {
-      if (searchQuery.trim() === '') {
-        setFilteredShops(shops);
-      } else {
-        const filtered = shops.filter(
-          shop => shop.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setFilteredShops(filtered);
+    const fetchShopData = async () => {
+      if (shopId) {
+        const shop = await getShopById(shopId);
+        if (shop) {
+          setShopData(shop);
+          setValue('name', shop.name);
+          setValue('description', shop.description);
+          setValue('logo', shop.logo);
+          setValue('coverImage', shop.coverImage);
+          setValue('address', shop.address);
+          setValue('isVerified', shop.isVerified);
+          setValue('shopId', shop.shopId || '');
+          setValue('ownerName', shop.ownerName);
+          setValue('ownerEmail', shop.ownerEmail);
+          setValue('status', shop.status);
+          setValue('password', shop.password || '');
+          setValue('phoneNumber', shop.phoneNumber);
+        } else {
+          toast.error('Shop not found');
+          navigate('/admin/login');
+        }
       }
-    }
-  }, [searchQuery, shops]);
+    };
 
-  const loadShops = async () => {
-    setIsLoading(true);
-    try {
-      const fetchedShops = await fetchShops();
-      setShops(fetchedShops);
-      setFilteredShops(fetchedShops);
-    } catch (error) {
-      console.error('Error loading shops:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load shops',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    fetchShopData();
+  }, [shopId, setValue, navigate]);
 
-  const handleAddShop = async (data: ShopFormValues) => {
+  const handleSubmit = async (data: ShopFormValues) => {
     try {
-      const newShopData: Omit<Shop, "id"> = {
+      setIsSubmitting(true);
+    
+      const shopData: Omit<Shop, 'id'> = {
         name: data.name,
         description: data.description,
+        logo: data.logo,
+        coverImage: data.coverImage,
         address: data.address,
-        logo: data.logo || '/placeholder.svg',
-        coverImage: data.coverImage || '/placeholder.svg',
+        ownerName: data.ownerName,
+        ownerEmail: data.ownerEmail,
+        phoneNumber: data.phoneNumber || '', // Use the phoneNumber from the form
+        status: data.status,
         isVerified: data.isVerified || false,
         rating: 0,
         reviewCount: 0,
@@ -82,187 +124,195 @@ const ShopManagement: React.FC = () => {
         productIds: [],
         createdAt: new Date().toISOString(),
         shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
-        ownerName: data.ownerName,
-        ownerEmail: data.ownerEmail,
-        phoneNumber: data.phoneNumber || '',
-        status: data.status,
         password: data.password,
       };
-      
-      const shopId = await createShop(newShopData);
-      
+    
       if (shopId) {
-        toast({
-          title: 'Success',
-          description: 'Shop has been created successfully',
-        });
-        
-        addNotification({
-          title: 'New Shop Added',
-          message: `${data.name} has joined our marketplace. Check it out!`,
-          type: 'system',
-          link: `/shops/${shopId}`
-        });
-        
-        loadShops();
-        setIsAddDialogOpen(false);
+        // Update existing shop
+        const success = await updateShop(shopId, shopData);
+        if (success) {
+          toast.success('Shop updated successfully');
+        } else {
+          toast.error('Failed to update shop');
+        }
       } else {
-        throw new Error('Failed to create shop');
+        // Create new shop
+        const newShopId = await createShop(shopData);
+        if (newShopId) {
+          toast.success('Shop created successfully');
+          navigate(`/admin/dashboard`);
+        } else {
+          toast.error('Failed to create shop');
+        }
       }
     } catch (error) {
-      console.error('Error creating shop:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create shop',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleEditShop = async (data: ShopFormValues) => {
-    if (!shopToEdit) return;
-    
-    try {
-      const updateData: Partial<Shop> = {
-        ...data,
-        rating: shopToEdit.rating,
-        reviewCount: shopToEdit.reviewCount,
-        productIds: shopToEdit.productIds,
-        createdAt: shopToEdit.createdAt,
-      };
-      
-      if (!data.password) {
-        delete updateData.password;
-      }
-      
-      const success = await updateShop(shopToEdit.id, updateData);
-      
-      if (success) {
-        toast({
-          title: 'Success',
-          description: 'Shop has been updated successfully',
-        });
-        loadShops();
-        setIsEditDialogOpen(false);
-      } else {
-        throw new Error('Failed to update shop');
-      }
-    } catch (error) {
-      console.error('Error updating shop:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update shop',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleDeleteShop = async () => {
-    if (!shopToDelete) return;
-    
-    try {
-      const success = await deleteShop(shopToDelete);
-      
-      if (success) {
-        toast({
-          title: 'Success',
-          description: 'Shop has been deleted successfully',
-        });
-        loadShops();
-      } else {
-        throw new Error('Failed to delete shop');
-      }
-    } catch (error) {
-      console.error('Error deleting shop:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete shop',
-        variant: 'destructive',
-      });
+      console.error('Error creating/updating shop:', error);
+      toast.error('An unexpected error occurred');
     } finally {
-      setShowDeleteDialog(false);
-      setShopToDelete(null);
+      setIsSubmitting(false);
     }
-  };
-
-  const confirmDelete = (shopId: string) => {
-    setShopToDelete(shopId);
-    setShowDeleteDialog(true);
-  };
-
-  const handleEdit = (shop: Shop) => {
-    setShopToEdit(shop);
-    setIsEditDialogOpen(true);
   };
 
   return (
-    <div className="flex-1 space-y-4 p-3 md:p-8 pt-6 max-w-full overflow-hidden">
-      <ShopManagementHeader onAddShop={() => setIsAddDialogOpen(true)} isMobile={isMobile} />
-      
-      <ShopFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isMobile={isMobile}
-      />
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full overflow-hidden">
-        <TabsContent value="all" className="w-full overflow-hidden">
-          <ShopTabContent
-            title="All Shops"
-            description="Manage all shops registered on the platform"
-            shops={filteredShops}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={confirmDelete}
-            tabValue="all"
-            isMobile={isMobile}
+    <div className="container mx-auto p-4">
+      <Button
+        variant="outline"
+        size="icon"
+        className="rounded-full mb-4"
+        onClick={() => navigate('/admin/dashboard')}
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="sr-only">Back to Dashboard</span>
+      </Button>
+      <h1 className="text-2xl font-semibold mb-4">
+        {shopId ? 'Edit Shop' : 'Create Shop'}
+      </h1>
+      <form onSubmit={handleSubmit(handleSubmit)} className="max-w-lg">
+        <div className="mb-4">
+          <Label htmlFor="name">Shop Name</Label>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <Input id="name" {...field} type="text" placeholder="Enter shop name" />
+            )}
           />
-        </TabsContent>
-        
-        <TabsContent value="verified" className="w-full overflow-hidden">
-          <ShopTabContent
-            title="Verified Shops"
-            description="Shops that have been verified by administrators"
-            shops={filteredShops}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={confirmDelete}
-            tabValue="verified"
-            filterCondition={(shop) => shop.isVerified}
-            isMobile={isMobile}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="description">Description</Label>
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <Textarea id="description" {...field} placeholder="Enter shop description" />
+            )}
           />
-        </TabsContent>
-        
-        <TabsContent value="unverified" className="w-full overflow-hidden">
-          <ShopTabContent
-            title="Unverified Shops"
-            description="Shops pending verification by administrators"
-            shops={filteredShops}
-            isLoading={isLoading}
-            onEdit={handleEdit}
-            onDelete={confirmDelete}
-            tabValue="unverified"
-            filterCondition={(shop) => !shop.isVerified}
-            isMobile={isMobile}
+          {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="logo">Logo URL</Label>
+          <Controller
+            name="logo"
+            control={control}
+            render={({ field }) => (
+              <Input id="logo" {...field} type="url" placeholder="Enter logo URL" />
+            )}
           />
-        </TabsContent>
-      </Tabs>
-      
-      <ShopDialogs
-        isAddDialogOpen={isAddDialogOpen}
-        setIsAddDialogOpen={setIsAddDialogOpen}
-        isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
-        showDeleteDialog={showDeleteDialog}
-        setShowDeleteDialog={setShowDeleteDialog}
-        shopToEdit={shopToEdit}
-        handleAddShop={handleAddShop}
-        handleEditShop={handleEditShop}
-        handleDeleteShop={handleDeleteShop}
-        isMobile={isMobile}
-      />
+          {errors.logo && <p className="text-red-500 text-sm">{errors.logo.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="coverImage">Cover Image URL</Label>
+          <Controller
+            name="coverImage"
+            control={control}
+            render={({ field }) => (
+              <Input id="coverImage" {...field} type="url" placeholder="Enter cover image URL" />
+            )}
+          />
+          {errors.coverImage && <p className="text-red-500 text-sm">{errors.coverImage.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="address">Address</Label>
+          <Controller
+            name="address"
+            control={control}
+            render={({ field }) => (
+              <Input id="address" {...field} type="text" placeholder="Enter address" />
+            )}
+          />
+          {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="ownerName">Owner Name</Label>
+          <Controller
+            name="ownerName"
+            control={control}
+            render={({ field }) => (
+              <Input id="ownerName" {...field} type="text" placeholder="Enter owner name" />
+            )}
+          />
+          {errors.ownerName && <p className="text-red-500 text-sm">{errors.ownerName.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="ownerEmail">Owner Email</Label>
+          <Controller
+            name="ownerEmail"
+            control={control}
+            render={({ field }) => (
+              <Input id="ownerEmail" {...field} type="email" placeholder="Enter owner email" />
+            )}
+          />
+          {errors.ownerEmail && <p className="text-red-500 text-sm">{errors.ownerEmail.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Controller
+            name="phoneNumber"
+            control={control}
+            render={({ field }) => (
+              <Input id="phoneNumber" {...field} type="tel" placeholder="Enter phone number" />
+            )}
+          />
+          {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="shopId">Shop ID</Label>
+          <Controller
+            name="shopId"
+            control={control}
+            render={({ field }) => (
+              <Input id="shopId" {...field} type="text" placeholder="Enter shop ID" />
+            )}
+          />
+          {errors.shopId && <p className="text-red-500 text-sm">{errors.shopId.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="password">Password</Label>
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <Input id="password" {...field} type="password" placeholder="Enter password" />
+            )}
+          />
+          {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="status">Status</Label>
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
+        </div>
+        <div className="mb-4 flex items-center space-x-2">
+          <Label htmlFor="isVerified">Is Verified</Label>
+          <Controller
+            name="isVerified"
+            control={control}
+            render={({ field }) => (
+              <Switch id="isVerified" checked={field.value} onCheckedChange={field.onChange} />
+            )}
+          />
+          {errors.isVerified && <p className="text-red-500 text-sm">{errors.isVerified.message}</p>}
+        </div>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </Button>
+      </form>
     </div>
   );
 };

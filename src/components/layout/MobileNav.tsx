@@ -1,122 +1,138 @@
 
-import { Link } from 'react-router-dom';
-import { Home, Package, Store, ShoppingCart, User, LogIn, Settings, Bell, Heart, LucideIcon } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  Home, 
+  ShoppingBag, 
+  Store, 
+  Heart, 
+  Bell, 
+  Settings, 
+  HelpCircle, 
+  LogIn,
+  User
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Badge } from '@/components/ui/badge';
-import { useNotifications } from '@/contexts/NotificationContext';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  badge?: number;
+interface MobileNavProps {
+  onClose?: () => void;
 }
 
-const MobileNav = () => {
-  const { cartItems } = useCart();
-  const { currentUser } = useAuth();
-  const { unreadCount } = useNotifications();
+const MobileNav: React.FC<MobileNavProps> = ({ onClose }) => {
+  const location = useLocation();
+  const { isDarkMode } = useTheme();
+  const auth = useAuth ? useAuth() : { currentUser: null };
+  const { currentUser } = auth;
   
-  const navItems: NavItem[] = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/products', label: 'Products', icon: Package },
-    { href: '/shops', label: 'Shops', icon: Store },
-    { 
-      href: '/cart', 
-      label: 'Cart', 
-      icon: ShoppingCart,
-      badge: cartItems.length
-    }
-  ];
-  
-  // Add account related items
-  const accountItems: NavItem[] = currentUser 
-    ? [
-        { 
-          href: '/account/notifications', 
-          label: 'Notifications', 
-          icon: Bell,
-          badge: unreadCount
-        },
-        { href: '/account/wishlist', label: 'Wishlist', icon: Heart },
-        { href: '/account/settings', label: 'Settings', icon: Settings },
-        { href: '/account', label: 'My Account', icon: User }
-      ]
-    : [
-        { href: '/login', label: 'Login', icon: LogIn }
-      ];
-  
-  // Add admin links
-  const adminItems: NavItem[] = [
-    { href: '/admin/login', label: 'Shop Admin', icon: Store },
-    { href: '/management/login', label: 'Management', icon: Settings },
+  const menuItems = [
+    { icon: <Home size={18} />, label: 'Home', path: '/' },
+    { icon: <ShoppingBag size={18} />, label: 'Products', path: '/products' },
+    { icon: <Store size={18} />, label: 'Shops', path: '/shops' },
+    { icon: <Heart size={18} />, label: 'Wishlist', path: '/wishlist' },
+    { icon: <Bell size={18} />, label: 'Notifications', path: '/notifications' },
+    { icon: <Settings size={18} />, label: 'Settings', path: '/settings' },
+    { icon: <HelpCircle size={18} />, label: 'Help & Support', path: '/help' },
   ];
 
+  const handleNavigation = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="space-y-6 py-4">
-      <h2 className="text-lg font-semibold">Menu</h2>
-      
-      <div className="flex flex-col space-y-3">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
-            {item.badge && item.badge > 0 && (
-              <Badge 
-                variant="default" 
-                className="ml-auto h-5 min-w-5 flex items-center justify-center p-0 text-[10px] bg-orange-500"
+    <div className="flex flex-col h-full py-6">
+      <div className="px-2 mb-6">
+        <h2 className={cn(
+          "text-lg font-bold mb-1",
+          isDarkMode ? "text-gray-100" : "text-gray-900"
+        )}>
+          Menu
+        </h2>
+        <p className={cn(
+          "text-sm",
+          isDarkMode ? "text-gray-400" : "text-gray-500" 
+        )}>
+          Navigate through VYOMA
+        </p>
+      </div>
+
+      <nav className="flex-1">
+        <ul className="space-y-1">
+          {menuItems.map((item) => (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={cn(
+                  "flex items-center px-3 py-2.5 rounded-md",
+                  location.pathname === item.path
+                    ? isDarkMode 
+                      ? "bg-gray-800 text-orange-400" 
+                      : "bg-orange-50 text-orange-600"
+                    : isDarkMode 
+                      ? "text-gray-300 hover:bg-gray-800" 
+                      : "text-gray-700 hover:bg-gray-50",
+                )}
+                onClick={handleNavigation}
               >
-                {item.badge > 9 ? '9+' : item.badge}
-              </Badge>
-            )}
-          </Link>
-        ))}
-      </div>
-      
-      <div className="border-t pt-4">
-        <h2 className="px-3 text-sm font-semibold mb-3">Account</h2>
-        <div className="flex flex-col space-y-3">
-          {accountItems.map((item) => (
+                <span className="mr-3">{item.icon}</span>
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Separator className={isDarkMode ? "my-4 bg-gray-800" : "my-4"} />
+
+      {currentUser ? (
+        <div className={cn(
+          "p-3 rounded-lg flex items-center",
+          isDarkMode ? "bg-gray-800" : "bg-gray-50"
+        )}>
+          <div className={cn(
+            "flex-shrink-0 w-9 h-9 rounded-full mr-3 flex items-center justify-center",
+            isDarkMode ? "bg-gray-700" : "bg-white"
+          )}>
+            <User size={18} className={isDarkMode ? "text-gray-300" : "text-gray-600"} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={cn(
+              "text-sm font-medium truncate",
+              isDarkMode ? "text-gray-200" : "text-gray-900"
+            )}>
+              {currentUser.displayName || currentUser.email || "User"}
+            </p>
             <Link
-              key={item.href}
-              to={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
-              {item.badge && item.badge > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="ml-auto h-5 min-w-5 flex items-center justify-center p-0 text-[10px]"
-                >
-                  {item.badge > 9 ? '9+' : item.badge}
-                </Badge>
+              to="/profile"
+              className={cn(
+                "text-xs",
+                isDarkMode ? "text-orange-400" : "text-orange-600"
               )}
-            </Link>
-          ))}
-        </div>
-      </div>
-      
-      <div className="border-t pt-4">
-        <h2 className="px-3 text-sm font-semibold mb-3">Admin Access</h2>
-        <div className="flex flex-col space-y-3">
-          {adminItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={handleNavigation}
             >
-              <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
+              View Profile
             </Link>
-          ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <Link
+          to="/auth"
+          className={cn(
+            "flex items-center justify-center px-4 py-2.5 rounded-md",
+            isDarkMode 
+              ? "bg-orange-600 text-white hover:bg-orange-700" 
+              : "bg-orange-500 text-white hover:bg-orange-600"
+          )}
+          onClick={handleNavigation}
+        >
+          <LogIn size={18} className="mr-2" />
+          Sign In / Register
+        </Link>
+      )}
     </div>
   );
 };

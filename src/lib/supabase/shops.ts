@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Shop } from "@/lib/shops/types";
 
@@ -24,7 +25,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '',
+      phoneNumber: shop?.phone_number || '', // Map phone_number to phoneNumber
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -67,7 +68,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '',
+      phoneNumber: shop?.phone_number || '', // Map phone_number to phoneNumber
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
