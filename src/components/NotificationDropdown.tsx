@@ -93,7 +93,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children })
                         size="sm"
                         className="h-7 text-xs"
                         onClick={() => {
-                          markAsRead(notification.id);
+                          deleteUserNotification(notification.id);
+                          markAllAsRead();
                           toast.success('Notification marked as read');
                         }}
                       >
