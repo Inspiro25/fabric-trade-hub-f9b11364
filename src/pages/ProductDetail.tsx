@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Star, ShoppingCart, ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
+import CompactProductCard from '@/components/ui/CompactProductCard';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
 import {
@@ -52,6 +53,7 @@ import { Product } from '@/lib/types/product';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Textarea } from "@/components/ui/textarea";
 import { createReview } from '@/lib/supabase/reviews';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MinimalReviewForm = ({ productId }: { productId: string }) => {
   const [rating, setRating] = React.useState(0);
@@ -185,6 +187,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
   const { isDarkMode } = useTheme();
+  const isMobile = useIsMobile();
   
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -453,23 +456,34 @@ const ProductDetail = () => {
               "text-xl font-bold mb-4",
               isDarkMode && "text-white"
             )}>Recommended For You</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {recommendedProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  image={product.images[0]}
-                  category={product.category}
-                  isNew={product.isNew || false}
-                  isTrending={product.isTrending || false}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                />
-              ))}
-            </div>
+            {isMobile ? (
+              <div className="grid grid-cols-2 gap-2">
+                {recommendedProducts.slice(0, 4).map(product => (
+                  <CompactProductCard 
+                    key={product.id} 
+                    product={product}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {recommendedProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    salePrice={product.salePrice}
+                    image={product.images[0]}
+                    category={product.category}
+                    isNew={product.isNew || false}
+                    isTrending={product.isTrending || false}
+                    rating={product.rating}
+                    reviewCount={product.reviewCount}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         )}
         
@@ -479,23 +493,34 @@ const ProductDetail = () => {
               "text-xl font-bold mb-4",
               isDarkMode && "text-white"
             )}>You might also like</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {similarProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  image={product.images[0]}
-                  category={product.category}
-                  isNew={product.isNew || false}
-                  isTrending={product.isTrending || false}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                />
-              ))}
-            </div>
+            {isMobile ? (
+              <div className="grid grid-cols-2 gap-2">
+                {similarProducts.slice(0, 4).map(product => (
+                  <CompactProductCard 
+                    key={product.id} 
+                    product={product}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {similarProducts.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    salePrice={product.salePrice}
+                    image={product.images[0]}
+                    category={product.category}
+                    isNew={product.isNew || false}
+                    isTrending={product.isTrending || false}
+                    rating={product.rating}
+                    reviewCount={product.reviewCount}
+                  />
+                ))}
+              </div>
+            )}
           </section>
         )}
       </div>
