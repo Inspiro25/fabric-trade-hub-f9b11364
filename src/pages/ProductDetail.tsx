@@ -6,7 +6,7 @@ import { getProductById } from '@/lib/products';
 import { recordProductView } from '@/lib/products/trending';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import AppHeader from '@/components/features/AppHeader';
+// Remove the AppHeader import as it's already included in the MobileAppLayout
 import {
   Card,
   CardContent,
@@ -182,7 +182,7 @@ const ProductDetail = () => {
         "min-h-screen",
         isDarkMode ? "bg-slate-900" : "bg-slate-50"
       )}>
-        <AppHeader />
+        {/* Remove AppHeader here */}
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
@@ -241,7 +241,7 @@ const ProductDetail = () => {
         "min-h-screen",
         isDarkMode ? "bg-slate-900" : "bg-slate-50"
       )}>
-        <AppHeader />
+        {/* Remove AppHeader here */}
         <div className="container mx-auto px-4 py-8 text-center">
           <p className="text-red-500">Failed to load product. Please try again.</p>
           <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
@@ -257,7 +257,7 @@ const ProductDetail = () => {
       "min-h-screen",
       isDarkMode ? "bg-slate-900" : "bg-slate-50"
     )}>
-      <AppHeader />
+      {/* Remove AppHeader here */}
       
       <div className="container mx-auto px-4 py-8">
         {/* Product Details */}
