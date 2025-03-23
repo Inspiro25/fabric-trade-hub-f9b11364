@@ -60,9 +60,9 @@ const Offers = () => {
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
     )}>
-      <main className={`pt-24 pb-20 ${isMobile ? 'px-3' : 'px-4'}`}>
+      <main className={`pt-20 pb-16 ${isMobile ? 'px-3' : 'px-4'}`}>
         <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center mb-4 mt-4">
+          <div className="flex items-center mb-3 mt-3">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -77,19 +77,19 @@ const Offers = () => {
               </Link>
             </Button>
             <h1 className={cn(
-              "text-2xl md:text-3xl font-bold",
+              "text-xl md:text-3xl font-bold",
               isDarkMode && "text-white"
             )}>Special Offers</h1>
           </div>
           <p className={cn(
-            "mb-6 ml-10",
+            "mb-4 ml-10 text-sm md:text-base",
             isDarkMode ? "text-gray-300" : "text-muted-foreground"
           )}>Discover great deals and discounts on your favorite products</p>
           
-          <div className="mb-8">
+          <div className="mb-6">
             <Tabs defaultValue="all" className="w-full">
               <TabsList className={cn(
-                "mb-6 w-full grid grid-cols-3 p-1 rounded-xl",
+                "mb-4 w-full grid grid-cols-3 p-1 rounded-xl",
                 isDarkMode && "bg-gray-800 border border-gray-700"
               )}>
                 <TabsTrigger 
@@ -115,11 +115,11 @@ const Offers = () => {
                 >Coupons</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="all" className="space-y-8">
-                <section className="mb-4">
-                  <div className="flex items-center justify-between mb-4">
+              <TabsContent value="all" className="space-y-6">
+                <section className="mb-3">
+                  <div className="flex items-center justify-between mb-3">
                     <h2 className={cn(
-                      "text-xl font-semibold",
+                      "text-lg md:text-xl font-semibold",
                       isDarkMode && "text-white"
                     )}>Featured Deals</h2>
                     {discountedProducts.length > 4 && (
@@ -140,7 +140,7 @@ const Offers = () => {
                     )}
                   </div>
                   {discountedProducts.length > 0 ? (
-                    <div className={`grid grid-cols-2 ${isMobile ? 'gap-3' : 'md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
+                    <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
                       {discountedProducts.slice(0, isMobile ? 2 : 4).map((product) => (
                         <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
                       ))}
@@ -161,7 +161,7 @@ const Offers = () => {
                 
                 <section>
                   <h2 className={cn(
-                    "text-xl font-semibold mb-4",
+                    "text-lg md:text-xl font-semibold mb-3",
                     isDarkMode && "text-white"
                   )}>Available Offers</h2>
                   {isLoading ? (
@@ -204,7 +204,7 @@ const Offers = () => {
                       <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No offers available at the moment.</p>
                     </div>
                   ) : (
-                    <div className={`grid grid-cols-1 ${isMobile ? 'gap-3' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
+                    <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
                       {offers.map((offer) => (
                         <Card key={offer.id} className={cn(
                           "overflow-hidden transition-all duration-300 hover:shadow-md",
@@ -227,10 +227,10 @@ const Offers = () => {
                               )}
                             </div>
                           )}
-                          <CardHeader className="p-4 pb-2">
+                          <CardHeader className="p-3 pb-1">
                             <div className="flex justify-between items-start">
                               <CardTitle className={cn(
-                                "text-lg font-semibold",
+                                "text-base md:text-lg font-semibold",
                                 isDarkMode && "text-white"
                               )}>{offer.title}</CardTitle>
                               {!offer.banner_image && (
@@ -270,9 +270,9 @@ const Offers = () => {
                               )}
                             </div>
                           </CardHeader>
-                          <CardContent className="p-4 pt-2">
+                          <CardContent className="p-3 pt-1">
                             <p className={cn(
-                              "text-sm mb-3 line-clamp-2",
+                              "text-xs md:text-sm mb-2 line-clamp-2",
                               isDarkMode ? "text-gray-300" : "text-muted-foreground"
                             )}>{offer.description}</p>
                             
@@ -298,7 +298,7 @@ const Offers = () => {
                               </div>
                             </div>
                             
-                            <div className="flex items-center justify-between mt-3">
+                            <div className="flex items-center justify-between mt-2">
                               <div className={cn(
                                 "text-xs",
                                 isDarkMode ? "text-gray-400" : "text-muted-foreground"
@@ -334,7 +334,7 @@ const Offers = () => {
               
               <TabsContent value="deals">
                 {discountedProducts.length > 0 ? (
-                  <div className={`grid grid-cols-2 ${isMobile ? 'gap-3' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
+                  <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
                     {discountedProducts.map((product) => (
                       <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
                     ))}
@@ -354,7 +354,7 @@ const Offers = () => {
               </TabsContent>
               
               <TabsContent value="coupons">
-                <div className={`grid grid-cols-1 ${isMobile ? 'gap-3' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
+                <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
                   {offers
                     .filter(offer => offer.type === "percentage")
                     .map((offer) => (
@@ -364,10 +364,10 @@ const Offers = () => {
                         ? "bg-gray-800 border-gray-700" 
                         : "border border-gray-100"
                     )}>
-                      <CardHeader className="p-4 pb-2">
+                      <CardHeader className="p-3 pb-1">
                         <div className="flex justify-between items-start">
                           <CardTitle className={cn(
-                            "text-lg font-semibold",
+                            "text-base md:text-lg font-semibold",
                             isDarkMode && "text-white"
                           )}>{offer.title}</CardTitle>
                           {offer.discount && (
@@ -383,9 +383,9 @@ const Offers = () => {
                           )}
                         </div>
                       </CardHeader>
-                      <CardContent className="p-4 pt-2">
+                      <CardContent className="p-3 pt-1">
                         <p className={cn(
-                          "text-sm mb-3 line-clamp-2",
+                          "text-xs md:text-sm mb-2 line-clamp-2",
                           isDarkMode ? "text-gray-300" : "text-muted-foreground"
                         )}>{offer.description}</p>
                         
@@ -411,7 +411,7 @@ const Offers = () => {
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center justify-between mt-2">
                           <div className={cn(
                             "text-xs",
                             isDarkMode ? "text-gray-400" : "text-muted-foreground"
