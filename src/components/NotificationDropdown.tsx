@@ -17,7 +17,7 @@ interface NotificationDropdownProps {
 }
 
 const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children }) => {
-  const { notifications, markAllAsRead, removeNotification, clearAllNotifications } = useNotifications();
+  const { notifications, markAllAsRead, deleteUserNotification, clearNotifications } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleMarkAllAsRead = () => {
@@ -26,7 +26,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children })
   };
 
   const handleClearAll = () => {
-    clearAllNotifications();
+    clearNotifications();
     toast.success('All notifications cleared');
   };
 
@@ -93,7 +93,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children })
                         size="sm"
                         className="h-7 text-xs"
                         onClick={() => {
-                          markAllAsRead([notification.id]);
+                          markAsRead(notification.id);
                           toast.success('Notification marked as read');
                         }}
                       >
@@ -105,7 +105,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ children })
                       size="sm"
                       className="h-7 text-xs"
                       onClick={() => {
-                        removeNotification(notification.id);
+                        deleteUserNotification(notification.id);
                         toast.success('Notification removed');
                       }}
                     >
