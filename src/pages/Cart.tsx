@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCart } from '@/contexts/CartContext';
@@ -68,7 +67,6 @@ const Cart = () => {
           ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
           : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
       )}>
-        <Navbar />
         <div className="text-center">
           <Loader2 className={cn(
             "h-8 w-8 animate-spin mx-auto",
@@ -79,7 +77,6 @@ const Cart = () => {
             isDarkMode ? "text-gray-300" : "text-muted-foreground"
           )}>Loading your cart...</p>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -91,9 +88,7 @@ const Cart = () => {
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
     )}>
-      <Navbar />
-      
-      <main className="pt-12 pb-24 px-4 md:pt-16 md:pb-20">
+      <main className="pt-4 pb-24 px-4 md:pt-8 md:pb-20">
         <div className="container mx-auto max-w-7xl">
           <div className="flex items-center justify-between mb-3 md:mb-4">
             <div className="flex items-center gap-2">

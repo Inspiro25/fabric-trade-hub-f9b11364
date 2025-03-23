@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
@@ -58,7 +58,7 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const isMobile = useIsMobile();
 
-  // Routes remain the same but MobileAppLayout is now inside the providers
+  // Routes remain the same but every page uses MobileAppLayout
   const routeElements = (
     <Routes>
       <Route path="/" element={<Index />} />
@@ -91,6 +91,7 @@ const AppContent = () => {
       {/* Add management portal routes */}
       <Route path="/management/login" element={<ManagementLogin />} />
       <Route path="/management" element={<DashboardLayout />}>
+        <Route index element={<Navigate to="/management/dashboard" replace />} />
         <Route path="dashboard" element={<ManagementDashboard />} />
         <Route path="shops" element={<ManagementShops />} />
         <Route path="offers" element={<ManagementOffers />} />
@@ -109,13 +110,10 @@ const AppContent = () => {
         <div className="animate-pulse-subtle">Loading...</div>
       </div>
     }>
-      {isMobile ? (
-        <MobileAppLayout>
-          {routeElements}
-        </MobileAppLayout>
-      ) : (
-        routeElements
-      )}
+      {/* Apply layout to all routes */}
+      <MobileAppLayout>
+        {routeElements}
+      </MobileAppLayout>
     </Suspense>
   );
 };

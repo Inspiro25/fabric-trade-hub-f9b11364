@@ -1,6 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useHomeData } from '@/hooks/use-home-data';
-import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShoppingBag, Star, Sparkles, Clock, Heart, TrendingUp, Percent, Download, Flame, Zap } from 'lucide-react';
@@ -178,8 +177,7 @@ const Index = () => {
 
   if (isLoading && !categories.length) {
     return (
-      <div className="min-h-screen pt-16">
-        <AppHeader />
+      <div className="min-h-screen pt-2">
         <div className="py-4 px-4 space-y-6">
           <Skeleton className="h-48 w-full rounded-xl" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -195,8 +193,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <AppHeader />
-      
       <main className="pb-16 pt-2">
         <HomeHero />
         
