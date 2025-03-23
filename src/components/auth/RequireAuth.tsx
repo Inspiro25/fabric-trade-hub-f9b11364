@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthDialog from '@/components/search/AuthDialog';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -24,17 +25,32 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
         console.log("RequireAuth: Double-checking Supabase session");
         const { data: { session } } = await supabase.auth.getSession();
         
-        // If we have a Supabase session but no currentUser, this indicates a potential issue
-        if (session && !currentUser && !loading) {
-          console.log("RequireAuth: Supabase session exists but currentUser is null, refreshing auth state");
-          window.location.reload(); // Force refresh to sync auth state
-          return;
+        if (session) {
+          console.log("RequireAuth: Valid Supabase session found for user:", session.user.id);
+          
+          // If we have a Supabase session but no currentUser, this indicates a potential issue
+          if (!currentUser && !loading) {
+            console.log("RequireAuth: Supabase session exists but currentUser is null, refreshing auth state");
+            // Force refresh auth context instead of reloading the page
+            window.location.reload();
+            return;
+          }
+          
+          setShowContent(true);
+          setShowAuthDialog(false);
+        } else {
+          console.log("RequireAuth: No valid Supabase session found");
+          setShowContent(false);
+          setShowAuthDialog(true);
         }
         
         setLocalLoading(false);
       } catch (error) {
         console.error("RequireAuth: Error checking Supabase session", error);
+        toast.error("Authentication error. Please try again.");
         setLocalLoading(false);
+        setShowContent(false);
+        setShowAuthDialog(true);
       }
     };
     
@@ -43,25 +59,8 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
     }
   }, [currentUser, loading]);
 
-  useEffect(() => {
-    // Only show dialog if not loading and user is not authenticated
-    if (!loading && !localLoading) {
-      if (currentUser) {
-        console.log("RequireAuth: User is authenticated, showing content");
-        setShowContent(true);
-        setShowAuthDialog(false);
-      } else {
-        console.log("RequireAuth: User is not authenticated, showing auth dialog");
-        setShowAuthDialog(true);
-        setShowContent(false);
-      }
-    }
-  }, [currentUser, loading, localLoading]);
-
   const handleLogin = () => {
-    // Close the dialog first
     setShowAuthDialog(false);
-    // Use navigate for client-side routing
     navigate(redirectTo);
   };
 
@@ -69,7 +68,7 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
   if (loading || localLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
       </div>
     );
   }

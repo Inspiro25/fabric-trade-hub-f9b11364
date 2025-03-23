@@ -2,127 +2,158 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Function to check if a user follows a shop
+/**
+ * Check if the current user is following a shop
+ * @param shopId The ID of the shop to check
+ * @returns Boolean indicating if the user is following the shop
+ */
 export const checkFollowStatus = async (shopId: string): Promise<boolean> => {
   try {
-    // First check if user is authenticated
+    // Get the current session
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.log("No session found when checking follow status");
+    
+    if (!session || !session.user) {
+      console.log('No active session found when checking follow status');
       return false;
     }
-
-    const userId = session.user.id;
-    console.log("Checking follow status for user:", userId, "shop:", shopId);
     
-    // Check if the relationship exists
+    const userId = session.user.id;
+    console.log(`Checking follow status for shop: ${shopId} and user: ${userId}`);
+
+    // Check if the user is following the shop
     const { data, error } = await supabase
       .from('shop_follows')
-      .select('id')
-      .eq('user_id', userId)
+      .select('*')
       .eq('shop_id', shopId)
-      .single();
+      .eq('user_id', userId)
+      .maybeSingle();
     
-    if (error && error.code !== 'PGRST116') { // Code for "no rows returned"
+    if (error) {
       console.error('Error checking follow status:', error);
       return false;
     }
     
-    return !!data;
+    const isFollowing = !!data;
+    console.log(`User ${userId} is ${isFollowing ? '' : 'not '}following shop ${shopId}`);
+    return isFollowing;
   } catch (error) {
-    console.error('Error in checkFollowStatus:', error);
+    console.error('Exception checking follow status:', error);
     return false;
   }
 };
 
-// Function to follow a shop
+/**
+ * Follow a shop
+ * @param shopId The ID of the shop to follow
+ * @returns Boolean indicating success or failure
+ */
 export const followShop = async (shopId: string): Promise<boolean> => {
   try {
-    // First check if user is authenticated
+    // Get the current session
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.log("No active session found when attempting to follow shop");
+    
+    if (!session || !session.user) {
+      console.log('No active session found when attempting to follow shop');
+      toast.error('You must be logged in to follow shops');
       return false;
     }
-
-    const userId = session.user.id;
-    console.log("Following shop:", shopId, "for user:", userId);
     
-    // Insert the follow relationship
+    const userId = session.user.id;
+    console.log(`Following shop: ${shopId} for user: ${userId}`);
+    
+    // First check if the follow already exists to prevent duplicates
+    const { data: existingFollow } = await supabase
+      .from('shop_follows')
+      .select('*')
+      .eq('shop_id', shopId)
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    if (existingFollow) {
+      console.log('User is already following this shop');
+      return true; // Already following, return success
+    }
+
+    // Create the follow record
     const { error } = await supabase
       .from('shop_follows')
-      .insert({
-        user_id: userId,
-        shop_id: shopId
-      });
+      .insert([
+        { shop_id: shopId, user_id: userId }
+      ]);
     
     if (error) {
-      // If the error is a unique violation, the user already follows this shop
-      if (error.code === '23505') {
-        console.log("User already follows this shop");
-        return true;
-      }
-      
       console.error('Error following shop:', error);
       return false;
     }
     
+    console.log(`Successfully followed shop ${shopId}`);
     return true;
   } catch (error) {
-    console.error('Error in followShop:', error);
+    console.error('Exception following shop:', error);
     return false;
   }
 };
 
-// Function to unfollow a shop
+/**
+ * Unfollow a shop
+ * @param shopId The ID of the shop to unfollow
+ * @returns Boolean indicating success or failure
+ */
 export const unfollowShop = async (shopId: string): Promise<boolean> => {
   try {
-    // First check if user is authenticated
+    // Get the current session
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.log("No active session found when attempting to unfollow shop");
+    
+    if (!session || !session.user) {
+      console.log('No active session found when attempting to unfollow shop');
+      toast.error('You must be logged in to unfollow shops');
       return false;
     }
-
-    const userId = session.user.id;
-    console.log("Unfollowing shop:", shopId, "for user:", userId);
     
-    // Delete the follow relationship
+    const userId = session.user.id;
+    console.log(`Unfollowing shop: ${shopId} for user: ${userId}`);
+
+    // Delete the follow record
     const { error } = await supabase
       .from('shop_follows')
       .delete()
-      .eq('user_id', userId)
-      .eq('shop_id', shopId);
+      .eq('shop_id', shopId)
+      .eq('user_id', userId);
     
     if (error) {
       console.error('Error unfollowing shop:', error);
       return false;
     }
     
+    console.log(`Successfully unfollowed shop ${shopId}`);
     return true;
   } catch (error) {
-    console.error('Error in unfollowShop:', error);
+    console.error('Exception unfollowing shop:', error);
     return false;
   }
 };
 
-// Function to get followers count for a shop
+/**
+ * Get the number of followers for a shop
+ * @param shopId The ID of the shop to get followers count for
+ * @returns Number of followers
+ */
 export const getShopFollowersCount = async (shopId: string): Promise<number> => {
   try {
-    const { data, error } = await supabase
-      .from('shops')
-      .select('followers_count')
-      .eq('id', shopId)
-      .single();
+    // Count followers
+    const { count, error } = await supabase
+      .from('shop_follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('shop_id', shopId);
     
     if (error) {
-      console.error('Error fetching shop followers count:', error);
+      console.error('Error getting shop followers count:', error);
       return 0;
     }
     
-    return data.followers_count || 0;
+    return count || 0;
   } catch (error) {
-    console.error('Error in getShopFollowersCount:', error);
+    console.error('Exception getting shop followers count:', error);
     return 0;
   }
 };
