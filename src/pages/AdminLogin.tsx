@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -332,35 +333,45 @@ const AdminLogin = () => {
               "text-xs mb-2",
               isDarkMode ? "text-gray-400" : "text-gray-500"
             )}>
-              {activeTab === 'login' 
-                ? 'Contact support if you\'ve lost your credentials' 
-                : 'We\'ll review your application within 48 hours'}
+              {activeTab === 'login' ? 
+                "Don't have a shop account yet?" : 
+                "Already have a shop account?"}
             </p>
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "text-xs",
+                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              )}
+              onClick={() => setActiveTab(activeTab === 'login' ? 'partner' : 'login')}
+            >
+              {activeTab === 'login' ? 
+                "Apply to become a partner" : 
+                "Login to your shop"}
+            </Button>
+            
+            <div className="mt-4 pt-4 w-full border-t border-gray-200 dark:border-gray-700">
+              <Button 
+                variant="link" 
+                className={cn(
+                  "text-xs w-full",
+                  isDarkMode ? "text-gray-400" : "text-gray-500"
+                )}
+                onClick={handleManagementAccess}
+              >
+                <ArrowLeft className="h-3 w-3 mr-1" />
+                Admin/Management access
+              </Button>
+            </div>
           </CardFooter>
         </Card>
-        
-        <div className="mt-4 text-center">
-          <Button 
-            variant="ghost" 
-            className={cn(
-              "text-xs flex items-center",
-              isDarkMode 
-                ? "text-gray-400 hover:text-orange-400" 
-                : "text-gray-500 hover:text-kutuku-primary"
-            )} 
-            onClick={handleManagementAccess}
-          >
-            <ArrowLeft className="mr-1 h-3 w-3" />
-            Management Access
-          </Button>
-        </div>
+
+        <PartnerRequestDialog 
+          open={isPartnerDialogOpen} 
+          onOpenChange={setIsPartnerDialogOpen}
+          onSuccess={handlePartnerRequestSuccess}
+        />
       </div>
-      
-      <PartnerRequestDialog 
-        open={isPartnerDialogOpen} 
-        onOpenChange={setIsPartnerDialogOpen}
-        onSuccess={handlePartnerRequestSuccess} 
-      />
     </div>
   );
 };

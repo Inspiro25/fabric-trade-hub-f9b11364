@@ -161,3 +161,29 @@ export const getShopFollowersCount = async (shopId: string): Promise<number> => 
     return 0;
   }
 };
+
+/**
+ * Fetch detailed list of shop followers
+ * @param shopId The ID of the shop to get followers for
+ * @returns Array of follower details
+ */
+export const fetchShopFollowers = async (shopId: string) => {
+  try {
+    // Get follower details from the shop_follower_details view
+    const { data, error } = await supabase
+      .from('shop_follower_details')
+      .select('*')
+      .eq('shop_id', shopId)
+      .order('followed_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching shop followers:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Exception fetching shop followers:', error);
+    return [];
+  }
+};

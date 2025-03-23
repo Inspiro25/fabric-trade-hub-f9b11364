@@ -666,6 +666,44 @@ export type Database = {
           },
         ]
       }
+      shop_follower_details: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          email: string | null
+          followed_at: string
+          id: string
+          shop_id: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          email?: string | null
+          followed_at?: string
+          id?: string
+          shop_id: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          email?: string | null
+          followed_at?: string
+          id?: string
+          shop_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_follower_details_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_follows: {
         Row: {
           created_at: string
@@ -688,6 +726,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "shop_follows_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_sales_analytics: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          orders_count: number | null
+          sales_amount: number | null
+          shop_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          orders_count?: number | null
+          sales_amount?: number | null
+          shop_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          orders_count?: number | null
+          sales_amount?: number | null
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_sales_analytics_shop_id_fkey"
             columns: ["shop_id"]
             isOneToOne: false
             referencedRelation: "shops"

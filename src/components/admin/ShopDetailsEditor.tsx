@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Shop } from '@/lib/shops';
+import { Shop } from '@/lib/shops/types';
 import { toast } from 'sonner';
 import { Check, Save } from 'lucide-react';
 import FileUpload from '@/components/ui/file-upload';
