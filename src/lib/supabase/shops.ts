@@ -47,7 +47,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       .from('shops')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error(`Error fetching shop ${id}:`, error);
