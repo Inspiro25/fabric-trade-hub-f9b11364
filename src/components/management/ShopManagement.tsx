@@ -28,7 +28,7 @@ interface ShopFormValues {
   ownerEmail: string;
   status: 'active' | 'pending' | 'suspended';
   password: string;
-  phoneNumber: string; 
+  phoneNumber: string;
 }
 
 const shopSchema = yup.object({
@@ -122,11 +122,11 @@ const ShopManagement: React.FC = () => {
         rating: 0,
         reviewCount: 0,
         followers: 0,
+        followers_count: 0,
         productIds: [],
         createdAt: new Date().toISOString(),
         shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
         password: data.password,
-        followers_count: 0,
       };
     
       if (shopId) {

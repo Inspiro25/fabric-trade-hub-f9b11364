@@ -12,13 +12,13 @@ export interface Shop {
   rating: number;
   reviewCount: number;
   followers: number;
+  followers_count: number;
   productIds: string[];
   isVerified: boolean;
   status: 'active' | 'pending' | 'suspended';
   createdAt: string;
   shopId?: string;
   password?: string;
-  followers_count?: number;
 }
 
 export interface ShopSummary {
