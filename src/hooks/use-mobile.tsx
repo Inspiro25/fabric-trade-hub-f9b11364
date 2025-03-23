@@ -1,68 +1,20 @@
 
-import * as React from "react";
+import { useState, useEffect } from 'react';
 
-const MOBILE_BREAKPOINT = 768;
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    
-    // Handle Safari and older browsers
-    if (mql.addEventListener) {
-      mql.addEventListener("change", onChange);
-    } else {
-      // @ts-ignore - For older browsers
-      mql.addListener(onChange);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
     }
     
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    const listener = () => setMatches(media.matches);
+    media.addEventListener('change', listener);
     
-    return () => {
-      if (mql.removeEventListener) {
-        mql.removeEventListener("change", onChange);
-      } else {
-        // @ts-ignore - For older browsers
-        mql.removeListener(onChange);
-      }
-    };
-  }, []);
+    return () => media.removeEventListener('change', listener);
+  }, [matches, query]);
 
-  return !!isMobile;
-}
-
-export function useBreakpoint(breakpoint: number = MOBILE_BREAKPOINT) {
-  const [isBelow, setIsBelow] = React.useState<boolean | undefined>(undefined);
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${breakpoint - 1}px)`);
-    const onChange = () => {
-      setIsBelow(window.innerWidth < breakpoint);
-    };
-    
-    // Handle Safari and older browsers
-    if (mql.addEventListener) {
-      mql.addEventListener("change", onChange);
-    } else {
-      // @ts-ignore - For older browsers
-      mql.addListener(onChange);
-    }
-    
-    setIsBelow(window.innerWidth < breakpoint);
-    
-    return () => {
-      if (mql.removeEventListener) {
-        mql.removeEventListener("change", onChange);
-      } else {
-        // @ts-ignore - For older browsers
-        mql.removeListener(onChange);
-      }
-    };
-  }, [breakpoint]);
-
-  return !!isBelow;
+  return matches;
 }

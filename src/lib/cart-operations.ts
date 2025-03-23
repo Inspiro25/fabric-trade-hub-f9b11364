@@ -1,202 +1,138 @@
 
+import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/contexts/CartContext';
-import { Product } from '@/lib/products';
-import { toast } from 'sonner';
-import { 
-  upsertCartItem, 
-  removeCartItem, 
-  clearUserCart, 
-  updateCartItemQuantity 
-} from '@/lib/supabase/cart';
+import { Product } from './products';
+import { v4 as uuidv4 } from 'uuid';
 
-const STORAGE_KEY = 'guest_cart';
-
-/**
- * Provides all cart manipulation operations
- */
 export const useCartOperations = (
-  cartItems: CartItem[], 
-  setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>, 
-  currentUser: any | null
+  cartItems: CartItem[],
+  setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>,
+  currentUser: any
 ) => {
-  // Add item to cart
-  const addToCart = async (product: Product, quantity: number, color: string, size: string) => {
-    try {
-      // Find existing item with same product, color, and size
-      const existingItemIndex = cartItems.findIndex(
-        item => item.product.id === product.id && item.color === color && item.size === size
-      );
-      
-      let newCart: CartItem[];
-      let newQuantity = quantity;
-      
-      if (existingItemIndex > -1) {
-        // Update quantity of existing item
-        newQuantity = cartItems[existingItemIndex].quantity + quantity;
-        newCart = [...cartItems]; // Create a new array to avoid direct mutation
-        newCart[existingItemIndex] = { 
-          ...newCart[existingItemIndex], 
-          quantity: newQuantity 
-        };
-      } else {
-        // Add new item
-        newCart = [
-          ...cartItems,
-          { id: product.id, product, quantity, color, size }
-        ];
-      }
-      
-      // Set cart state immediately to improve UX
-      setCartItems(newCart);
-      
-      // Then persist to storage (async operation)
+  const addToCart = (product: Product, quantity: number, color: string, size: string) => {
+    const existingItem = cartItems.find(
+      (item) => 
+        item.product.id === product.id && 
+        item.color === color && 
+        item.size === size
+    );
+
+    if (existingItem) {
+      // Update quantity if the same item is already in cart
+      updateQuantity(existingItem.id, existingItem.quantity + quantity);
+    } else {
+      // Add new item
+      const newItem: CartItem = {
+        id: uuidv4(),
+        product,
+        quantity,
+        color,
+        size,
+      };
+
+      const updatedCart = [...cartItems, newItem];
+      setCartItems(updatedCart);
+
+      // Save to storage
       if (currentUser) {
-        // Save to Supabase
-        await upsertCartItem({
-          user_id: currentUser.uid,
-          product_id: product.id,
-          quantity: newQuantity,
-          color,
-          size
-        });
+        saveCartToDatabase(updatedCart, currentUser.id);
       } else {
-        // Save to localStorage for guest users
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
+        localStorage.setItem('guest_cart', JSON.stringify(updatedCart));
       }
-      
-      // Only show toast if not coming from search integration
-      if (!existingItemIndex) {
-        toast.success(`Added ${product.name} to cart`);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error("Failed to add item to cart");
     }
   };
 
-  // Remove item from cart
-  const removeFromCart = async (itemId: string) => {
-    try {
-      // Parse the composite ID to get product_id, size, and color
-      const parts = itemId.split('-');
-      const productId = parts[0];
-      let size = '', color = '';
-      
-      if (parts.length > 1) {
-        size = parts[1] || '';
-        color = parts.length > 2 ? parts[2] : '';
-      }
-      
-      // Optimistically update UI
-      const newCart = cartItems.filter(item => 
-        `${item.product.id}-${item.size}-${item.color}` !== itemId
-      );
-      
-      // Update state immediately
-      setCartItems(newCart);
-      
-      // Then persist changes
-      if (currentUser) {
-        // Remove from database
-        await removeCartItem(currentUser.uid, productId, size, color);
-      } else {
-        // Update localStorage for guest users
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
-      }
-      
-      toast.success("Item removed from cart");
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-      toast.error("Failed to remove item from cart");
+  const removeFromCart = (itemId: string) => {
+    const updatedCart = cartItems.filter((item) => item.id !== itemId);
+    setCartItems(updatedCart);
+
+    // Save to storage
+    if (currentUser) {
+      saveCartToDatabase(updatedCart, currentUser.id);
+    } else {
+      localStorage.setItem('guest_cart', JSON.stringify(updatedCart));
     }
   };
 
-  // Update item quantity
-  const updateQuantity = async (itemId: string, quantity: number) => {
-    if (quantity < 1) return;
-    
-    try {
-      const [productId, size, color] = itemId.split('-');
-      
-      // Optimistically update UI
-      const newCart = cartItems.map(item => {
-        if (item.product.id === productId && item.size === size && item.color === color) {
-          return { ...item, quantity };
-        }
-        return item;
-      });
-      
-      // Update state immediately
-      setCartItems(newCart);
-      
-      // Then persist changes
-      if (currentUser) {
-        // Update in database
-        await updateCartItemQuantity(currentUser.uid, productId, size, color, quantity);
-      } else {
-        // Update localStorage for guest users
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
-      }
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      // Silent error, no toast for quantity updates
-    }
-  };
-
-  // Clear cart
-  const clearCart = async () => {
-    try {
-      // Update state immediately
-      setCartItems([]);
-      
-      // Then persist changes
-      if (currentUser) {
-        // Clear from database
-        await clearUserCart(currentUser.uid);
-      }
-      
-      // Clear from localStorage in either case
-      localStorage.removeItem(STORAGE_KEY);
-      
-      toast.success("All items have been removed");
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-      toast.error("Failed to clear cart");
-    }
-  };
-
-  // Migrate guest cart to user cart
-  const migrateGuestCartToUser = async () => {
-    // Check if we have a guest cart to migrate
-    const guestCart = localStorage.getItem(STORAGE_KEY);
-    
-    if (!currentUser || !guestCart) {
+  const updateQuantity = (itemId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeFromCart(itemId);
       return;
     }
-    
+
+    const updatedCart = cartItems.map((item) =>
+      item.id === itemId ? { ...item, quantity } : item
+    );
+    setCartItems(updatedCart);
+
+    // Save to storage
+    if (currentUser) {
+      saveCartToDatabase(updatedCart, currentUser.id);
+    } else {
+      localStorage.setItem('guest_cart', JSON.stringify(updatedCart));
+    }
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+
+    // Clear storage
+    if (currentUser) {
+      clearCartInDatabase(currentUser.id);
+    } else {
+      localStorage.removeItem('guest_cart');
+    }
+  };
+
+  const migrateGuestCartToUser = async () => {
+    if (!currentUser) return;
+
+    const guestCart = localStorage.getItem('guest_cart');
+    if (!guestCart) return;
+
     try {
-      const guestCartItems = JSON.parse(guestCart) as CartItem[];
-      
-      if (guestCartItems.length === 0) {
-        return;
+      const parsedCart = JSON.parse(guestCart);
+      if (Array.isArray(parsedCart) && parsedCart.length > 0) {
+        await saveCartToDatabase(parsedCart, currentUser.id);
+        setCartItems(parsedCart);
+        localStorage.removeItem('guest_cart');
       }
-      
-      // For each item in the guest cart, add it to the user's cart in database
-      for (const item of guestCartItems) {
-        await upsertCartItem({
-          user_id: currentUser.uid,
+    } catch (error) {
+      console.error('Error migrating guest cart:', error);
+      throw error;
+    }
+  };
+
+  // Helper functions for database operations
+  const saveCartToDatabase = async (cart: CartItem[], userId: string) => {
+    try {
+      // First, remove all existing items for this user
+      await supabase.from('cart_items').delete().eq('user_id', userId);
+
+      // Then, insert all current items
+      if (cart.length > 0) {
+        const cartData = cart.map(item => ({
+          user_id: userId,
           product_id: item.product.id,
           quantity: item.quantity,
           color: item.color,
-          size: item.size
-        });
+          size: item.size,
+          id: item.id
+        }));
+
+        const { error } = await supabase.from('cart_items').insert(cartData);
+        if (error) throw error;
       }
-      
-      // Clear the guest cart
-      localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
-      console.error('Error migrating cart:', error);
-      throw error; // Let the caller handle the error
+      console.error('Error saving cart to database:', error);
+    }
+  };
+
+  const clearCartInDatabase = async (userId: string) => {
+    try {
+      await supabase.from('cart_items').delete().eq('user_id', userId);
+    } catch (error) {
+      console.error('Error clearing cart in database:', error);
     }
   };
 
@@ -205,6 +141,6 @@ export const useCartOperations = (
     removeFromCart,
     updateQuantity,
     clearCart,
-    migrateGuestCartToUser
+    migrateGuestCartToUser,
   };
 };
