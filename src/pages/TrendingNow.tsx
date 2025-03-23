@@ -2,12 +2,13 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTrendingProducts } from '@/lib/products/trending';
-import AppHeader from '@/components/features/AppHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
 import { Flame, TrendingUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -16,6 +17,7 @@ const TrendingNow = () => {
   const [sortOption, setSortOption] = useState<'popularity' | 'rating' | 'recent'>('popularity');
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const isMobile = useIsMobile();
+  const { isDarkMode } = useTheme();
 
   const { data: trendingProducts, isLoading, error } = useQuery({
     queryKey: ['products', 'trending', selectedFilter, sortOption],
@@ -43,16 +45,23 @@ const TrendingNow = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppHeader />
-      
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode ? "bg-gray-900" : "bg-slate-50"
+    )}>      
       <main className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-2 mb-4">
           <Flame className="h-5 w-5 text-orange-500" />
-          <h1 className="text-xl font-bold">Trending Now</h1>
+          <h1 className={cn(
+            "text-xl font-bold",
+            isDarkMode ? "text-white" : "text-gray-900"
+          )}>Trending Now</h1>
         </div>
         
-        <div className="mb-6 text-sm text-gray-600">
+        <div className={cn(
+          "mb-6 text-sm",
+          isDarkMode ? "text-gray-400" : "text-gray-600"
+        )}>
           Discover what's popular right now based on views, ratings, and purchases
         </div>
         
@@ -64,11 +73,14 @@ const TrendingNow = () => {
                 key={filter.value}
                 variant={selectedFilter === filter.value ? "default" : "outline"}
                 size="sm"
-                className={`mr-2 whitespace-nowrap ${
+                className={cn(
+                  "mr-2 whitespace-nowrap",
                   selectedFilter === filter.value 
-                    ? "bg-orange-500 hover:bg-orange-600" 
-                    : "bg-white"
-                }`}
+                    ? "bg-orange-500 hover:bg-orange-600 text-white" 
+                    : isDarkMode 
+                      ? "bg-gray-800 border-gray-700 text-gray-300" 
+                      : "bg-white"
+                )}
                 onClick={() => setSelectedFilter(filter.value as any)}
               >
                 {filter.label}
@@ -77,9 +89,17 @@ const TrendingNow = () => {
           </div>
           
           <div className="flex gap-2 items-center">
-            <TrendingUp className="h-4 w-4 text-gray-500" />
+            <TrendingUp className={cn(
+              "h-4 w-4",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )} />
             <select
-              className="border rounded-md px-3 py-1 text-sm bg-white"
+              className={cn(
+                "border rounded-md px-3 py-1 text-sm",
+                isDarkMode 
+                  ? "bg-gray-800 border-gray-700 text-gray-300" 
+                  : "bg-white"
+              )}
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as any)}
             >
@@ -96,20 +116,38 @@ const TrendingNow = () => {
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-white p-2 rounded-lg">
-                <Skeleton className="h-40 w-full rounded-md mb-2" />
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
+              <div key={index} className={cn(
+                "p-2 rounded-lg",
+                isDarkMode ? "bg-gray-800" : "bg-white"
+              )}>
+                <Skeleton className={cn(
+                  "h-40 w-full rounded-md mb-2",
+                  isDarkMode ? "bg-gray-700" : "bg-gray-200"
+                )} />
+                <Skeleton className={cn(
+                  "h-4 w-3/4 mb-2",
+                  isDarkMode ? "bg-gray-700" : "bg-gray-200"
+                )} />
+                <Skeleton className={cn(
+                  "h-4 w-1/2",
+                  isDarkMode ? "bg-gray-700" : "bg-gray-200"
+                )} />
               </div>
             ))}
           </div>
         ) : error ? (
           <div className="text-center py-10">
-            <p className="text-red-500">Failed to load trending products</p>
+            <p className={cn(
+              "text-red-500",
+              isDarkMode ? "text-red-400" : "text-red-500"
+            )}>Failed to load trending products</p>
             <Button 
               onClick={() => window.location.reload()} 
               variant="outline" 
-              className="mt-4"
+              className={cn(
+                "mt-4",
+                isDarkMode ? "border-gray-700 text-gray-300" : ""
+              )}
             >
               Try Again
             </Button>
@@ -143,7 +181,11 @@ const TrendingNow = () => {
                 <Button 
                   onClick={loadMore} 
                   variant="outline" 
-                  className="border-orange-300 text-orange-700"
+                  className={cn(
+                    isDarkMode
+                      ? "border-orange-800 text-orange-400 hover:bg-orange-950/50"
+                      : "border-orange-300 text-orange-700"
+                  )}
                 >
                   Load More <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
@@ -152,7 +194,9 @@ const TrendingNow = () => {
           </>
         ) : (
           <div className="text-center py-10">
-            <p className="text-gray-500">No trending products found</p>
+            <p className={cn(
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>No trending products found</p>
           </div>
         )}
       </main>

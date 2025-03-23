@@ -1,6 +1,5 @@
 
 import React from 'react';
-import AppHeader from './AppHeader';
 import MobileNavigation from './MobileNavigation';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,9 +32,6 @@ const MobileAppLayout: React.FC<{
         ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100' 
         : 'bg-gradient-to-b from-orange-50/60 via-white to-white text-gray-900'
     }`}>
-      {/* Show AppHeader for mobile */}
-      <AppHeader />
-      
       <main className="flex-1 pt-2 pb-16">
         {children}
       </main>

@@ -54,7 +54,7 @@ const ShopManagement: React.FC = () => {
 
   const {
     control,
-    formHandleSubmit,
+    handleSubmit,
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
@@ -168,7 +168,7 @@ const ShopManagement: React.FC = () => {
       <h1 className="text-2xl font-semibold mb-4">
         {shopId ? 'Edit Shop' : 'Create Shop'}
       </h1>
-      <form onSubmit={formHandleSubmit(submitForm)} className="max-w-lg">
+      <form onSubmit={handleSubmit(submitForm)} className="max-w-lg">
         <div className="mb-4">
           <Label htmlFor="name">Shop Name</Label>
           <Controller
