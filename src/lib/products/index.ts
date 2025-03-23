@@ -1,3 +1,4 @@
+
 // Re-export all product related functionality
 export * from '@/lib/types/product';
 export * from '@/lib/products/base';
@@ -13,6 +14,10 @@ export * from '@/lib/products/categories';
 export * from '@/lib/products/collections';
 export * from '@/lib/products/deal';
 export * from '@/lib/products/trending';
+
+// Import necessary types and functionality
+import { Product } from '@/lib/types/product';
+import { supabase } from '@/integrations/supabase/client';
 
 // Add this function to fetch a single product by ID
 export const fetchProductById = async (productId: string): Promise<Product | null> => {
