@@ -1,5 +1,4 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
@@ -40,7 +39,27 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             } else {
               const productIds = data.map(item => item.product_id);
               setWishlist(productIds);
+              
               localStorage.setItem('wishlist', JSON.stringify(productIds));
+              
+              const localWishlist = localStorage.getItem('wishlist');
+              if (localWishlist) {
+                const parsedLocalWishlist = JSON.parse(localWishlist);
+                const newItems = parsedLocalWishlist.filter((id: string) => !productIds.includes(id));
+                
+                for (const productId of newItems) {
+                  try {
+                    await supabase.from('user_wishlists').insert({
+                      user_id: currentUser.uid,
+                      product_id: productId
+                    });
+                  } catch (insertError) {
+                    console.error('Error syncing wishlist item to database:', insertError);
+                  }
+                }
+                
+                setWishlist([...productIds, ...newItems]);
+              }
             }
           } catch (supabaseError) {
             console.error('Exception in Supabase wishlist fetch:', supabaseError);
@@ -64,112 +83,112 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (!isLoading) {
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    }
+  }, [wishlist, isLoading]);
 
-  const handleLogin = () => {
-    // Using window.location instead of useNavigate
+  const handleLogin = useCallback(() => {
     window.location.href = '/auth';
-  };
+  }, []);
 
-  // Modified to work for non-authenticated users too (store in localStorage)
-  const addToWishlist = async (product: Product | string) => {
+  const addToWishlist = useCallback(async (product: Product | string) => {
     try {
       const productId = typeof product === 'string' ? product : product.id;
       
       if (wishlist.includes(productId)) {
-        // Don't show toast if already in wishlist
         return;
       }
       
-      // Update local state immediately for better UX
       setWishlist(prev => [...prev, productId]);
       
-      // Show auth dialog for guest users but still allow operation
-      if (!currentUser) {
-        setShowAuthDialog(true);
-        // Only show toast for guests since we're storing in localStorage
-        toast.success('Added to wishlist');
-        return;
-      }
-      
-      try {
-        const { error } = await supabase.from('user_wishlists').insert({
-          user_id: currentUser.uid,
-          product_id: productId
-        });
-        
-        if (error) {
-          console.error('Error adding to wishlist:', error);
+      if (currentUser) {
+        try {
+          const { error } = await supabase.from('user_wishlists').insert({
+            user_id: currentUser.uid,
+            product_id: productId
+          });
+          
+          if (error) {
+            console.error('Error adding to wishlist:', error);
+            toast.error('Failed to add to wishlist');
+            setWishlist(prev => prev.filter(id => id !== productId));
+            return;
+          }
+          
+          toast.success('Added to wishlist');
+        } catch (supabaseError) {
+          console.error('Exception in Supabase add to wishlist:', supabaseError);
           toast.error('Failed to add to wishlist');
+          setWishlist(prev => prev.filter(id => id !== productId));
           return;
         }
-      } catch (supabaseError) {
-        console.error('Exception in Supabase add to wishlist:', supabaseError);
-        toast.error('Failed to add to wishlist');
-        return;
+      } else {
+        setShowAuthDialog(true);
+        toast.success('Added to wishlist');
       }
-      
-      toast.success('Added to wishlist');
     } catch (error) {
       console.error('Error adding to wishlist:', error);
       toast.error('Failed to add to wishlist');
     }
-  };
+  }, [wishlist, currentUser]);
 
-  // Modified to work for non-authenticated users too
-  const removeFromWishlist = async (productId: string) => {
+  const removeFromWishlist = useCallback(async (productId: string) => {
     try {
-      // Update local state immediately
       setWishlist(prev => prev.filter(id => id !== productId));
       
-      // Show auth dialog for guest users but still allow operation
-      if (!currentUser) {
-        setShowAuthDialog(true);
-        // Only show toast for guests since we're storing in localStorage
-        toast.success('Removed from wishlist');
-        return;
-      }
-      
-      try {
-        const { error } = await supabase
-          .from('user_wishlists')
-          .delete()
-          .eq('user_id', currentUser.uid)
-          .eq('product_id', productId);
-        
-        if (error) {
-          console.error('Error removing from wishlist:', error);
+      if (currentUser) {
+        try {
+          const { error } = await supabase
+            .from('user_wishlists')
+            .delete()
+            .eq('user_id', currentUser.uid)
+            .eq('product_id', productId);
+          
+          if (error) {
+            console.error('Error removing from wishlist:', error);
+            toast.error('Failed to remove from wishlist');
+            setWishlist(prev => [...prev, productId]);
+            return;
+          }
+          
+          toast.success('Removed from wishlist');
+        } catch (supabaseError) {
+          console.error('Exception in Supabase remove from wishlist:', supabaseError);
           toast.error('Failed to remove from wishlist');
+          setWishlist(prev => [...prev, productId]);
           return;
         }
-      } catch (supabaseError) {
-        console.error('Exception in Supabase remove from wishlist:', supabaseError);
-        toast.error('Failed to remove from wishlist');
-        return;
+      } else {
+        setShowAuthDialog(true);
+        toast.success('Removed from wishlist');
       }
-      
-      toast.success('Removed from wishlist');
     } catch (error) {
       console.error('Error removing from wishlist:', error);
       toast.error('Failed to remove from wishlist');
     }
-  };
+  }, [currentUser]);
 
-  const isInWishlist = (productId: string) => {
+  const isInWishlist = useCallback((productId: string) => {
     return wishlist.includes(productId);
-  };
+  }, [wishlist]);
 
   return (
-    <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist, isLoading }}>
+    <WishlistContext.Provider value={{ 
+      wishlist, 
+      addToWishlist, 
+      removeFromWishlist, 
+      isInWishlist, 
+      isLoading 
+    }}>
       {children}
       {showAuthDialog && (
         <AuthDialog
           open={showAuthDialog}
           onOpenChange={setShowAuthDialog}
           onLogin={handleLogin}
-          title="Authentication Required"
-          message="You need to be logged in to add items to your wishlist."
+          title="Limited Functionality"
+          message="Sign in to save your wishlist and access more features."
         />
       )}
     </WishlistContext.Provider>

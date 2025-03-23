@@ -54,7 +54,8 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     
     if (!session || !session.user) {
       console.log('No active session found when attempting to follow shop');
-      return false; // Let the UI handle showing the auth dialog
+      toast.error("Please log in to follow shops");
+      return false;
     }
     
     const userId = session.user.id;
@@ -107,7 +108,8 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     
     if (!session || !session.user) {
       console.log('No active session found when attempting to unfollow shop');
-      return false; // Let the UI handle showing the auth dialog
+      toast.error("Please log in to manage shop follows");
+      return false;
     }
     
     const userId = session.user.id;

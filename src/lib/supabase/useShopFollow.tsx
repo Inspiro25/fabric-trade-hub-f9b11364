@@ -50,6 +50,9 @@ export const useShopFollow = (shopId: string) => {
       if (loggedIn && shopId) {
         const status = await checkFollowStatus(shopId);
         setIsFollowing(status);
+      } else if (!loggedIn) {
+        // Reset following status if logged out
+        setIsFollowing(false);
       }
     });
     
@@ -65,6 +68,7 @@ export const useShopFollow = (shopId: string) => {
     // Check auth status first
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
+      toast.error("Please log in to follow shops");
       return false; // Caller should handle showing auth dialog
     }
     
@@ -78,18 +82,21 @@ export const useShopFollow = (shopId: string) => {
         if (success) {
           setIsFollowing(false);
           setFollowersCount(prev => Math.max(0, prev - 1));
+          toast.success("Shop unfollowed successfully");
         }
       } else {
         success = await followShop(shopId);
         if (success) {
           setIsFollowing(true);
           setFollowersCount(prev => prev + 1);
+          toast.success("Now following this shop");
         }
       }
       
       return success;
     } catch (error) {
       console.error('Error toggling shop follow:', error);
+      toast.error("Failed to update follow status");
       return false;
     } finally {
       setIsFollowLoading(false);

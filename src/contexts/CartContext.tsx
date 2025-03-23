@@ -49,16 +49,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsInitialized(true);
       
       // Check if there's a guest cart to migrate
-      const guestCart = localStorage.getItem('guest_cart');
-      if (guestCart && currentUser) {
-        try {
-          const parsedCart = JSON.parse(guestCart);
-          if (parsedCart && parsedCart.length > 0) {
-            setHasPendingMigration(true);
+      if (currentUser) {
+        const guestCart = localStorage.getItem('guest_cart');
+        if (guestCart) {
+          try {
+            const parsedCart = JSON.parse(guestCart);
+            if (parsedCart && parsedCart.length > 0) {
+              setHasPendingMigration(true);
+            }
+          } catch (e) {
+            // Invalid cart data, clear it
+            localStorage.removeItem('guest_cart');
           }
-        } catch (e) {
-          // Invalid cart data, clear it
-          localStorage.removeItem('guest_cart');
         }
       }
     }
@@ -83,54 +85,46 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     migrateCart();
   }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
-  // Updated to fix the cart authentication issue - don't block operations for non-authenticated users
-  const addToCart = (product: Product, quantity: number, color: string, size: string) => {
-    if (!currentUser) {
-      // Allow adding to cart for non-authenticated users (will be stored in localStorage)
-      addToCartOp(product, quantity, color, size);
-      // Just show the auth dialog but don't block the operation
-      setShowAuthDialog(true);
-      return;
-    }
+  // Allow cart operations for guests, but show auth dialog to prompt login
+  const addToCart = useCallback((product: Product, quantity: number, color: string, size: string) => {
+    // Allow adding to cart for all users
     addToCartOp(product, quantity, color, size);
-  };
-
-  const removeFromCart = (itemId: string) => {
+    
+    // Show auth dialog for guest users to encourage login
     if (!currentUser) {
-      // Allow removing from cart for non-authenticated users
-      removeFromCartOp(itemId);
       setShowAuthDialog(true);
-      return;
     }
+  }, [addToCartOp, currentUser]);
+
+  const removeFromCart = useCallback((itemId: string) => {
     removeFromCartOp(itemId);
-  };
-
-  const updateQuantity = (itemId: string, quantity: number) => {
+    
+    // Show auth dialog for guest users to encourage login
     if (!currentUser) {
-      // Allow updating cart for non-authenticated users
-      updateQuantityOp(itemId, quantity);
       setShowAuthDialog(true);
-      return;
     }
+  }, [removeFromCartOp, currentUser]);
+
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
     updateQuantityOp(itemId, quantity);
-  };
+    
+    // Don't show auth dialog for quantity updates (less intrusive)
+  }, [updateQuantityOp]);
 
-  const clearCart = () => {
-    if (!currentUser) {
-      // Allow clearing cart for non-authenticated users
-      clearCartOp();
-      setShowAuthDialog(true);
-      return;
-    }
+  const clearCart = useCallback(() => {
     clearCartOp();
-  };
+    
+    // Show auth dialog for guest users to encourage login
+    if (!currentUser) {
+      setShowAuthDialog(true);
+    }
+  }, [clearCartOp, currentUser]);
 
-  const handleLogin = () => {
-    // Instead of using navigate directly, we'll redirect using window.location
+  const handleLogin = useCallback(() => {
     window.location.href = '/auth';
-  };
+  }, []);
 
-  // Memoize wrapped functions to prevent unnecessary re-renders
+  // Memoize wrapper functions to prevent unnecessary re-renders
   const getCartTotalWrapper = useCallback(() => getCartTotal(cartItems), [cartItems]);
   const getCartCountWrapper = useCallback(() => getCartCount(cartItems), [cartItems]);
   const isInCartWrapper = useCallback(
@@ -171,8 +165,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           open={showAuthDialog}
           onOpenChange={setShowAuthDialog}
           onLogin={handleLogin}
-          title="Authentication Required"
-          message="You need to be logged in to manage your cart."
+          title="Limited Functionality"
+          message="Sign in to save your cart items and access more features."
         />
       )}
     </CartContext.Provider>
