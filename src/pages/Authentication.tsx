@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { 
   Heart, 
   ShoppingBag, 
@@ -22,8 +22,8 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
-// Create form schemas
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
@@ -52,16 +52,15 @@ const Authentication = () => {
   const location = useLocation();
   const { login, register, loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
   const { toast } = useToast();
+  const { isDarkMode } = useTheme();
   
   const from = location.state?.from?.pathname || "/";
   
   useEffect(() => {
-    // Redirect if already logged in
     if (location.state?.tab === "signup") {
       setActiveTab("signup");
     }
     
-    // Simulate loading delay for smoother transitions
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 300);
@@ -145,14 +144,11 @@ const Authentication = () => {
     
     try {
       console.log("Attempting registration with:", values.email);
-      // The register function expects only email and password
       await register(values.email, values.password);
       toast({
         title: "Registration successful",
         description: "Your account has been created successfully!",
       });
-      // After successful registration, update the user profile with the name
-      // This would require additional code if you want to store the name
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -221,17 +217,24 @@ const Authentication = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex md:items-center md:justify-center p-4">
-      <div className="w-full max-w-7xl flex flex-col md:flex-row md:shadow-xl md:rounded-xl overflow-hidden bg-white">
-        {/* Left Side: Brand/Background */}
-        <div className="w-full md:w-5/12 bg-gradient-to-tr from-orange-600 to-orange-400 p-8 text-white hidden md:flex flex-col justify-between">
+    <div className={cn(
+      "min-h-screen flex md:items-center md:justify-center p-4",
+      isDarkMode 
+        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950" 
+        : "bg-gradient-to-br from-orange-50 to-white"
+    )}>
+      <div className={cn(
+        "w-full max-w-7xl flex flex-col md:flex-row md:shadow-xl md:rounded-xl overflow-hidden",
+        isDarkMode ? "bg-gray-900 border border-gray-800" : "bg-white"
+      )}>
+        <div className="w-full md:w-5/12 p-8 text-white hidden md:flex flex-col justify-between bg-gradient-to-tr from-orange-600 to-orange-400">
           <div>
             <h1 className="text-4xl font-bold mb-4">Vyoma</h1>
             <p className="text-xl mb-6">Your shopping companion for local discoveries</p>
           </div>
           
           <div className="space-y-6">
-            <div className="bg-white/10 p-4 rounded-lg">
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
               <div className="flex items-center mb-2">
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 <h3 className="font-medium">Easy Shopping</h3>
@@ -241,7 +244,7 @@ const Authentication = () => {
               </p>
             </div>
             
-            <div className="bg-white/10 p-4 rounded-lg">
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
               <div className="flex items-center mb-2">
                 <Heart className="w-5 h-5 mr-2" />
                 <h3 className="font-medium">Save Favorites</h3>
@@ -257,12 +260,23 @@ const Authentication = () => {
           </p>
         </div>
         
-        {/* Right Side: Auth Forms */}
-        <div className="w-full md:w-7/12 p-6 md:p-10">
+        <div className={cn(
+          "w-full md:w-7/12 p-6 md:p-10",
+          isDarkMode ? "text-gray-100" : ""
+        )}>
           <div className="text-center mb-6 md:mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-orange-600 md:hidden">Vyoma</h1>
-            <h2 className="text-xl md:text-2xl font-medium text-gray-800">Welcome Back</h2>
-            <p className="text-gray-500 text-sm mt-1">Login or create an account to continue</p>
+            <h1 className={cn(
+              "text-2xl md:text-3xl font-bold md:hidden",
+              isDarkMode ? "text-orange-400" : "text-orange-600"
+            )}>Vyoma</h1>
+            <h2 className={cn(
+              "text-xl md:text-2xl font-medium",
+              isDarkMode ? "text-gray-100" : "text-gray-800"
+            )}>Welcome Back</h2>
+            <p className={cn(
+              "text-sm mt-1",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>Login or create an account to continue</p>
           </div>
           
           <Tabs 
@@ -270,16 +284,29 @@ const Authentication = () => {
             onValueChange={setActiveTab} 
             className="w-full"
           >
-            <TabsList className="grid grid-cols-2 mb-8 bg-gray-100 p-1 rounded-full w-full max-w-xs mx-auto">
+            <TabsList className={cn(
+              "grid grid-cols-2 mb-8 p-1 rounded-full w-full max-w-xs mx-auto",
+              isDarkMode ? "bg-gray-800" : "bg-gray-100"
+            )}>
               <TabsTrigger 
                 value="login" 
-                className="rounded-full data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                className={cn(
+                  "rounded-full",
+                  isDarkMode 
+                    ? "data-[state=active]:bg-orange-500 data-[state=active]:text-white" 
+                    : "data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                )}
               >
                 Login
               </TabsTrigger>
               <TabsTrigger 
                 value="signup" 
-                className="rounded-full data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                className={cn(
+                  "rounded-full",
+                  isDarkMode 
+                    ? "data-[state=active]:bg-orange-500 data-[state=active]:text-white" 
+                    : "data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+                )}
               >
                 Sign Up
               </TabsTrigger>
@@ -289,7 +316,12 @@ const Authentication = () => {
               <div className="flex flex-col space-y-4 mb-4">
                 <Button 
                   variant="outline" 
-                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  className={cn(
+                    "h-12",
+                    isDarkMode 
+                      ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200" 
+                      : "bg-white hover:bg-gray-50 border border-gray-200"
+                  )}
                   onClick={handleGoogleLogin}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" className="mr-2" viewBox="0 0 186.69 190.5">
@@ -305,7 +337,12 @@ const Authentication = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  className={cn(
+                    "h-12",
+                    isDarkMode 
+                      ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200" 
+                      : "bg-white hover:bg-gray-50 border border-gray-200"
+                  )}
                   onClick={handleFacebookLogin}
                 >
                   <Facebook className="w-5 h-5 mr-2 text-[#1877F2]" />
@@ -314,7 +351,12 @@ const Authentication = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  className={cn(
+                    "h-12",
+                    isDarkMode 
+                      ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200" 
+                      : "bg-white hover:bg-gray-50 border border-gray-200"
+                  )}
                   onClick={handlePhoneLogin}
                 >
                   <Phone className="w-5 h-5 mr-2 text-orange-500" />
@@ -323,8 +365,14 @@ const Authentication = () => {
               </div>
               
               <div className="relative my-6">
-                <Separator className="absolute inset-0 flex items-center" />
-                <span className="relative z-10 bg-white px-4 text-sm text-gray-500 mx-auto">or login with email</span>
+                <Separator className={cn(
+                  "absolute inset-0 flex items-center",
+                  isDarkMode ? "bg-gray-700" : ""
+                )} />
+                <span className={cn(
+                  "relative z-10 px-4 text-sm mx-auto",
+                  isDarkMode ? "bg-gray-900 text-gray-400" : "bg-white text-gray-500"
+                )}>or login with email</span>
               </div>
               
               <Form {...loginForm}>
@@ -334,15 +382,23 @@ const Authentication = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700">Email</FormLabel>
+                        <FormLabel className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Email</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Mail className={cn(
+                              "absolute left-3 top-3 h-5 w-5",
+                              isDarkMode ? "text-gray-500" : "text-gray-400"
+                            )} />
                             <Input 
                               placeholder="your.email@example.com" 
                               {...field} 
                               type="email" 
-                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
+                              className={cn(
+                                "pl-10 h-12",
+                                isDarkMode 
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
                             />
                           </div>
                         </FormControl>
@@ -355,15 +411,23 @@ const Authentication = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700">Password</FormLabel>
+                        <FormLabel className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Password</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Lock className={cn(
+                              "absolute left-3 top-3 h-5 w-5",
+                              isDarkMode ? "text-gray-500" : "text-gray-400"
+                            )} />
                             <Input 
                               placeholder="••••••••" 
                               {...field} 
                               type="password" 
-                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
+                              className={cn(
+                                "pl-10 h-12",
+                                isDarkMode 
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
                             />
                           </div>
                         </FormControl>
@@ -379,9 +443,15 @@ const Authentication = () => {
                       <input 
                         type="checkbox" 
                         id="remember" 
-                        className="h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0"
+                        className={cn(
+                          "h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0",
+                          isDarkMode ? "border-gray-600 bg-gray-700" : ""
+                        )}
                       />
-                      <label htmlFor="remember" className="ml-2 block text-sm text-gray-600">
+                      <label htmlFor="remember" className={cn(
+                        "ml-2 block text-sm",
+                        isDarkMode ? "text-gray-400" : "text-gray-600"
+                      )}>
                         Remember me
                       </label>
                     </div>
@@ -392,7 +462,12 @@ const Authentication = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-orange-500 hover:bg-orange-600 h-12 text-white font-medium" 
+                    className={cn(
+                      "w-full h-12 text-white font-medium",
+                      isDarkMode
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    )}
                     disabled={isLogging}
                   >
                     {isLogging ? "Logging in..." : "Login"} 
@@ -406,7 +481,12 @@ const Authentication = () => {
               <div className="flex flex-col space-y-4 mb-4">
                 <Button 
                   variant="outline" 
-                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  className={cn(
+                    "h-12",
+                    isDarkMode 
+                      ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200" 
+                      : "bg-white hover:bg-gray-50 border border-gray-200"
+                  )}
                   onClick={handleGoogleLogin}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" className="mr-2" viewBox="0 0 186.69 190.5">
@@ -422,7 +502,12 @@ const Authentication = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  className={cn(
+                    "h-12",
+                    isDarkMode 
+                      ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200" 
+                      : "bg-white hover:bg-gray-50 border border-gray-200"
+                  )}
                   onClick={handleFacebookLogin}
                 >
                   <Facebook className="w-5 h-5 mr-2 text-[#1877F2]" />
@@ -431,7 +516,12 @@ const Authentication = () => {
                 
                 <Button 
                   variant="outline" 
-                  className="bg-white hover:bg-gray-50 border border-gray-200 h-12" 
+                  className={cn(
+                    "h-12",
+                    isDarkMode 
+                      ? "bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-200" 
+                      : "bg-white hover:bg-gray-50 border border-gray-200"
+                  )}
                   onClick={handlePhoneLogin}
                 >
                   <Phone className="w-5 h-5 mr-2 text-orange-500" />
@@ -440,8 +530,14 @@ const Authentication = () => {
               </div>
               
               <div className="relative my-6">
-                <Separator className="absolute inset-0 flex items-center" />
-                <span className="relative z-10 bg-white px-4 text-sm text-gray-500 mx-auto">or sign up with email</span>
+                <Separator className={cn(
+                  "absolute inset-0 flex items-center",
+                  isDarkMode ? "bg-gray-700" : ""
+                )} />
+                <span className={cn(
+                  "relative z-10 px-4 text-sm mx-auto",
+                  isDarkMode ? "bg-gray-900 text-gray-400" : "bg-white text-gray-500"
+                )}>or sign up with email</span>
               </div>
               
               <Form {...signupForm}>
@@ -451,14 +547,22 @@ const Authentication = () => {
                     name="name"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700">Name</FormLabel>
+                        <FormLabel className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Name</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <User className={cn(
+                              "absolute left-3 top-3 h-5 w-5",
+                              isDarkMode ? "text-gray-500" : "text-gray-400"
+                            )} />
                             <Input 
                               placeholder="John Doe" 
                               {...field} 
-                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
+                              className={cn(
+                                "pl-10 h-12",
+                                isDarkMode 
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
                             />
                           </div>
                         </FormControl>
@@ -466,20 +570,29 @@ const Authentication = () => {
                       </FormItem>
                     )}
                   />
+                  
                   <FormField
                     control={signupForm.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700">Email</FormLabel>
+                        <FormLabel className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Email</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Mail className={cn(
+                              "absolute left-3 top-3 h-5 w-5",
+                              isDarkMode ? "text-gray-500" : "text-gray-400"
+                            )} />
                             <Input 
                               placeholder="your.email@example.com" 
                               {...field} 
                               type="email" 
-                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
+                              className={cn(
+                                "pl-10 h-12",
+                                isDarkMode 
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
                             />
                           </div>
                         </FormControl>
@@ -492,15 +605,23 @@ const Authentication = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700">Password</FormLabel>
+                        <FormLabel className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Password</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Lock className={cn(
+                              "absolute left-3 top-3 h-5 w-5",
+                              isDarkMode ? "text-gray-500" : "text-gray-400"
+                            )} />
                             <Input 
                               placeholder="••••••••" 
                               {...field} 
                               type="password" 
-                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
+                              className={cn(
+                                "pl-10 h-12",
+                                isDarkMode 
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
                             />
                           </div>
                         </FormControl>
@@ -513,15 +634,23 @@ const Authentication = () => {
                     name="confirmPassword"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-gray-700">Confirm Password</FormLabel>
+                        <FormLabel className={isDarkMode ? "text-gray-300" : "text-gray-700"}>Confirm Password</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                            <Lock className={cn(
+                              "absolute left-3 top-3 h-5 w-5",
+                              isDarkMode ? "text-gray-500" : "text-gray-400"
+                            )} />
                             <Input 
                               placeholder="••••••••" 
                               {...field} 
                               type="password" 
-                              className="pl-10 h-12 border-gray-200 focus:border-orange-500" 
+                              className={cn(
+                                "pl-10 h-12",
+                                isDarkMode 
+                                  ? "bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500" 
+                                  : "border-gray-200 focus:border-orange-500"
+                              )} 
                             />
                           </div>
                         </FormControl>
@@ -536,16 +665,27 @@ const Authentication = () => {
                     <input 
                       type="checkbox" 
                       id="terms" 
-                      className="h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0"
+                      className={cn(
+                        "h-4 w-4 text-orange-500 border-gray-300 rounded focus:ring-0",
+                        isDarkMode ? "border-gray-600 bg-gray-700" : ""
+                      )}
                     />
-                    <label htmlFor="terms" className="ml-2 block text-sm text-gray-600">
+                    <label htmlFor="terms" className={cn(
+                      "ml-2 block text-sm",
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
+                    )}>
                       I agree to the <a href="#" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="#" className="text-orange-500 hover:underline">Privacy Policy</a>
                     </label>
                   </div>
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-orange-500 hover:bg-orange-600 h-12 text-white font-medium" 
+                    className={cn(
+                      "w-full h-12 text-white font-medium",
+                      isDarkMode
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    )}
                     disabled={isRegistering}
                   >
                     {isRegistering ? "Creating Account..." : "Create Account"}

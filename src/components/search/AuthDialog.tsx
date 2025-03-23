@@ -45,20 +45,20 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       <DialogContent className={cn(
         "sm:max-w-[425px] p-0 overflow-hidden border-0 rounded-xl shadow-xl",
         isDarkMode 
-          ? "bg-gray-900 text-white dark-glass" 
+          ? "bg-gray-900/95 text-white border border-gray-800" 
           : "bg-white"
       )}>
         {/* Animated header with gradient */}
         <AnimatedGradient 
           className="py-8 px-6"
-          hue={isDarkMode ? "amber" : "orange"}
+          hue="orange"
           intensity={isDarkMode ? "medium" : "soft"}
           speed="medium"
         >
           <div className="flex flex-col items-center justify-center relative z-10">
             <div className={cn(
               "bg-white/20 p-3 rounded-full mb-4 backdrop-blur-sm",
-              isDarkMode ? "shadow-[0_0_15px_rgba(255,255,255,0.1)]" : ""
+              isDarkMode ? "shadow-[0_0_15px_rgba(255,165,0,0.15)]" : ""
             )}>
               <LogIn className="h-6 w-6 text-white" />
             </div>
