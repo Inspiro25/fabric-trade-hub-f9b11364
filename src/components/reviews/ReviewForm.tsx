@@ -28,15 +28,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const { isDarkMode } = useTheme();
 
   useEffect(() => {
+    // Check Supabase authentication status on component mount and on auth state changes
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSupabaseUserId(session?.user?.id || null);
+      console.log("Current Supabase session user ID:", session?.user?.id);
     };
     
     checkSession();
     
+    // Set up auth state listener for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSupabaseUserId(session?.user?.id || null);
+      console.log("Auth state changed, user ID:", session?.user?.id);
     });
     
     return () => {
@@ -53,6 +57,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
     // First check if user is logged in with Supabase
     if (!supabaseUserId) {
+      console.log("No Supabase user ID found, opening auth dialog");
       setIsAuthDialogOpen(true);
       return;
     }
@@ -74,6 +79,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
       }
 
       const reviewType = productId ? 'product' : 'shop';
+      
+      console.log("Submitting review with Supabase user ID:", supabaseUserId);
       
       // Use Supabase user ID directly
       const result = await createReview({
@@ -109,7 +116,17 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
   const handleLogin = () => {
     setIsAuthDialogOpen(false);
-    window.location.reload();
+    // Force a check for the updated session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSupabaseUserId(session.user.id);
+        console.log("User logged in, session ID:", session.user.id);
+        toast({
+          title: 'Logged in successfully',
+          description: 'You can now submit your review.',
+        });
+      }
+    });
   };
 
   return (
@@ -124,55 +141,78 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
         isDarkMode && "text-gray-200"
       )}>Write a Review</h3>
       
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <p className={cn(
-            "text-xs mb-2",
-            isDarkMode ? "text-gray-400" : "text-gray-500"
-          )}>Select your rating:</p>
-          <div className="flex items-center">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => handleRatingChange(star)}
-                className="mr-1 focus:outline-none"
-              >
-                <Star
-                  className={`h-5 w-5 ${
-                    star <= rating 
-                      ? 'text-yellow-500 fill-yellow-500' 
-                      : isDarkMode ? 'text-gray-600' : 'text-gray-300'
-                  }`}
-                />
-              </button>
-            ))}
-            <span className={cn(
-              "text-xs ml-2",
+      {supabaseUserId ? (
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <p className={cn(
+              "text-xs mb-2",
               isDarkMode ? "text-gray-400" : "text-gray-500"
-            )}>
-              {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : 'Tap to rate'}
-            </span>
+            )}>Select your rating:</p>
+            <div className="flex items-center">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => handleRatingChange(star)}
+                  className="mr-1 focus:outline-none"
+                >
+                  <Star
+                    className={`h-5 w-5 ${
+                      star <= rating 
+                        ? 'text-yellow-500 fill-yellow-500' 
+                        : isDarkMode ? 'text-gray-600' : 'text-gray-300'
+                    }`}
+                  />
+                </button>
+              ))}
+              <span className={cn(
+                "text-xs ml-2",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
+                {rating > 0 ? `${rating} star${rating !== 1 ? 's' : ''}` : 'Tap to rate'}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="mb-4">
-          <Textarea
-            placeholder="Share your experience (optional)"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className={cn(
-              "w-full resize-none text-sm",
-              isDarkMode && "bg-gray-700 border-gray-600 text-gray-200"
-            )}
-            rows={4}
-          />
-        </div>
+          <div className="mb-4">
+            <Textarea
+              placeholder="Share your experience (optional)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className={cn(
+                "w-full resize-none text-sm",
+                isDarkMode && "bg-gray-700 border-gray-600 text-gray-200"
+              )}
+              rows={4}
+            />
+          </div>
 
-        <div className="flex justify-end">
+          <div className="flex justify-end">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || rating === 0}
+              className={cn(
+                "text-xs",
+                isDarkMode 
+                  ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                  : "bg-kutuku-primary hover:bg-kutuku-secondary"
+              )}
+              size="sm"
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Review'}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <div className="text-center py-4">
+          <p className={cn(
+            "text-sm mb-3", 
+            isDarkMode ? "text-gray-300" : "text-gray-600"
+          )}>
+            You need to be logged in to submit a review
+          </p>
           <Button 
-            type="submit" 
-            disabled={isSubmitting || rating === 0}
+            onClick={() => setIsAuthDialogOpen(true)}
             className={cn(
               "text-xs",
               isDarkMode 
@@ -181,10 +221,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
             )}
             size="sm"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Review'}
+            Log In to Review
           </Button>
         </div>
-      </form>
+      )}
 
       <AuthDialog 
         open={isAuthDialogOpen} 

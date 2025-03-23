@@ -162,57 +162,13 @@ export const createReview = async (
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      console.warn('No active Supabase session - attempting to use converted Firebase UID');
-      
-      // If no Supabase session, use the converted user ID
-      const safeUserId = ensureValidUuid(reviewData.userId);
-      console.log('Using converted user ID for review:', safeUserId);
-      
-      // Note: This will likely fail with RLS unless you're signed in with Supabase
-      // The error will be caught below
-      const { data, error } = await supabase
-        .from('product_reviews')
-        .insert({
-          rating: reviewData.rating,
-          comment: reviewData.comment,
-          images: reviewData.images || [],
-          user_id: safeUserId,
-          product_id: reviewData.productId,
-          shop_id: reviewData.shopId,
-          review_type: reviewData.reviewType,
-          helpful_count: 0
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating review (RLS likely preventing access):', error);
-        toast({
-          title: 'Authentication required',
-          description: 'Please sign in with Supabase to submit reviews',
-          variant: 'destructive'
-        });
-        return null;
-      }
-
+      console.error('No active Supabase session - user must be logged in to submit reviews');
       toast({
-        title: 'Review submitted',
-        description: 'Thank you for your feedback!'
+        title: 'Authentication required',
+        description: 'Please sign in to submit reviews',
+        variant: 'destructive'
       });
-
-      return {
-        id: data.id,
-        rating: data.rating,
-        comment: data.comment || '',
-        images: data.images || [],
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        productId: data.product_id,
-        shopId: data.shop_id,
-        userId: data.user_id,
-        helpfulCount: data.helpful_count,
-        reviewType: data.review_type as 'product' | 'shop'
-      };
+      return null;
     }
     
     // User is authenticated with Supabase, use their actual Supabase UID
@@ -224,7 +180,7 @@ export const createReview = async (
         rating: reviewData.rating,
         comment: reviewData.comment,
         images: reviewData.images || [],
-        user_id: session.user.id,
+        user_id: session.user.id, // Always use the session user ID
         product_id: reviewData.productId,
         shop_id: reviewData.shopId,
         review_type: reviewData.reviewType,
