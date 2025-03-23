@@ -74,7 +74,7 @@ const AdminDashboard = () => {
             address: data[0].address,
             ownerName: data[0].owner_name,
             ownerEmail: data[0].owner_email,
-            phoneNumber: data[0].phone_number,
+            phoneNumber: data[0].phone_number || '',
             rating: data[0].rating || 0,
             reviewCount: data[0].review_count || 0,
             followers: data[0].followers_count || 0,
@@ -235,10 +235,8 @@ const AdminDashboard = () => {
     case 'orders':
       tabContent = (
         <>
-          <ShopOrdersList onViewDetails={handleViewOrderDetails} />
-          {selectedOrder && (
-            <OrderDetailsView orderId={selectedOrder} onClose={handleCloseOrderDetails} />
-          )}
+          <ShopOrdersList />
+          {selectedOrder && <OrderDetailsView orderId={selectedOrder} />}
         </>
       );
       break;
@@ -257,7 +255,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      <ShopAdminHeader shop={shopData} isLoading={isLoading} />
+      <ShopAdminHeader shop={shopData} />
       <div className="container mx-auto py-6">
         <Tabs defaultValue="overview" className="w-full">
           <TabsList>

@@ -4,18 +4,18 @@ export interface Shop {
   name: string;
   description: string;
   logo: string;
-  coverImage: string; // Changed from cover_image
+  coverImage: string; 
   address: string;
-  ownerName: string; // Changed from owner_name
-  ownerEmail: string; // Changed from owner_email
-  phoneNumber: string; // Changed from phone_number
+  ownerName: string; 
+  ownerEmail: string;
+  phoneNumber: string;
   rating: number;
-  reviewCount: number; // Added to match expected type
-  followers: number; // Changed from followers_count
-  productIds: string[]; // Added to match expected type
-  isVerified: boolean; // Changed from is_verified 
+  reviewCount: number;
+  followers: number;
+  productIds: string[];
+  isVerified: boolean;
   status: string;
-  createdAt: string; // Changed from created_at
+  createdAt: string;
 }
 
 export interface ShopSummary {
