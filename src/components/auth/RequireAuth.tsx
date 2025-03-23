@@ -30,8 +30,8 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
           
           // If we have a Supabase session but no currentUser, this indicates a potential issue
           if (!currentUser && !loading) {
-            console.log("RequireAuth: Supabase session exists but currentUser is null, refreshing auth state");
-            // Force refresh auth context instead of reloading the page
+            console.log("RequireAuth: Supabase session exists but currentUser is null, refreshing page");
+            // Force reload to sync auth state
             window.location.reload();
             return;
           }
@@ -64,7 +64,7 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
     navigate(redirectTo);
   };
 
-  // Don't render anything until auth check is complete
+  // Show a smoother loading experience
   if (loading || localLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">

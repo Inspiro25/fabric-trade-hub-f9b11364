@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { LogIn, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthDialogProps {
   open: boolean;
@@ -32,15 +33,23 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   const handleLogin = async () => {
     try {
       setIsLoading(true);
-      await loginWithGoogleProvider();
+      const result = await loginWithGoogleProvider();
       
-      toast.success("Login successful!");
-      onLogin();
-      onOpenChange(false);
+      // Add delay to ensure auth state is updated
+      setTimeout(() => {
+        const { data: { session } } = supabase.auth.getSession();
+        if (session) {
+          toast.success("Login successful!");
+          onLogin();
+        } else {
+          // If we still don't have a session, redirect to auth page
+          navigate('/auth');
+        }
+        onOpenChange(false);
+      }, 1000);
     } catch (error: any) {
       console.error("Login failed:", error);
       toast.error(error.message || "Login failed. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };

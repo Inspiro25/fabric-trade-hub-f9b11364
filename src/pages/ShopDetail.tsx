@@ -3,14 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
 import { Product } from '@/lib/products';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductGrid from '@/components/features/ProductGrid';
-import { MapPin, Star, CheckCircle, Store, ArrowLeft, Share2, Calendar, ShoppingBag, Users, Settings } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Shop } from '@/lib/shops';
 import ShopReviewsTab from '@/components/reviews/ShopReviewsTab';
@@ -18,11 +13,16 @@ import { checkFollowStatus, followShop, unfollowShop, getShopFollowersCount } fr
 import { supabase } from '@/integrations/supabase/client';
 import AuthDialog from '@/components/search/AuthDialog';
 import { useTheme } from '@/contexts/ThemeContext';
+import ShopDetailHeader from '@/components/shop/ShopDetailHeader';
+import ShopDetailCard from '@/components/shop/ShopDetailCard';
+import ShopActions from '@/components/shop/ShopActions';
+import { Card, CardContent } from '@/components/ui/card';
+import { Star, ShoppingBag, Users } from 'lucide-react';
 
 const ShopDetail = () => {
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
-  const { isDarkMode, primaryColor, secondaryColor, accentColor, cardBgColor, cardBorderColor, textColor } = useTheme();
+  const { isDarkMode } = useTheme();
   const [isFollowing, setIsFollowing] = useState(false);
   const [shop, setShop] = useState<Shop | null>(null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
@@ -102,6 +102,7 @@ const ShopDetail = () => {
         }
       } catch (error) {
         console.error('Error fetching shop data:', error);
+        toast.error("Failed to load shop details. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -113,18 +114,17 @@ const ShopDetail = () => {
   const handleFollow = async () => {
     if (!id || !shop) return;
     
+    // Check if user is logged in first
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.log("User not logged in, showing auth dialog");
+      setIsAuthDialogOpen(true);
+      return;
+    }
+    
     setIsFollowLoading(true);
     
     try {
-      // Always check fresh session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.log("User not logged in, showing auth dialog");
-        setIsAuthDialogOpen(true);
-        return;
-      }
-      
       console.log("Processing follow action with user ID:", session.user.id);
       
       let success;
@@ -196,143 +196,43 @@ const ShopDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-orange-50'}`}>
+        <div className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${isDarkMode ? 'border-orange-500' : 'border-orange-500'}`}></div>
       </div>
     );
   }
 
   if (!shop) {
     return (
-      <div className="container mx-auto px-4 py-6 text-center">
+      <div className={`container mx-auto px-4 py-6 text-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-orange-50'}`}>
         <h2 className="text-lg font-bold mb-3">Shop not found</h2>
         <p className="mb-4 text-sm">The shop you're looking for doesn't exist.</p>
-        <Button asChild size="sm">
-          <Link to="/shops">Back to Shops</Link>
-        </Button>
+        <Link to="/shops" className={`px-4 py-2 rounded text-white ${isDarkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'}`}>
+          Back to Shops
+        </Link>
       </div>
     );
   }
 
-  const createdDate = new Date(shop.createdAt);
-  const timeAgo = formatDistanceToNow(createdDate, { addSuffix: true });
-
   return (
-    <div className="pb-10">
-      <div className={`${isDarkMode ? 'bg-gradient-to-r from-orange-950/60 to-orange-900/60' : 'bg-gradient-to-r from-orange-100 to-orange-200'} shadow-sm`}>
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-              <Link to="/shops">
-                <Button size="icon" variant="ghost" className="h-7 w-7 mr-2">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-              <h1 className="text-sm font-medium">Shop Details</h1>
-            </div>
-            <Link to="/admin/login">
-              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
-                <Settings className="h-3.5 w-3.5 mr-1.5" />
-                Admin
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
+    <div className={`pb-10 ${isDarkMode ? 'bg-gray-900' : 'bg-orange-50'}`}>
+      <ShopDetailHeader isDarkMode={isDarkMode} />
       
       <div className="container mx-auto px-4 -mt-2">
-        <Card className={`overflow-hidden border-none shadow-md ${isDarkMode ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-white'}`}>
-          <div className="h-28 relative">
-            <img 
-              src={shop.coverImage} 
-              alt={shop.name}
-              className={`w-full h-full object-cover ${isDarkMode ? 'opacity-70' : 'opacity-80'}`}
-            />
-            <div className="absolute bottom-0 right-0 p-2 flex gap-1.5">
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                className={`h-7 text-xs px-2.5 ${isDarkMode ? 'bg-gray-700/80 text-gray-200' : 'bg-white/80'} backdrop-blur-sm`}
-                onClick={handleShare}
-              >
-                <Share2 className="h-3 w-3 mr-1" />
-                Share
-              </Button>
-              <Button 
-                size="sm" 
-                className={`h-7 text-xs px-2.5 ${isFollowing ? 
-                  (isDarkMode ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700') : 
-                  (isDarkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600')
-                } ${isFollowLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                onClick={handleFollow}
-                disabled={isFollowLoading}
-              >
-                {isFollowLoading ? (
-                  <span className="flex items-center">
-                    <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                    {isFollowing ? 'Unfollowing...' : 'Following...'}
-                  </span>
-                ) : (
-                  <>
-                    <Store className="h-3 w-3 mr-1" />
-                    {isFollowing ? 'Unfollow' : 'Follow'}
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-          
-          <CardContent className={`p-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="flex items-center">
-              <div className={`h-12 w-12 rounded-full overflow-hidden border-2 ${isDarkMode ? 'border-gray-700' : 'border-white'} bg-white shadow-sm flex-shrink-0`}>
-                <img 
-                  src={shop.logo} 
-                  alt={`${shop.name} logo`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              
-              <div className="ml-3">
-                <div className="flex items-center">
-                  <h2 className={`text-sm font-semibold ${isDarkMode ? 'text-white' : ''}`}>{shop.name}</h2>
-                  {shop.isVerified && (
-                    <CheckCircle className="h-3 w-3 text-green-500 ml-1.5" />
-                  )}
-                </div>
-                
-                <div className={`flex items-center mt-0.5 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <Star className="h-2.5 w-2.5 text-yellow-500 mr-1" />
-                  <span>{shop.rating.toFixed(1)}</span>
-                  <span className="mx-1">•</span>
-                  <span>{shop.reviewCount} reviews</span>
-                  <span className="mx-1">•</span>
-                  <Users className={`h-2.5 w-2.5 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'} mr-1`} />
-                  <span>{followersCount} followers</span>
-                </div>
-                
-                <div className={`flex items-center mt-0.5 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <MapPin className="h-2.5 w-2.5 mr-1" />
-                  <span className="truncate">{shop.address}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-300 border-t border-gray-700' : 'text-gray-600 border-t border-gray-100'} pt-2`}>
-              <p className="line-clamp-2">{shop.description}</p>
-              
-              <div className="flex items-center justify-between mt-2 pt-1">
-                <span className={`text-[10px] flex items-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                  <Calendar className="h-2.5 w-2.5 mr-1" />
-                  Joined {timeAgo}
-                </span>
-                <span className={`text-[10px] flex items-center ${isDarkMode ? 'text-orange-400' : 'text-orange-600'} font-medium`}>
-                  <ShoppingBag className="h-2.5 w-2.5 mr-1" />
-                  {shopProducts.length} products
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative">
+          <ShopDetailCard 
+            shop={shop} 
+            followersCount={followersCount} 
+            productsCount={shopProducts.length} 
+          />
+          <ShopActions 
+            isFollowing={isFollowing}
+            isFollowLoading={isFollowLoading}
+            handleFollow={handleFollow}
+            handleShare={handleShare}
+            shopName={shop.name}
+          />
+        </div>
       </div>
       
       <div className="container mx-auto px-4 mt-3">

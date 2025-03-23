@@ -54,8 +54,7 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     
     if (!session || !session.user) {
       console.log('No active session found when attempting to follow shop');
-      toast.error('You must be logged in to follow shops');
-      return false;
+      return false; // Let the UI handle showing the auth dialog
     }
     
     const userId = session.user.id;
@@ -83,6 +82,7 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     
     if (error) {
       console.error('Error following shop:', error);
+      toast.error("Could not follow shop. Please try again.");
       return false;
     }
     
@@ -90,6 +90,7 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Exception following shop:', error);
+    toast.error("Could not follow shop. Please try again.");
     return false;
   }
 };
@@ -106,8 +107,7 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     
     if (!session || !session.user) {
       console.log('No active session found when attempting to unfollow shop');
-      toast.error('You must be logged in to unfollow shops');
-      return false;
+      return false; // Let the UI handle showing the auth dialog
     }
     
     const userId = session.user.id;
@@ -122,6 +122,7 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     
     if (error) {
       console.error('Error unfollowing shop:', error);
+      toast.error("Could not unfollow shop. Please try again.");
       return false;
     }
     
@@ -129,6 +130,7 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Exception unfollowing shop:', error);
+    toast.error("Could not unfollow shop. Please try again.");
     return false;
   }
 };
