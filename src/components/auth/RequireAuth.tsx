@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthDialog from '@/components/search/AuthDialog';
 
@@ -11,7 +10,6 @@ interface RequireAuthProps {
 
 const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
   const { currentUser, loading } = useAuth();
-  const navigate = useNavigate();
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   useEffect(() => {
@@ -22,7 +20,8 @@ const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
   }, [currentUser, loading]);
 
   const handleLogin = () => {
-    navigate(redirectTo);
+    // Use window.location for navigation instead of useNavigate
+    window.location.href = redirectTo;
   };
 
   // Don't render children until auth check is complete

@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -8,7 +7,6 @@ import { Product } from '@/lib/types/product';
 import { SearchPageProduct } from './types';
 
 export const useSearchCartIntegration = () => {
-  const navigate = useNavigate();
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
@@ -52,7 +50,9 @@ export const useSearchCartIntegration = () => {
         description: "You can view it in your cart",
         action: {
           label: "View Cart",
-          onClick: () => navigate('/cart')
+          onClick: () => {
+            window.location.href = '/cart';
+          }
         },
         duration: 3000,
         dismissible: true
@@ -96,7 +96,9 @@ export const useSearchCartIntegration = () => {
         description: "You can view it in your wishlist",
         action: {
           label: "View Wishlist",
-          onClick: () => navigate('/wishlist')
+          onClick: () => {
+            window.location.href = '/wishlist';
+          }
         },
         duration: 3000,
         dismissible: true

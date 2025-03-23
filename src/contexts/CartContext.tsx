@@ -7,7 +7,6 @@ import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
 import AuthDialog from '@/components/search/AuthDialog';
-import { useNavigate } from 'react-router-dom';
 
 export interface CartItem {
   id: string;
@@ -37,13 +36,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasPendingMigration, setHasPendingMigration] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const navigate = useNavigate();
   
   // Use the cart storage hook to manage cart data
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
   
   // Use the cart operations hook to handle cart actions
-  const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
+  const { addToCartOp, removeFromCartOp, updateQuantityOp, clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
 
   // Mark initialization complete after first load
   useEffect(() => {
@@ -119,7 +117,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const handleLogin = () => {
-    navigate('/auth');
+    // Instead of using navigate directly, we'll redirect using window.location
+    window.location.href = '/auth';
   };
 
   // Memoize wrapped functions to prevent unnecessary re-renders
