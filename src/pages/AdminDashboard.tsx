@@ -1,361 +1,252 @@
 
 import React, { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { ShopFormValues } from '@/components/management/ShopForm';
-import { motion } from 'framer-motion';
+import { 
+  ShoppingBag, Users, LogOut, Store, Tag, 
+  BarChart, Settings, Inbox, ChevronDown 
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getShopById } from '@/lib/supabase/shops';
+import { Shop } from '@/lib/shops/types';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ShopInfoCard from '@/components/admin/ShopInfoCard';
+import ShopSalesStats from '@/components/admin/ShopSalesStats';
+import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
-interface Shop {
-  id: string;
-  name: string;
-  description: string;
-  logo: string | null;
-  coverImage: string | null;
-  address: string;
-  isVerified: boolean;
-  followersCount: number | null;
-  reviewCount: number | null;
-  rating: number | null;
-  status: 'active' | 'pending' | 'suspended';
-  ownerName: string;
-  ownerEmail: string;
-  phoneNumber: string;
-  createdAt: string;
-}
-
-const AdminDashboard: React.FC = () => {
-  const [shopId, setShopId] = useState('');
-  const [shop, setShop] = useState<Shop | null>(null);
-  const [loading, setLoading] = useState(false);
+const AdminDashboard = () => {
   const navigate = useNavigate();
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [openOrderDialog, setOpenOrderDialog] = useState(false);
+  const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
+  const isMobile = useIsMobile();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
-    const storedShopId = localStorage.getItem('adminShopId');
-    if (storedShopId) {
-      setShopId(storedShopId);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (shopId) {
-      localStorage.setItem('adminShopId', shopId);
-      fetchShop();
-    }
-  }, [shopId]);
-
-  const fetchShop = async () => {
-    setLoading(true);
-    if (!shopId) {
-      toast.error('Please enter a Shop ID');
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('shops')
-        .select('*')
-        .eq('id', shopId)
-        .single();
+    const checkAdminAuth = async () => {
+      const adminShopId = sessionStorage.getItem('adminShopId');
       
-      if (error) {
-        console.error('Error fetching shop data:', error);
+      if (!adminShopId) {
+        toast.error('You must be logged in as a shop administrator');
+        navigate('/admin/login');
+        return;
+      }
+      
+      setIsLoading(true);
+      
+      try {
+        const shopData = await getShopById(adminShopId);
+        
+        if (!shopData) {
+          throw new Error('Shop not found');
+        }
+        
+        setShop(shopData);
+      } catch (error) {
+        console.error('Error loading shop data:', error);
         toast.error('Failed to load shop data');
-        return;
+        navigate('/admin/login');
+      } finally {
+        setIsLoading(false);
       }
-      
-      setShop({
-        id: data.id,
-        name: data.name,
-        description: data.description,
-        logo: data.logo,
-        coverImage: data.cover_image,
-        address: data.address,
-        isVerified: data.is_verified,
-        followersCount: data.followers_count,
-        reviewCount: data.review_count,
-        rating: data.rating,
-        status: data.status as 'active' | 'pending' | 'suspended',
-        ownerName: data.owner_name,
-        ownerEmail: data.owner_email,
-        phoneNumber: data.phone_number || '',
-        createdAt: data.created_at
-      });
-      
-      setLoading(false);
-    } catch (error) {
-      console.error('Error in fetchShop:', error);
-      toast.error('Failed to load shop data');
-      setLoading(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setShop(prevShop => ({
-      ...prevShop,
-      [name]: value,
-    } as any));
-  };
-
-  const handleToggleVerification = () => {
-    setShop(prevShop => ({
-      ...prevShop,
-      isVerified: !prevShop.isVerified,
-    } as Shop));
-  };
-
-  const handleStatusChange = (status: 'active' | 'pending' | 'suspended') => {
-    setShop(prevShop => ({
-      ...prevShop,
-      status: status,
-    } as Shop));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    };
     
-    try {
-      const { error } = await supabase
-        .from('shops')
-        .update({
-          name: shop?.name,
-          description: shop?.description,
-          logo: shop?.logo,
-          cover_image: shop?.coverImage,
-          address: shop?.address,
-          is_verified: shop?.isVerified,
-          status: shop?.status,
-          owner_name: shop?.ownerName,
-          owner_email: shop?.ownerEmail,
-          phone_number: shop?.phoneNumber,
-        })
-        .eq('id', shopId);
-      
-      if (error) {
-        console.error('Error updating shop:', error);
-        toast.error('Failed to update shop data');
-        setLoading(false);
-        return;
-      }
-      
-      toast.success('Shop data updated successfully!');
-      setLoading(false);
-    } catch (error) {
-      console.error('Error in handleSubmit:', error);
-      toast.error('Failed to update shop data');
-      setLoading(false);
-    }
-  };
+    checkAdminAuth();
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminShopId');
-    navigate('/management/login');
+    sessionStorage.removeItem('adminShopId');
+    toast.success('Logged out successfully');
+    navigate('/admin/login');
   };
 
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.1
-      }
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vyoma-primary"></div>
+        <p className="mt-4 text-gray-500">Loading shop dashboard...</p>
+      </div>
+    );
+  }
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { type: "spring", stiffness: 300, damping: 24 }
-    }
-  };
-
-  return (
-    <div className="container mx-auto p-4">
-      <motion.h1 
-        className="text-2xl font-semibold mb-4"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        VYOMA Admin Dashboard
-      </motion.h1>
-      
-      <motion.div 
-        className="mb-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-      >
-        <Label htmlFor="shopId">Shop ID:</Label>
-        <div className="flex items-center space-x-2">
-          <Input
-            type="text"
-            id="shopId"
-            value={shopId}
-            onChange={(e) => setShopId(e.target.value)}
-            className="max-w-xs"
-          />
-          <Button onClick={fetchShop} disabled={loading}>
-            {loading ? 'Loading...' : 'Load Shop'}
+  if (!shop) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="text-center">
+          <Store className="h-12 w-12 text-gray-400 mb-4 mx-auto" />
+          <h2 className="text-2xl font-bold mb-2">Shop Not Found</h2>
+          <p className="mb-6 text-gray-500">We couldn't find your shop details.</p>
+          <Button onClick={() => navigate('/admin/login')}>
+            Return to Login
           </Button>
         </div>
-      </motion.div>
+      </div>
+    );
+  }
 
-      {shop && (
-        <motion.form 
-          onSubmit={handleSubmit} 
-          className="space-y-4"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="name">Name:</Label>
-            <Input
-              type="text"
-              id="name"
-              name="name"
-              value={shop.name}
-              onChange={(e) => setShop({...shop, name: e.target.value})}
-            />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="description">Description:</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={shop.description}
-              onChange={(e) => setShop({...shop, description: e.target.value})}
-            />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="logo">Logo URL:</Label>
-            <Input
-              type="text"
-              id="logo"
-              name="logo"
-              value={shop.logo || ''}
-              onChange={(e) => setShop({...shop, logo: e.target.value})}
-            />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="coverImage">Cover Image URL:</Label>
-            <Input
-              type="text"
-              id="coverImage"
-              name="coverImage"
-              value={shop.coverImage || ''}
-              onChange={(e) => setShop({...shop, coverImage: e.target.value})}
-            />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="address">Address:</Label>
-            <Input
-              type="text"
-              id="address"
-              name="address"
-              value={shop.address}
-              onChange={(e) => setShop({...shop, address: e.target.value})}
-            />
-          </motion.div>
+  return (
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode ? "bg-gray-900" : "bg-gray-50"
+    )}>
+      <header className={cn(
+        "py-4 px-6 flex justify-between items-center border-b",
+        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+      )}>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className={cn(
+              isDarkMode ? "bg-gray-700 text-orange-400" : "bg-vyoma-light text-vyoma-primary"
+            )}>
+              {shop.name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className={cn(
+              "font-semibold",
+              isDarkMode ? "text-white" : "text-gray-900"
+            )}>
+              {shop.name}
+            </h1>
+            <div className="flex items-center gap-2">
+              <Badge variant={
+                shop.status === 'active' ? 'success' : 
+                shop.status === 'pending' ? 'warning' : 'destructive'
+              }>
+                {shop.status}
+              </Badge>
+              {shop.isVerified && 
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
+                  Verified
+                </Badge>
+              }
+            </div>
+          </div>
+        </div>
 
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="ownerName">Owner Name:</Label>
-            <Input
-              type="text"
-              id="ownerName"
-              name="ownerName"
-              value={shop.ownerName}
-              onChange={(e) => setShop({...shop, ownerName: e.target.value})}
-            />
-          </motion.div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            <span className={isMobile ? "sr-only" : ""}>Logout</span>
+          </Button>
+        </div>
+      </header>
 
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="ownerEmail">Owner Email:</Label>
-            <Input
-              type="email"
-              id="ownerEmail"
-              name="ownerEmail"
-              value={shop.ownerEmail}
-              onChange={(e) => setShop({...shop, ownerEmail: e.target.value})}
-            />
-          </motion.div>
+      <main className="container mx-auto py-6 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Shop Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Owner:</span>
+                  <span className="font-medium">{shop.ownerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Email:</span>
+                  <span className="font-medium">{shop.ownerEmail}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Phone:</span>
+                  <span className="font-medium">{shop.phoneNumber || 'Not provided'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Address:</span>
+                  <span className="font-medium">{shop.address}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Followers:</span>
+                  <span className="font-medium">{shop.followers_count}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          <motion.div variants={itemVariants}>
-            <Label htmlFor="phoneNumber">Phone Number:</Label>
-            <Input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={shop.phoneNumber}
-              onChange={(e) => setShop({...shop, phoneNumber: e.target.value})}
-            />
-          </motion.div>
+          <ShopSalesStats shopId={shop.id} />
+        </div>
+
+        <Separator className="my-6" />
+
+        <h2 className={cn(
+          "text-xl font-semibold mb-4",
+          isDarkMode ? "text-white" : "text-gray-900"
+        )}>
+          Quick Actions
+        </h2>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <Button variant="outline" onClick={() => navigate('/shop/' + shop.id)} className="h-auto py-4 justify-start gap-3">
+            <Store className="h-5 w-5" />
+            <div className="text-left">
+              <div className="font-medium">View Shop</div>
+              <div className="text-sm text-gray-500">See your shop's page</div>
+            </div>
+          </Button>
           
-          <motion.div className="flex items-center space-x-2" variants={itemVariants}>
-            <Label htmlFor="isVerified">Is Verified:</Label>
-            <Switch
-              id="isVerified"
-              checked={shop.isVerified}
-              onCheckedChange={(checked) => setShop({...shop, isVerified: checked})}
-            />
-          </motion.div>
+          <Button variant="outline" className="h-auto py-4 justify-start gap-3" onClick={() => setOpenOrderDialog(true)}>
+            <ShoppingBag className="h-5 w-5" />
+            <div className="text-left">
+              <div className="font-medium">Orders</div>
+              <div className="text-sm text-gray-500">Manage shop orders</div>
+            </div>
+          </Button>
           
-          <motion.div variants={itemVariants}>
-            <Label>Status:</Label>
-            <Select 
-              value={shop.status} 
-              onValueChange={(value) => setShop({...shop, status: value as 'active' | 'pending' | 'suspended'})}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={shop.status} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-          </motion.div>
+          <Button variant="outline" className="h-auto py-4 justify-start gap-3">
+            <Tag className="h-5 w-5" />
+            <div className="text-left">
+              <div className="font-medium">Products</div>
+              <div className="text-sm text-gray-500">Manage your products</div>
+            </div>
+          </Button>
           
-          <motion.div 
-            variants={itemVariants}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Shop'}
+          <Button variant="outline" className="h-auto py-4 justify-start gap-3" onClick={() => setOpenSettingsDialog(true)}>
+            <Settings className="h-5 w-5" />
+            <div className="text-left">
+              <div className="font-medium">Settings</div>
+              <div className="text-sm text-gray-500">Edit shop settings</div>
+            </div>
+          </Button>
+        </div>
+      </main>
+
+      <Dialog open={openOrderDialog} onOpenChange={setOpenOrderDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Orders</DialogTitle>
+            <DialogDescription>
+              This feature is coming soon.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-8">
+            <ShoppingBag className="h-16 w-16 text-gray-300" />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openSettingsDialog} onOpenChange={setOpenSettingsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Shop Settings</DialogTitle>
+            <DialogDescription>
+              Edit your shop details and settings.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center py-4">
+            <Button onClick={() => navigate('/admin/dashboard/settings')}>
+              Open Settings
             </Button>
-          </motion.div>
-        </motion.form>
-      )}
-
-      <motion.div 
-        className="mt-8"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-      >
-        <Button variant="destructive" onClick={handleLogout}>
-          Logout
-        </Button>
-      </motion.div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

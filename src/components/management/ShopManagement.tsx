@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -32,8 +31,6 @@ const shopSchema = yup.object({
   phoneNumber: yup.string().required('Phone number is required'),
 });
 
-type ShopSchemaType = yup.InferType<typeof shopSchema>;
-
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -47,7 +44,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver<ShopFormValues>(shopSchema as any),
+    resolver: yupResolver(shopSchema as any),
     defaultValues: {
       name: '',
       description: '',
@@ -81,7 +78,7 @@ const ShopManagement: React.FC = () => {
           setValue('ownerEmail', shop.ownerEmail);
           setValue('status', shop.status);
           setValue('password', shop.password || '');
-          setValue('phoneNumber', shop.phoneNumber);
+          setValue('phoneNumber', shop.phoneNumber || '');
         } else {
           toast.error('Shop not found');
           navigate('/admin/login');

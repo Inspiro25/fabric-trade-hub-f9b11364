@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Shop } from "@/lib/shops/types";
 
@@ -25,7 +24,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '',
+      phoneNumber: shop?.phone_number || '', // Ensure phoneNumber is mapped correctly
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -68,7 +67,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '',
+      phoneNumber: shop?.phone_number || '', // Ensure phoneNumber is mapped correctly
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -100,7 +99,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
       owner_email: shopData.ownerEmail,
       status: shopData.status,
       shop_id: shopData.shopId,
-      phone_number: shopData.phoneNumber,
+      phone_number: shopData.phoneNumber, // Ensure phone_number is correctly mapped
     };
 
     // Only include password in the update if it was provided
@@ -145,7 +144,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         owner_email: shopData.ownerEmail,
         status: shopData.status || 'pending',
         password: shopData.password,
-        phone_number: shopData.phoneNumber,
+        phone_number: shopData.phoneNumber, // Ensure phone_number is correctly mapped
       })
       .select()
       .single();
@@ -210,7 +209,7 @@ export const getShopData = async (shopId: string) => {
     status: data.status,
     ownerName: data.owner_name,
     ownerEmail: data.owner_email,
-    phoneNumber: data.phone_number || '',
+    phoneNumber: data.phone_number || '', // Ensure phone_number is handled with fallback
     createdAt: data.created_at
   };
 
