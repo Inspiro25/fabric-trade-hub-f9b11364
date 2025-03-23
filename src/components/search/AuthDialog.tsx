@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
 
 interface AuthDialogProps {
   open: boolean;
@@ -34,45 +35,90 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     }
   };
 
+  const handleRedirectToAuth = () => {
+    window.location.href = '/auth';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "sm:max-w-[425px]",
-        isDarkMode ? "bg-gray-800 border-gray-700 text-white" : ""
+        "sm:max-w-[425px] p-0 overflow-hidden border-0",
+        isDarkMode ? "bg-gray-800 text-white" : "bg-white"
       )}>
-        <DialogHeader>
-          <DialogTitle className={isDarkMode ? "text-white" : ""}>{title}</DialogTitle>
-          <DialogDescription className={isDarkMode ? "text-gray-400" : ""}>
+        {/* Header with gradient background */}
+        <div className={cn(
+          "bg-gradient-to-r from-orange-500 to-orange-600 p-6",
+          isDarkMode ? "from-orange-600 to-orange-700" : ""
+        )}>
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-white/20 p-3 rounded-full">
+              <LogIn className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <DialogTitle className="text-white text-xl font-bold text-center">{title}</DialogTitle>
+          <DialogDescription className="text-white/80 text-center mt-2">
             {message}
           </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col space-y-4">
-          <p className={cn(
-            "text-sm",
-            isDarkMode ? "text-gray-300" : "text-gray-500"
-          )}>
-            Please log in to access additional features like adding to wishlist, saving search history, and getting personalized recommendations.
-          </p>
         </div>
-        <DialogFooter className="flex justify-between mt-4">
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className={isDarkMode ? "border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-gray-200" : ""}
-          >
-            Not Now
-          </Button>
-          <Button 
-            onClick={handleLogin}
-            className={cn(
-              isDarkMode 
-                ? "bg-orange-500 hover:bg-orange-600 text-white" 
-                : "bg-kutuku-primary hover:bg-kutuku-secondary text-white"
-            )}
-          >
-            Login
-          </Button>
-        </DialogFooter>
+        
+        {/* Body */}
+        <div className="p-6">
+          <div className="space-y-4">
+            <p className={cn(
+              "text-sm",
+              isDarkMode ? "text-gray-300" : "text-gray-600"
+            )}>
+              Sign in to unlock additional features:
+            </p>
+            
+            <ul className={cn(
+              "text-sm list-disc pl-5 space-y-1",
+              isDarkMode ? "text-gray-300" : "text-gray-600"
+            )}>
+              <li>Save products to your wishlist</li>
+              <li>Track your order history</li>
+              <li>Get personalized recommendations</li>
+              <li>Save your payment methods</li>
+            </ul>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="mt-6 space-y-3">
+            <Button 
+              onClick={handleLogin}
+              className={cn(
+                "w-full relative h-11",
+                isDarkMode 
+                  ? "bg-orange-500 hover:bg-orange-600 text-white" 
+                  : "bg-orange-500 hover:bg-orange-600 text-white"
+              )}
+            >
+              Continue with Google
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            
+            <Button 
+              onClick={handleRedirectToAuth}
+              variant="outline"
+              className={cn(
+                "w-full h-11 font-medium",
+                isDarkMode 
+                  ? "border-gray-600 hover:bg-gray-700 text-white" 
+                  : "border-gray-200 hover:bg-gray-50 text-gray-800"
+              )}
+            >
+              Sign up with Email
+            </Button>
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className={cn(
+          "px-6 py-4 bg-gray-50 text-xs text-center",
+          isDarkMode ? "bg-gray-900 text-gray-400" : "text-gray-500"
+        )}>
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </div>
       </DialogContent>
     </Dialog>
   );
