@@ -26,6 +26,7 @@ import AccountWishlist from '@/pages/Wishlist'; // Using Wishlist as AccountWish
 import AccountSettings from '@/pages/Settings'; // Using Settings as AccountSettings
 import Search from '@/pages/Search';
 import OrderSuccess from '@/pages/OrderConfirmation'; // Using OrderConfirmation as OrderSuccess
+import Offers from '@/pages/Offers';
 
 // Management pages
 import ManagementLogin from '@/pages/ManagementLogin';
@@ -39,6 +40,7 @@ import ManagementOffers from '@/pages/ManagementOffers';
 // Admin pages
 import AdminLogin from '@/pages/AdminLogin';
 import ShopDashboard from '@/pages/ShopDashboard';
+import AdminDashboard from '@/pages/AdminDashboard';
 
 function App() {
   return (
@@ -63,6 +65,7 @@ function App() {
         <Route path="account/wishlist" element={<AccountWishlist />} />
         <Route path="account/settings" element={<AccountSettings />} />
         <Route path="order-success" element={<OrderSuccess />} />
+        <Route path="offers" element={<Offers />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 
@@ -79,7 +82,7 @@ function App() {
 
       {/* Shop admin routes */}
       <Route path="admin/login" element={<AdminLogin />} />
-      <Route path="admin/dashboard" element={<ShopDashboard />} />
+      <Route path="admin/dashboard" element={<AdminDashboard />} />
     </Routes>
   );
 }

@@ -14,7 +14,7 @@ export interface Shop {
   followers: number;
   productIds: string[];
   isVerified: boolean;
-  status: string;
+  status: 'active' | 'pending' | 'suspended';
   createdAt: string;
 }
 

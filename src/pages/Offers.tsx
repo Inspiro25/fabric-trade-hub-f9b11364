@@ -1,8 +1,5 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -63,9 +60,7 @@ const Offers = () => {
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
     )}>
-      <Navbar />
-      
-      <main className={`pt-16 pb-20 ${isMobile ? 'px-3' : 'px-4'}`}>
+      <main className={`pt-24 pb-20 ${isMobile ? 'px-3' : 'px-4'}`}>
         <div className="container mx-auto max-w-7xl">
           <div className="flex items-center mb-4 mt-4">
             <Button 
@@ -464,8 +459,6 @@ const Offers = () => {
           </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };
