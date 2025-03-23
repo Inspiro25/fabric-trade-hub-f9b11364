@@ -60,9 +60,9 @@ const Offers = () => {
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
     )}>
-      <main className={`pt-20 pb-16 ${isMobile ? 'px-3' : 'px-4'}`}>
+      <main className={`${isMobile ? 'pt-14 px-3' : 'pt-16 px-4'} pb-16`}>
         <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center mb-3 mt-3">
+          <div className="flex items-center mb-3">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -82,11 +82,11 @@ const Offers = () => {
             )}>Special Offers</h1>
           </div>
           <p className={cn(
-            "mb-4 ml-10 text-sm md:text-base",
+            "mb-3 ml-8 text-sm md:text-base",
             isDarkMode ? "text-gray-300" : "text-muted-foreground"
           )}>Discover great deals and discounts on your favorite products</p>
           
-          <div className="mb-6">
+          <div className="mb-4">
             <Tabs defaultValue="all" className="w-full">
               <TabsList className={cn(
                 "mb-4 w-full grid grid-cols-3 p-1 rounded-xl",
@@ -115,7 +115,7 @@ const Offers = () => {
                 >Coupons</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="all" className="space-y-6">
+              <TabsContent value="all" className="space-y-4">
                 <section className="mb-3">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className={cn(
