@@ -61,7 +61,7 @@ const ShopsSpotlight = () => {
   return (
     <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
       {shops.map(shop => (
-        <Link key={shop.id} to={`/shop/${shop.id}`} className="flex flex-col items-center">
+        <Link key={shop.id} to={`/shops/${shop.id}`} className="flex flex-col items-center">
           <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white shadow-sm flex items-center justify-center p-2 mb-2 hover:shadow-md transition-shadow">
             {shop.logo ? (
               <img 

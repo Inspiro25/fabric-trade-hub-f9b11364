@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -148,7 +149,7 @@ const Shops = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredShops.map(shop => (
               <Link 
-                to={`/shop/${shop.id}`} 
+                to={`/shops/${shop.id}`} 
                 key={shop.id} 
                 className="block transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
               >

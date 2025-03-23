@@ -52,6 +52,7 @@ function App() {
         <Route path="products/:id" element={<ProductDetail />} />
         <Route path="shops" element={<Shops />} />
         <Route path="shops/:id" element={<ShopDetail />} />
+        <Route path="shop/:id" element={<ShopDetail />} /> {/* Keeping this for backwards compatibility */}
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="categories" element={<Categories />} />

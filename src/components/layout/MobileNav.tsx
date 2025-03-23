@@ -31,9 +31,9 @@ const MobileNav: React.FC<MobileNavProps> = ({ onClose }) => {
     { icon: <Home size={18} />, label: 'Home', path: '/' },
     { icon: <ShoppingBag size={18} />, label: 'Products', path: '/products' },
     { icon: <Store size={18} />, label: 'Shops', path: '/shops' },
-    { icon: <Heart size={18} />, label: 'Wishlist', path: '/wishlist' },
+    { icon: <Heart size={18} />, label: 'Wishlist', path: '/account/wishlist' },
     { icon: <Bell size={18} />, label: 'Notifications', path: '/notifications' },
-    { icon: <Settings size={18} />, label: 'Settings', path: '/account/settings' }, // Fixed path
+    { icon: <Settings size={18} />, label: 'Settings', path: '/account/settings' },
     { icon: <HelpCircle size={18} />, label: 'Help & Support', path: '/help' },
   ];
 
@@ -107,7 +107,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onClose }) => {
               {currentUser.displayName || currentUser.email || "User"}
             </p>
             <Link
-              to="/profile"
+              to="/account"
               className={cn(
                 "text-xs",
                 isDarkMode ? "text-orange-400" : "text-orange-600"
