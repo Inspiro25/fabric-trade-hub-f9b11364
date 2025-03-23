@@ -10,6 +10,7 @@ import { Percent, Tag, Calendar, Plus, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { Offer, createOffer, deleteOffer, getShopOffers, updateOffer } from '@/lib/supabase/offers';
 import DeleteConfirmationDialog from '../management/DeleteConfirmationDialog';
+import FileUpload from '@/components/ui/file-upload';
 
 interface OffersManagerProps {
   shopId: string;
@@ -57,6 +58,10 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
   
   const handleSelectChange = (value: string) => {
     setFormData(prev => ({ ...prev, type: value as 'percentage' | 'shipping' | 'bogo' }));
+  };
+  
+  const handleImageUpload = (url: string) => {
+    setFormData(prev => ({ ...prev, banner_image: url }));
   };
   
   const handleAddOffer = () => {
@@ -273,13 +278,13 @@ const OffersManager: React.FC<OffersManagerProps> = ({ shopId }) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="banner_image">Banner Image URL</Label>
-                <Input
-                  id="banner_image"
-                  name="banner_image"
-                  value={formData.banner_image}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/image.jpg"
+                <Label htmlFor="banner_image">Banner Image</Label>
+                <FileUpload
+                  onUploadComplete={handleImageUpload}
+                  initialImage={formData.banner_image || ''}
+                  bucketName="offers"
+                  folderPath="banners"
+                  fileTypes="image/*"
                 />
               </div>
               

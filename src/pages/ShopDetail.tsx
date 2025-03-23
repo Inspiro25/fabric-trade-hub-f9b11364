@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
@@ -32,7 +31,6 @@ const ShopDetail = () => {
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-  // Check authentication status on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
@@ -49,13 +47,11 @@ const ShopDetail = () => {
     
     checkAuthStatus();
     
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const isLoggedIn = !!session?.user;
       console.log("Auth state changed:", isLoggedIn ? "Logged in" : "Logged out", "User ID:", session?.user?.id);
       setIsUserLoggedIn(isLoggedIn);
       
-      // If user just logged in and we have a shop, update follow status
       if (isLoggedIn && shop && id) {
         checkFollowStatus(shop.id).then(status => {
           console.log("Follow status after login:", status);
@@ -84,7 +80,6 @@ const ShopDetail = () => {
           const productsData = await getShopProducts(id);
           setShopProducts(productsData);
           
-          // Check follow status if user is logged in
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
             console.log("User is logged in, checking follow status with user ID:", session.user.id);
@@ -114,7 +109,6 @@ const ShopDetail = () => {
   const handleFollow = async () => {
     if (!id || !shop) return;
     
-    // Check if user is logged in first
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       console.log("User not logged in, showing auth dialog");
@@ -158,13 +152,11 @@ const ShopDetail = () => {
   const handleLogin = async () => {
     setIsAuthDialogOpen(false);
     
-    // Refresh authentication status
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       console.log("User logged in successfully after auth dialog:", session.user.id);
       setIsUserLoggedIn(true);
       
-      // Update follow status if we have a shop
       if (shop) {
         const isUserFollowing = await checkFollowStatus(shop.id);
         setIsFollowing(isUserFollowing);
@@ -228,6 +220,7 @@ const ShopDetail = () => {
           <ShopActions 
             isFollowing={isFollowing}
             isFollowLoading={isFollowLoading}
+            isUserLoggedIn={isUserLoggedIn}
             handleFollow={handleFollow}
             handleShare={handleShare}
             shopName={shop.name}

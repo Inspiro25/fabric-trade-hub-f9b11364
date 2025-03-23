@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
+import FileUpload from '@/components/ui/file-upload';
 
 const OffersManagement: React.FC = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -84,6 +86,10 @@ const OffersManagement: React.FC = () => {
   
   const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = (url: string) => {
+    setFormData(prev => ({ ...prev, banner_image: url }));
   };
 
   const handleAddOffer = () => {
@@ -356,13 +362,13 @@ const OffersManagement: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="banner_image">Banner Image URL</Label>
-              <Input
-                id="banner_image"
-                name="banner_image"
-                value={formData.banner_image}
-                onChange={handleInputChange}
-                placeholder="https://example.com/image.jpg"
+              <Label htmlFor="banner_image">Banner Image</Label>
+              <FileUpload
+                onUploadComplete={handleImageUpload}
+                initialImage={formData.banner_image || ''}
+                bucketName="offers"
+                folderPath="banners"
+                fileTypes="image/*"
               />
             </div>
             
