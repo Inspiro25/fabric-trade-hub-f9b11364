@@ -5,11 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Users, Settings, Store, Package, ShoppingBag } from 'lucide-react';
 import ShopSalesChart from '@/components/admin/ShopSalesChart';
-import ShopDetailsEditor from '@/components/admin/ShopDetailsEditor';
 import ShopFollowersList from '@/components/admin/ShopFollowersList';
-import { getShopById } from '@/lib/shops';
+import { getShopById } from '@/lib/supabase/shops';
 import { Shop } from '@/lib/shops/types';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { fetchShopFollowers } from '@/lib/supabase/shopFollows';
 import { fetchShopSalesAnalytics } from '@/lib/supabase/analytics';

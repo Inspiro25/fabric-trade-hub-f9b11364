@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -17,8 +16,8 @@ import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ShopFormValues } from '@/components/management/ShopForm';
 
-// Create a schema that matches the ShopFormValues type
-const shopSchema = yup.object({
+// Create a schema that matches the ShopFormValues type exactly
+const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().url('Logo must be a valid URL').required('Logo URL is required'),
@@ -31,10 +30,7 @@ const shopSchema = yup.object({
   status: yup.string().oneOf(['active', 'pending', 'suspended']).required('Status is required'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-}).required();
-
-// Add explicit type to make TypeScript happy with the resolver
-type ShopSchemaType = yup.InferType<typeof shopSchema>;
+});
 
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +45,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver<ShopSchemaType>(shopSchema),
+    resolver: yupResolver(shopSchema),
     defaultValues: {
       name: '',
       description: '',
