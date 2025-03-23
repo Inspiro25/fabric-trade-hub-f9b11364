@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -22,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createNotification } from '@/services/notificationService';
 import { createPartnerRequest } from '@/lib/supabase/partnerRequests';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   businessName: z.string().min(2, { message: "Business name must be at least 2 characters" }),

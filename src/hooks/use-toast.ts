@@ -58,7 +58,7 @@ export const useToast = () => {
       // Methods to match shadcn/ui toast API
       ...toast,
       // For direct calls like toast({ title: "..." })
-      (props: ToastProps) {
+      callToast: (props: ToastProps) => {
         if (props.variant === "destructive") {
           return sonnerToast.error(props.title, {
             description: props.description,

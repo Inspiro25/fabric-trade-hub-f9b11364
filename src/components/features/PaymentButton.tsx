@@ -1,8 +1,7 @@
-
 import { useState, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { initializeRazorpay, RazorpayResponse } from '@/lib/razorpay';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,9 +53,8 @@ const PaymentButton = ({
         },
         handler: (response) => {
           setLoading(false);
-          toast({
-            title: "Payment Successful",
-            description: `Payment ID: ${response.razorpay_payment_id}`,
+          toast.success("Payment Successful", {
+            description: `Payment ID: ${response.razorpay_payment_id}`
           });
           
           // Add notification for successful payment
@@ -76,20 +74,16 @@ const PaymentButton = ({
         modal: {
           ondismiss: () => {
             setLoading(false);
-            toast({
-              title: "Payment Cancelled",
-              description: "You cancelled the payment process.",
-              variant: "destructive",
+            toast.error("Payment Cancelled", {
+              description: "You cancelled the payment process."
             });
           },
         },
       });
     } catch (error) {
       setLoading(false);
-      toast({
-        title: "Payment Failed",
-        description: error instanceof Error ? error.message : "Unknown error occurred",
-        variant: "destructive",
+      toast.error("Payment Failed", {
+        description: error instanceof Error ? error.message : "Unknown error occurred"
       });
       
       // Add notification for failed payment

@@ -22,9 +22,8 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from '@/hooks/use-toast';
 import { cn } from "@/lib/utils";
-import { toast } from 'sonner';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const loginSchema = z.object({
