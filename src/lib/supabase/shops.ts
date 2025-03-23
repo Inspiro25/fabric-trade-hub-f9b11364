@@ -25,7 +25,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', // Map phone_number to phoneNumber
+      phoneNumber: shop?.phone_number || '', 
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -34,8 +34,8 @@ export const fetchShops = async (): Promise<Shop[]> => {
       status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
-      password: shop?.password || '', // Include password field from database
-      followers_count: shop?.followers_count || 0, // Add this for compatibility
+      password: shop?.password || '', 
+      followers_count: shop?.followers_count || 0, 
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -68,7 +68,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', // Map phone_number to phoneNumber
+      phoneNumber: shop?.phone_number || '', 
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -77,8 +77,8 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
-      password: shop?.password || '', // Include password field from database
-      followers_count: shop?.followers_count || 0, // Add this for compatibility
+      password: shop?.password || '', 
+      followers_count: shop?.followers_count || 0, 
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
@@ -100,6 +100,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
       owner_email: shopData.ownerEmail,
       status: shopData.status,
       shop_id: shopData.shopId,
+      phone_number: shopData.phoneNumber,
     };
 
     // Only include password in the update if it was provided
@@ -143,7 +144,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         owner_name: shopData.ownerName,
         owner_email: shopData.ownerEmail,
         status: shopData.status || 'pending',
-        password: shopData.password, // Store password for shop login
+        password: shopData.password,
         phone_number: shopData.phoneNumber,
       })
       .select()

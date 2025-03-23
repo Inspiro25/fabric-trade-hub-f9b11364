@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -27,7 +28,7 @@ interface ShopFormValues {
   ownerEmail: string;
   status: 'active' | 'pending' | 'suspended';
   password: string;
-  phoneNumber: string; // Add this field to fix the TypeScript error
+  phoneNumber: string; 
 }
 
 const shopSchema = yup.object({
@@ -54,7 +55,7 @@ const ShopManagement: React.FC = () => {
 
   const {
     control,
-    handleSubmit,
+    handleSubmit: formHandleSubmit,
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
@@ -103,7 +104,7 @@ const ShopManagement: React.FC = () => {
     fetchShopData();
   }, [shopId, setValue, navigate]);
 
-  const handleSubmit = async (data: ShopFormValues) => {
+  const submitForm = async (data: ShopFormValues) => {
     try {
       setIsSubmitting(true);
     
@@ -115,7 +116,7 @@ const ShopManagement: React.FC = () => {
         address: data.address,
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
-        phoneNumber: data.phoneNumber || '', // Use the phoneNumber from the form
+        phoneNumber: data.phoneNumber || '', 
         status: data.status,
         isVerified: data.isVerified || false,
         rating: 0,
@@ -125,6 +126,7 @@ const ShopManagement: React.FC = () => {
         createdAt: new Date().toISOString(),
         shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
         password: data.password,
+        followers_count: 0,
       };
     
       if (shopId) {
@@ -167,7 +169,7 @@ const ShopManagement: React.FC = () => {
       <h1 className="text-2xl font-semibold mb-4">
         {shopId ? 'Edit Shop' : 'Create Shop'}
       </h1>
-      <form onSubmit={handleSubmit(handleSubmit)} className="max-w-lg">
+      <form onSubmit={formHandleSubmit(submitForm)} className="max-w-lg">
         <div className="mb-4">
           <Label htmlFor="name">Shop Name</Label>
           <Controller
