@@ -50,6 +50,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path="products" element={<Products />} />
         <Route path="products/:id" element={<ProductDetail />} />
+        <Route path="product/:id" element={<ProductDetail />} /> {/* Added this route for compatibility with ProductCard links */}
         <Route path="shops" element={<Shops />} />
         <Route path="shops/:id" element={<ShopDetail />} />
         <Route path="shop/:id" element={<ShopDetail />} /> {/* Keeping this for backwards compatibility */}
