@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { LogIn, Mail, Lock, ArrowRight } from 'lucide-react';
+import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight } from 'lucide-react';
+import { AnimatedGradient } from '@/components/ui/animated-gradient';
 
 interface AuthDialogProps {
   open: boolean;
@@ -23,7 +24,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   title = "Login Required"
 }) => {
   const { loginWithGoogleProvider } = useAuth();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, primaryColor } = useTheme();
 
   const handleLogin = async () => {
     try {
@@ -42,44 +43,62 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
-        "sm:max-w-[425px] p-0 overflow-hidden border-0",
-        isDarkMode ? "bg-gray-800 text-white" : "bg-white"
+        "sm:max-w-[425px] p-0 overflow-hidden border-0 rounded-xl shadow-xl",
+        isDarkMode ? "bg-gray-900 text-white" : "bg-white"
       )}>
-        {/* Header with gradient background */}
-        <div className={cn(
-          "bg-gradient-to-r from-orange-500 to-orange-600 p-6",
-          isDarkMode ? "from-orange-600 to-orange-700" : ""
-        )}>
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-white/20 p-3 rounded-full">
+        {/* Animated header with gradient */}
+        <AnimatedGradient 
+          className="py-8 px-6"
+          hue="orange"
+          intensity={isDarkMode ? "medium" : "soft"}
+          speed="medium"
+        >
+          <div className="flex flex-col items-center justify-center relative z-10">
+            <div className={cn(
+              "bg-white/20 p-3 rounded-full mb-4",
+              isDarkMode ? "bg-white/10" : ""
+            )}>
               <LogIn className="h-6 w-6 text-white" />
             </div>
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-bold text-center">{title}</DialogTitle>
+            <DialogDescription className="text-slate-700 dark:text-slate-300 text-center mt-2 max-w-[300px]">
+              {message}
+            </DialogDescription>
           </div>
-          <DialogTitle className="text-white text-xl font-bold text-center">{title}</DialogTitle>
-          <DialogDescription className="text-white/80 text-center mt-2">
-            {message}
-          </DialogDescription>
-        </div>
+        </AnimatedGradient>
         
-        {/* Body */}
+        {/* Body with feature list */}
         <div className="p-6">
-          <div className="space-y-4">
+          <div className="space-y-5">
             <p className={cn(
-              "text-sm",
-              isDarkMode ? "text-gray-300" : "text-gray-600"
+              "text-sm font-medium",
+              isDarkMode ? "text-slate-300" : "text-slate-700"
             )}>
-              Sign in to unlock additional features:
+              Join for exclusive benefits:
             </p>
             
-            <ul className={cn(
-              "text-sm list-disc pl-5 space-y-1",
-              isDarkMode ? "text-gray-300" : "text-gray-600"
-            )}>
-              <li>Save products to your wishlist</li>
-              <li>Track your order history</li>
-              <li>Get personalized recommendations</li>
-              <li>Save your payment methods</li>
-            </ul>
+            <div className="space-y-3">
+              <FeatureItem 
+                icon={<Heart size={16} />}
+                text="Save favorites to your wishlist"
+                isDarkMode={isDarkMode}
+              />
+              <FeatureItem 
+                icon={<ShoppingBag size={16} />}
+                text="Access your order history anytime"
+                isDarkMode={isDarkMode}
+              />
+              <FeatureItem 
+                icon={<Bell size={16} />}
+                text="Get personalized recommendations"
+                isDarkMode={isDarkMode}
+              />
+              <FeatureItem 
+                icon={<UserCircle size={16} />}
+                text="Create your personal profile"
+                isDarkMode={isDarkMode}
+              />
+            </div>
           </div>
           
           {/* Action buttons */}
@@ -87,7 +106,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
             <Button 
               onClick={handleLogin}
               className={cn(
-                "w-full relative h-11",
+                "w-full relative h-11 rounded-full transition-all duration-300",
                 isDarkMode 
                   ? "bg-orange-500 hover:bg-orange-600 text-white" 
                   : "bg-orange-500 hover:bg-orange-600 text-white"
@@ -101,9 +120,9 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               onClick={handleRedirectToAuth}
               variant="outline"
               className={cn(
-                "w-full h-11 font-medium",
+                "w-full h-11 font-medium rounded-full transition-all duration-300",
                 isDarkMode 
-                  ? "border-gray-600 hover:bg-gray-700 text-white" 
+                  ? "border-gray-700 hover:bg-gray-800 text-white" 
                   : "border-gray-200 hover:bg-gray-50 text-gray-800"
               )}
             >
@@ -114,13 +133,45 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
         
         {/* Footer */}
         <div className={cn(
-          "px-6 py-4 bg-gray-50 text-xs text-center",
-          isDarkMode ? "bg-gray-900 text-gray-400" : "text-gray-500"
+          "px-6 py-4 text-xs text-center border-t",
+          isDarkMode 
+            ? "bg-gray-900 text-gray-500 border-gray-800" 
+            : "bg-gray-50 text-gray-500 border-gray-100"
         )}>
           By continuing, you agree to our Terms of Service and Privacy Policy
         </div>
       </DialogContent>
     </Dialog>
+  );
+};
+
+// Helper component for feature items
+const FeatureItem = ({ 
+  icon, 
+  text, 
+  isDarkMode 
+}: { 
+  icon: React.ReactNode; 
+  text: string; 
+  isDarkMode: boolean 
+}) => {
+  return (
+    <div className="flex items-center space-x-3">
+      <div className={cn(
+        "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
+        isDarkMode 
+          ? "bg-orange-500/20 text-orange-400" 
+          : "bg-orange-100 text-orange-600"
+      )}>
+        {icon}
+      </div>
+      <span className={cn(
+        "text-sm",
+        isDarkMode ? "text-gray-300" : "text-gray-700"
+      )}>
+        {text}
+      </span>
+    </div>
   );
 };
 
