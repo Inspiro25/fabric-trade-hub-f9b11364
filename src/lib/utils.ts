@@ -23,3 +23,19 @@ export const formatCurrency = (
     currency,
   }).format(value);
 };
+
+/**
+ * Extracts initials from a name
+ * @param name The name to extract initials from
+ * @returns The first letter of each word in the name, maximum 2 letters
+ */
+export const getInitials = (name: string): string => {
+  if (!name) return '';
+  
+  return name
+    .split(' ')
+    .map(part => part.charAt(0).toUpperCase())
+    .filter(char => char.length > 0)
+    .slice(0, 2)
+    .join('');
+};

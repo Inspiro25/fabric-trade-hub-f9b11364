@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from '@/components/ui/use-toast';
-import { ProfileForm } from '@/components/profile/ProfileForm';
+import ProfileForm from '@/components/profile/ProfileForm';
 import { 
   Sheet,
   SheetContent,
