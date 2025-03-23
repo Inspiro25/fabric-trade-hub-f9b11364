@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -29,7 +30,7 @@ const shopSchema = yup.object({
   status: yup.string().oneOf(['active', 'pending', 'suspended']).default('pending'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-}).required();
+});
 
 type ShopSchemaType = yup.InferType<typeof shopSchema>;
 
@@ -46,7 +47,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver<ShopFormValues>(shopSchema),
+    resolver: yupResolver<ShopFormValues>(shopSchema as any),
     defaultValues: {
       name: '',
       description: '',
@@ -103,7 +104,7 @@ const ShopManagement: React.FC = () => {
         address: data.address,
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
-        phoneNumber: data.phoneNumber || '', 
+        phoneNumber: data.phoneNumber, 
         status: data.status,
         isVerified: data.isVerified || false,
         rating: 0,

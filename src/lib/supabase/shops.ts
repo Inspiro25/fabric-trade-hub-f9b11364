@@ -68,7 +68,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', // Fixed this line
+      phoneNumber: shop?.phone_number || '',
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
