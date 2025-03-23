@@ -7,7 +7,10 @@ export const checkFollowStatus = async (shopId: string): Promise<boolean> => {
   try {
     // First check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return false;
+    if (!session) {
+      console.log("No session found when checking follow status");
+      return false;
+    }
 
     const userId = session.user.id;
     console.log("Checking follow status for user:", userId, "shop:", shopId);
@@ -38,7 +41,7 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     // First check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      toast.error("Please sign in to follow shops");
+      console.log("No active session found when attempting to follow shop");
       return false;
     }
 
@@ -56,21 +59,17 @@ export const followShop = async (shopId: string): Promise<boolean> => {
     if (error) {
       // If the error is a unique violation, the user already follows this shop
       if (error.code === '23505') {
-        toast.info("You are already following this shop");
+        console.log("User already follows this shop");
         return true;
       }
       
       console.error('Error following shop:', error);
-      toast.error(error.message);
       return false;
     }
     
-    toast.success("You are now following this shop");
     return true;
   } catch (error) {
     console.error('Error in followShop:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    toast.error(errorMessage);
     return false;
   }
 };
@@ -81,7 +80,7 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     // First check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      toast.error("Please sign in to manage shop follows");
+      console.log("No active session found when attempting to unfollow shop");
       return false;
     }
 
@@ -97,16 +96,12 @@ export const unfollowShop = async (shopId: string): Promise<boolean> => {
     
     if (error) {
       console.error('Error unfollowing shop:', error);
-      toast.error(error.message);
       return false;
     }
     
-    toast.success("You are no longer following this shop");
     return true;
   } catch (error) {
     console.error('Error in unfollowShop:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    toast.error(errorMessage);
     return false;
   }
 };

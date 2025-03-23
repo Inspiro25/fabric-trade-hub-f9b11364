@@ -28,12 +28,19 @@ const ShopDetail = () => {
   const [followersCount, setFollowersCount] = useState(0);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session:", session);
-      setSupabaseUserId(session?.user?.id || null);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session check:", session ? "User is logged in" : "No active session");
+        setSupabaseUserId(session?.user?.id || null);
+        setSessionChecked(true);
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setSessionChecked(true);
+      }
     };
     
     checkSession();
@@ -50,7 +57,7 @@ const ShopDetail = () => {
 
   useEffect(() => {
     const fetchShopData = async () => {
-      if (!id) return;
+      if (!id || !sessionChecked) return;
       
       setIsLoading(true);
       try {
@@ -78,16 +85,20 @@ const ShopDetail = () => {
     };
     
     fetchShopData();
-  }, [id, supabaseUserId]);
+  }, [id, supabaseUserId, sessionChecked]);
   
   const handleFollow = async () => {
     if (!id || !shop) return;
     
-    if (!supabaseUserId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.user?.id) {
       console.log("User not logged in, showing auth dialog");
       setIsAuthDialogOpen(true);
       return;
     }
+    
+    console.log("User is logged in, proceeding with follow/unfollow action");
     
     try {
       let success;
@@ -96,16 +107,32 @@ const ShopDetail = () => {
         if (success) {
           setIsFollowing(false);
           setFollowersCount(prev => Math.max(0, prev - 1));
+          toast({
+            title: "Unfollowed",
+            description: `You are no longer following ${shop.name}`,
+            duration: 3000,
+          });
         }
       } else {
         success = await followShop(shop.id);
         if (success) {
           setIsFollowing(true);
           setFollowersCount(prev => prev + 1);
+          toast({
+            title: "Following",
+            description: `You are now following ${shop.name}`,
+            duration: 3000,
+          });
         }
       }
     } catch (error) {
       console.error('Error following/unfollowing shop:', error);
+      toast({
+        title: "Action failed",
+        description: "Could not process your request. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
 
