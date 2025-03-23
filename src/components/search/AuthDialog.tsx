@@ -44,24 +44,26 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "sm:max-w-[425px] p-0 overflow-hidden border-0 rounded-xl shadow-xl",
-        isDarkMode ? "bg-gray-900 text-white" : "bg-white"
+        isDarkMode 
+          ? "bg-gray-900 text-white dark-glass" 
+          : "bg-white"
       )}>
         {/* Animated header with gradient */}
         <AnimatedGradient 
           className="py-8 px-6"
-          hue="orange"
+          hue={isDarkMode ? "amber" : "orange"}
           intensity={isDarkMode ? "medium" : "soft"}
           speed="medium"
         >
           <div className="flex flex-col items-center justify-center relative z-10">
             <div className={cn(
-              "bg-white/20 p-3 rounded-full mb-4",
-              isDarkMode ? "bg-white/10" : ""
+              "bg-white/20 p-3 rounded-full mb-4 backdrop-blur-sm",
+              isDarkMode ? "shadow-[0_0_15px_rgba(255,255,255,0.1)]" : ""
             )}>
               <LogIn className="h-6 w-6 text-white" />
             </div>
-            <DialogTitle className="text-slate-900 dark:text-white text-xl font-bold text-center">{title}</DialogTitle>
-            <DialogDescription className="text-slate-700 dark:text-slate-300 text-center mt-2 max-w-[300px]">
+            <DialogTitle className="text-white text-xl font-bold text-center">{title}</DialogTitle>
+            <DialogDescription className="text-white/90 text-center mt-2 max-w-[300px]">
               {message}
             </DialogDescription>
           </div>
@@ -108,7 +110,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               className={cn(
                 "w-full relative h-11 rounded-full transition-all duration-300",
                 isDarkMode 
-                  ? "bg-orange-500 hover:bg-orange-600 text-white" 
+                  ? "bg-orange-500/90 hover:bg-orange-600 text-white shadow-[0_0_15px_rgba(249,115,22,0.2)]" 
                   : "bg-orange-500 hover:bg-orange-600 text-white"
               )}
             >
@@ -135,7 +137,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
         <div className={cn(
           "px-6 py-4 text-xs text-center border-t",
           isDarkMode 
-            ? "bg-gray-900 text-gray-500 border-gray-800" 
+            ? "bg-gray-900/80 text-gray-500 border-gray-800" 
             : "bg-gray-50 text-gray-500 border-gray-100"
         )}>
           By continuing, you agree to our Terms of Service and Privacy Policy
@@ -160,7 +162,7 @@ const FeatureItem = ({
       <div className={cn(
         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
         isDarkMode 
-          ? "bg-orange-500/20 text-orange-400" 
+          ? "bg-orange-500/10 text-orange-400" 
           : "bg-orange-100 text-orange-600"
       )}>
         {icon}
