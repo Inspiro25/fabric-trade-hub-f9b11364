@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useNotificationsStatus, Notification, NotificationType } from '@/hooks/use-notifications-status';
 
 interface NotificationContextType {
@@ -32,6 +32,23 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProvider = ({ children }: NotificationProviderProps) => {
+  // Use a try-catch to handle potential errors with auth context
+  let notificationStatus;
+  try {
+    notificationStatus = useNotificationsStatus();
+  } catch (error) {
+    console.error("Error initializing notifications:", error);
+    // Provide fallback values if the hook fails
+    notificationStatus = {
+      notifications: [],
+      unreadCount: 0,
+      markAsRead: async () => {},
+      markAllAsRead: async () => {},
+      deleteNotification: async () => {},
+      createNotification: async () => {}
+    };
+  }
+
   const {
     notifications,
     unreadCount,
@@ -39,7 +56,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     markAllAsRead,
     deleteNotification,
     createNotification
-  } = useNotificationsStatus();
+  } = notificationStatus;
 
   // Wrapper for deleteNotification to match the existing API
   const deleteUserNotification = async (id: string) => {

@@ -20,7 +20,9 @@ export function useNotificationsStatus() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  // If auth context is not available, provide a fallback of null
+  const auth = useAuth ? useAuth() : { currentUser: null };
+  const { currentUser } = auth;
 
   // Fetch notifications from the database
   const fetchNotifications = async () => {
