@@ -15,8 +15,11 @@ export function Toaster() {
   return (
     <ToastProvider>
       {Array.isArray(toasts) && toasts.map(function ({ id, title, description, action, variant, ...props }) {
+        // Convert variant to type to satisfy the Toast component type requirements
+        const toastType = variant === "destructive" ? "foreground" : "background";
+        
         return (
-          <Toast key={id} {...props} className="group shadow-sm border-slate-200">
+          <Toast key={id} {...props} type={toastType} className="group shadow-sm border-slate-200">
             <div className="grid gap-1">
               {title && <ToastTitle className="text-sm">{title}</ToastTitle>}
               {description && (

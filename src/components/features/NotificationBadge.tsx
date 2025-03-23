@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -13,8 +14,19 @@ interface NotificationBadgeProps {
 }
 
 const NotificationBadge = ({ className = "" }: NotificationBadgeProps) => {
-  const { unreadCount, markAllAsRead } = useNotifications();
-  const { currentUser } = useAuth();
+  // Try-catch to gracefully handle when NotificationProvider isn't available
+  let unreadCount = 0;
+  let currentUser = null;
+  
+  try {
+    const notificationContext = useNotifications();
+    unreadCount = notificationContext?.unreadCount || 0;
+    const authContext = useAuth();
+    currentUser = authContext?.currentUser;
+  } catch (error) {
+    console.warn('NotificationProvider not available');
+    // Continue with default values
+  }
   
   // Enhanced animation variants
   const badgeVariants = {

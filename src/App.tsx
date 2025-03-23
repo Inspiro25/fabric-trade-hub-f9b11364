@@ -130,14 +130,16 @@ const AppContent = () => {
   );
 };
 
+// Make sure to wrap the entire app with all necessary providers
+// Order matters - providers that depend on others must be nested inside them
 const App = () => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <NotificationProvider>
-            <CartProvider>
-              <WishlistProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <NotificationProvider>
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
@@ -145,9 +147,9 @@ const App = () => (
                     <AppContent />
                   </BrowserRouter>
                 </TooltipProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </NotificationProvider>
+              </NotificationProvider>
+            </WishlistProvider>
+          </CartProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
