@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
@@ -27,33 +28,47 @@ const ShopDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [followersCount, setFollowersCount] = useState(0);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
+  // Check authentication status on component mount
   useEffect(() => {
-    const checkSession = async () => {
+    const checkAuthStatus = async () => {
       try {
+        console.log("Checking authentication status...");
         const { data: { session } } = await supabase.auth.getSession();
-        console.log("Current session check:", session ? "User is logged in" : "No active session");
-        setSupabaseUserId(session?.user?.id || null);
+        const isLoggedIn = !!session?.user;
+        setIsUserLoggedIn(isLoggedIn);
+        console.log("User logged in status:", isLoggedIn);
         setSessionChecked(true);
       } catch (error) {
-        console.error("Error checking session:", error);
+        console.error("Error checking authentication:", error);
         setSessionChecked(true);
+        setIsUserLoggedIn(false);
       }
     };
     
-    checkSession();
+    checkAuthStatus();
     
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", session ? "Logged in" : "Logged out");
-      setSupabaseUserId(session?.user?.id || null);
+      const isLoggedIn = !!session?.user;
+      console.log("Auth state changed:", isLoggedIn ? "Logged in" : "Logged out");
+      setIsUserLoggedIn(isLoggedIn);
+      
+      // If user just logged in and we have a shop, update follow status
+      if (isLoggedIn && shop && !isFollowing) {
+        checkFollowStatus(shop.id).then(status => {
+          setIsFollowing(status);
+        });
+      }
     });
     
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [shop]);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -62,15 +77,18 @@ const ShopDetail = () => {
       setIsLoading(true);
       try {
         const shopData = await getShopById(id);
+        console.log("Fetched shop data:", shopData ? "Success" : "Failed");
+        
         if (shopData) {
           setShop(shopData);
           
           const productsData = await getShopProducts(id);
           setShopProducts(productsData);
           
-          if (supabaseUserId) {
-            console.log("Checking follow status for logged-in user:", supabaseUserId);
+          // Check follow status and get followers count in parallel
+          if (isUserLoggedIn) {
             const isUserFollowing = await checkFollowStatus(shopData.id);
+            console.log("User follow status:", isUserFollowing);
             setIsFollowing(isUserFollowing);
           }
           
@@ -85,22 +103,25 @@ const ShopDetail = () => {
     };
     
     fetchShopData();
-  }, [id, supabaseUserId, sessionChecked]);
+  }, [id, isUserLoggedIn, sessionChecked]);
   
   const handleFollow = async () => {
     if (!id || !shop) return;
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session?.user?.id) {
-      console.log("User not logged in, showing auth dialog");
-      setIsAuthDialogOpen(true);
-      return;
-    }
-    
-    console.log("User is logged in, proceeding with follow/unfollow action");
+    setIsFollowLoading(true);
     
     try {
+      // Double-check session to avoid relying on state
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log("User not logged in, showing auth dialog");
+        setIsAuthDialogOpen(true);
+        setIsFollowLoading(false);
+        return;
+      }
+      
+      console.log("Proceeding with follow/unfollow action. Current status:", isFollowing);
+      
       let success;
       if (isFollowing) {
         success = await unfollowShop(shop.id);
@@ -125,6 +146,10 @@ const ShopDetail = () => {
           });
         }
       }
+      
+      if (!success) {
+        throw new Error("Follow/unfollow action failed");
+      }
     } catch (error) {
       console.error('Error following/unfollowing shop:', error);
       toast({
@@ -133,19 +158,26 @@ const ShopDetail = () => {
         variant: "destructive",
         duration: 3000,
       });
+    } finally {
+      setIsFollowLoading(false);
     }
   };
 
   const handleLogin = async () => {
     setIsAuthDialogOpen(false);
+    
+    // Refresh authentication status
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      console.log("User logged in successfully:", session.user.id);
-      setSupabaseUserId(session.user.id);
+      console.log("User logged in successfully after auth dialog:", session.user.id);
+      setIsUserLoggedIn(true);
+      
+      // Update follow status if we have a shop
       if (shop) {
         const isUserFollowing = await checkFollowStatus(shop.id);
         setIsFollowing(isUserFollowing);
       }
+      
       toast({
         title: 'Logged in successfully',
         description: 'You can now follow shops and submit reviews.',
@@ -248,11 +280,21 @@ const ShopDetail = () => {
               </Button>
               <Button 
                 size="sm" 
-                className={`h-7 text-xs px-2.5 ${isFollowing ? 'bg-gray-600 hover:bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+                className={`h-7 text-xs px-2.5 ${isFollowing ? 'bg-gray-600 hover:bg-gray-700' : 'bg-purple-600 hover:bg-purple-700'} ${isFollowLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 onClick={handleFollow}
+                disabled={isFollowLoading}
               >
-                <Store className="h-3 w-3 mr-1" />
-                {isFollowing ? 'Unfollow' : 'Follow'}
+                {isFollowLoading ? (
+                  <span className="flex items-center">
+                    <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                    {isFollowing ? 'Unfollowing...' : 'Following...'}
+                  </span>
+                ) : (
+                  <>
+                    <Store className="h-3 w-3 mr-1" />
+                    {isFollowing ? 'Unfollow' : 'Follow'}
+                  </>
+                )}
               </Button>
             </div>
           </div>
@@ -378,6 +420,8 @@ const ShopDetail = () => {
         open={isAuthDialogOpen} 
         onOpenChange={setIsAuthDialogOpen}
         onLogin={handleLogin}
+        title="Authentication Required"
+        message="You need to be logged in to follow shops."
       />
     </div>
   );
