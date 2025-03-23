@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -16,6 +17,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ShopFormValues } from '@/components/management/ShopForm';
 
+// Create a schema that matches the ShopFormValues type
 const shopSchema = yup.object({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
@@ -29,7 +31,7 @@ const shopSchema = yup.object({
   status: yup.string().oneOf(['active', 'pending', 'suspended']).default('pending'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-});
+}).required();
 
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +46,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema as any),
+    resolver: yupResolver(shopSchema) as any, // Add type assertion here
     defaultValues: {
       name: '',
       description: '',

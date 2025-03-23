@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   ShoppingBag, Users, LogOut, Store, Tag, 
-  BarChart, Settings, Inbox, ChevronDown 
+  Settings 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
