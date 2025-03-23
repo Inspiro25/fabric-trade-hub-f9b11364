@@ -1,34 +1,33 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProductGrid from '@/components/features/ProductGrid';
-import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/products';
 import { formatCategoryName, slugToCategory } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { useProductsByCategory } from '@/hooks/use-product-fetching';
+import { supabase } from '@/integrations/supabase/client';
 
 const CategoryPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [category, setCategory] = useState<{ id: string; name: string; description: string | null; image: string | null } | null>(null);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity'>('newest');
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
   
+  // Fetch category details first
   useEffect(() => {
-    const fetchCategoryAndProducts = async () => {
+    const fetchCategory = async () => {
+      if (!categorySlug) return;
+      
       try {
-        setIsLoading(true);
-        
-        if (!categorySlug) return;
-        
         // Decode the slug to get the original category name
         const categoryName = slugToCategory(categorySlug);
         
-        // First, fetch the category details
+        // Fetch the category details
         const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
           .select('*')
@@ -42,52 +41,39 @@ const CategoryPage = () => {
         
         if (categoryData) {
           setCategory(categoryData);
-          
-          // Then fetch products for this category
-          const { data: productsData, error: productsError } = await supabase
-            .from('products')
-            .select('*')
-            .eq('category_id', categoryData.id);
-          
-          if (productsError) {
-            console.error('Error fetching products:', productsError);
-            return;
-          }
-          
-          if (productsData) {
-            const formattedProducts: Product[] = productsData.map((product: any) => ({
-              id: product.id,
-              name: product.name,
-              description: product.description || '',
-              price: product.price,
-              salePrice: product.sale_price,
-              images: product.images || [],
-              category: product.category_id,
-              isNew: product.is_new || false,
-              isTrending: product.is_trending || false,
-              colors: product.colors || [],
-              sizes: product.sizes || [],
-              rating: product.rating || 0,
-              reviewCount: product.review_count || 0,
-              stock: product.stock || 0,
-              tags: product.tags || [],
-              shopId: product.shop_id || '',
-            }));
-            
-            setProducts(formattedProducts);
-          }
         }
       } catch (error) {
         console.error('Error fetching category data:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
     
-    fetchCategoryAndProducts();
+    fetchCategory();
   }, [categorySlug]);
   
-  if (isLoading) {
+  // Use our new hook to fetch products by category
+  const { data, isLoading, error } = useProductsByCategory(
+    category?.id || '',
+    page,
+    12,
+    sortBy
+  );
+  
+  const products = data?.products || [];
+  const totalProducts = data?.total || 0;
+  
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo(0, 0);
+  };
+  
+  // Handle sort change
+  const handleSortChange = (newSortBy: 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity') => {
+    setSortBy(newSortBy);
+    setPage(1);
+  };
+  
+  if (isLoading && !category) {
     return (
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
@@ -175,11 +161,40 @@ const CategoryPage = () => {
       
       {/* Products grid */}
       <div className="p-4">
-        {products.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className={cn(
+                "h-60 rounded animate-pulse",
+                isDarkMode ? "bg-gray-700" : "bg-gray-200"
+              )}></div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className={cn(
+            "text-center py-12 px-4",
+            isDarkMode ? "bg-gray-800" : "bg-gray-50"
+          )}>
+            <h3 className="text-lg font-medium mb-2">Error loading products</h3>
+            <p className={cn(
+              "text-sm mb-4",
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            )}>
+              We couldn't load products for this category. Please try again.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </div>
+        ) : products.length > 0 ? (
           <ProductGrid 
             products={products} 
             columns={2} 
-            showPagination={products.length > 12}
+            showPagination={totalProducts > 12}
+            itemsPerPage={12}
+            totalItems={totalProducts}
+            currentPage={page}
+            onPageChange={handlePageChange}
             showFilters={true}
             useAlternateLayout={true}
           />

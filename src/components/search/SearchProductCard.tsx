@@ -1,247 +1,204 @@
-
 import React from 'react';
-import { formatCurrency, cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import { SearchPageProduct } from '@/hooks/search/types';
-import { PlusCircle, Heart, Share2 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ShoppingCart, Heart, Share2 } from 'lucide-react';
+import { Product } from '@/lib/products';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { StarRating } from '@/components/ui/star-rating';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Define the props for the product card
-interface ProductCardProps {
-  product: SearchPageProduct;
-  isAddingToCart?: boolean;
-  isAddingToWishlist?: boolean;
-  onAddToCart: () => void;
-  onAddToWishlist: () => void;
-  onShare: () => void;
-  onClick?: () => void;
-  viewMode: 'list' | 'grid';
-  buttonColor?: string;
+// Export the type so it can be used in other files
+export interface SearchPageProduct {
+  id: string;
+  name: string;
+  price: number;
+  sale_price?: number;
+  images: string[];
+  category_id?: string;
+  shop_id?: string;
+  rating?: number;
+  review_count?: number;
+  is_new?: boolean;
+  is_trending?: boolean;
+  description?: string;
+  colors?: string[];
+  sizes?: string[];
+  stock?: number;
+  tags?: string[];
 }
 
-export function SearchProductCard({ 
-  product, 
-  isAddingToCart = false,
-  isAddingToWishlist = false,
-  onAddToCart, 
-  onAddToWishlist, 
+export interface ProductCardProps {
+  product: SearchPageProduct;
+  onAddToCart?: () => void;
+  onAddToWishlist?: () => void;
+  onShare?: () => void;
+  onClick?: () => void;
+  viewMode: 'grid' | 'list';
+  buttonColor?: string;
+  isCompact?: boolean;
+}
+
+export const SearchProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onAddToCart,
+  onAddToWishlist,
   onShare,
   onClick,
   viewMode,
-  buttonColor = 'bg-blue-500 hover:bg-blue-600'
-}: ProductCardProps) {
-  if (!product) return null;
-  
-  // Fix: Changed product.image to product.images[0]
-  const productImage = product.images && product.images.length > 0 
-    ? product.images[0] 
-    : '/placeholder.svg';
-    
-  const discountPercentage = product.salePrice && product.price 
-    ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
-    : 0;
-  
-  const handleCardClick = () => {
-    if (onClick) onClick();
-  };
+  buttonColor = "",
+  isCompact = false
+}) => {
+  const {
+    id,
+    name,
+    price,
+    sale_price,
+    images,
+    category_id,
+    rating,
+    review_count,
+    is_new,
+    is_trending,
+  } = product;
 
-  // Grid view layout
-  if (viewMode === 'grid') {
-    return (
-      <div 
-        className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-        onClick={handleCardClick}
-      >
-        <Link to={`/product/${product.id}`} className="block">
-          <div className="relative aspect-square overflow-hidden">
-            {/* Fix: Changed product.image to product.images[0] */}
-            <img 
-              src={productImage} 
-              alt={product.name} 
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-            />
-            {product.isNew && (
-              <Badge className="absolute top-2 left-2 bg-green-500">New</Badge>
-            )}
-            {discountPercentage > 0 && (
-              <Badge className="absolute top-2 right-2 bg-red-500">{discountPercentage}% OFF</Badge>
+  const hasDiscount = sale_price !== undefined && sale_price !== null;
+  const discountedPrice = hasDiscount ? sale_price : price;
+
+  return (
+    <Card
+      className={cn(
+        "border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer",
+        viewMode === 'list' ? "flex flex-col md:flex-row items-center" : "",
+      )}
+      onClick={onClick}
+    >
+      <div className={cn(
+        "relative",
+        viewMode === 'list' ? "md:w-1/3" : ""
+      )}>
+        <img
+          src={images[0]}
+          alt={name}
+          className={cn(
+            "w-full h-48 object-cover rounded-t-md",
+            viewMode === 'list' ? "rounded-l-md rounded-t-none" : ""
+          )}
+        />
+        {is_new && (
+          <Badge className="absolute top-2 left-2">New</Badge>
+        )}
+        {is_trending && (
+          <Badge className="absolute top-2 right-2 bg-orange-500 text-white">Trending</Badge>
+        )}
+      </div>
+
+      <CardContent className={cn(
+        "p-3 space-y-1",
+        viewMode === 'list' ? "md:w-2/3" : ""
+      )}>
+        <h3 className="text-sm font-medium truncate">{name}</h3>
+        <p className="text-xs text-gray-500 truncate">{category_id}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="font-bold">{formatCurrency(discountedPrice)}</span>
+            {hasDiscount && (
+              <span className="text-gray-500 line-through ml-2">{formatCurrency(price)}</span>
             )}
           </div>
-          
-          <div className="p-3">
-            <h3 className="text-sm font-medium line-clamp-2 mb-1 dark:text-white">{product.name}</h3>
-            <div className="flex items-center gap-1.5 mb-1">
-              <StarRating rating={product.rating || 0} size="small" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">({product.reviewCount || 0})</span>
+          {rating && review_count && (
+            <div className="text-xs text-gray-500">
+              {rating} ({review_count})
             </div>
-            <div className="flex items-center gap-1">
-              {product.salePrice ? (
-                <>
-                  <span className="font-bold text-gray-900 dark:text-white">₹{product.salePrice}</span>
-                  <span className="text-sm text-gray-500 line-through dark:text-gray-400">₹{product.price}</span>
-                </>
-              ) : (
-                <span className="font-bold text-gray-900 dark:text-white">₹{product.price}</span>
-              )}
-            </div>
-          </div>
-        </Link>
-        
-        <div className="flex p-2 pt-0 gap-1">
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 mt-2">
           <Button
-            size="sm"
             variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart();
-            }}
-            className="flex-1 h-8"
-            disabled={isAddingToCart}
-          >
-            <PlusCircle className="h-4 w-4 mr-1" />
-            <span className="text-xs">Add</span>
-          </Button>
-          <Button
             size="icon"
-            variant="ghost"
+            className="h-7 w-7"
             onClick={(e) => {
               e.stopPropagation();
-              onAddToWishlist();
+              onAddToWishlist?.();
             }}
-            className="h-8 w-8"
-            disabled={isAddingToWishlist}
           >
             <Heart className="h-4 w-4" />
+            <span className="sr-only">Add to wishlist</span>
           </Button>
-          <Button 
+          <Button
+            variant="outline"
             size="icon"
-            variant="ghost"
+            className="h-7 w-7"
             onClick={(e) => {
               e.stopPropagation();
-              onShare();
+              onShare?.();
             }}
-            className="h-8 w-8"
           >
             <Share2 className="h-4 w-4" />
+            <span className="sr-only">Share</span>
           </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // List view layout (horizontal card)
-  return (
-    <div
-      className="flex bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-      onClick={handleCardClick}
-    >
-      <Link to={`/product/${product.id}`} className="shrink-0">
-        <div className="relative w-24 h-24 sm:w-32 sm:h-32">
-          <img 
-            src={productImage} 
-            alt={product.name} 
-            className="w-full h-full object-cover" 
-          />
-          {product.isNew && (
-            <Badge className="absolute top-1 left-1 text-xs bg-green-500">New</Badge>
-          )}
-          {discountPercentage > 0 && (
-            <Badge className="absolute top-1 right-1 text-xs bg-red-500">{discountPercentage}%</Badge>
+          {!isCompact && (
+            <Button
+              className={cn("text-xs font-medium", buttonColor)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart?.();
+              }}
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Add to cart
+            </Button>
           )}
         </div>
-      </Link>
-      
-      <div className="flex-1 p-3 min-w-0">
-        <Link to={`/product/${product.id}`}>
-          <h3 className="text-sm font-medium line-clamp-1 mb-1 dark:text-white">{product.name}</h3>
-          <div className="flex items-center gap-1 mb-1">
-            <StarRating rating={product.rating || 0} size="small" />
-            <span className="text-xs text-gray-500 dark:text-gray-400">({product.reviewCount || 0})</span>
-          </div>
-          <div className="flex items-center gap-1 mb-2">
-            {product.salePrice ? (
-              <>
-                <span className="font-bold text-gray-900 dark:text-white">₹{product.salePrice}</span>
-                <span className="text-sm text-gray-500 line-through dark:text-gray-400">₹{product.price}</span>
-              </>
-            ) : (
-              <span className="font-bold text-gray-900 dark:text-white">₹{product.price}</span>
-            )}
-          </div>
-        </Link>
-        
-        <div className="flex gap-1">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart();
-            }}
-            className="flex-1 h-7 text-xs"
-            disabled={isAddingToCart}
-          >
-            <PlusCircle className="h-3 w-3 mr-1" />
-            Add
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToWishlist();
-            }}
-            className="h-7 w-7"
-            disabled={isAddingToWishlist}
-          >
-            <Heart className="h-3 w-3" />
-          </Button>
-          <Button 
-            size="icon"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              onShare();
-            }}
-            className="h-7 w-7"
-          >
-            <Share2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
-}
+};
 
-export function SearchProductCardSkeleton({ viewMode }: { viewMode: 'list' | 'grid' }) {
-  if (viewMode === 'grid') {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-        <Skeleton className="aspect-square w-full" />
-        <div className="p-3">
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-3 w-24 mb-2" />
-          <Skeleton className="h-5 w-20" />
-        </div>
-        <div className="p-2 pt-0">
-          <Skeleton className="h-8 w-full" />
-        </div>
-      </div>
-    );
-  }
-
+export const SearchProductCardSkeleton: React.FC<{ viewMode: 'grid' | 'list' }> = ({ viewMode }) => {
   return (
-    <div className="flex bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm">
-      <Skeleton className="w-24 h-24 sm:w-32 sm:h-32 shrink-0" />
-      <div className="flex-1 p-3">
-        <Skeleton className="h-4 w-full mb-2" />
-        <Skeleton className="h-3 w-24 mb-2" />
-        <Skeleton className="h-5 w-20 mb-2" />
-        <Skeleton className="h-7 w-full" />
+    <Card className={cn(
+      "border-none shadow-sm",
+      viewMode === 'list' ? "flex flex-col md:flex-row items-center" : ""
+    )}>
+      <div className={cn(
+        "relative",
+        viewMode === 'list' ? "md:w-1/3" : ""
+      )}>
+        <Skeleton className={cn(
+          "w-full h-48 rounded-t-md",
+          viewMode === 'list' ? "rounded-l-md rounded-t-none" : ""
+        )} />
       </div>
-    </div>
+
+      <CardContent className={cn(
+        "p-3 space-y-1",
+        viewMode === 'list' ? "md:w-2/3" : ""
+      )}>
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-1/4" />
+          <Skeleton className="h-3 w-1/4" />
+        </div>
+
+        <div className="flex items-center justify-end gap-2 mt-2">
+          <Button variant="outline" size="icon" className="h-7 w-7">
+            <Heart className="h-4 w-4" />
+            <span className="sr-only">Add to wishlist</span>
+          </Button>
+          <Button variant="outline" size="icon" className="h-7 w-7">
+            <Share2 className="h-4 w-4" />
+            <span className="sr-only">Share</span>
+          </Button>
+          <Button className="text-xs font-medium">
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Add to cart
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
-}
+};

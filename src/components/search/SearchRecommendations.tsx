@@ -2,7 +2,7 @@
 import React from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { useSearch } from '@/hooks/use-search';
+import { useAuth } from '@/contexts/AuthContext';
 import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
 import { SearchPageProduct } from '@/hooks/search/types';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,6 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { SearchProductCard } from './SearchProductCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface SearchRecommendationsProps {
   recommendations: SearchPageProduct[];
@@ -23,75 +22,64 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
   recentlyViewed,
   isCompact = false
 }) => {
-  const { addToCart, isAddingToCart } = useCart();
-  const { addToWishlist, isAddingToWishlist } = useWishlist();
-  const { showShareDialog, showAuthDialog } = useSearchDialogs();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
+  const { setIsDialogOpen, setIsShareDialogOpen, setShareableLink } = useSearchDialogs();
   const { isDarkMode } = useTheme();
-  const { isProductInCart } = useCart();
-  const { isProductInWishlist } = useWishlist();
-  const { isAuthenticated } = useAuth();
-  const { query } = useSearch();
+  const { user } = useAuth();
+  
+  const isAuthenticated = !!user;
 
   const handleAddToCart = (product: SearchPageProduct) => {
     if (!isAuthenticated) {
-      showAuthDialog();
-      return;
-    }
-    
-    if (isProductInCart(product.id)) {
-      toast({
-        title: "Already in cart",
-        description: "This product is already in your cart",
-        variant: "default",
-      });
+      setIsDialogOpen(true);
       return;
     }
     
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.salePrice || product.price,
+      price: product.sale_price || product.price,
       image: product.images[0],
       quantity: 1,
       color: product.colors ? product.colors[0] : null,
       size: product.sizes ? product.sizes[0] : null,
     });
+    
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart`,
+    });
   };
 
   const handleAddToWishlist = (product: SearchPageProduct) => {
     if (!isAuthenticated) {
-      showAuthDialog();
-      return;
-    }
-    
-    if (isProductInWishlist(product.id)) {
-      toast({
-        title: "Already in wishlist",
-        description: "This product is already in your wishlist",
-        variant: "default",
-      });
+      setIsDialogOpen(true);
       return;
     }
     
     addToWishlist({
       id: product.id,
       name: product.name,
-      price: product.salePrice || product.price,
+      price: product.sale_price || product.price,
       image: product.images[0],
+    });
+    
+    toast({
+      title: "Added to wishlist",
+      description: `${product.name} has been added to your wishlist`,
     });
   };
 
   const handleShare = (product: SearchPageProduct) => {
-    showShareDialog({
-      title: product.name,
-      image: product.images[0],
-      url: `/product/${product.id}`,
-    });
+    const shareUrl = `${window.location.origin}/product/${product.id}`;
+    setShareableLink(shareUrl);
+    setIsShareDialogOpen(true);
   };
 
   const hasNoData = recommendations.length === 0 && recentlyViewed.length === 0;
   
-  if (hasNoData && query) {
+  if (hasNoData) {
     return null;
   }
 

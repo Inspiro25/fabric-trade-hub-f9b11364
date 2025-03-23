@@ -2,7 +2,6 @@
 import React, { useCallback } from 'react';
 import { SearchProductCard, SearchProductCardSkeleton } from './SearchProductCard';
 import { SearchPageProduct } from '@/hooks/search/types';
-import { useSearchViewMode } from '@/hooks/search/use-search-filters';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -13,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSearchViewMode } from '@/hooks/search/use-search-filters';
+import SearchPagination from './SearchPagination';
 
 interface SearchResultsProps {
   products: SearchPageProduct[];
@@ -22,11 +23,13 @@ interface SearchResultsProps {
 const SearchResults: React.FC<SearchResultsProps> = ({ products, isLoading }) => {
   const navigate = useNavigate();
   const { viewMode, setViewMode } = useSearchViewMode();
-  const { addToCart, isAddingToCart, isProductInCart } = useCart();
-  const { addToWishlist, isAddingToWishlist, isProductInWishlist } = useWishlist();
-  const { showShareDialog, showAuthDialog } = useSearchDialogs();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
+  const { setIsDialogOpen, setIsShareDialogOpen, setShareableLink } = useSearchDialogs();
   const { isDarkMode } = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  
+  const isAuthenticated = !!user;
 
   const handleProductClick = useCallback((productId: string) => {
     navigate(`/product/${productId}`);
@@ -34,60 +37,50 @@ const SearchResults: React.FC<SearchResultsProps> = ({ products, isLoading }) =>
 
   const handleAddToCart = useCallback((product: SearchPageProduct) => {
     if (!isAuthenticated) {
-      showAuthDialog();
-      return;
-    }
-    
-    if (isProductInCart(product.id)) {
-      toast({
-        title: "Already in cart",
-        description: "This product is already in your cart",
-        variant: "default",
-      });
+      setIsDialogOpen(true);
       return;
     }
     
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.salePrice || product.price,
+      price: product.sale_price || product.price,
       image: product.images[0],
       quantity: 1,
       color: product.colors ? product.colors[0] : null,
       size: product.sizes ? product.sizes[0] : null,
     });
-  }, [addToCart, isAuthenticated, isProductInCart, showAuthDialog]);
+    
+    toast({
+      title: "Added to cart",
+      description: `${product.name} added to your cart`,
+    });
+  }, [addToCart, isAuthenticated, setIsDialogOpen]);
 
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
     if (!isAuthenticated) {
-      showAuthDialog();
-      return;
-    }
-    
-    if (isProductInWishlist(product.id)) {
-      toast({
-        title: "Already in wishlist",
-        description: "This product is already in your wishlist",
-        variant: "default",
-      });
+      setIsDialogOpen(true);
       return;
     }
     
     addToWishlist({
       id: product.id,
       name: product.name,
-      price: product.salePrice || product.price,
+      price: product.sale_price || product.price,
       image: product.images[0],
     });
-  }, [addToWishlist, isAuthenticated, isProductInWishlist, showAuthDialog]);
+    
+    toast({
+      title: "Added to wishlist",
+      description: `${product.name} added to your wishlist`,
+    });
+  }, [addToWishlist, isAuthenticated, setIsDialogOpen]);
 
   const handleShare = useCallback((product: SearchPageProduct) => {
-    showShareDialog({
-      title: product.name,
-      image: product.images[0],
-      url: `/product/${product.id}`,
-    });
-  }, [showShareDialog]);
+    const shareUrl = `${window.location.origin}/product/${product.id}`;
+    setShareableLink(shareUrl);
+    setIsShareDialogOpen(true);
+  }, [setIsShareDialogOpen, setShareableLink]);
 
   // Loading state
   if (isLoading) {
@@ -183,6 +176,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ products, isLoading }) =>
             onClick={() => handleProductClick(product.id)}
             viewMode={viewMode}
             buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+            isCompact={false}
           />
         ))}
       </div>

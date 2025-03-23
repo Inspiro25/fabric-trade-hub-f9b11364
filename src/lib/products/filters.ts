@@ -1,226 +1,80 @@
 
-import { Product, productStore } from '@/lib/types/product';
-import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/lib/types/product';
+import { fetchProducts, fetchRelatedProducts, fetchNewArrivals, fetchTrendingProducts, fetchProductsByCategory, fetchProductsByShop } from '@/hooks/use-product-fetching';
 
 // Function to get related products
 export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('category_id', category)
-      .neq('id', currentProductId)
-      .limit(4);
-    
-    if (error) {
-      console.error('Error fetching related products:', error);
-      throw error;
-    }
-    
-    if (data && data.length > 0) {
-      return data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        salePrice: product.sale_price,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
-      }));
-    }
-    
-    // Fallback to local data
-    return productStore.products
-      .filter(product => product.id !== currentProductId && product.category === category)
-      .slice(0, 4);
-  } catch (error) {
-    console.error('Error fetching related products:', error);
-    return productStore.products
-      .filter(product => product.id !== currentProductId && product.category === category)
-      .slice(0, 4);
-  }
+  return fetchRelatedProducts(currentProductId, category);
 };
 
 // Utility functions to get filtered products
 export const getNewArrivals = async (): Promise<Product[]> => {
-  try {
-    // Get current date and date 30 days ago
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_new', true)
-      .order('created_at', { ascending: false })
-      .limit(8);
-    
-    if (error) {
-      console.error('Error fetching new arrivals:', error);
-      throw error;
-    }
-    
-    if (data && data.length > 0) {
-      return data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        salePrice: product.sale_price,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
-      }));
-    }
-    
-    // Fallback to local data
-    return productStore.products.filter(product => product.isNew).slice(0, 8);
-  } catch (error) {
-    console.error('Error fetching new arrivals:', error);
-    return productStore.products.filter(product => product.isNew).slice(0, 8);
-  }
+  return fetchNewArrivals();
 };
 
 export const getTrendingProducts = async (): Promise<Product[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_trending', true)
-      .order('review_count', { ascending: false })
-      .limit(8);
-    
-    if (error) {
-      console.error('Error fetching trending products:', error);
-      throw error;
-    }
-    
-    if (data && data.length > 0) {
-      return data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        salePrice: product.sale_price,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
-      }));
-    }
-    
-    // Fallback to local data
-    return productStore.products.filter(product => product.isTrending).slice(0, 8);
-  } catch (error) {
-    console.error('Error fetching trending products:', error);
-    return productStore.products.filter(product => product.isTrending).slice(0, 8);
-  }
+  return fetchTrendingProducts();
 };
 
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('category_id', category);
-    
-    if (error) {
-      console.error(`Error fetching products for category ${category}:`, error);
-      throw error;
-    }
-    
-    if (data && data.length > 0) {
-      return data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        salePrice: product.sale_price,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
-      }));
-    }
-    
-    // Fallback to local data
-    return productStore.products.filter(product => product.category === category);
-  } catch (error) {
-    console.error(`Error fetching products for category ${category}:`, error);
-    return productStore.products.filter(product => product.category === category);
-  }
+  const result = await fetchProductsByCategory(category);
+  return result.products;
 };
 
 export const getProductsByTags = async (tag: string): Promise<Product[]> => {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .contains('tags', [tag])
-      .limit(8);
-      
-    if (error) {
-      console.error(`Error fetching products with tag ${tag}:`, error);
-      throw error;
-    }
+    const { products } = await fetchProducts({
+      tags: [tag],
+      limit: 8
+    });
     
-    if (data && data.length > 0) {
-      return data.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        salePrice: product.sale_price,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
-      }));
-    }
-    
-    // Fallback to local data
-    return productStore.products.filter(product => product.tags.includes(tag)).slice(0, 8);
+    return products;
   } catch (error) {
     console.error(`Error fetching products with tag ${tag}:`, error);
-    return productStore.products.filter(product => product.tags.includes(tag)).slice(0, 8);
+    return [];
+  }
+};
+
+// Add additional filter functions as needed
+export const getTopRatedProducts = async (): Promise<Product[]> => {
+  try {
+    const { products } = await fetchProducts({
+      minRating: 4,
+      sortBy: 'rating',
+      limit: 8
+    });
+    
+    return products;
+  } catch (error) {
+    console.error('Error fetching top rated products:', error);
+    return [];
+  }
+};
+
+export const getDiscountedProducts = async (): Promise<Product[]> => {
+  try {
+    const { products } = await fetchProducts({
+      hasDiscount: true,
+      limit: 8
+    });
+    
+    return products;
+  } catch (error) {
+    console.error('Error fetching discounted products:', error);
+    return [];
+  }
+};
+
+export const getBestSellingProducts = async (): Promise<Product[]> => {
+  try {
+    const { products } = await fetchProducts({
+      sortBy: 'popularity',
+      limit: 8
+    });
+    
+    return products;
+  } catch (error) {
+    console.error('Error fetching best selling products:', error);
+    return [];
   }
 };

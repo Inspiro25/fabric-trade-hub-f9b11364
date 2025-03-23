@@ -1,67 +1,92 @@
-
 import { useState } from 'react';
 
-export const useSearchFilters = (initialCategory: string | null = null) => {
+// Add the missing useSearchViewMode hook
+export const useSearchViewMode = () => {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  return { viewMode, setViewMode };
+};
+
+import { useState, useCallback } from 'react';
+
+export const useSearchFilters = (initialCategory: string | null) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
   const [selectedShop, setSelectedShop] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [rating, setRating] = useState<number>(0);
-  const [sortOption, setSortOption] = useState<string>('newest');
+  const [rating, setRating] = useState<number | null>(null);
+  const [sortOption, setSortOption] = useState<string>('relevance');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
-  const [availabilityFilters, setAvailabilityFilters] = useState<{inStock: boolean, outOfStock: boolean}>({
+  
+  // Availability Filters
+  const [availabilityFilters, setAvailabilityFilters] = useState({
     inStock: false,
-    outOfStock: false
+    onSale: false,
   });
-  const [brandFilters, setBrandFilters] = useState<{[key: string]: boolean}>({});
-  const [discountFilters, setDiscountFilters] = useState<{[key: string]: boolean}>({});
-  
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
+
+  const handleAvailabilityFilterChange = (filterName: string, checked: boolean) => {
+    setAvailabilityFilters(prev => ({
+      ...prev,
+      [filterName]: checked,
+    }));
   };
   
-  const handleShopChange = (shopId: string) => {
-    setSelectedShop(shopId === selectedShop ? null : shopId);
-  };
-  
-  const handlePriceRangeChange = (range: [number, number]) => {
-    setPriceRange(range);
-  };
-  
-  const handleRatingChange = (value: number) => {
-    setRating(value === rating ? 0 : value);
-  };
-  
-  const handleSortChange = (option: string) => {
-    setSortOption(option);
-  };
-  
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  };
-  
-  const handleAvailabilityFilterChange = (filter: 'inStock' | 'outOfStock', value: boolean) => {
-    setAvailabilityFilters(prev => ({...prev, [filter]: value}));
-  };
-  
+  // Brand Filters
+  const [brandFilters, setBrandFilters] = useState<string[]>([]);
+
   const toggleBrandFilter = (brand: string) => {
-    setBrandFilters(prev => ({...prev, [brand]: !prev[brand]}));
+    if (brandFilters.includes(brand)) {
+      setBrandFilters(prev => prev.filter(b => b !== brand));
+    } else {
+      setBrandFilters(prev => [...prev, brand]);
+    }
   };
   
-  const toggleDiscountFilter = (discount: string) => {
-    setDiscountFilters(prev => ({...prev, [discount]: !prev[discount]}));
+  // Discount Filters
+  const [discountFilters, setDiscountFilters] = useState<number[]>([]);
+
+  const toggleDiscountFilter = (discount: number) => {
+    if (discountFilters.includes(discount)) {
+      setDiscountFilters(prev => prev.filter(d => d !== discount));
+    } else {
+      setDiscountFilters(prev => [...prev, discount]);
+    }
   };
-  
-  const clearFilters = () => {
+
+  const handleCategoryChange = useCallback((category: string | null) => {
+    setSelectedCategory(category);
+  }, []);
+
+  const handleShopChange = useCallback((shop: string | null) => {
+    setSelectedShop(shop);
+  }, []);
+
+  const handlePriceRangeChange = useCallback((range: [number, number]) => {
+    setPriceRange(range);
+  }, []);
+
+  const handleRatingChange = useCallback((rating: number | null) => {
+    setRating(rating);
+  }, []);
+
+  const handleSortChange = useCallback((sort: string) => {
+    setSortOption(sort);
+  }, []);
+
+  const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
+    setViewMode(mode);
+  }, []);
+
+  const clearFilters = useCallback(() => {
     setSelectedCategory(null);
     setSelectedShop(null);
     setPriceRange([0, 1000]);
-    setRating(0);
-    setAvailabilityFilters({inStock: false, outOfStock: false});
-    setBrandFilters({});
-    setDiscountFilters({});
-  };
+    setRating(null);
+    setAvailabilityFilters({ inStock: false, onSale: false });
+    setBrandFilters([]);
+    setDiscountFilters([]);
+  }, []);
 
   return {
     selectedCategory,

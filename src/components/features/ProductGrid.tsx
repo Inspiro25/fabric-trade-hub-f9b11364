@@ -8,7 +8,9 @@ import {
   PaginationItem, 
   PaginationLink, 
   PaginationNext, 
-  PaginationPrevious 
+  PaginationPrevious,
+  PaginationFirst,
+  PaginationLast
 } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +26,9 @@ interface ProductGridProps {
   className?: string;
   showPagination?: boolean;
   itemsPerPage?: number;
+  totalItems?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
   showFilters?: boolean;
   useAlternateLayout?: boolean;
   highlightType?: 'new' | 'trending' | 'sale' | null;
@@ -37,19 +42,30 @@ const ProductGrid = ({
   className = '',
   showPagination = false,
   itemsPerPage = 12,
+  totalItems,
+  currentPage = 1,
+  onPageChange,
   showFilters = false,
   useAlternateLayout = false,
   highlightType = null,
 }: ProductGridProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const isMobile = useIsMobile();
   
   // Calculate pagination
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const displayedProducts = products.slice(startIdx, startIdx + itemsPerPage);
+  let totalPages = 1;
+  let displayedProducts = products;
+  
+  if (totalItems && itemsPerPage) {
+    // External pagination (controlled by parent)
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+  } else {
+    // Internal pagination (self-managed)
+    totalPages = Math.ceil(products.length / itemsPerPage);
+    const startIdx = (currentPage - 1) * itemsPerPage;
+    displayedProducts = products.slice(startIdx, startIdx + itemsPerPage);
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,10 +75,14 @@ const ProductGrid = ({
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    // Reset to page 1 when products change
-    setCurrentPage(1);
-  }, [products]);
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      // Internal pagination
+      window.scrollTo(0, 0);
+    }
+  };
 
   const getGridCols = () => {
     if (viewMode === 'list') return 'grid-cols-1';
@@ -107,7 +127,7 @@ const ProductGrid = ({
               </h2>
               {useAlternateLayout && products.length > 0 && (
                 <Badge variant="outline" className="font-normal">
-                  {products.length} products
+                  {totalItems || products.length} products
                 </Badge>
               )}
             </div>
@@ -182,30 +202,64 @@ const ProductGrid = ({
         <div className="mt-6">
           <Pagination>
             <PaginationContent>
+              {totalPages > 3 && (
+                <PaginationItem>
+                  <PaginationFirst 
+                    onClick={() => handlePageChange(1)}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              )}
+              
               <PaginationItem>
                 <PaginationPrevious 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                   className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
               
-              {[...Array(totalPages)].map((_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink 
-                    isActive={currentPage === i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {/* Dynamic page numbers */}
+              {(() => {
+                // Calculate which page numbers to show
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, startPage + 2);
+                
+                // Adjust if we're near the end
+                if (endPage - startPage < 2) {
+                  startPage = Math.max(1, endPage - 2);
+                }
+                
+                const pages = [];
+                for (let i = startPage; i <= endPage; i++) {
+                  pages.push(
+                    <PaginationItem key={i}>
+                      <PaginationLink 
+                        isActive={currentPage === i}
+                        onClick={() => handlePageChange(i)}
+                      >
+                        {i}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                return pages;
+              })()}
               
               <PaginationItem>
                 <PaginationNext 
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
+              
+              {totalPages > 3 && (
+                <PaginationItem>
+                  <PaginationLast 
+                    onClick={() => handlePageChange(totalPages)}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              )}
             </PaginationContent>
           </Pagination>
         </div>
