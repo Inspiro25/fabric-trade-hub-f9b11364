@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Importing refactored components
 import ProfileHeader from '@/components/profile/ProfileHeader';
@@ -13,6 +14,7 @@ import AuthenticatedView from '@/components/profile/AuthenticatedView';
 const ProfilePage = () => {
   const { currentUser, userProfile, logout, updateUserProfile } = useAuth();
   const { getCartCount } = useCart();
+  const { isDarkMode } = useTheme();
   const navigate = useNavigate();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -86,7 +88,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="pb-16 bg-gray-50 min-h-screen">
+    <div className={`pb-16 min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ProfileHeader 
         isLoggedIn={!!currentUser} 
         editMode={editMode} 

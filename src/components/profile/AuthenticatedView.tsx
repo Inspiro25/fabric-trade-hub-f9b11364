@@ -4,6 +4,8 @@ import ProfileAvatar from './ProfileAvatar';
 import ProfileStats from './ProfileStats';
 import ProfileActions from './ProfileActions';
 import ProfileCard from './ProfileCard';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 type AuthenticatedViewProps = {
   isLoaded: boolean;
@@ -40,8 +42,13 @@ const AuthenticatedView = ({
   handleLogout,
   getCartCount
 }: AuthenticatedViewProps) => {
+  const { isDarkMode } = useTheme();
+  
   return (
-    <div className={`max-w-md mx-auto p-4 transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+    <div className={cn(
+      "max-w-md mx-auto p-4 transition-all duration-500",
+      isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+    )}>
       <ProfileAvatar
         photoURL={currentUser?.photoURL}
         displayName={displayName}

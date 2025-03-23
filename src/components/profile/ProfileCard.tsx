@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/card';
 import ProfileForm from './ProfileForm';
 import ProfileInfo from './ProfileInfo';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 type ProfileCardProps = {
   editMode: boolean;
@@ -39,12 +41,29 @@ const ProfileCard = ({
   handleSubmit,
   currentUser
 }: ProfileCardProps) => {
+  const { isDarkMode } = useTheme();
+  
   return (
-    <Card className="overflow-hidden border-none shadow-md">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
-        <CardTitle className="text-lg">Personal Information</CardTitle>
+    <Card className={cn(
+      "overflow-hidden border-none shadow-md",
+      isDarkMode ? "bg-gray-800" : "bg-white"
+    )}>
+      <CardHeader className={cn(
+        "p-4",
+        isDarkMode 
+          ? "bg-gradient-to-r from-gray-800 to-gray-700" 
+          : "bg-gradient-to-r from-blue-50 to-indigo-50"
+      )}>
+        <CardTitle className={cn(
+          "text-lg",
+          isDarkMode ? "text-white" : ""
+        )}>
+          Personal Information
+        </CardTitle>
         {!editMode && (
-          <CardDescription>Your basic information</CardDescription>
+          <CardDescription className={isDarkMode ? "text-gray-300" : ""}>
+            Your basic information
+          </CardDescription>
         )}
       </CardHeader>
       <CardContent className="p-4">

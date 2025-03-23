@@ -1,6 +1,9 @@
 
 import React from 'react';
-import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { User, AtSign, Phone, Home } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 type ProfileInfoProps = {
   displayName: string;
@@ -10,26 +13,57 @@ type ProfileInfoProps = {
 };
 
 const ProfileInfo = ({ displayName, email, phoneNumber, address }: ProfileInfoProps) => {
+  const { isDarkMode } = useTheme();
+  
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor="displayName" className="text-xs text-gray-500">Full Name</Label>
-        <p>{displayName || "Not provided"}</p>
-      </div>
+      <InfoItem 
+        icon={<User className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        label="Display Name" 
+        value={displayName || 'Not provided'} 
+      />
       
-      <div className="space-y-1">
-        <Label htmlFor="email" className="text-xs text-gray-500">Email Address</Label>
-        <p>{email || "Not provided"}</p>
-      </div>
+      <Separator className={isDarkMode ? "bg-gray-700" : ""} />
       
-      <div className="space-y-1">
-        <Label htmlFor="phoneNumber" className="text-xs text-gray-500">Phone Number</Label>
-        <p>{phoneNumber || "Not provided"}</p>
-      </div>
+      <InfoItem 
+        icon={<AtSign className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        label="Email" 
+        value={email || 'Not provided'} 
+      />
       
-      <div className="space-y-1">
-        <Label htmlFor="address" className="text-xs text-gray-500">Address</Label>
-        <p className="whitespace-pre-line">{address || "Not provided"}</p>
+      <Separator className={isDarkMode ? "bg-gray-700" : ""} />
+      
+      <InfoItem 
+        icon={<Phone className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        label="Phone Number" 
+        value={phoneNumber || 'Not provided'} 
+      />
+      
+      <Separator className={isDarkMode ? "bg-gray-700" : ""} />
+      
+      <InfoItem 
+        icon={<Home className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        label="Address" 
+        value={address || 'Not provided'} 
+      />
+    </div>
+  );
+};
+
+const InfoItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => {
+  const { isDarkMode } = useTheme();
+  
+  return (
+    <div className="flex items-start">
+      <div className="mr-3 mt-0.5">{icon}</div>
+      <div>
+        <p className={cn(
+          "text-sm font-medium",
+          isDarkMode ? "text-gray-400" : "text-gray-500"
+        )}>
+          {label}
+        </p>
+        <p className={isDarkMode ? "text-white" : "text-gray-900"}>{value}</p>
       </div>
     </div>
   );

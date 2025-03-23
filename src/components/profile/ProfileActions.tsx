@@ -1,48 +1,74 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Heart, Store, LogOut } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { LogOut, ShoppingBag, HelpCircle, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 type ProfileActionsProps = {
   onLogout: () => Promise<void>;
 };
 
 const ProfileActions = ({ onLogout }: ProfileActionsProps) => {
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await onLogout();
-      toast.success('Logged out successfully');
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to log out. Please try again.');
-    }
-  };
+  const { isDarkMode } = useTheme();
+  
+  const actions = [
+    {
+      id: 'orders',
+      label: 'My Orders',
+      icon: <ShoppingBag className="h-4 w-4 mr-2" />,
+      href: '/orders',
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: <Settings className="h-4 w-4 mr-2" />,
+      href: '/settings',
+    },
+    {
+      id: 'help',
+      label: 'Help & Support',
+      icon: <HelpCircle className="h-4 w-4 mr-2" />,
+      href: '/help',
+    },
+  ];
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3">
-      <Button variant="outline" className="w-full" onClick={() => navigate('/orders')}>
-        <ShoppingBag className="mr-2 h-4 w-4" />
-        My Orders
-      </Button>
+    <div className="space-y-3 mb-6">
+      <div className="grid grid-cols-3 gap-3">
+        {actions.map((action) => (
+          <Link key={action.id} to={action.href} className="col-span-1">
+            <Button 
+              variant="outline" 
+              className={cn(
+                "w-full h-auto py-2 px-3 justify-start text-xs",
+                isDarkMode 
+                  ? "bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-200" 
+                  : "bg-white hover:bg-gray-50"
+              )}
+            >
+              <span className={isDarkMode ? "text-orange-400" : "text-orange-500"}>
+                {action.icon}
+              </span>
+              {action.label}
+            </Button>
+          </Link>
+        ))}
+      </div>
       
-      <Button variant="outline" className="w-full" onClick={() => navigate('/wishlist')}>
-        <Heart className="mr-2 h-4 w-4" />
-        Wishlist
-      </Button>
-      
-      <Button variant="outline" className="w-full" onClick={() => navigate('/admin/login')}>
-        <Store className="mr-2 h-4 w-4" />
-        Shop Login
-      </Button>
-      
-      <Button variant="outline" className="w-full text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
-        <LogOut className="mr-2 h-4 w-4" />
-        Logout
+      <Button 
+        variant="outline" 
+        onClick={onLogout}
+        className={cn(
+          "w-full justify-start text-sm",
+          isDarkMode 
+            ? "bg-gray-800 border-gray-700 hover:bg-gray-700 text-red-400 hover:text-red-300" 
+            : "bg-white hover:bg-gray-50 text-red-600 hover:text-red-700"
+        )}
+      >
+        <LogOut className="h-4 w-4 mr-2" />
+        Sign Out
       </Button>
     </div>
   );
