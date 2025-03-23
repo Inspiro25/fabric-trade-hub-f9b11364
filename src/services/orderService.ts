@@ -49,16 +49,67 @@ export const createOrder = async (
   notes?: string
 ): Promise<string | null> => {
   try {
+    // Get user information for the order
+    const { data: userData, error: userError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (userError) {
+      console.error('Error fetching user data:', userError);
+    }
+    
+    // Get shipping address details
+    const { data: addressData, error: addressError } = await supabase
+      .from('user_addresses')
+      .select('*')
+      .eq('id', shippingAddressId)
+      .single();
+    
+    if (addressError) {
+      console.error('Error fetching shipping address:', addressError);
+    }
+    
+    // Get first product to determine shop ID
+    const firstItem = cartItems[0];
+    const { data: productData, error: productError } = await supabase
+      .from('products')
+      .select('shop_id')
+      .eq('id', firstItem.product.id)
+      .single();
+    
+    if (productError) {
+      console.error('Error fetching product shop ID:', productError);
+    }
+    
+    // Format shipping address for storage
+    let shippingAddressText = '';
+    if (addressData) {
+      shippingAddressText = `${addressData.name}\n${addressData.address_line1}`;
+      if (addressData.address_line2) {
+        shippingAddressText += `\n${addressData.address_line2}`;
+      }
+      shippingAddressText += `\n${addressData.city}, ${addressData.state} ${addressData.postal_code}\n${addressData.country}`;
+    }
+    
     // Create order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id: userId,
+        shop_id: productData?.shop_id,
         status: 'pending',
         total: total,
         shipping_address_id: shippingAddressId,
         payment_method: paymentMethod,
-        notes: notes
+        notes: notes,
+        customer_name: userData?.display_name || '',
+        customer_email: userData?.email || '',
+        customer_phone: userData?.phone || '',
+        shipping_address: shippingAddressText,
+        shipping_method: 'Standard Shipping',
+        payment_status: 'pending'
       })
       .select()
       .single();
@@ -130,6 +181,31 @@ export const createOrder = async (
     if (notificationError) {
       console.error('Error creating order notification:', notificationError);
       // Non-critical, continue
+    }
+    
+    // Create notification for shop admin
+    if (productData?.shop_id) {
+      // Get shop admins
+      const { data: shopAdmins, error: adminsError } = await supabase
+        .from('shop_admins')
+        .select('user_id')
+        .eq('shop_id', productData.shop_id);
+      
+      if (!adminsError && shopAdmins?.length) {
+        // Create notification for each shop admin
+        for (const admin of shopAdmins) {
+          await supabase
+            .from('user_notifications')
+            .insert({
+              user_id: admin.user_id,
+              title: 'New Order Received',
+              message: `A new order #${order.id.slice(0, 8)} has been placed.`,
+              type: 'order',
+              link: `/admin/dashboard`,
+              read: false
+            });
+        }
+      }
     }
     
     toast.success('Order placed successfully!');
@@ -338,7 +414,8 @@ export const cancelOrder = async (userId: string, orderId: string): Promise<bool
       .from('orders')
       .update({
         status: 'cancelled',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        payment_status: 'cancelled'
       })
       .eq('id', orderId)
       .eq('user_id', userId);
@@ -363,6 +440,31 @@ export const cancelOrder = async (userId: string, orderId: string): Promise<bool
     if (notificationError) {
       console.error('Error creating cancellation notification:', notificationError);
       // Non-critical, continue
+    }
+    
+    // Create notification for shop admin
+    if (order.shop_id) {
+      // Get shop admins
+      const { data: shopAdmins, error: adminsError } = await supabase
+        .from('shop_admins')
+        .select('user_id')
+        .eq('shop_id', order.shop_id);
+      
+      if (!adminsError && shopAdmins?.length) {
+        // Create notification for each shop admin
+        for (const admin of shopAdmins) {
+          await supabase
+            .from('user_notifications')
+            .insert({
+              user_id: admin.user_id,
+              title: 'Order Cancelled',
+              message: `Order #${orderId.slice(0, 8)} has been cancelled by the customer.`,
+              type: 'order',
+              link: `/admin/dashboard`,
+              read: false
+            });
+        }
+      }
     }
     
     toast.success('Order cancelled successfully');

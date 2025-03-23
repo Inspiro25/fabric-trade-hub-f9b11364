@@ -253,10 +253,17 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
           id: string
           notes: string | null
           payment_method: string | null
+          payment_status: string | null
+          shipping_address: string | null
           shipping_address_id: string | null
+          shipping_method: string | null
+          shop_id: string | null
           status: string
           total: number
           tracking_number: string | null
@@ -265,10 +272,17 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           notes?: string | null
           payment_method?: string | null
+          payment_status?: string | null
+          shipping_address?: string | null
           shipping_address_id?: string | null
+          shipping_method?: string | null
+          shop_id?: string | null
           status: string
           total: number
           tracking_number?: string | null
@@ -277,10 +291,17 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           id?: string
           notes?: string | null
           payment_method?: string | null
+          payment_status?: string | null
+          shipping_address?: string | null
           shipping_address_id?: string | null
+          shipping_method?: string | null
+          shop_id?: string | null
           status?: string
           total?: number
           tracking_number?: string | null
@@ -293,6 +314,13 @@ export type Database = {
             columns: ["shipping_address_id"]
             isOneToOne: false
             referencedRelation: "user_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
             referencedColumns: ["id"]
           },
           {
@@ -624,6 +652,38 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      shop_admins: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          shop_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          shop_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          shop_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_admins_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shop_analytics: {
         Row: {
@@ -1130,7 +1190,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      monthly_shop_analytics: {
+        Row: {
+          month: string | null
+          order_count: number | null
+          shop_id: string | null
+          total_revenue: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never

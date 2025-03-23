@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Users, Settings, Store, Package } from 'lucide-react';
+import { BarChart, Users, Settings, Store, Package, ShoppingBag } from 'lucide-react';
 import ShopSalesChart from '@/components/admin/ShopSalesChart';
 import ShopDetailsEditor from '@/components/admin/ShopDetailsEditor';
 import ShopFollowersList from '@/components/admin/ShopFollowersList';
@@ -15,6 +15,7 @@ import { fetchShopFollowers } from '@/lib/supabase/shopFollows';
 import { fetchShopSalesAnalytics } from '@/lib/supabase/analytics';
 import ShopAdminHeader from '@/components/admin/ShopAdminHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ShopOrdersList from '@/components/admin/ShopOrdersList';
 
 const ShopDashboard = () => {
   const navigate = useNavigate();
@@ -150,10 +151,14 @@ const ShopDashboard = () => {
         onValueChange={setActiveTab} 
         className="mt-6"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">
             <BarChart className="h-4 w-4 mr-2" />
             <span className={isMobile ? 'hidden' : 'inline'}>Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="orders">
+            <ShoppingBag className="h-4 w-4 mr-2" />
+            <span className={isMobile ? 'hidden' : 'inline'}>Orders</span>
           </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="h-4 w-4 mr-2" />
@@ -179,6 +184,20 @@ const ShopDashboard = () => {
             </CardHeader>
             <CardContent className="pl-2">
               <ShopSalesChart data={salesData} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="orders" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Orders</CardTitle>
+              <CardDescription>
+                View and manage customer orders for your shop
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {shop && <ShopOrdersList shopId={shop.id} />}
             </CardContent>
           </Card>
         </TabsContent>
