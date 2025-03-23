@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/types/product';
 import AuthDialog from '@/components/search/AuthDialog';
-import { useNavigate } from 'react-router-dom';
 
 interface WishlistContextType {
   wishlist: string[];
@@ -22,7 +21,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { currentUser } = useAuth();
-  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -70,7 +68,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [wishlist]);
 
   const handleLogin = () => {
-    navigate('/auth');
+    // Using window.location instead of useNavigate
+    window.location.href = '/auth';
   };
 
   const addToWishlist = async (product: Product | string) => {

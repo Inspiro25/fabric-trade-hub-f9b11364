@@ -41,7 +41,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
   
   // Use the cart operations hook to handle cart actions
-  const { addToCartOp, removeFromCartOp, updateQuantityOp, clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
+  const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
 
   // Mark initialization complete after first load
   useEffect(() => {
