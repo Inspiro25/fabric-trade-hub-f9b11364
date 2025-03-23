@@ -23,16 +23,18 @@ export const fetchShops = async (): Promise<Shop[]> => {
       logo: shop?.logo || '/placeholder.svg',
       coverImage: shop?.cover_image || '/placeholder.svg',
       address: shop?.address || '',
-      rating: shop?.rating || 0,
-      reviewCount: shop?.review_count || 0,
-      productIds: [], // We'll fetch products separately
-      isVerified: shop?.is_verified || false,
-      createdAt: shop?.created_at || '',
-      shopId: shop?.shop_id || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending',
-      password: shop?.password || '', // Password field from database
+      phoneNumber: shop?.phone_number || '',
+      rating: shop?.rating || 0,
+      reviewCount: shop?.review_count || 0,
+      followers: shop?.followers_count || 0,
+      productIds: [], // We'll fetch products separately
+      isVerified: shop?.is_verified || false,
+      status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
+      createdAt: shop?.created_at || '',
+      shopId: shop?.shop_id || '',
+      password: shop?.password || '', // Include password field from database
     }));
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -63,16 +65,18 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       logo: shop?.logo || '/placeholder.svg',
       coverImage: shop?.cover_image || '/placeholder.svg',
       address: shop?.address || '',
-      rating: shop?.rating || 0,
-      reviewCount: shop?.review_count || 0,
-      productIds: [], // We'll fetch products separately
-      isVerified: shop?.is_verified || false,
-      createdAt: shop?.created_at || '',
-      shopId: shop?.shop_id || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      status: (shop?.status as 'pending' | 'active' | 'suspended') || 'pending',
-      password: shop?.password || '', // Password field from database
+      phoneNumber: shop?.phone_number || '',
+      rating: shop?.rating || 0,
+      reviewCount: shop?.review_count || 0,
+      followers: shop?.followers_count || 0,
+      productIds: [], // We'll fetch products separately
+      isVerified: shop?.is_verified || false,
+      status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
+      createdAt: shop?.created_at || '',
+      shopId: shop?.shop_id || '',
+      password: shop?.password || '', // Include password field from database
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
@@ -122,7 +126,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
 export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | null> => {
   try {
     // Generate a simple shop ID
-    const shopId = shopData.shopId || `shop-${Math.floor(Math.random() * 10000)}`;
+    const shopIdValue = shopData.shopId || `shop-${Math.floor(Math.random() * 10000)}`;
     
     const { data, error } = await supabase
       .from('shops')
@@ -133,11 +137,12 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         cover_image: shopData.coverImage,
         address: shopData.address,
         is_verified: shopData.isVerified,
-        shop_id: shopId,
+        shop_id: shopIdValue,
         owner_name: shopData.ownerName,
         owner_email: shopData.ownerEmail,
         status: shopData.status || 'pending',
         password: shopData.password, // Store password for shop login
+        phone_number: shopData.phoneNumber,
       })
       .select()
       .single();

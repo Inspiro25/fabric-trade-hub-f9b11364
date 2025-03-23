@@ -10,11 +10,17 @@ export const mockShops: Shop[] = [
     logo: '/placeholder.svg',
     coverImage: '/placeholder.svg',
     address: '123 Tech Street, Silicon Valley, CA',
+    ownerName: 'John Doe',
+    ownerEmail: 'john@electronicshub.com',
+    phoneNumber: '+1-555-123-4567',
     rating: 4.7,
     reviewCount: 342,
+    followers: 120,
     productIds: ['product-1', 'product-2', 'product-5', 'product-9'],
     isVerified: true,
-    createdAt: '2023-01-15'
+    status: 'active',
+    createdAt: '2023-01-15',
+    shopId: 'electronics-hub'
   },
   {
     id: 'shop-2',
@@ -23,11 +29,17 @@ export const mockShops: Shop[] = [
     logo: '/placeholder.svg',
     coverImage: '/placeholder.svg',
     address: '456 Style Avenue, New York, NY',
+    ownerName: 'Emma Wilson',
+    ownerEmail: 'emma@fashiontrends.com',
+    phoneNumber: '+1-555-987-6543',
     rating: 4.5,
     reviewCount: 218,
+    followers: 85,
     productIds: ['product-3', 'product-4', 'product-8'],
     isVerified: true,
-    createdAt: '2023-03-22'
+    status: 'active',
+    createdAt: '2023-03-22',
+    shopId: 'fashion-trends'
   },
   {
     id: 'shop-3',
@@ -36,11 +48,17 @@ export const mockShops: Shop[] = [
     logo: '/placeholder.svg',
     coverImage: '/placeholder.svg',
     address: '789 Comfort Lane, Chicago, IL',
+    ownerName: 'Robert Smith',
+    ownerEmail: 'robert@homeessentials.com',
+    phoneNumber: '+1-555-456-7890',
     rating: 4.3,
     reviewCount: 176,
+    followers: 62,
     productIds: ['product-6', 'product-7', 'product-10'],
     isVerified: false,
-    createdAt: '2023-05-07'
+    status: 'pending',
+    createdAt: '2023-05-07',
+    shopId: 'home-essentials'
   }
 ];
 

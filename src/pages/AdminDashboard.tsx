@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -80,8 +81,9 @@ const AdminDashboard = () => {
             followers: data[0].followers_count || 0,
             productIds: [], // This would need to be fetched separately
             isVerified: data[0].is_verified || false,
-            status: data[0].status || 'pending',
-            createdAt: data[0].created_at
+            status: (data[0].status as 'active' | 'pending' | 'suspended') || 'pending',
+            createdAt: data[0].created_at,
+            shopId: data[0].shop_id || ''
           };
           setShopData(shop);
         } else {

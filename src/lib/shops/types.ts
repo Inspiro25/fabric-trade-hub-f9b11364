@@ -16,6 +16,8 @@ export interface Shop {
   isVerified: boolean;
   status: 'active' | 'pending' | 'suspended';
   createdAt: string;
+  shopId?: string; // Adding shopId as an optional property
+  password?: string; // Adding password as an optional property
 }
 
 export interface ShopSummary {
