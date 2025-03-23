@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -16,13 +17,14 @@ import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ShopFormValues } from '@/components/management/ShopForm';
 
+// Define the schema to match exactly with ShopFormValues
 const shopSchema = yup.object({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
-  logo: yup.string().url('Logo must be a valid URL').required('Logo URL is required'),
-  coverImage: yup.string().url('Cover image must be a valid URL').required('Cover image URL is required'),
+  logo: yup.string().required('Logo URL is required'),
+  coverImage: yup.string().required('Cover image URL is required'),
   address: yup.string().required('Address is required'),
-  isVerified: yup.boolean().default(false),
+  isVerified: yup.boolean().required(),
   shopId: yup.string().required('Shop ID is required'),
   ownerName: yup.string().required('Owner name is required'),
   ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
