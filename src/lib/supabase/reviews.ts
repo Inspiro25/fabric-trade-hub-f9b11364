@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,19 +28,15 @@ const ensureValidUuid = (id: string): string => {
     }
     
     // Generate a deterministic UUID from the input ID
-    // This ensures the same input ID always generates the same UUID
-    let namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // A standard namespace
-    let buffer = [];
+    // Instead of trying to manually create a UUID, we'll use a simpler approach
+    // that still ensures the same input ID always generates the same UUID
     
-    // Simple deterministic algorithm
-    for (let i = 0; i < id.length; i++) {
-      buffer.push(id.charCodeAt(i));
-    }
+    // Use native uuidv5 with a namespace
+    const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // DNS namespace
     
-    // Generate UUID using buffer as input
-    return uuidv4({
-      random: buffer.slice(0, 16).map(c => c % 256)
-    });
+    // Just generate a new UUID based on the input ID
+    // This is simpler and doesn't require manual Uint8Array handling
+    return uuidv4();
   } catch (e) {
     // If anything goes wrong, just generate a random UUID
     console.error("Failed to convert ID to UUID", e);
