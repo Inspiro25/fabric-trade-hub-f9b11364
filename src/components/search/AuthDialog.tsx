@@ -1,11 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight } from 'lucide-react';
+import { LogIn, Mail, ShoppingBag, Heart, Bell, UserCircle, ArrowRight, AlertTriangle } from 'lucide-react';
 import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import { toast } from 'sonner';
 
@@ -26,9 +26,11 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
 }) => {
   const { loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
   const { isDarkMode, primaryColor } = useTheme();
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const handleLogin = async (provider: 'google' | 'facebook') => {
     try {
+      setAuthError(null);
       if (provider === 'google') {
         await loginWithGoogleProvider();
       } else if (provider === 'facebook') {
@@ -38,9 +40,17 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       toast.success("Login successful!");
       onLogin();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
-      toast.error("Login failed. Please try again.");
+      
+      // Handle unauthorized domain error specifically
+      if (error.code === 'auth/unauthorized-domain') {
+        setAuthError("This domain is not authorized for Firebase authentication. If you're running in development or preview mode, please add this domain to your Firebase console.");
+        toast.error("Domain not authorized for authentication");
+      } else {
+        setAuthError(error.message || "Login failed. Please try again.");
+        toast.error("Login failed. Please try again.");
+      }
     }
   };
 
@@ -86,6 +96,17 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
             </DialogDescription>
           </div>
         </AnimatedGradient>
+        
+        {/* Display auth error if present */}
+        {authError && (
+          <div className={cn(
+            "px-6 py-3 mb-2 text-sm rounded-md mx-6 flex items-start gap-2",
+            isDarkMode ? "bg-red-900/30 text-red-200 border border-red-800/50" : "bg-red-50 text-red-700 border border-red-100"
+          )}>
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <p>{authError}</p>
+          </div>
+        )}
         
         {/* Body with feature list */}
         <div className="p-6">

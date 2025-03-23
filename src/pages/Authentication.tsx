@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +18,14 @@ import {
   Lock, 
   User, 
   ArrowRight,
-  Smartphone
+  Smartphone,
+  AlertTriangle
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -50,6 +51,7 @@ const Authentication = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("login");
+  const [authError, setAuthError] = useState<{message: string; isFirebaseConfig?: boolean} | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, loginWithGoogleProvider, loginWithFacebookProvider } = useAuth();
@@ -88,32 +90,41 @@ const Authentication = () => {
     },
   });
   
-  const getErrorMessage = (errorCode: string): string => {
+  const getErrorMessage = (errorCode: string): {message: string; isFirebaseConfig?: boolean} => {
     switch (errorCode) {
+      case 'auth/unauthorized-domain':
+        return {
+          message: "This domain is not authorized for Firebase authentication. Please add it to your Firebase console under Authentication > Settings > Authorized domains.",
+          isFirebaseConfig: true
+        };
       case 'auth/operation-not-allowed':
-        return "This authentication method is not enabled in the Firebase Console. Please contact support.";
+        return {
+          message: "This authentication method is not enabled in the Firebase Console. Please contact support.",
+          isFirebaseConfig: true
+        };
       case 'auth/email-already-in-use':
-        return "This email is already registered. Please try logging in instead.";
+        return {message: "This email is already registered. Please try logging in instead."};
       case 'auth/invalid-email':
-        return "The email address is not valid.";
+        return {message: "The email address is not valid."};
       case 'auth/user-disabled':
-        return "This account has been disabled. Please contact support.";
+        return {message: "This account has been disabled. Please contact support."};
       case 'auth/user-not-found':
-        return "No account found with this email. Please sign up first.";
+        return {message: "No account found with this email. Please sign up first."};
       case 'auth/wrong-password':
-        return "Incorrect password. Please try again.";
+        return {message: "Incorrect password. Please try again."};
       case 'auth/invalid-credential':
-        return "Invalid email or password. Please check your credentials and try again.";
+        return {message: "Invalid email or password. Please check your credentials and try again."};
       case 'auth/too-many-requests':
-        return "Too many failed attempts. Please try again later.";
+        return {message: "Too many failed attempts. Please try again later."};
       case 'auth/network-request-failed':
-        return "Network error. Please check your connection and try again.";
+        return {message: "Network error. Please check your connection and try again."};
       default:
-        return "Authentication failed. Please try again.";
+        return {message: "Authentication failed. Please try again."};
     }
   };
   
   const onLoginSubmit = async (values: LoginFormValues) => {
+    setAuthError(null);
     setError("");
     setIsLogging(true);
     
@@ -128,11 +139,12 @@ const Authentication = () => {
     } catch (error: any) {
       console.error("Login error:", error);
       const errorCode = error.code || "";
-      const errorMessage = getErrorMessage(errorCode);
-      setError(errorMessage);
+      const errorInfo = getErrorMessage(errorCode);
+      setAuthError(errorInfo);
+      setError(errorInfo.message);
       toast({
         title: "Login failed",
-        description: errorMessage,
+        description: errorInfo.message,
         variant: "destructive",
       });
     } finally {
@@ -141,6 +153,7 @@ const Authentication = () => {
   };
   
   const onSignupSubmit = async (values: SignupFormValues) => {
+    setAuthError(null);
     setError("");
     setIsRegistering(true);
     
@@ -155,11 +168,12 @@ const Authentication = () => {
     } catch (error: any) {
       console.error("Registration error:", error);
       const errorCode = error.code || "";
-      const errorMessage = getErrorMessage(errorCode);
-      setError(errorMessage);
+      const errorInfo = getErrorMessage(errorCode);
+      setAuthError(errorInfo);
+      setError(errorInfo.message);
       toast({
         title: "Registration failed",
-        description: errorMessage,
+        description: errorInfo.message,
         variant: "destructive",
       });
     } finally {
@@ -168,6 +182,7 @@ const Authentication = () => {
   };
 
   const handleGoogleLogin = async () => {
+    setAuthError(null);
     setError("");
     try {
       await loginWithGoogleProvider();
@@ -179,17 +194,19 @@ const Authentication = () => {
     } catch (error: any) {
       console.error("Google login error:", error);
       const errorCode = error.code || "";
-      const errorMessage = getErrorMessage(errorCode);
-      setError(errorMessage);
+      const errorInfo = getErrorMessage(errorCode);
+      setAuthError(errorInfo);
+      setError(errorInfo.message);
       toast({
         title: "Login failed",
-        description: errorMessage,
+        description: errorInfo.message,
         variant: "destructive",
       });
     }
   };
 
   const handleFacebookLogin = async () => {
+    setAuthError(null);
     setError("");
     try {
       await loginWithFacebookProvider();
@@ -201,19 +218,18 @@ const Authentication = () => {
     } catch (error: any) {
       console.error("Facebook login error:", error);
       const errorCode = error.code || "";
-      const errorMessage = getErrorMessage(errorCode);
-      setError(errorMessage);
+      const errorInfo = getErrorMessage(errorCode);
+      setAuthError(errorInfo);
+      setError(errorInfo.message);
       toast({
         title: "Login failed",
-        description: errorMessage,
+        description: errorInfo.message,
         variant: "destructive",
       });
     }
   };
 
   const handlePhoneLogin = () => {
-    // This would require implementing the full phone login flow with Firebase
-    // Including verification code, etc.
     toast({
       title: "Coming soon",
       description: "Phone authentication will be implemented soon.",
@@ -706,3 +722,4 @@ const Authentication = () => {
 };
 
 export default Authentication;
+
