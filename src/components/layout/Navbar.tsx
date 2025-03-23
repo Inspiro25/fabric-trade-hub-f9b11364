@@ -8,7 +8,6 @@ import {
   X, 
   Percent, 
   ChevronDown,
-  User,
   Clock,
   History,
   TrendingUp,
@@ -19,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import AccountDropdown from '@/components/features/AccountDropdown';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -28,12 +28,6 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { cn } from '@/lib/utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
@@ -446,26 +440,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center space-x-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center text-sm font-medium">
-                  <User className="h-4 w-4 mr-1" />
-                  Account
-                  <ChevronDown className="h-3 w-3 ml-1 opacity-60" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link to="/profile">My Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/orders">My Orders</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">Settings</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AccountDropdown />
 
             <Button variant="ghost" size="icon" className="relative" asChild>
               <Link to="/offers">

@@ -1,233 +1,243 @@
 
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bell, ArrowLeft, Check, Trash2, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { formatDistanceToNow } from 'date-fns';
+import { Trash2, Check, CheckCheck, Bell, MailOpen, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { useNotifications, Notification } from '@/contexts/NotificationContext';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { NotificationType } from '@/hooks/use-notifications-status';
 
-const getNotificationIcon = (type: Notification['type']) => {
+const NotificationIcon = ({ type }: { type: NotificationType }) => {
+  const { isDarkMode } = useTheme();
+  
   switch (type) {
     case 'order':
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Order</Badge>;
+      return <Bell className={cn("h-6 w-6", isDarkMode ? "text-blue-400" : "text-blue-500")} />;
     case 'promo':
-      return <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Promo</Badge>;
+      return <MailOpen className={cn("h-6 w-6", isDarkMode ? "text-green-400" : "text-green-500")} />;
     case 'system':
-      return <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">System</Badge>;
+      return <Clock className={cn("h-6 w-6", isDarkMode ? "text-red-400" : "text-red-500")} />;
     default:
-      return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">General</Badge>;
+      return <Bell className={cn("h-6 w-6", isDarkMode ? "text-gray-400" : "text-gray-500")} />;
   }
 };
 
-const formatTimestamp = (timestamp: number) => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (diffInSeconds < 60) {
-    return 'Just now';
-  }
-  
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
-  }
-  
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
-  }
-  
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
-  }
-  
-  return date.toLocaleDateString();
-};
-
-const NotificationItem = ({ notification }: { notification: Notification }) => {
-  const { markAsRead, deleteUserNotification } = useNotifications();
-  const navigate = useNavigate();
-  
-  const handleClick = () => {
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-    
-    if (notification.link) {
-      navigate(notification.link);
-    }
-  };
+const EmptyNotifications = () => {
+  const { isDarkMode } = useTheme();
   
   return (
-    <div className="relative px-3 py-2.5 transition-colors duration-200 group">
-      <div 
-        className={`cursor-pointer ${notification.read ? 'bg-white' : 'bg-blue-50'} p-2 rounded-md`}
-        onClick={handleClick}
-      >
-        <div className="flex items-start gap-2">
-          {!notification.read && (
-            <div className="h-2 w-2 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
-          )}
-          {notification.read && (
-            <div className="h-2 w-2 mt-1.5 flex-shrink-0"></div>
-          )}
-          <div className="flex-1">
-            <div className="flex items-center justify-between gap-1.5 mb-0.5">
-              <div className="flex items-center gap-1.5">
-                {getNotificationIcon(notification.type)}
-                <h3 className={`text-xs font-semibold ${notification.read ? 'text-gray-800' : 'text-black'}`}>
-                  {notification.title}
-                </h3>
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-                      <circle cx="12" cy="12" r="1" />
-                      <circle cx="12" cy="5" r="1" />
-                      <circle cx="12" cy="19" r="1" />
-                    </svg>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
-                  {!notification.read && (
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation();
-                      markAsRead(notification.id);
-                      toast({
-                        description: "Notification marked as read"
-                      });
-                    }}>
-                      <Check className="mr-2 h-4 w-4" />
-                      <span>Mark as read</span>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation();
-                    deleteUserNotification(notification.id);
-                  }}>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <p className="text-xs text-gray-600 mb-1 leading-tight">{notification.message}</p>
-            <span className="text-[10px] text-gray-500">{formatTimestamp(notification.timestamp)}</span>
-          </div>
-        </div>
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <div className={cn(
+        "p-4 rounded-full mb-4", 
+        isDarkMode ? "bg-gray-800" : "bg-gray-100"
+      )}>
+        <Bell className={cn(
+          "h-8 w-8", 
+          isDarkMode ? "text-gray-400" : "text-gray-500"
+        )} />
       </div>
+      <h3 className={cn(
+        "text-lg font-medium mb-2",
+        isDarkMode ? "text-gray-300" : "text-gray-800"
+      )}>
+        No notifications yet
+      </h3>
+      <p className={cn(
+        "text-sm max-w-xs",
+        isDarkMode ? "text-gray-400" : "text-gray-600"
+      )}>
+        We'll notify you when there are new messages or updates
+      </p>
     </div>
   );
 };
 
-const EmptyNotifications = () => (
-  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-    <div className="bg-gray-100 p-4 rounded-full mb-3">
-      <Bell className="h-6 w-6 text-gray-400" />
-    </div>
-    <h3 className="text-base font-semibold text-gray-900 mb-1">No Notifications</h3>
-    <p className="text-xs text-gray-600 max-w-xs">
-      When you get notifications, they'll show up here.
-    </p>
-  </div>
-);
-
 const Notifications = () => {
-  const { notifications, unreadCount, markAllAsRead, clearNotifications } = useNotifications();
-  const navigate = useNavigate();
+  const { 
+    notifications, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteUserNotification, 
+    clearNotifications 
+  } = useNotifications();
+  const { isDarkMode } = useTheme();
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+      toast({
+        title: "Failed to mark notifications as read",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleClearAll = async () => {
+    try {
+      setIsDeleting(true);
+      await clearNotifications();
+      toast({
+        title: "All notifications cleared",
+      });
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+      toast({
+        title: "Failed to clear notifications",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   
   return (
-    <div className="pb-12 bg-gray-50 min-h-screen">
-      {/* Header - Compact Apple style */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-3 py-2 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full" 
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft size={16} />
-            </Button>
-            <h1 className="text-lg font-semibold">Notifications</h1>
-          </div>
-          
+    <div className={cn(
+      "container max-w-2xl mx-auto py-6 px-4",
+      isDarkMode ? "text-gray-200" : ""
+    )}>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Notifications</h1>
+        <div className="flex gap-2">
           {notifications.length > 0 && (
-            <div className="flex items-center gap-1">
+            <>
               <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs font-medium text-blue-600 rounded-full px-2.5 py-1 h-7"
-                onClick={markAllAsRead}
+                variant="outline" 
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                className={isDarkMode ? "border-gray-700 hover:bg-gray-800" : ""}
               >
-                Mark All
+                <CheckCheck className="h-4 w-4 mr-1" />
+                Mark all read
               </Button>
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7 rounded-full text-gray-500"
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-xl max-w-[90%] p-4">
-                  <AlertDialogHeader className="pb-2">
-                    <AlertDialogTitle className="text-base">Clear All Notifications?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-xs">
-                      This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="gap-2 pt-2">
-                    <AlertDialogCancel className="rounded-full text-xs h-8">Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={clearNotifications} 
-                      className="bg-red-500 hover:bg-red-600 rounded-full text-xs h-8"
-                    >
-                      Clear All
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleClearAll}
+                disabled={isDeleting}
+                className={cn(
+                  isDarkMode ? "border-gray-700 hover:bg-gray-800" : "",
+                  "text-red-500 hover:text-red-600"
+                )}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Clear all
+              </Button>
+            </>
           )}
         </div>
       </div>
       
-      {/* Main Content */}
-      <main className="py-2 px-2">
-        {notifications.length > 0 ? (
-          <Card className="overflow-hidden rounded-xl shadow-sm border-gray-100 animate-fade-in">
-            <div className="p-0.5">
-              {notifications.map((notification, index) => (
-                <React.Fragment key={notification.id}>
-                  <NotificationItem notification={notification} />
-                  {index < notifications.length - 1 && <Separator className="mx-2" />}
-                </React.Fragment>
-              ))}
+      {notifications.length > 0 ? (
+        <div className={cn(
+          "rounded-lg overflow-hidden shadow-sm divide-y",
+          isDarkMode 
+            ? "bg-gray-800 divide-gray-700 border border-gray-700" 
+            : "bg-white divide-gray-200 border border-gray-100"
+        )}>
+          {notifications.map((notification) => (
+            <div 
+              key={notification.id}
+              className={cn(
+                "p-4 flex transition-colors",
+                notification.read 
+                  ? isDarkMode ? "bg-gray-800/70" : "bg-white" 
+                  : isDarkMode ? "bg-gray-700/50" : "bg-orange-50/60"
+              )}
+            >
+              <div className={cn(
+                "flex-shrink-0 mr-4 p-2 rounded-full",
+                isDarkMode ? "bg-gray-700" : "bg-gray-100"
+              )}>
+                <NotificationIcon type={notification.type} />
+              </div>
+              
+              <div className="flex-grow min-w-0">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className={cn(
+                    "font-medium truncate mr-2",
+                    notification.read 
+                      ? isDarkMode ? "text-gray-300" : "text-gray-800"
+                      : isDarkMode ? "text-white" : "text-gray-900"
+                  )}>
+                    {notification.title}
+                  </h3>
+                  <span className={cn(
+                    "text-xs whitespace-nowrap",
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  )}>
+                    {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
+                  </span>
+                </div>
+                
+                <p className={cn(
+                  "text-sm mb-2",
+                  notification.read 
+                    ? isDarkMode ? "text-gray-400" : "text-gray-600"
+                    : isDarkMode ? "text-gray-300" : "text-gray-700"
+                )}>
+                  {notification.message}
+                </p>
+                
+                <div className="flex justify-between items-center">
+                  {notification.link && (
+                    <a 
+                      href={notification.link} 
+                      className={cn(
+                        "text-xs font-medium",
+                        isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-600 hover:text-blue-700"
+                      )}
+                    >
+                      View details
+                    </a>
+                  )}
+                  
+                  <div className="flex gap-2 ml-auto">
+                    {!notification.read && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => markAsRead(notification.id)}
+                        className={cn(
+                          "h-8 px-2 text-xs",
+                          isDarkMode 
+                            ? "hover:bg-gray-700 text-gray-300"
+                            : "hover:bg-gray-100 text-gray-600"
+                        )}
+                      >
+                        <Check className="h-3 w-3 mr-1" />
+                        Mark read
+                      </Button>
+                    )}
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteUserNotification(notification.id)}
+                      className={cn(
+                        "h-8 px-2 text-xs",
+                        isDarkMode 
+                          ? "hover:bg-gray-700 text-red-400 hover:text-red-300"
+                          : "hover:bg-gray-100 text-red-500 hover:text-red-600"
+                      )}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </Card>
-        ) : (
-          <EmptyNotifications />
-        )}
-      </main>
+          ))}
+        </div>
+      ) : (
+        <EmptyNotifications />
+      )}
     </div>
   );
 };

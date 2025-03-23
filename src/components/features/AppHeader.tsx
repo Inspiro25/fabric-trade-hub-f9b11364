@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Sun, Sparkles, Flame, Stars, Moon } from 'lucide-react';
+import { ChevronLeft, Sun, Sparkles, Flame, Moon } from 'lucide-react';
 import NotificationBadge from '@/components/features/NotificationBadge';
+import AccountDropdown from '@/components/features/AccountDropdown';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -80,9 +81,11 @@ const AppHeader: React.FC = () => {
             {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
             <span className="sr-only">Toggle theme</span>
           </Button>
+          
           <NotificationBadge className={cn(
             isDarkMode ? "text-orange-300" : "text-kutuku-primary"
           )} />
+          
           <Link to="/search" className={cn(
             "hover:transition-colors",
             isDarkMode 
@@ -94,6 +97,8 @@ const AppHeader: React.FC = () => {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </Link>
+          
+          <AccountDropdown />
         </div>
       </div>
       
