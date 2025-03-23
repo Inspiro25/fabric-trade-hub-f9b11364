@@ -25,13 +25,13 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider>
-          <CartProvider>
-            <WishlistProvider>
+          <WishlistProvider>
+            <CartProvider>
               <NotificationProvider>
                 <App />
               </NotificationProvider>
-            </WishlistProvider>
-          </CartProvider>
+            </CartProvider>
+          </WishlistProvider>
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -235,8 +236,8 @@ const AdminDashboard = () => {
     case 'orders':
       tabContent = (
         <>
-          <ShopOrdersList />
-          {selectedOrder && <OrderDetailsView orderId={selectedOrder} />}
+          <ShopOrdersList shopId={shopData?.id || ''} />
+          {selectedOrder && <OrderDetailsView orderId={selectedOrder} shopId={shopData?.id || ''} onOrderUpdated={() => {}} />}
         </>
       );
       break;
@@ -257,7 +258,7 @@ const AdminDashboard = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       <ShopAdminHeader shop={shopData} />
       <div className="container mx-auto py-6">
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab} value={activeTab}>
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
