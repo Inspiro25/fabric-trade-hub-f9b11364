@@ -38,9 +38,9 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Shop</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/#new-arrivals" className="text-muted-foreground hover:text-foreground transition-colors">New Arrivals</Link></li>
-              <li><Link to="/#trending" className="text-muted-foreground hover:text-foreground transition-colors">Trending</Link></li>
-              <li><Link to="/#categories" className="text-muted-foreground hover:text-foreground transition-colors">Categories</Link></li>
+              <li><Link to="/products" className="text-muted-foreground hover:text-foreground transition-colors">New Arrivals</Link></li>
+              <li><Link to="/products" className="text-muted-foreground hover:text-foreground transition-colors">Trending</Link></li>
+              <li><Link to="/categories" className="text-muted-foreground hover:text-foreground transition-colors">Categories</Link></li>
               <li><Link to="/wishlist" className="text-muted-foreground hover:text-foreground transition-colors">Wishlist</Link></li>
             </ul>
           </div>
@@ -50,9 +50,9 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Support</h3>
             <ul className="space-y-2 text-sm">
               <li><Link to="/help" className="text-muted-foreground hover:text-foreground transition-colors">Help Center</Link></li>
-              <li><Link to="/shipping" className="text-muted-foreground hover:text-foreground transition-colors">Shipping Info</Link></li>
-              <li><Link to="/returns" className="text-muted-foreground hover:text-foreground transition-colors">Returns & Exchanges</Link></li>
-              <li><Link to="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link></li>
+              <li><Link to="/help" className="text-muted-foreground hover:text-foreground transition-colors">Shipping Info</Link></li>
+              <li><Link to="/help" className="text-muted-foreground hover:text-foreground transition-colors">Returns & Exchanges</Link></li>
+              <li><Link to="/help" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link></li>
             </ul>
           </div>
           
@@ -89,9 +89,9 @@ const Footer = () => {
         <div className="pt-6 border-t border-border text-sm text-center text-muted-foreground">
           <p>© 2024 Vyoma. All rights reserved.</p>
           <div className="flex justify-center space-x-4 mt-2">
-            <Link to="/terms" className="hover:underline">Terms of Service</Link>
-            <Link to="/privacy" className="hover:underline">Privacy Policy</Link>
-            <Link to="/shipping" className="hover:underline">Shipping Policy</Link>
+            <Link to="/help" className="hover:underline">Terms of Service</Link>
+            <Link to="/help" className="hover:underline">Privacy Policy</Link>
+            <Link to="/help" className="hover:underline">Shipping Policy</Link>
           </div>
         </div>
       </div>

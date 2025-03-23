@@ -33,7 +33,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ onClose }) => {
     { icon: <Store size={18} />, label: 'Shops', path: '/shops' },
     { icon: <Heart size={18} />, label: 'Wishlist', path: '/wishlist' },
     { icon: <Bell size={18} />, label: 'Notifications', path: '/notifications' },
-    { icon: <Settings size={18} />, label: 'Settings', path: '/settings' },
+    { icon: <Settings size={18} />, label: 'Settings', path: '/account/settings' }, // Fixed path
     { icon: <HelpCircle size={18} />, label: 'Help & Support', path: '/help' },
   ];
 

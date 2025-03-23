@@ -18,13 +18,13 @@ const ProfileActions = ({ onLogout }: ProfileActionsProps) => {
       id: 'orders',
       label: 'My Orders',
       icon: <ShoppingBag className="h-4 w-4 mr-2" />,
-      href: '/orders',
+      href: '/account/orders', // Updated from /orders to /account/orders
     },
     {
       id: 'settings',
       label: 'Settings',
       icon: <Settings className="h-4 w-4 mr-2" />,
-      href: '/settings',
+      href: '/account/settings', // Updated from /settings to /account/settings
     },
     {
       id: 'help',

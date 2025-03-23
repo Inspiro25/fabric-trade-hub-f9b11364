@@ -35,7 +35,7 @@ const MobileNavigation: React.FC = () => {
       isCart: true,
       customStyles: true 
     },
-    { icon: Tag, path: '/offers', label: 'Offers' },
+    { icon: Tag, path: '/products', label: 'Products' }, // Updated from /offers to /products
     { icon: Store, path: '/shops', label: 'Shops' },
   ];
   

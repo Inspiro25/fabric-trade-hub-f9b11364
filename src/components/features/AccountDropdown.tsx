@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -41,7 +40,7 @@ const AccountDropdown = () => {
   const avatarUrl = userProfile?.avatarUrl || '';
   
   const handleLogin = () => {
-    navigate('/profile');
+    navigate('/login');
   };
   
   const handleLogout = async () => {
@@ -118,18 +117,16 @@ const AccountDropdown = () => {
             
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link to="/profile" className="flex items-center cursor-pointer">
+                <Link to="/account" className="flex items-center cursor-pointer">
                   <UserRound className="h-4 w-4 mr-2" />
                   <span>My Profile</span>
                 </Link>
               </DropdownMenuItem>
               
               <DropdownMenuItem asChild>
-                <Link to="/orders" className="flex items-center cursor-pointer">
+                <Link to="/account/orders" className="flex items-center cursor-pointer">
                   <ShoppingBag className="h-4 w-4 mr-2" />
                   <span>My Orders</span>
-                  
-                  {/* Conditional order badge can be added here */}
                 </Link>
               </DropdownMenuItem>
               
@@ -156,7 +153,7 @@ const AccountDropdown = () => {
               </DropdownMenuItem>
               
               <DropdownMenuItem asChild>
-                <Link to="/settings" className="flex items-center cursor-pointer">
+                <Link to="/account/settings" className="flex items-center cursor-pointer">
                   <Settings className="h-4 w-4 mr-2" />
                   <span>Settings</span>
                 </Link>
@@ -190,7 +187,7 @@ const AccountDropdown = () => {
             </DropdownMenuItem>
             
             <DropdownMenuItem asChild>
-              <Link to="/orders/track" className="flex items-center cursor-pointer">
+              <Link to="/tracking" className="flex items-center cursor-pointer">
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 <span>Track Order</span>
               </Link>
