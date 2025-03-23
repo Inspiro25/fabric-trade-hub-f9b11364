@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import RequireAuth from '@/components/auth/RequireAuth';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 // Mock data for orders
 const orders = [
@@ -113,34 +116,57 @@ const OrderItem = ({ order }: { order: typeof orders[0] }) => {
 
 const Orders = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
   
-  return (
-    <div className="pb-12 bg-gray-50 min-h-screen">
+  const ordersContent = (
+    <div className={cn(
+      "pb-12 min-h-screen",
+      isDarkMode ? "bg-gray-900" : "bg-gray-50"
+    )}>
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-3 py-2 border-b border-gray-200">
+      <div className={cn(
+        "sticky top-0 z-10 backdrop-blur-md px-3 py-2 border-b",
+        isDarkMode 
+          ? "bg-gray-900/80 border-gray-800" 
+          : "bg-white/80 border-gray-200"
+      )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-8 w-8 rounded-full" 
+              className={cn(
+                "h-8 w-8 rounded-full",
+                isDarkMode && "text-gray-300 hover:bg-gray-800"
+              )}
               onClick={() => navigate(-1)}
             >
               <ArrowLeft size={16} />
             </Button>
-            <h1 className="text-lg font-semibold">My Orders</h1>
+            <h1 className={cn(
+              "text-lg font-semibold",
+              isDarkMode && "text-white"
+            )}>My Orders</h1>
           </div>
         </div>
       </div>
       
       {/* Search and Filter */}
-      <div className="px-3 py-2 bg-white border-b border-gray-100">
+      <div className={cn(
+        "px-3 py-2 border-b",
+        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
+      )}>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-            <Input placeholder="Search orders" className="pl-8 h-9 text-sm" />
+            <Input placeholder="Search orders" className={cn(
+              "pl-8 h-9 text-sm",
+              isDarkMode && "bg-gray-700 border-gray-600 text-gray-200"
+            )} />
           </div>
-          <Button variant="outline" size="sm" className="border-gray-200">
+          <Button variant="outline" size="sm" className={cn(
+            isDarkMode ? "border-gray-700 text-gray-300" : "border-gray-200"
+          )}>
             <Filter size={14} className="mr-1" />
             Filter
           </Button>
@@ -148,16 +174,22 @@ const Orders = () => {
       </div>
       
       {/* Tabs */}
-      <div className="px-3 pt-2 bg-white">
+      <div className={cn(
+        "px-3 pt-2",
+        isDarkMode ? "bg-gray-800" : "bg-white"
+      )}>
         <Tabs defaultValue="all">
-          <TabsList className="grid grid-cols-4 h-9">
+          <TabsList className={cn(
+            "grid grid-cols-4 h-9",
+            isDarkMode && "bg-gray-700"
+          )}>
             <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
             <TabsTrigger value="processing" className="text-xs">Processing</TabsTrigger>
             <TabsTrigger value="shipped" className="text-xs">Shipped</TabsTrigger>
             <TabsTrigger value="delivered" className="text-xs">Delivered</TabsTrigger>
           </TabsList>
           
-          {/* Order List - Moved TabsContent inside the Tabs component */}
+          {/* Order List */}
           <div className="p-3">
             <TabsContent value="all" className="mt-0">
               {orders.map((order) => (
@@ -187,6 +219,8 @@ const Orders = () => {
       </div>
     </div>
   );
+
+  return <RequireAuth>{ordersContent}</RequireAuth>;
 };
 
 export default Orders;

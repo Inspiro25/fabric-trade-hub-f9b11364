@@ -12,6 +12,7 @@ import OrderSummary from '@/components/cart/OrderSummary';
 import { Loader2, ShoppingBag } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import RequireAuth from '@/components/auth/RequireAuth';
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
@@ -71,7 +72,7 @@ const Cart = () => {
     );
   }
 
-  return (
+  const cartContent = (
     <div className={cn(
       "animate-page-transition min-h-screen",
       isDarkMode 
@@ -133,6 +134,8 @@ const Cart = () => {
       <Footer />
     </div>
   );
+
+  return <RequireAuth>{cartContent}</RequireAuth>;
 };
 
 export default Cart;

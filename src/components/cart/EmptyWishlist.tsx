@@ -13,12 +13,12 @@ const EmptyWishlist: React.FC = () => {
     <div className={cn(
       "text-center py-10 rounded-xl p-6 max-w-md mx-auto",
       isDarkMode 
-        ? "bg-gray-800 border border-gray-700 shadow-lg" 
+        ? "bg-gray-800 border border-gray-700 shadow-lg shadow-black/20" 
         : "bg-white shadow-sm"
     )}>
       <div className={cn(
         "inline-flex justify-center items-center p-3 rounded-full mb-4",
-        isDarkMode ? "bg-pink-900/30" : "bg-pink-50"
+        isDarkMode ? "bg-gray-700" : "bg-kutuku-light"
       )}>
         <Heart className={cn(
           "w-8 h-8",
@@ -33,7 +33,7 @@ const EmptyWishlist: React.FC = () => {
         "mb-6 text-sm max-w-xs mx-auto",
         isDarkMode ? "text-gray-300" : "text-muted-foreground"
       )}>
-        Items you love will appear here. Start exploring and add your favorites.
+        Save items you love to your wishlist and they'll appear here.
       </p>
       <Button 
         size="lg" 
@@ -41,8 +41,8 @@ const EmptyWishlist: React.FC = () => {
         className={cn(
           "rounded-full",
           isDarkMode 
-            ? "bg-orange-600 hover:bg-orange-700" 
-            : "bg-kutuku-primary hover:bg-kutuku-secondary"
+            ? "bg-pink-600 hover:bg-pink-700" 
+            : "bg-pink-500 hover:bg-pink-600"
         )}
       >
         <Link to="/">Start Shopping</Link>

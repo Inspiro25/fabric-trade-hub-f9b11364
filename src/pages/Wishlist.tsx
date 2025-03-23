@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import RequireAuth from '@/components/auth/RequireAuth';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
@@ -97,7 +98,7 @@ const Wishlist = () => {
     );
   }
 
-  return (
+  const wishlistContent = (
     <div className={cn(
       "container mx-auto px-4 py-6 max-w-5xl min-h-screen",
       isDarkMode 
@@ -158,6 +159,8 @@ const Wishlist = () => {
       )}
     </div>
   );
+
+  return <RequireAuth>{wishlistContent}</RequireAuth>;
 };
 
 export default Wishlist;

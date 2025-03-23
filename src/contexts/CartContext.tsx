@@ -6,6 +6,8 @@ import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
+import AuthDialog from '@/components/search/AuthDialog';
+import { useNavigate } from 'react-router-dom';
 
 export interface CartItem {
   id: string;
@@ -34,12 +36,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { currentUser } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasPendingMigration, setHasPendingMigration] = useState(false);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const navigate = useNavigate();
   
   // Use the cart storage hook to manage cart data
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
   
   // Use the cart operations hook to handle cart actions
-  const { addToCart, removeFromCart, updateQuantity, clearCart, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
+  const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
 
   // Mark initialization complete after first load
   useEffect(() => {
@@ -81,6 +85,43 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     migrateCart();
   }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
+  // Wrap original operations to check for authentication
+  const addToCart = (product: Product, quantity: number, color: string, size: string) => {
+    if (!currentUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    addToCartOp(product, quantity, color, size);
+  };
+
+  const removeFromCart = (itemId: string) => {
+    if (!currentUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    removeFromCartOp(itemId);
+  };
+
+  const updateQuantity = (itemId: string, quantity: number) => {
+    if (!currentUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    updateQuantityOp(itemId, quantity);
+  };
+
+  const clearCart = () => {
+    if (!currentUser) {
+      setShowAuthDialog(true);
+      return;
+    }
+    clearCartOp();
+  };
+
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+
   // Memoize wrapped functions to prevent unnecessary re-renders
   const getCartTotalWrapper = useCallback(() => getCartTotal(cartItems), [cartItems]);
   const getCartCountWrapper = useCallback(() => getCartCount(cartItems), [cartItems]);
@@ -117,6 +158,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <CartContext.Provider value={value}>
       {children}
+      {showAuthDialog && (
+        <AuthDialog
+          open={showAuthDialog}
+          onOpenChange={setShowAuthDialog}
+          onLogin={handleLogin}
+          title="Authentication Required"
+          message="You need to be logged in to manage your cart."
+        />
+      )}
     </CartContext.Provider>
   );
 };

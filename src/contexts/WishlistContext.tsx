@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/types/product';
+import AuthDialog from '@/components/search/AuthDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface WishlistContextType {
   wishlist: string[];
@@ -18,7 +20,9 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -65,8 +69,18 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
   }, [wishlist]);
 
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+
   const addToWishlist = async (product: Product | string) => {
     try {
+      // Require authentication for wishlist operations
+      if (!currentUser) {
+        setShowAuthDialog(true);
+        return;
+      }
+      
       const productId = typeof product === 'string' ? product : product.id;
       
       if (wishlist.includes(productId)) return;
@@ -100,6 +114,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const removeFromWishlist = async (productId: string) => {
     try {
+      // Require authentication for wishlist operations
+      if (!currentUser) {
+        setShowAuthDialog(true);
+        return;
+      }
+      
       if (currentUser) {
         try {
           const { error } = await supabase
@@ -135,6 +155,15 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist, isLoading }}>
       {children}
+      {showAuthDialog && (
+        <AuthDialog
+          open={showAuthDialog}
+          onOpenChange={setShowAuthDialog}
+          onLogin={handleLogin}
+          title="Authentication Required"
+          message="You need to be logged in to add items to your wishlist."
+        />
+      )}
     </WishlistContext.Provider>
   );
 };
