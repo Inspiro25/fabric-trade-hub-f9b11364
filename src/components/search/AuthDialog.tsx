@@ -36,8 +36,9 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
       const result = await loginWithGoogleProvider();
       
       // Add delay to ensure auth state is updated
-      setTimeout(() => {
-        const { data: { session } } = supabase.auth.getSession();
+      setTimeout(async () => {
+        // Properly await the Promise returned by getSession
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           toast.success("Login successful!");
           onLogin();
