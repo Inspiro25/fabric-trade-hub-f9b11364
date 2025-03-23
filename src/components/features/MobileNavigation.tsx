@@ -1,22 +1,39 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, ShoppingCart, Tag, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { motion } from 'framer-motion';
 
 const MobileNavigation: React.FC = () => {
   const location = useLocation();
   const { getCartCount } = useCart();
   const { isDarkMode } = useTheme();
+  const [showPulse, setShowPulse] = useState(false);
   
   const cartCount = getCartCount();
+  
+  // Add pulse effect when cart count changes
+  useEffect(() => {
+    if (cartCount > 0) {
+      setShowPulse(true);
+      const timer = setTimeout(() => setShowPulse(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [cartCount]);
   
   const navItems = [
     { icon: Home, path: '/', label: 'Home' },
     { icon: Search, path: '/search', label: 'Search' },
-    { icon: ShoppingCart, path: '/cart', label: 'Cart', count: cartCount },
+    { 
+      icon: ShoppingCart, 
+      path: '/cart', 
+      label: 'Cart', 
+      count: cartCount,
+      isCart: true 
+    },
     { icon: Tag, path: '/offers', label: 'Offers' },
     { icon: Store, path: '/shops', label: 'Shops' },
   ];
@@ -28,6 +45,7 @@ const MobileNavigation: React.FC = () => {
     )}>
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
+        const isCart = item.isCart;
         
         return (
           <Link 
@@ -41,13 +59,49 @@ const MobileNavigation: React.FC = () => {
             )}
           >
             <div className="relative">
-              <item.icon size={20} />
+              {isCart && isActive ? (
+                <motion.div
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 400, 
+                    damping: 10
+                  }}
+                >
+                  <item.icon size={20} />
+                </motion.div>
+              ) : isCart && showPulse ? (
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                  }}
+                  transition={{ 
+                    duration: 0.5,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <item.icon size={20} />
+                </motion.div>
+              ) : (
+                <item.icon size={20} />
+              )}
+              
               {(item.count && item.count > 0) && (
-                <span className={cn(
-                  "absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center",
-                )}>
+                <motion.span 
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  className={cn(
+                    "absolute -top-2 -right-2 text-white text-xs rounded-full flex items-center justify-center",
+                    isDarkMode 
+                      ? "bg-gradient-to-br from-orange-500 to-red-500" 
+                      : "bg-gradient-to-br from-kutuku-primary to-red-500",
+                    item.count > 9 ? "h-5 w-5 text-[10px]" : "h-4 w-4 text-[9px]"
+                  )}
+                >
                   {item.count > 99 ? '99+' : item.count}
-                </span>
+                </motion.span>
               )}
             </div>
             <span className="text-xs mt-1">{item.label}</span>
