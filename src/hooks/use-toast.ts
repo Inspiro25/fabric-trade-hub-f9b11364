@@ -1,5 +1,5 @@
 // Implement Sonner toast with shadcn/ui compatibility layer
-import { toast as sonnerToast, ToastT } from "sonner";
+import { toast as sonnerToast, type ToastT } from "sonner";
 import { useState, useEffect } from "react";
 
 type ToastProps = {
@@ -43,56 +43,51 @@ const dismissToast = (id?: string) => {
   }
 };
 
-export const toast = {
-  // Base toast function
-  default: (props: ToastProps) => {
-    const id = addToast({ ...props, variant: "default" });
-    return sonnerToast(props.title, {
-      id,
-      description: props.description,
-      action: props.action,
-    });
-  },
-  
-  // Success toast
-  success: (title: string, props?: Omit<ToastProps, "title">) => {
-    const id = addToast({ title, ...props, variant: "default" });
-    return sonnerToast.success(title, {
-      id,
-      description: props?.description,
-      action: props?.action,
-    });
-  },
-  
-  // Error toast
-  error: (title: string, props?: Omit<ToastProps, "title">) => {
-    const id = addToast({ title, ...props, variant: "destructive" });
-    return sonnerToast.error(title, {
-      id,
-      description: props?.description,
-      action: props?.action,
-    });
-  },
-  
-  // Info toast
-  info: (title: string, props?: Omit<ToastProps, "title">) => {
-    const id = addToast({ title, ...props, variant: "default" });
-    return sonnerToast.info(title, {
-      id,
-      description: props?.description,
-      action: props?.action,
-    });
-  },
+// Direct toast function that can be called directly
+export function toast(props: ToastProps) {
+  const id = addToast({ ...props, variant: props.variant || "default" });
+  return sonnerToast(props.title, {
+    id,
+    description: props.description,
+    action: props.action,
+  });
+}
 
-  // Warning toast
-  warning: (title: string, props?: Omit<ToastProps, "title">) => {
-    const id = addToast({ title, ...props, variant: "default" });
-    return sonnerToast.warning(title, {
-      id,
-      description: props?.description,
-      action: props?.action,
-    });
-  },
+// Add specialized methods to toast function
+toast.success = (title: string, props?: Omit<ToastProps, "title">) => {
+  const id = addToast({ title, ...props, variant: "default" });
+  return sonnerToast.success(title, {
+    id,
+    description: props?.description,
+    action: props?.action,
+  });
+};
+
+toast.error = (title: string, props?: Omit<ToastProps, "title">) => {
+  const id = addToast({ title, ...props, variant: "destructive" });
+  return sonnerToast.error(title, {
+    id,
+    description: props?.description,
+    action: props?.action,
+  });
+};
+
+toast.info = (title: string, props?: Omit<ToastProps, "title">) => {
+  const id = addToast({ title, ...props, variant: "default" });
+  return sonnerToast.info(title, {
+    id,
+    description: props?.description,
+    action: props?.action,
+  });
+};
+
+toast.warning = (title: string, props?: Omit<ToastProps, "title">) => {
+  const id = addToast({ title, ...props, variant: "default" });
+  return sonnerToast.warning(title, {
+    id,
+    description: props?.description,
+    action: props?.action,
+  });
 };
 
 // useToast hook for shadcn compatibility
@@ -115,21 +110,8 @@ export const useToast = () => {
   }, [toasts]);
 
   return {
-    toast: {
-      // Methods to match shadcn/ui toast API
-      ...toast,
-      // For direct calls like toast({ title: "..." })
-      callToast: (props: ToastProps) => {
-        if (props.variant === "destructive") {
-          return toast.error(props.title || "", {
-            description: props.description,
-            action: props.action,
-          });
-        }
-        return toast.default(props);
-      },
-    },
+    toast,
     dismiss: dismissToast,
-    toasts, // Expose the toasts array for Shadcn compatibility
+    toasts // Expose the toasts array for Shadcn compatibility
   };
 };
