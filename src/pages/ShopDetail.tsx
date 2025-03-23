@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
@@ -6,13 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductGrid from '@/components/features/ProductGrid';
-import { MapPin, Star, CheckCircle, Store, ArrowLeft, Share2, Calendar, ShoppingBag, Settings } from 'lucide-react';
+import { MapPin, Star, CheckCircle, Store, ArrowLeft, Share2, Calendar, ShoppingBag, Settings, Users } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Shop } from '@/lib/shops';
 import ShopReviewsTab from '@/components/reviews/ShopReviewsTab';
+import { checkFollowStatus, followShop, unfollowShop, getShopFollowersCount } from '@/lib/supabase/shopFollows';
+import { supabase } from '@/integrations/supabase/client';
+import AuthDialog from '@/components/search/AuthDialog';
 
 const ShopDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +26,28 @@ const ShopDetail = () => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [shopProducts, setShopProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check Supabase authentication status
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSupabaseUserId(session?.user?.id || null);
+    };
+    
+    checkSession();
+    
+    // Set up auth state listener for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUserId(session?.user?.id || null);
+    });
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -35,6 +61,16 @@ const ShopDetail = () => {
           
           const productsData = await getShopProducts(id);
           setShopProducts(productsData);
+          
+          // Fetch initial follow status when shop data is loaded
+          if (supabaseUserId) {
+            const isUserFollowing = await checkFollowStatus(shopData.id);
+            setIsFollowing(isUserFollowing);
+          }
+          
+          // Fetch followers count
+          const count = await getShopFollowersCount(shopData.id);
+          setFollowersCount(count);
         }
       } catch (error) {
         console.error('Error fetching shop data:', error);
@@ -44,17 +80,51 @@ const ShopDetail = () => {
     };
     
     fetchShopData();
-  }, [id]);
+  }, [id, supabaseUserId]);
   
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    if (shop) {
+  const handleFollow = async () => {
+    if (!id || !shop) return;
+    
+    // Check if user is logged in
+    if (!supabaseUserId) {
+      setIsAuthDialogOpen(true);
+      return;
+    }
+    
+    try {
+      let success;
+      if (isFollowing) {
+        success = await unfollowShop(shop.id);
+        if (success) {
+          setIsFollowing(false);
+          setFollowersCount(prev => Math.max(0, prev - 1));
+        }
+      } else {
+        success = await followShop(shop.id);
+        if (success) {
+          setIsFollowing(true);
+          setFollowersCount(prev => prev + 1);
+        }
+      }
+    } catch (error) {
+      console.error('Error following/unfollowing shop:', error);
+    }
+  };
+
+  const handleLogin = async () => {
+    setIsAuthDialogOpen(false);
+    // Force a check for the updated session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      setSupabaseUserId(session.user.id);
+      // After login, let's check follow status
+      if (shop) {
+        const isUserFollowing = await checkFollowStatus(shop.id);
+        setIsFollowing(isUserFollowing);
+      }
       toast({
-        title: isFollowing ? "Unfollowed shop" : "Following shop",
-        description: isFollowing 
-          ? `You are no longer following ${shop.name}`
-          : `You are now following ${shop.name}`,
-        duration: 3000,
+        title: 'Logged in successfully',
+        description: 'You can now follow shops and submit reviews.',
       });
     }
   };
@@ -158,7 +228,7 @@ const ShopDetail = () => {
                 onClick={handleFollow}
               >
                 <Store className="h-3 w-3 mr-1" />
-                {isFollowing ? 'Following' : 'Follow'}
+                {isFollowing ? 'Unfollow' : 'Follow'}
               </Button>
             </div>
           </div>
@@ -186,6 +256,9 @@ const ShopDetail = () => {
                   <span>{shop.rating.toFixed(1)}</span>
                   <span className="mx-1">•</span>
                   <span>{shop.reviewCount} reviews</span>
+                  <span className="mx-1">•</span>
+                  <Users className="h-2.5 w-2.5 text-purple-500 mr-1" />
+                  <span>{followersCount} followers</span>
                 </div>
                 
                 <div className="flex items-center mt-0.5 text-xs text-gray-500">
@@ -244,7 +317,7 @@ const ShopDetail = () => {
                   <p className="text-gray-600">{shop.address}</p>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="grid grid-cols-3 gap-3 mt-3">
                   <div className="bg-purple-50 p-2 rounded-md">
                     <h4 className="font-medium mb-1 text-purple-700 text-[11px]">Rating</h4>
                     <div className="flex items-center">
@@ -259,6 +332,13 @@ const ShopDetail = () => {
                       <span>{shopProducts.length} products</span>
                     </div>
                   </div>
+                  <div className="bg-purple-50 p-2 rounded-md">
+                    <h4 className="font-medium mb-1 text-purple-700 text-[11px]">Followers</h4>
+                    <div className="flex items-center">
+                      <Users className="h-3 w-3 text-purple-600 mr-1" />
+                      <span>{followersCount} followers</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -269,6 +349,12 @@ const ShopDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AuthDialog 
+        open={isAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen}
+        onLogin={handleLogin}
+      />
     </div>
   );
 };

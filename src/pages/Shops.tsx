@@ -1,11 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag } from 'lucide-react';
+import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag, Users } from 'lucide-react';
 import { useShopSearch } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SearchErrorState from '@/components/search/SearchErrorState';
@@ -198,6 +198,12 @@ const Shops = () => {
                             "text-xs ml-1",
                             isDarkMode ? "text-gray-400" : "text-gray-500"
                           )}>({shop.reviewCount})</span>
+                          <span className="mx-1 text-gray-300">•</span>
+                          <Users className="h-3 w-3 text-purple-500 mr-0.5" />
+                          <span className={cn(
+                            "text-xs",
+                            isDarkMode && "text-gray-300"
+                          )}>{shop.followers_count || 0}</span>
                         </div>
                       </div>
                     </div>

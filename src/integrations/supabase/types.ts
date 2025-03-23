@@ -666,12 +666,42 @@ export type Database = {
           },
         ]
       }
+      shop_follows: {
+        Row: {
+          created_at: string
+          id: string
+          shop_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          shop_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          shop_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_follows_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shops: {
         Row: {
           address: string | null
           cover_image: string | null
           created_at: string | null
           description: string | null
+          followers_count: number | null
           id: string
           is_verified: boolean | null
           logo: string | null
@@ -689,6 +719,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string | null
           description?: string | null
+          followers_count?: number | null
           id?: string
           is_verified?: boolean | null
           logo?: string | null
@@ -706,6 +737,7 @@ export type Database = {
           cover_image?: string | null
           created_at?: string | null
           description?: string | null
+          followers_count?: number | null
           id?: string
           is_verified?: boolean | null
           logo?: string | null

@@ -16,4 +16,5 @@ export interface Shop {
   ownerEmail?: string; // Owner email
   status?: 'pending' | 'active' | 'suspended'; // Shop status
   password?: string; // Password for admin login
+  followers_count?: number; // Number of followers
 }
