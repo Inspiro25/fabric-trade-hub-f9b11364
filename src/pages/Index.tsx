@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useHomeData } from '@/hooks/use-home-data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,7 +18,6 @@ import ElectronicsShowcase from '@/components/home/ElectronicsShowcase';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-// Lazy loaded components
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
 const HomeCategoryGrid = lazy(() => import('@/components/home/HomeCategoryGrid'));
@@ -225,8 +223,8 @@ const Index = () => {
 
   if (isLoading && !categories.length) {
     return (
-      <div className="min-h-screen pt-2">
-        <div className="py-4 px-4 space-y-6">
+      <div className="min-h-screen">
+        <div className="space-y-6">
           <Skeleton className={cn(
             "h-48 w-full rounded-xl", 
             isDarkMode ? "bg-gray-800" : "bg-gray-200"
@@ -253,7 +251,7 @@ const Index = () => {
       "min-h-screen",
       isDarkMode && "text-gray-100"
     )}>
-      <main className="pb-16 pt-2 space-y-6">
+      <main className="space-y-4">
         <HomeHero />
         
         <FlashSaleTimer />

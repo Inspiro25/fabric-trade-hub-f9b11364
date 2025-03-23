@@ -11,7 +11,7 @@ const HomeHero = () => {
   const { isDarkMode, primaryColor } = useTheme();
   
   return (
-    <div className="relative mt-4 mx-4 mb-6 overflow-hidden rounded-xl shadow-lg">
+    <div className="relative mx-4 mb-4 overflow-hidden rounded-xl shadow-lg">
       <div className={cn(
         "relative z-10 p-6 md:p-10",
         isDarkMode 
