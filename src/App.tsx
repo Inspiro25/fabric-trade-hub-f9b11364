@@ -7,33 +7,33 @@ import MainLayout from '@/components/layout/MainLayout';
 import DashboardLayout from '@/components/management/DashboardLayout';
 
 // Main pages
-import Home from '@/pages/Home';
+import Home from '@/pages/Index';
 import ProductDetail from '@/pages/ProductDetail';
-import Products from '@/pages/Products';
+import Products from '@/pages/TrendingNow'; // Using TrendingNow as Products page
 import Checkout from '@/pages/Checkout';
 import NotFound from '@/pages/NotFound';
 import ShopDetail from '@/pages/ShopDetail';
 import Shops from '@/pages/Shops';
 import Cart from '@/pages/Cart';
-import Categories from '@/pages/Categories';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import Account from '@/pages/Account';
-import AccountOrders from '@/pages/AccountOrders';
-import AccountWishlist from '@/pages/AccountWishlist';
-import AccountSettings from '@/pages/AccountSettings';
+import Categories from '@/pages/NewArrivals'; // Using NewArrivals as Categories page
+import Login from '@/pages/Authentication'; // Using Authentication for Login
+import Register from '@/pages/Authentication'; // Using Authentication for Register too
+import ForgotPassword from '@/pages/Authentication'; // Using Authentication for ForgotPassword
+import ResetPassword from '@/pages/Authentication'; // Using Authentication for ResetPassword
+import Account from '@/pages/Profile'; // Using Profile as Account
+import AccountOrders from '@/pages/Orders'; // Using Orders as AccountOrders
+import AccountWishlist from '@/pages/Wishlist'; // Using Wishlist as AccountWishlist
+import AccountSettings from '@/pages/Settings'; // Using Settings as AccountSettings
 import Search from '@/pages/Search';
-import OrderSuccess from '@/pages/OrderSuccess';
+import OrderSuccess from '@/pages/OrderConfirmation'; // Using OrderConfirmation as OrderSuccess
 
 // Management pages
 import ManagementLogin from '@/pages/ManagementLogin';
 import ManagementDashboard from '@/pages/ManagementDashboard';
 import ManagementShops from '@/pages/ManagementShops';
-import ManagementUsers from '@/pages/ManagementUsers';
-import ManagementAnalytics from '@/pages/ManagementAnalytics';
-import ManagementSettings from '@/pages/ManagementSettings';
+import ManagementUsers from '@/pages/ManagementPartners'; // Using ManagementPartners as ManagementUsers
+import ManagementAnalytics from '@/pages/ManagementShopPerformance'; // Using ManagementShopPerformance as ManagementAnalytics
+import ManagementSettings from '@/pages/Settings'; // Using Settings as ManagementSettings
 import ManagementOffers from '@/pages/ManagementOffers';
 
 // Admin pages
