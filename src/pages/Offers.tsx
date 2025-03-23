@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,9 +61,9 @@ const Offers = () => {
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
         : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
     )}>
-      <main className={`${isMobile ? 'pt-14 px-3' : 'pt-16 px-4'} pb-16`}>
+      <main className={`${isMobile ? 'pt-6 px-3' : 'pt-12 px-4'} pb-16`}>
         <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center mb-3">
+          <div className="flex items-center mb-2">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -82,14 +83,14 @@ const Offers = () => {
             )}>Special Offers</h1>
           </div>
           <p className={cn(
-            "mb-3 ml-8 text-sm md:text-base",
+            "mb-2 ml-8 text-sm md:text-base",
             isDarkMode ? "text-gray-300" : "text-muted-foreground"
           )}>Discover great deals and discounts on your favorite products</p>
           
-          <div className="mb-4">
+          <div className="mb-3">
             <Tabs defaultValue="all" className="w-full">
               <TabsList className={cn(
-                "mb-4 w-full grid grid-cols-3 p-1 rounded-xl",
+                "mb-3 w-full grid grid-cols-3 p-1 rounded-xl",
                 isDarkMode && "bg-gray-800 border border-gray-700"
               )}>
                 <TabsTrigger 
@@ -115,9 +116,9 @@ const Offers = () => {
                 >Coupons</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="all" className="space-y-4">
-                <section className="mb-3">
-                  <div className="flex items-center justify-between mb-3">
+              <TabsContent value="all" className="space-y-3">
+                <section className="mb-2">
+                  <div className="flex items-center justify-between mb-2">
                     <h2 className={cn(
                       "text-lg md:text-xl font-semibold",
                       isDarkMode && "text-white"
@@ -161,7 +162,7 @@ const Offers = () => {
                 
                 <section>
                   <h2 className={cn(
-                    "text-lg md:text-xl font-semibold mb-3",
+                    "text-lg md:text-xl font-semibold mb-2",
                     isDarkMode && "text-white"
                   )}>Available Offers</h2>
                   {isLoading ? (
