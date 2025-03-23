@@ -45,18 +45,7 @@ export const useSearchCartIntegration = () => {
     
     setTimeout(() => {
       setIsAddingToCart(null);
-      // Using the correct format for toast from sonner
-      toast.success(`${product.name} added to cart`, {
-        description: "You can view it in your cart",
-        action: {
-          label: "View Cart",
-          onClick: () => {
-            window.location.href = '/cart';
-          }
-        },
-        duration: 3000,
-        dismissible: true
-      });
+      // We're not calling toast here anymore as the toast will be triggered in the CartContext
     }, 500);
   };
 
@@ -91,18 +80,7 @@ export const useSearchCartIntegration = () => {
     setTimeout(() => {
       addToWishlist(productForWishlist);
       setIsAddingToWishlist(null);
-      // Using the correct format for toast from sonner
-      toast.success(`${product.name} added to wishlist`, {
-        description: "You can view it in your wishlist",
-        action: {
-          label: "View Wishlist",
-          onClick: () => {
-            window.location.href = '/wishlist';
-          }
-        },
-        duration: 3000,
-        dismissible: true
-      });
+      // We're not calling toast here anymore as the toast will be triggered in the WishlistContext
     }, 500);
   };
 

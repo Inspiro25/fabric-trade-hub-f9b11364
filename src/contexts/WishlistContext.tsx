@@ -77,7 +77,10 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const productId = typeof product === 'string' ? product : product.id;
       
-      if (wishlist.includes(productId)) return;
+      if (wishlist.includes(productId)) {
+        // Don't show toast if already in wishlist
+        return;
+      }
       
       // Update local state immediately for better UX
       setWishlist(prev => [...prev, productId]);
@@ -85,6 +88,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Show auth dialog for guest users but still allow operation
       if (!currentUser) {
         setShowAuthDialog(true);
+        // Only show toast for guests since we're storing in localStorage
+        toast.success('Added to wishlist');
         return;
       }
       
@@ -121,6 +126,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Show auth dialog for guest users but still allow operation
       if (!currentUser) {
         setShowAuthDialog(true);
+        // Only show toast for guests since we're storing in localStorage
+        toast.success('Removed from wishlist');
         return;
       }
       

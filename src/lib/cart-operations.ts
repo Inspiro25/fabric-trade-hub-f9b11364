@@ -64,8 +64,10 @@ export const useCartOperations = (
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newCart));
       }
       
-      // Use sonner toast
-      toast.success(`Added ${product.name} to cart`);
+      // Only show toast if not coming from search integration
+      if (!existingItemIndex) {
+        toast.success(`Added ${product.name} to cart`);
+      }
     } catch (error) {
       console.error('Error adding to cart:', error);
       toast.error("Failed to add item to cart");

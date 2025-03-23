@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/contexts/CartContext';
 import { Product } from '@/lib/products';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Fetch cart items from Supabase
 export const fetchUserCart = async (userId: string): Promise<CartItem[]> => {
