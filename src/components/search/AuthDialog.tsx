@@ -48,6 +48,16 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
     window.location.href = '/auth';
   };
 
+  // Convert the primaryColor string to one of the accepted hue values
+  const getHueValue = (): 'orange' | 'blue' | 'green' | 'purple' => {
+    // Map the theme's primaryColor to one of the accepted hues
+    if (primaryColor.includes('blue')) return 'blue';
+    if (primaryColor.includes('green')) return 'green';
+    if (primaryColor.includes('purple')) return 'purple';
+    // Default to orange for any other color
+    return 'orange';
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
@@ -59,7 +69,7 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
         {/* Animated header with gradient */}
         <AnimatedGradient 
           className="py-8 px-6"
-          hue={primaryColor}
+          hue={getHueValue()}
           intensity={isDarkMode ? "medium" : "soft"}
           speed="medium"
         >

@@ -34,13 +34,13 @@ export interface AuthContextType {
   currentUser: User | null;
   userProfile: UserProfile | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  loginWithGoogleProvider: () => Promise<void>;
-  loginWithFacebookProvider: () => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>; // Updated to match implementation
+  register: (email: string, password: string) => Promise<UserProfile | null>; // Updated to match implementation
+  loginWithGoogleProvider: () => Promise<UserProfile | null>; // Updated to match implementation
+  loginWithFacebookProvider: () => Promise<UserProfile | null>; // Updated to match implementation
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
-  updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (data: Partial<UserProfile>) => Promise<UserProfile | null>; // Updated to match implementation
   addAddress: (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => Promise<string | undefined>;
   updateAddress: (address: UserProfile['savedAddresses'][0]) => Promise<void>;
   removeAddress: (addressId: string) => Promise<void>;
