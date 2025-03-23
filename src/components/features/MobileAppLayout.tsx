@@ -25,7 +25,7 @@ const MobileAppLayout: React.FC<{
       {/* Show AppHeader for mobile */}
       <AppHeader />
       
-      <main className="flex-1 pt-16 pb-16 py-[10px]">
+      <main className="flex-1 pt-16 pb-16 py-0">
         {children}
       </main>
       
