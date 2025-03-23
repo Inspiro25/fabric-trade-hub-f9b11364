@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -6,7 +5,6 @@ import { getProductById } from '@/lib/products';
 import { recordProductView } from '@/lib/products/trending';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-// Remove the AppHeader import as it's already included in the MobileAppLayout
 import {
   Card,
   CardContent,
@@ -19,11 +17,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Link } from 'react-router-dom';
-import { Heart, Star, ShoppingCart, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Heart, Star, ShoppingCart, ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
-import ReviewForm from '@/components/reviews/ReviewForm';
-import { fetchProductReviews } from '@/lib/supabase/reviews';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
 import {
@@ -54,6 +50,136 @@ import { getPersonalizedRecommendations, getSimilarProducts } from '@/services/r
 import { toast } from '@/hooks/use-toast';
 import { Product } from '@/lib/types/product';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Textarea } from "@/components/ui/textarea";
+import { createReview } from '@/lib/supabase/reviews';
+
+const MinimalReviewForm = ({ productId }: { productId: string }) => {
+  const [rating, setRating] = React.useState(0);
+  const [reviewText, setReviewText] = React.useState("");
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const { currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
+
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!currentUser) {
+      toast({
+        title: "Login required",
+        description: "Please log in to submit a review",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (rating === 0) {
+      toast({
+        title: "Rating required",
+        description: "Please select a rating before submitting",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+      
+      await createReview({
+        rating,
+        comment: reviewText,
+        userId,
+        reviewType: 'product',
+        productId,
+      });
+      
+      toast({
+        title: "Review submitted",
+        description: "Thank you for your feedback!",
+      });
+      
+      setRating(0);
+      setReviewText("");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className={cn(
+      "mt-6 p-4 rounded-md",
+      isDarkMode ? "bg-gray-800" : "bg-gray-50"
+    )}>
+      <h3 className={cn(
+        "text-sm font-medium mb-2",
+        isDarkMode ? "text-white" : "text-gray-900"
+      )}>Write a Quick Review</h3>
+      
+      <div className="flex items-center mb-3">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => handleRatingChange(star)}
+            className="mr-1 focus:outline-none"
+            aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+          >
+            <Star
+              className={`h-5 w-5 ${
+                star <= rating 
+                  ? 'text-yellow-500 fill-yellow-500' 
+                  : isDarkMode ? 'text-gray-600' : 'text-gray-300'
+              }`}
+            />
+          </button>
+        ))}
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <Textarea
+          placeholder="Share your thoughts (optional)"
+          value={reviewText}
+          onChange={(e) => setReviewText(e.target.value)}
+          className={cn(
+            "resize-none text-sm h-20",
+            isDarkMode ? "bg-gray-700 border-gray-600 text-white" : ""
+          )}
+        />
+        
+        <Button 
+          type="submit" 
+          size="sm"
+          disabled={isSubmitting || rating === 0 || !currentUser}
+          className={cn(
+            "flex items-center",
+            isDarkMode 
+              ? "bg-orange-600 hover:bg-orange-700 text-white" 
+              : "bg-kutuku-primary hover:bg-kutuku-secondary text-white"
+          )}
+        >
+          {isSubmitting ? "Submitting..." : "Submit Review"}
+          <Send className="ml-2 h-3 w-3" />
+        </Button>
+      </form>
+    </div>
+  );
+};
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -67,15 +193,12 @@ const ProductDetail = () => {
   });
 
   useEffect(() => {
-    // Record the product view for trending data
     const recordView = async () => {
       if (id) {
         try {
-          // Get Supabase user ID if available
           const { data: { session } } = await supabase.auth.getSession();
           const userId = session?.user?.id;
           
-          // Record the view with optional user ID
           await recordProductView(id, userId);
         } catch (error) {
           console.error('Error recording product view:', error);
@@ -95,7 +218,6 @@ const ProductDetail = () => {
     const loadRecommendations = async () => {
       if (currentUser && id) {
         try {
-          // Use uid, id, or email as fallback for userId
           const userId = currentUser.uid || currentUser.email || '';
           if (userId) {
             try {
@@ -135,8 +257,6 @@ const ProductDetail = () => {
 
     setIsAddingToCart(true);
     try {
-      // Pass color, size, and quantity for the cart item
-      // Default to first available color/size if product has them, otherwise empty strings
       const defaultColor = product.colors && product.colors.length > 0 ? product.colors[0] : '';
       const defaultSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : '';
       await addToCart(product, 1, defaultColor, defaultSize);
@@ -163,7 +283,6 @@ const ProductDetail = () => {
         "min-h-screen",
         isDarkMode ? "bg-slate-900" : "bg-slate-50"
       )}>
-        {/* Remove AppHeader here */}
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
@@ -222,7 +341,6 @@ const ProductDetail = () => {
         "min-h-screen",
         isDarkMode ? "bg-slate-900" : "bg-slate-50"
       )}>
-        {/* Remove AppHeader here */}
         <div className="container mx-auto px-4 py-8 text-center">
           <p className="text-red-500">Failed to load product. Please try again.</p>
           <Button onClick={() => window.location.reload()} variant="outline" className="mt-4">
@@ -238,12 +356,8 @@ const ProductDetail = () => {
       "min-h-screen",
       isDarkMode ? "bg-slate-900" : "bg-slate-50"
     )}>
-      {/* Remove AppHeader here */}
-      
       <div className="container mx-auto px-4 py-8">
-        {/* Product Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Product Images */}
           <div>
             <Carousel
               opts={{
@@ -269,7 +383,6 @@ const ProductDetail = () => {
             </Carousel>
           </div>
 
-          {/* Product Info */}
           <div>
             <h1 className={cn(
               "text-2xl font-bold mb-2",
@@ -316,7 +429,6 @@ const ProductDetail = () => {
               isDarkMode ? "text-gray-300" : "text-gray-700"
             )}>{product?.description}</p>
 
-            {/* Add to Cart Button */}
             <Button 
               className={cn(
                 "w-full text-sm",
@@ -330,12 +442,11 @@ const ProductDetail = () => {
               {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
               <ShoppingCart className="ml-2 h-4 w-4" />
             </Button>
+            
+            {product && <MinimalReviewForm productId={product.id} />}
           </div>
         </div>
 
-        {/* Removed the Reviews Section */}
-				
-				{/* Recommended Products Section */}
         {recommendedProducts.length > 0 && (
           <section className="mt-12">
             <h2 className={cn(
@@ -361,8 +472,7 @@ const ProductDetail = () => {
             </div>
           </section>
         )}
-				
-				{/* Similar Products Section */}
+        
         {similarProducts.length > 0 && (
           <section className="mt-12">
             <h2 className={cn(

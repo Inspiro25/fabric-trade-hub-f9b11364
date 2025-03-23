@@ -17,6 +17,7 @@ import { AnimatedGradient } from '@/components/ui/animated-gradient';
 import ElectronicsShowcase from '@/components/home/ElectronicsShowcase';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { updateVyomaClothingImages } from '@/lib/supabase/products';
 
 const SectionLoading = () => <Skeleton className="h-32 w-full rounded-xl" />;
 const DealOfTheDay = lazy(() => import('@/components/features/DealOfTheDay'));
@@ -219,6 +220,19 @@ const Index = () => {
     
     const timer = setTimeout(() => setIsPageLoaded(true), 300);
     return () => clearTimeout(timer);
+  }, []);
+
+  React.useEffect(() => {
+    // Update product images for Vyoma Clothing shop
+    const updateImages = async () => {
+      try {
+        await updateVyomaClothingImages();
+      } catch (error) {
+        console.error('Error updating product images:', error);
+      }
+    };
+    
+    updateImages();
   }, []);
 
   if (isLoading && !categories.length) {
