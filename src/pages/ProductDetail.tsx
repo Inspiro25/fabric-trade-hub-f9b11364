@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -413,18 +412,18 @@ const ProductDetail = () => {
                 <span className={cn(
                   "text-xl font-semibold",
                   isDarkMode ? "text-orange-400" : "text-gray-900"
-                )}>{formatCurrency(product.salePrice)}</span>
+                )}>₹{product.salePrice.toFixed(2)}</span>
                 <span className={cn(
                   "ml-2 line-through",
                   isDarkMode ? "text-gray-400" : "text-gray-500"
-                )}>{formatCurrency(product.price)}</span>
+                )}>₹{product.price.toFixed(2)}</span>
                 <Badge className="ml-2">Sale</Badge>
               </div>
             ) : (
               <span className={cn(
                 "text-xl font-semibold mb-4",
                 isDarkMode ? "text-white" : "text-gray-900"
-              )}>{product && formatCurrency(product.price)}</span>
+              )}>₹{product && product.price.toFixed(2)}</span>
             )}
 
             <p className={cn(

@@ -16,7 +16,7 @@ export function cn(...inputs: ClassValue[]) {
 export const formatCurrency = (
   value: number,
   locale = 'en-US',
-  currency = 'USD'
+  currency = 'INR'
 ): string => {
   return new Intl.NumberFormat(locale, {
     style: 'currency',

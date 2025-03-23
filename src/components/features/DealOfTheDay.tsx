@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -35,7 +34,6 @@ const DealOfTheDay = () => {
         const dealProduct = await getDealOfTheDay();
         setDeal(dealProduct);
         
-        // Set initial selections when deal is loaded
         if (dealProduct && dealProduct.colors.length > 0) {
           setSelectedColor(dealProduct.colors[0]);
         }
@@ -79,7 +77,6 @@ const DealOfTheDay = () => {
   const handleAddToCart = useCallback(() => {
     if (!deal) return;
     
-    // Use the selected color and size
     const colorToUse = selectedColor || deal.colors[0] || 'default';
     const sizeToUse = selectedSize || deal.sizes[0] || 'default';
     
@@ -106,7 +103,7 @@ const DealOfTheDay = () => {
   }
   
   if (!deal) {
-    return null; // Don't show anything if there's no deal
+    return null;
   }
   
   return (
@@ -142,43 +139,41 @@ const DealOfTheDay = () => {
             <span className="text-sm line-through text-gray-400">₹{deal.price.toFixed(2)}</span>
           </div>
           
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            {deal.colors.length > 0 && (
-              <Select
-                value={selectedColor}
-                onValueChange={setSelectedColor}
-              >
-                <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
-                  <SelectValue placeholder="Select Color" />
-                </SelectTrigger>
-                <SelectContent>
-                  {deal.colors.map((color) => (
-                    <SelectItem key={color} value={color}>
-                      {color}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            
-            {deal.sizes.length > 0 && (
-              <Select
-                value={selectedSize}
-                onValueChange={setSelectedSize}
-              >
-                <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
-                  <SelectValue placeholder="Select Size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {deal.sizes.map((size) => (
-                    <SelectItem key={size} value={size}>
-                      {size}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+          {deal.colors.length > 0 && (
+            <Select
+              value={selectedColor}
+              onValueChange={setSelectedColor}
+            >
+              <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
+                <SelectValue placeholder="Select Color" />
+              </SelectTrigger>
+              <SelectContent>
+                {deal.colors.map((color) => (
+                  <SelectItem key={color} value={color}>
+                    {color}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
+          {deal.sizes.length > 0 && (
+            <Select
+              value={selectedSize}
+              onValueChange={setSelectedSize}
+            >
+              <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
+                <SelectValue placeholder="Select Size" />
+              </SelectTrigger>
+              <SelectContent>
+                {deal.sizes.map((size) => (
+                  <SelectItem key={size} value={size}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           
           <div className="grid grid-cols-4 gap-2 mb-3">
             <div className={`rounded-md p-2 text-center ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
