@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -12,6 +13,7 @@ import { Lock, ShieldAlert } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 // Validation schema
 const formSchema = z.object({
@@ -35,54 +37,100 @@ const ManagementLogin = () => {
     },
   });
 
-// Inside the component where toast is called with duration
-const onSubmit = async (values: FormValues) => {
-  setIsLoading(true);
-  try {
-    // Check credentials against static admin accounts
-    if (values.username === 'admin' && values.password === 'admin123') {
-      sessionStorage.setItem('adminUsername', values.username);
-      sessionStorage.setItem('adminRole', 'main');
-      
+  // Inside the component where toast is called with duration
+  const onSubmit = async (values: FormValues) => {
+    setIsLoading(true);
+    try {
+      // Check credentials against static admin accounts
+      if (values.username === 'admin' && values.password === 'admin123') {
+        sessionStorage.setItem('adminUsername', values.username);
+        sessionStorage.setItem('adminRole', 'main');
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome to the management portal"
+        });
+        
+        navigate('/management/dashboard');
+      } else {
+        throw new Error('Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
       toast({
-        title: "Login successful",
-        description: "Welcome to the management portal"
+        title: "Login failed",
+        description: "Invalid username or password",
+        variant: "destructive"
       });
-      
-      navigate('/management/dashboard');
-    } else {
-      throw new Error('Invalid credentials');
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    toast({
-      title: "Login failed",
-      description: "Invalid username or password",
-      variant: "destructive"
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
+
+  // Letter animation for VYOMA
+  const letterVariants = {
+    initial: { y: -20, opacity: 0 },
+    animate: { y: 0, opacity: 1 },
+    hover: { scale: 1.2, y: -3, transition: { duration: 0.2 } }
+  };
 
   return (
     <div className={cn(
       "h-screen flex items-center justify-center p-4 overflow-hidden",
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 to-gray-800" 
-        : "bg-gradient-to-br from-kutuku-light to-orange-50"
+        : "bg-gradient-to-br from-vyoma-light to-orange-50"
     )}>
       <div className={`w-full ${isMobile ? 'max-w-[95%]' : 'max-w-md'}`}>
-        <div className="text-center mb-4">
+        <motion.div 
+          className="text-center mb-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <h1 className={cn(
-            "text-3xl font-bold",
-            isDarkMode ? "text-orange-400" : "text-kutuku-primary"
-          )}>Kutuku</h1>
-          <p className={cn(
-            "mt-1",
-            isDarkMode ? "text-gray-300" : "text-kutuku-secondary"
-          )}>Management Portal</p>
-        </div>
+            "text-3xl font-bold flex items-center justify-center gap-1",
+            isDarkMode ? "text-orange-400" : "text-vyoma-primary"
+          )}>
+            <motion.div 
+              className="flex"
+              initial="initial"
+              animate="animate"
+              whileHover="hover"
+            >
+              {Array.from("VYOMA").map((letter, index) => (
+                <motion.span
+                  key={index}
+                  variants={letterVariants}
+                  custom={index}
+                  transition={{ 
+                    delay: 0.3 + index * 0.1,
+                    duration: 0.4
+                  }}
+                  className="relative"
+                  whileHover={{
+                    color: isDarkMode ? "#ff9d6c" : "#FF8A3D",
+                    scale: 1.2,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  {letter}
+                </motion.span>
+              ))}
+            </motion.div>
+          </h1>
+          <motion.p 
+            className={cn(
+              "mt-1",
+              isDarkMode ? "text-gray-300" : "text-vyoma-secondary"
+            )}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            Management Portal
+          </motion.p>
+        </motion.div>
         
         <Card className={cn(
           "border-none shadow-lg",
@@ -91,17 +139,27 @@ const onSubmit = async (values: FormValues) => {
             : "bg-white/90 backdrop-blur-sm"
         )}>
           <CardHeader className={`space-y-1 ${isMobile ? 'pb-4' : 'pb-6'}`}>
-            <div className={cn(
-              "mx-auto mb-3 p-3 rounded-full",
-              isDarkMode 
-                ? "bg-gradient-to-br from-gray-700 to-gray-600" 
-                : "bg-gradient-to-br from-kutuku-light to-orange-100"
-            )}>
+            <motion.div 
+              className={cn(
+                "mx-auto mb-3 p-3 rounded-full",
+                isDarkMode 
+                  ? "bg-gradient-to-br from-gray-700 to-gray-600" 
+                  : "bg-gradient-to-br from-vyoma-light to-orange-100"
+              )}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+                delay: 0.2
+              }}
+            >
               <ShieldAlert className={cn(
                 "h-6 w-6",
-                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                isDarkMode ? "text-orange-400" : "text-vyoma-primary"
               )} />
-            </div>
+            </motion.div>
             <CardTitle className={cn(
               `${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-center`,
               isDarkMode ? "text-white" : "text-gray-800"
@@ -131,7 +189,7 @@ const onSubmit = async (values: FormValues) => {
                           className={cn(
                             isDarkMode 
                               ? "bg-gray-700/50 border-gray-600 focus:border-orange-500 text-white" 
-                              : "bg-white/50 border-gray-200 focus:border-kutuku-primary"
+                              : "bg-white/50 border-gray-200 focus:border-vyoma-primary"
                           )} 
                           {...field} 
                         />
@@ -154,7 +212,7 @@ const onSubmit = async (values: FormValues) => {
                           className={cn(
                             isDarkMode 
                               ? "bg-gray-700/50 border-gray-600 focus:border-orange-500 text-white" 
-                              : "bg-white/50 border-gray-200 focus:border-kutuku-primary"
+                              : "bg-white/50 border-gray-200 focus:border-vyoma-primary"
                           )} 
                           {...field} 
                         />
@@ -164,19 +222,24 @@ const onSubmit = async (values: FormValues) => {
                   )}
                 />
                 
-                <Button 
-                  type="submit" 
-                  className={cn(
-                    "w-full mt-4 text-white font-medium",
-                    isDarkMode 
-                      ? "bg-orange-500 hover:bg-orange-600" 
-                      : "bg-kutuku-primary hover:bg-kutuku-secondary"
-                  )} 
-                  disabled={isLoading}
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                 >
-                  <Lock className="mr-2 h-4 w-4" />
-                  {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
-                </Button>
+                  <Button 
+                    type="submit" 
+                    className={cn(
+                      "w-full mt-4 text-white font-medium",
+                      isDarkMode 
+                        ? "bg-orange-500 hover:bg-orange-600" 
+                        : "bg-vyoma-primary hover:bg-vyoma-secondary"
+                    )} 
+                    disabled={isLoading}
+                  >
+                    <Lock className="mr-2 h-4 w-4" />
+                    {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
+                  </Button>
+                </motion.div>
               </form>
             </Form>
           </CardContent>

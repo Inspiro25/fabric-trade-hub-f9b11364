@@ -63,7 +63,7 @@ const MobileNavigation: React.FC = () => {
                   "flex items-center justify-center rounded-full w-12 h-12 -mt-6 shadow-md relative",
                   isDarkMode 
                     ? "bg-gradient-to-br from-orange-500 to-orange-600" 
-                    : "bg-gradient-to-br from-kutuku-primary to-kutuku-secondary"
+                    : "bg-gradient-to-br from-vyoma-primary to-vyoma-secondary"
                 )}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -103,7 +103,7 @@ const MobileNavigation: React.FC = () => {
               <span className={cn(
                 "text-xs mt-4",
                 isActive
-                  ? isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                  ? isDarkMode ? "text-orange-400" : "text-vyoma-primary"
                   : isDarkMode ? "text-gray-400" : "text-gray-500"
               )}>
                 {item.label}
@@ -120,7 +120,7 @@ const MobileNavigation: React.FC = () => {
             className={cn(
               "flex flex-col items-center justify-center h-full w-full relative",
               isActive
-                ? isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                ? isDarkMode ? "text-orange-400" : "text-vyoma-primary"
                 : isDarkMode ? "text-gray-400" : "text-gray-500"
             )}
             aria-label={item.label}
@@ -141,7 +141,7 @@ const MobileNavigation: React.FC = () => {
                 transition={{ duration: 0.2 }}
                 className={cn(
                   "absolute -bottom-0 rounded-full h-1 transform -translate-x-1/2 left-1/2",
-                  isDarkMode ? "bg-orange-400" : "bg-kutuku-primary"
+                  isDarkMode ? "bg-orange-400" : "bg-vyoma-primary"
                 )}
               />
             )}

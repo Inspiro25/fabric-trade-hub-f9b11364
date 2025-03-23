@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { ShopFormValues } from '@/components/management/ShopForm';
+import { motion } from 'framer-motion';
 
 interface Shop {
   id: string;
@@ -160,11 +161,43 @@ const AdminDashboard: React.FC = () => {
     navigate('/management/login');
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-4">Admin Dashboard</h1>
+      <motion.h1 
+        className="text-2xl font-semibold mb-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        VYOMA Admin Dashboard
+      </motion.h1>
       
-      <div className="mb-4">
+      <motion.div 
+        className="mb-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
         <Label htmlFor="shopId">Shop ID:</Label>
         <div className="flex items-center space-x-2">
           <Input
@@ -178,109 +211,118 @@ const AdminDashboard: React.FC = () => {
             {loading ? 'Loading...' : 'Load Shop'}
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       {shop && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+        <motion.form 
+          onSubmit={handleSubmit} 
+          className="space-y-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants}>
             <Label htmlFor="name">Name:</Label>
             <Input
               type="text"
               id="name"
               name="name"
               value={shop.name}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, name: e.target.value})}
             />
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="description">Description:</Label>
             <Textarea
               id="description"
               name="description"
               value={shop.description}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, description: e.target.value})}
             />
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="logo">Logo URL:</Label>
             <Input
               type="text"
               id="logo"
               name="logo"
               value={shop.logo || ''}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, logo: e.target.value})}
             />
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="coverImage">Cover Image URL:</Label>
             <Input
               type="text"
               id="coverImage"
               name="coverImage"
               value={shop.coverImage || ''}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, coverImage: e.target.value})}
             />
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="address">Address:</Label>
             <Input
               type="text"
               id="address"
               name="address"
               value={shop.address}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, address: e.target.value})}
             />
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="ownerName">Owner Name:</Label>
             <Input
               type="text"
               id="ownerName"
               name="ownerName"
               value={shop.ownerName}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, ownerName: e.target.value})}
             />
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="ownerEmail">Owner Email:</Label>
             <Input
               type="email"
               id="ownerEmail"
               name="ownerEmail"
               value={shop.ownerEmail}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, ownerEmail: e.target.value})}
             />
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={itemVariants}>
             <Label htmlFor="phoneNumber">Phone Number:</Label>
             <Input
               type="tel"
               id="phoneNumber"
               name="phoneNumber"
               value={shop.phoneNumber}
-              onChange={handleInputChange}
+              onChange={(e) => setShop({...shop, phoneNumber: e.target.value})}
             />
-          </div>
+          </motion.div>
           
-          <div className="flex items-center space-x-2">
+          <motion.div className="flex items-center space-x-2" variants={itemVariants}>
             <Label htmlFor="isVerified">Is Verified:</Label>
             <Switch
               id="isVerified"
               checked={shop.isVerified}
-              onCheckedChange={handleToggleVerification}
+              onCheckedChange={(checked) => setShop({...shop, isVerified: checked})}
             />
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div variants={itemVariants}>
             <Label>Status:</Label>
-            <Select onValueChange={value => handleStatusChange(value as 'active' | 'pending' | 'suspended')}>
+            <Select 
+              value={shop.status} 
+              onValueChange={(value) => setShop({...shop, status: value as 'active' | 'pending' | 'suspended'})}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder={shop.status} />
               </SelectTrigger>
@@ -290,19 +332,30 @@ const AdminDashboard: React.FC = () => {
                 <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </motion.div>
           
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Updating...' : 'Update Shop'}
-          </Button>
-        </form>
+          <motion.div 
+            variants={itemVariants}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Shop'}
+            </Button>
+          </motion.div>
+        </motion.form>
       )}
 
-      <div className="mt-8">
+      <motion.div 
+        className="mt-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+      >
         <Button variant="destructive" onClick={handleLogout}>
           Logout
         </Button>
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -18,7 +18,7 @@ const EmptyWishlist: React.FC = () => {
     )}>
       <div className={cn(
         "inline-flex justify-center items-center p-3 rounded-full mb-4",
-        isDarkMode ? "bg-gray-700" : "bg-kutuku-light"
+        isDarkMode ? "bg-gray-700" : "bg-vyoma-light"
       )}>
         <Heart className={cn(
           "w-8 h-8",

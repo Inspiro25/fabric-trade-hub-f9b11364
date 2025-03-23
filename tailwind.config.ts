@@ -63,9 +63,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				kutuku: {
-					primary: '#FF6B00', // Changed from FE7235 to a brighter orange
-					secondary: '#FF8A3D', // Changed from FF9D6C to a slightly brighter orange
+				vyoma: {
+					primary: '#FF6B00', // Kept the same bright orange
+					secondary: '#FF8A3D', // Kept the same slightly brighter orange
 					light: '#FFF0EA',
 					dark: '#212121',
 					gray: '#F6F6F6',
@@ -153,6 +153,28 @@ export default {
 					'50%': {
 						opacity: '0.8'
 					}
+				},
+				'letter-pop': {
+					'0%': { 
+						transform: 'scale(1)',
+						opacity: '1'
+					},
+					'50%': { 
+						transform: 'scale(1.3) rotate(5deg)',
+						opacity: '1'
+					},
+					'100%': { 
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'shimmer': {
+					'0%': { 
+						backgroundPosition: '-200% 0'
+					},
+					'100%': { 
+						backgroundPosition: '200% 0'
+					}
 				}
 			},
 			animation: {
@@ -164,7 +186,9 @@ export default {
 				'slide-out-right': 'slide-out-right 0.3s ease-out',
 				'scale-up': 'scale-up 0.3s ease-out',
 				'float': 'float 6s ease-in-out infinite',
-				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite'
+				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
+				'letter-pop': 'letter-pop 0.5s ease-in-out',
+				'shimmer': 'shimmer 3s linear infinite'
 			},
 			fontFamily: {
 				sans: ['"SF Pro Display"', 'Inter', 'sans-serif'],
@@ -191,3 +215,4 @@ export default {
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

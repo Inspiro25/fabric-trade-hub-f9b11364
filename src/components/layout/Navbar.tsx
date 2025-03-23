@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
+import { motion } from 'framer-motion';
 
 const SearchSuggestions = ({ 
   query, 
@@ -343,6 +344,20 @@ const Navbar = () => {
   });
   ListItem.displayName = "ListItem";
 
+  const letterVariants = {
+    initial: { y: -20, opacity: 0 },
+    animate: { y: 0, opacity: 1 },
+    hover: { scale: 1.2, y: -5, transition: { duration: 0.2 } }
+  };
+
+  const createLetterDelays = (word: string) => {
+    return Array.from(word).map((_, i) => ({
+      transition: { delay: i * 0.05 }
+    }));
+  };
+
+  const letterDelays = createLetterDelays("VYOMA");
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -352,13 +367,76 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="flex items-center text-xl font-bold transition-transform hover:scale-105 text-kutuku-primary">
-              <Sun className="h-6 w-6 mr-1.5" />
-              <Sparkles className="h-3.5 w-3.5 absolute ml-1 -mt-3" />
-              <span className="relative">
-                VYOMA
-                <span className="absolute -top-1 right-0 h-1.5 w-1.5 bg-kutuku-primary rounded-full"></span>
-              </span>
+            <Link to="/" className="flex items-center text-xl font-bold transition-transform hover:scale-105 text-vyoma-primary">
+              <motion.div 
+                className="flex items-center relative"
+                initial="initial"
+                animate="animate"
+                whileHover="hover"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ 
+                    opacity: [0, 1, 0.8, 1], 
+                    scale: [0, 1, 0.9, 1] 
+                  }}
+                  transition={{ 
+                    duration: 1.5,
+                    times: [0, 0.4, 0.7, 1]
+                  }}
+                >
+                  <Sun className="h-6 w-6 mr-1.5" />
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    rotate: [0, 20, -20, 0] 
+                  }}
+                  transition={{ 
+                    delay: 0.7, 
+                    duration: 1.2,
+                    rotate: { times: [0, 0.3, 0.6, 1] }
+                  }}
+                  className="absolute ml-1 -mt-3"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                </motion.div>
+                
+                <div className="flex">
+                  {Array.from("VYOMA").map((letter, index) => (
+                    <motion.span
+                      key={index}
+                      variants={letterVariants}
+                      custom={index}
+                      transition={{ 
+                        delay: 0.3 + index * 0.1,
+                        duration: 0.4, 
+                        type: "spring", 
+                        stiffness: 300
+                      }}
+                      className="relative"
+                      whileHover={{
+                        color: "#FE7235",
+                        y: -4,
+                        transition: { duration: 0.2 }
+                      }}
+                    >
+                      {letter}
+                      {index === 4 && (
+                        <motion.span 
+                          className="absolute -top-1 right-0 h-1.5 w-1.5 bg-vyoma-primary rounded-full"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: [0, 1.5, 1] }}
+                          transition={{ delay: 1.2, duration: 0.5 }}
+                        />
+                      )}
+                    </motion.span>
+                  ))}
+                </div>
+              </motion.div>
             </Link>
 
             <NavigationMenu className="hidden md:flex">
@@ -395,12 +473,12 @@ const Navbar = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/shops" className="flex items-center gap-1 px-4 py-2 text-sm hover:text-kutuku-primary">
+                  <Link to="/shops" className="flex items-center gap-1 px-4 py-2 text-sm hover:text-vyoma-primary">
                     Shops
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/offers" className="flex items-center gap-1 px-4 py-2 text-sm hover:text-kutuku-primary">
+                  <Link to="/offers" className="flex items-center gap-1 px-4 py-2 text-sm hover:text-vyoma-primary">
                     Offers
                   </Link>
                 </NavigationMenuItem>
@@ -413,7 +491,7 @@ const Navbar = () => {
               <Input
                 type="text"
                 placeholder="Search products, brands, categories..."
-                className="pr-10 rounded-full border-kutuku-gray focus:border-kutuku-primary"
+                className="pr-10 rounded-full border-vyoma-gray focus:border-vyoma-primary"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
@@ -422,7 +500,7 @@ const Navbar = () => {
                 type="submit" 
                 size="icon" 
                 variant="ghost" 
-                className="absolute right-0 top-0 h-full flex items-center justify-center text-kutuku-muted hover:text-kutuku-primary"
+                className="absolute right-0 top-0 h-full flex items-center justify-center text-vyoma-muted hover:text-vyoma-primary"
               >
                 <Search className="h-4 w-4" />
               </Button>

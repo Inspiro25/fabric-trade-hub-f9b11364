@@ -18,11 +18,11 @@ const EmptyCart: React.FC = () => {
     )}>
       <div className={cn(
         "inline-flex justify-center items-center p-3 rounded-full mb-4",
-        isDarkMode ? "bg-gray-700" : "bg-kutuku-light"
+        isDarkMode ? "bg-gray-700" : "bg-vyoma-light"
       )}>
         <ShoppingCart className={cn(
           "w-8 h-8",
-          isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+          isDarkMode ? "text-orange-400" : "text-vyoma-primary"
         )} />
       </div>
       <h2 className={cn(
@@ -42,7 +42,7 @@ const EmptyCart: React.FC = () => {
           "rounded-full",
           isDarkMode 
             ? "bg-orange-600 hover:bg-orange-700" 
-            : "bg-kutuku-primary hover:bg-kutuku-secondary"
+            : "bg-vyoma-primary hover:bg-vyoma-secondary"
         )}
       >
         <Link to="/">Continue Shopping</Link>

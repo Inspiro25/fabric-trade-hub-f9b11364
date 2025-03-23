@@ -25,7 +25,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', 
+      phoneNumber: shop?.phone_number || '',
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -210,7 +210,7 @@ export const getShopData = async (shopId: string) => {
     status: data.status,
     ownerName: data.owner_name,
     ownerEmail: data.owner_email,
-    phoneNumber: data.phone_number || '', // Fixed this line
+    phoneNumber: data.phone_number || '',
     createdAt: data.created_at
   };
 
