@@ -31,7 +31,7 @@ interface ShopFormValues {
   phoneNumber: string;
 }
 
-const shopSchema = yup.object({
+const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().url('Logo must be a valid URL').required('Logo URL is required'),
@@ -44,7 +44,7 @@ const shopSchema = yup.object({
   status: yup.string().oneOf(['active', 'pending', 'suspended']).default('pending'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-}).required();
+});
 
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
