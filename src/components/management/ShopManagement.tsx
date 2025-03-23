@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -31,7 +30,7 @@ interface ShopFormValues {
   phoneNumber: string;
 }
 
-const shopSchema = yup.object().shape({
+const shopSchema = yup.object({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().url('Logo must be a valid URL').required('Logo URL is required'),
@@ -55,7 +54,7 @@ const ShopManagement: React.FC = () => {
 
   const {
     control,
-    handleSubmit: formHandleSubmit,
+    formHandleSubmit,
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
