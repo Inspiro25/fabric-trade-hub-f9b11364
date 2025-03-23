@@ -48,18 +48,30 @@ const FileUpload: React.FC<FileUploadProps> = ({
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
 
+      // Get current authentication state
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Authentication required to upload files');
+      }
+
       // Generate a unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
 
+      console.log(`Uploading to bucket: ${bucketName}, path: ${filePath}`);
+
       // Upload file to Supabase Storage
       const { data, error: uploadError } = await supabase
         .storage
         .from(bucketName)
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          upsert: false,
+          contentType: file.type
+        });
 
       if (uploadError) {
+        console.error('Upload error details:', uploadError);
         throw uploadError;
       }
 

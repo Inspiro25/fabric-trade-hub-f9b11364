@@ -44,6 +44,15 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     setUploading(true);
     const uploadPromises: Promise<string>[] = [];
 
+    // Check authentication state first
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setError('Authentication required to upload files');
+      setUploading(false);
+      toast.error('You must be logged in to upload files');
+      return;
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       
@@ -89,11 +98,16 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
 
+      console.log(`Uploading to bucket: ${bucketName}, path: ${filePath}`);
+
       // Upload file to Supabase Storage
       const { data, error: uploadError } = await supabase
         .storage
         .from(bucketName)
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          upsert: false,
+          contentType: file.type
+        });
 
       if (uploadError) {
         console.error('Error uploading file:', uploadError);
