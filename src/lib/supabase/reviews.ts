@@ -28,17 +28,20 @@ const ensureValidUuid = (id: string): string => {
       return id;
     }
     
-    // If not a valid UUID, generate a deterministic UUID from this ID
-    // This will give us the same UUID for the same input string
-    // Use the input string to create a more deterministic seed
-    let seed = 0;
+    // Generate a deterministic UUID from the input ID
+    // This ensures the same input ID always generates the same UUID
+    let namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8'; // A standard namespace
+    let buffer = [];
+    
+    // Simple deterministic algorithm
     for (let i = 0; i < id.length; i++) {
-      seed = ((seed << 5) - seed) + id.charCodeAt(i);
-      seed = seed & seed; // Convert to 32bit integer
+      buffer.push(id.charCodeAt(i));
     }
     
-    // Use the seed to create a UUID
-    return uuidv4();
+    // Generate UUID using buffer as input
+    return uuidv4({
+      random: buffer.slice(0, 16).map(c => c % 256)
+    });
   } catch (e) {
     // If anything goes wrong, just generate a random UUID
     console.error("Failed to convert ID to UUID", e);
@@ -160,19 +163,73 @@ export const createReview = async (
       throw new Error('Shop ID is required for shop reviews');
     }
 
-    // Convert any non-UUID userId to a UUID format that Supabase can accept
-    // Firebase UID is not in UUID format, so we need to convert it
-    const safeUserId = ensureValidUuid(reviewData.userId);
+    // First, check if the user is authenticated with Supabase
+    const { data: { session } } = await supabase.auth.getSession();
     
-    console.log('Creating review using converted user ID:', safeUserId.substring(0, 10) + '...');
+    if (!session) {
+      console.warn('No active Supabase session - attempting to use converted Firebase UID');
+      
+      // If no Supabase session, use the converted user ID
+      const safeUserId = ensureValidUuid(reviewData.userId);
+      console.log('Using converted user ID for review:', safeUserId);
+      
+      // Note: This will likely fail with RLS unless you're signed in with Supabase
+      // The error will be caught below
+      const { data, error } = await supabase
+        .from('product_reviews')
+        .insert({
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+          images: reviewData.images || [],
+          user_id: safeUserId,
+          product_id: reviewData.productId,
+          shop_id: reviewData.shopId,
+          review_type: reviewData.reviewType,
+          helpful_count: 0
+        })
+        .select()
+        .single();
 
+      if (error) {
+        console.error('Error creating review (RLS likely preventing access):', error);
+        toast({
+          title: 'Authentication required',
+          description: 'Please sign in with Supabase to submit reviews',
+          variant: 'destructive'
+        });
+        return null;
+      }
+
+      toast({
+        title: 'Review submitted',
+        description: 'Thank you for your feedback!'
+      });
+
+      return {
+        id: data.id,
+        rating: data.rating,
+        comment: data.comment || '',
+        images: data.images || [],
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+        productId: data.product_id,
+        shopId: data.shop_id,
+        userId: data.user_id,
+        helpfulCount: data.helpful_count,
+        reviewType: data.review_type as 'product' | 'shop'
+      };
+    }
+    
+    // User is authenticated with Supabase, use their actual Supabase UID
+    console.log('Using Supabase user ID for review:', session.user.id);
+    
     const { data, error } = await supabase
       .from('product_reviews')
       .insert({
         rating: reviewData.rating,
         comment: reviewData.comment,
         images: reviewData.images || [],
-        user_id: safeUserId,
+        user_id: session.user.id,
         product_id: reviewData.productId,
         shop_id: reviewData.shopId,
         review_type: reviewData.reviewType,

@@ -51,8 +51,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // First check if user is logged in
-    if (!user && !supabaseUserId) {
+    // First check if user is logged in with Supabase
+    if (!supabaseUserId) {
       setIsAuthDialogOpen(true);
       return;
     }
@@ -75,63 +75,24 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
 
       const reviewType = productId ? 'product' : 'shop';
       
-      // Check Supabase session 
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
+      // Use Supabase user ID directly
+      const result = await createReview({
+        rating,
+        comment,
+        userId: supabaseUserId,
+        reviewType,
+        productId,
+        shopId,
+      });
       
-      if (!userId) {
-        // Use Firebase user UID if available as a fallback
-        const firebaseUid = user?.uid;
-        if (!firebaseUid) {
-          throw new Error('User ID not available. Please log in again.');
-        }
-        
-        // Create the review with Firebase UID
-        console.log('Using Firebase UID for review:', firebaseUid.substring(0, 6) + '...');
-        
-        // For Supabase, we'll use a consistent UUID format derived from the Firebase UID
-        // This is a simple way to make Firebase UIDs compatible with Supabase UUID columns
-        // In production, you'd want a more robust solution
-        const result = await createReview({
-          rating,
-          comment,
-          userId: firebaseUid, // Using Firebase UID 
-          reviewType,
-          productId,
-          shopId,
+      if (result) {
+        setRating(0);
+        setComment('');
+        onReviewSubmitted();
+        toast({
+          title: 'Review submitted',
+          description: 'Thank you for your feedback!',
         });
-        
-        if (result) {
-          setRating(0);
-          setComment('');
-          onReviewSubmitted();
-          toast({
-            title: 'Review submitted',
-            description: 'Thank you for your feedback!',
-          });
-        }
-      } else {
-        // Use Supabase user ID 
-        console.log('Using Supabase ID for review:', userId.substring(0, 6) + '...');
-        
-        const result = await createReview({
-          rating,
-          comment,
-          userId: userId,
-          reviewType,
-          productId,
-          shopId,
-        });
-        
-        if (result) {
-          setRating(0);
-          setComment('');
-          onReviewSubmitted();
-          toast({
-            title: 'Review submitted',
-            description: 'Thank you for your feedback!',
-          });
-        }
       }
     } catch (error) {
       console.error('Error submitting review:', error);
