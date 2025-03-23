@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
 import { Plus, Search } from 'lucide-react';
+import { toast } from 'sonner';
 import { Offer, getAllOffers, createOffer, updateOffer, deleteOffer } from '@/lib/supabase/offers';
 import OffersTable from './OffersTable';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -15,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const OffersManagement: React.FC = () => {
-  const { toast } = useToast();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [filteredOffers, setFilteredOffers] = useState<Offer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -73,11 +71,7 @@ const OffersManagement: React.FC = () => {
       setFilteredOffers(fetchedOffers);
     } catch (error) {
       console.error('Error loading offers:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load offers',
-        variant: 'destructive',
-      });
+      toast.error('Failed to load offers');
     } finally {
       setIsLoading(false);
     }
@@ -129,18 +123,11 @@ const OffersManagement: React.FC = () => {
   const handleDeleteOffer = async (offerId: string) => {
     try {
       await deleteOffer(offerId);
-      toast({
-        title: 'Success',
-        description: 'Offer has been deleted successfully',
-      });
+      toast.success('Offer has been deleted successfully');
       loadOffers();
     } catch (error) {
       console.error('Error deleting offer:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete offer',
-        variant: 'destructive',
-      });
+      toast.error('Failed to delete offer');
     }
   };
 
@@ -156,10 +143,7 @@ const OffersManagement: React.FC = () => {
           offer.id === editingOffer.id ? updatedOffer : offer
         ));
         
-        toast({
-          title: 'Success',
-          description: 'Offer updated successfully',
-        });
+        toast.success('Offer updated successfully');
       } else {
         // Add new offer
         const newOffer = await createOffer({
@@ -168,20 +152,13 @@ const OffersManagement: React.FC = () => {
         } as Offer);
         
         setOffers(prev => [...prev, newOffer]);
-        toast({
-          title: 'Success',
-          description: 'Offer added successfully',
-        });
+        toast.success('Offer added successfully');
       }
       
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error saving offer:", error);
-      toast({
-        title: 'Error',
-        description: 'Failed to save offer',
-        variant: 'destructive',
-      });
+      toast.error('Failed to save offer');
     }
   };
 

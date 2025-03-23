@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -23,9 +22,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createNotification } from '@/services/notificationService';
 import { createPartnerRequest } from '@/lib/supabase/partnerRequests';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
-// Validation schema for partner request form
 const formSchema = z.object({
   businessName: z.string().min(2, { message: "Business name must be at least 2 characters" }),
   contactName: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
@@ -46,7 +44,6 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
   onOpenChange,
   onSuccess,
 }) => {
-  const { toast } = useToast();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -72,10 +69,8 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
       console.log("Request ID from createPartnerRequest:", requestId);
       
       if (!requestId) {
-        toast({
-          title: "Error",
-          description: "Failed to submit partner request. Please try again.",
-          variant: "destructive",
+        toast.error("Failed to submit partner request", {
+          description: "Please try again."
         });
         return;
       }
@@ -90,18 +85,15 @@ const PartnerRequestDialog: React.FC<PartnerRequestDialogProps> = ({
       
       console.log("Notification sent:", notificationSent);
       
-      toast({
-        title: "Request Submitted",
-        description: "Your partner request has been successfully submitted. Our team will contact you soon.",
+      toast.success("Request Submitted", {
+        description: "Your partner request has been successfully submitted. Our team will contact you soon."
       });
       form.reset();
       onSuccess();
     } catch (error) {
       console.error("Error sending partner request:", error);
-      toast({
-        title: "Error",
-        description: "Failed to submit partner request. Please try again.",
-        variant: "destructive",
+      toast.error("Failed to submit partner request", {
+        description: "Please try again."
       });
     }
   };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -132,9 +131,8 @@ const Authentication = () => {
     try {
       console.log("Attempting login with:", values.email);
       await login(values.email, values.password);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
+      toast.success("Login successful", {
+        description: "Welcome back!"
       });
       navigate(from, { replace: true });
     } catch (error: any) {
@@ -143,10 +141,8 @@ const Authentication = () => {
       const errorInfo = getErrorMessage(errorCode);
       setAuthError(errorInfo);
       setError(errorInfo.message);
-      toast({
-        title: "Login failed",
-        description: errorInfo.message,
-        variant: "destructive",
+      toast.error("Login failed", {
+        description: errorInfo.message
       });
     } finally {
       setIsLogging(false);
@@ -161,9 +157,8 @@ const Authentication = () => {
     try {
       console.log("Attempting registration with:", values.email);
       await register(values.email, values.password);
-      toast({
-        title: "Registration successful",
-        description: "Your account has been created successfully!",
+      toast.success("Registration successful", {
+        description: "Your account has been created successfully!"
       });
       navigate(from, { replace: true });
     } catch (error: any) {
@@ -172,10 +167,8 @@ const Authentication = () => {
       const errorInfo = getErrorMessage(errorCode);
       setAuthError(errorInfo);
       setError(errorInfo.message);
-      toast({
-        title: "Registration failed",
-        description: errorInfo.message,
-        variant: "destructive",
+      toast.error("Registration failed", {
+        description: errorInfo.message
       });
     } finally {
       setIsRegistering(false);
@@ -187,9 +180,8 @@ const Authentication = () => {
     setError("");
     try {
       await loginWithGoogleProvider();
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
+      toast.success("Login successful", {
+        description: "Welcome back!"
       });
       navigate(from, { replace: true });
     } catch (error: any) {
@@ -198,10 +190,8 @@ const Authentication = () => {
       const errorInfo = getErrorMessage(errorCode);
       setAuthError(errorInfo);
       setError(errorInfo.message);
-      toast({
-        title: "Login failed",
-        description: errorInfo.message,
-        variant: "destructive",
+      toast.error("Login failed", {
+        description: errorInfo.message
       });
     }
   };
@@ -211,9 +201,8 @@ const Authentication = () => {
     setError("");
     try {
       await loginWithFacebookProvider();
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
+      toast.success("Login successful", {
+        description: "Welcome back!"
       });
       navigate(from, { replace: true });
     } catch (error: any) {
@@ -222,18 +211,15 @@ const Authentication = () => {
       const errorInfo = getErrorMessage(errorCode);
       setAuthError(errorInfo);
       setError(errorInfo.message);
-      toast({
-        title: "Login failed",
-        description: errorInfo.message,
-        variant: "destructive",
+      toast.error("Login failed", {
+        description: errorInfo.message
       });
     }
   };
 
   const handlePhoneLogin = () => {
-    toast({
-      title: "Coming soon",
-      description: "Phone authentication will be implemented soon.",
+    toast.info("Coming soon", {
+      description: "Phone authentication will be implemented soon."
     });
   };
   
