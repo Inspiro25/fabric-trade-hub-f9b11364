@@ -16,6 +16,7 @@ import { fetchShopSalesAnalytics } from '@/lib/supabase/analytics';
 import ShopAdminHeader from '@/components/admin/ShopAdminHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ShopOrdersList from '@/components/admin/ShopOrdersList';
+import ShopSettings from '@/components/admin/ShopSettings';
 
 const ShopDashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +29,45 @@ const ShopDashboard = () => {
   const [orderCount, setOrderCount] = useState(0);
   const isMobile = useIsMobile();
 
+  const loadShopData = async (shopId: string) => {
+    setIsLoading(true);
+    try {
+      // Fetch shop details
+      const shopData = await getShopById(shopId);
+      
+      if (!shopData) {
+        throw new Error('Shop not found');
+      }
+      
+      setShop(shopData);
+      
+      // Fetch shop followers count
+      const followers = await fetchShopFollowers(shopId);
+      setFollowerCount(followers.length);
+      
+      // Fetch sales analytics
+      const analytics = await fetchShopSalesAnalytics(shopId);
+      setSalesData(analytics);
+      
+      // Calculate monthly revenue and order count
+      const monthly = analytics.reduce((acc, item) => {
+        return {
+          revenue: acc.revenue + Number(item.sales_amount || 0),
+          orders: acc.orders + Number(item.orders_count || 0)
+        };
+      }, { revenue: 0, orders: 0 });
+      
+      setMonthlyRevenue(monthly.revenue);
+      setOrderCount(monthly.orders);
+    } catch (error) {
+      console.error('Error loading shop data:', error);
+      toast.error('Failed to load shop data');
+      navigate('/admin/login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const checkAdminAuth = async () => {
       // Get the shop ID from session storage
@@ -39,47 +79,20 @@ const ShopDashboard = () => {
         return;
       }
       
-      setIsLoading(true);
-      
-      try {
-        // Fetch shop details
-        const shopData = await getShopById(adminShopId);
-        
-        if (!shopData) {
-          throw new Error('Shop not found');
-        }
-        
-        setShop(shopData);
-        
-        // Fetch shop followers count
-        const followers = await fetchShopFollowers(adminShopId);
-        setFollowerCount(followers.length);
-        
-        // Fetch sales analytics
-        const analytics = await fetchShopSalesAnalytics(adminShopId);
-        setSalesData(analytics);
-        
-        // Calculate monthly revenue and order count
-        const monthly = analytics.reduce((acc, item) => {
-          return {
-            revenue: acc.revenue + Number(item.sales_amount || 0),
-            orders: acc.orders + Number(item.orders_count || 0)
-          };
-        }, { revenue: 0, orders: 0 });
-        
-        setMonthlyRevenue(monthly.revenue);
-        setOrderCount(monthly.orders);
-      } catch (error) {
-        console.error('Error loading shop data:', error);
-        toast.error('Failed to load shop data');
-        navigate('/admin/login');
-      } finally {
-        setIsLoading(false);
-      }
+      await loadShopData(adminShopId);
     };
     
     checkAdminAuth();
   }, [navigate]);
+
+  const handleSettingsUpdate = async () => {
+    // Refresh shop data after settings update
+    const adminShopId = sessionStorage.getItem('adminShopId');
+    if (adminShopId) {
+      await loadShopData(adminShopId);
+      toast.success('Shop information updated successfully');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -162,7 +175,7 @@ const ShopDashboard = () => {
           </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="h-4 w-4 mr-2" />
-            <span className={isMobile ? 'hidden' : 'inline'}>Shop Details</span>
+            <span className={isMobile ? 'hidden' : 'inline'}>Settings</span>
           </TabsTrigger>
           <TabsTrigger value="followers">
             <Users className="h-4 w-4 mr-2" />
@@ -203,7 +216,7 @@ const ShopDashboard = () => {
         </TabsContent>
         
         <TabsContent value="settings" className="space-y-4">
-          <ShopDetailsEditor shop={shop} />
+          {shop && <ShopSettings shop={shop} onUpdateSuccess={handleSettingsUpdate} />}
         </TabsContent>
         
         <TabsContent value="followers" className="space-y-4">

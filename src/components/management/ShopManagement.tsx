@@ -33,6 +33,9 @@ const shopSchema = yup.object({
   phoneNumber: yup.string().required('Phone number is required'),
 }).required();
 
+// Add explicit type to make TypeScript happy with the resolver
+type ShopSchemaType = yup.InferType<typeof shopSchema>;
+
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -46,7 +49,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema) as any, // Add type assertion here
+    resolver: yupResolver<ShopSchemaType>(shopSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -104,7 +107,7 @@ const ShopManagement: React.FC = () => {
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
         phoneNumber: data.phoneNumber, 
-        status: data.status,
+        status: data.status as 'active' | 'pending' | 'suspended',
         isVerified: data.isVerified || false,
         rating: 0,
         reviewCount: 0,

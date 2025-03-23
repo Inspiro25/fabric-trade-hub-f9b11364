@@ -68,7 +68,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: '', // Use empty string as fallback since phone_number doesn't exist in the DB
+      phoneNumber: shop?.phone_number || '', 
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -210,7 +210,7 @@ export const getShopData = async (shopId: string) => {
     status: data.status,
     ownerName: data.owner_name,
     ownerEmail: data.owner_email,
-    phoneNumber: '', // Use empty string as fallback since phone_number doesn't exist in the DB
+    phoneNumber: data.phone_number || '', 
     createdAt: data.created_at
   };
 
