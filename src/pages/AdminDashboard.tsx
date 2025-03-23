@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   ShoppingBag, Users, LogOut, Store, Tag, 
-  Settings 
+  Settings, BarChart, DollarSign, TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -19,6 +19,8 @@ import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [openOrderDialog, setOpenOrderDialog] = useState(false);
   const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
+  const [activeView, setActiveView] = useState('overview');
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
 
@@ -71,7 +74,7 @@ const AdminDashboard = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vyoma-primary"></div>
-        <p className="mt-4 text-gray-500">Loading shop dashboard...</p>
+        <p className="mt-4 text-gray-500 dark:text-gray-400">Loading shop dashboard...</p>
       </div>
     );
   }
@@ -91,13 +94,134 @@ const AdminDashboard = () => {
     );
   }
 
+  const renderOverview = () => (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <ShopInfoCard shop={shop} />
+        <ShopSalesStats shopId={shop.id} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <Card className={cn(
+          "relative overflow-hidden",
+          isDarkMode ? "bg-gradient-to-br from-blue-900/40 to-blue-800/40" : "bg-gradient-to-br from-blue-50 to-blue-100"
+        )}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Monthly Revenue
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$8,459.21</div>
+            <div className="flex items-center mt-1">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <p className="text-xs text-green-500">+12.5% from last month</p>
+            </div>
+          </CardContent>
+          <div className={cn(
+            "absolute bottom-0 right-0 w-16 h-16 rounded-tl-full",
+            isDarkMode ? "bg-blue-500/10" : "bg-blue-200/50"
+          )}></div>
+        </Card>
+        
+        <Card className={cn(
+          "relative overflow-hidden",
+          isDarkMode ? "bg-gradient-to-br from-green-900/40 to-green-800/40" : "bg-gradient-to-br from-green-50 to-green-100"
+        )}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Profit
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">$2,245.80</div>
+            <div className="flex items-center mt-1">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <p className="text-xs text-green-500">+8.2% from last month</p>
+            </div>
+          </CardContent>
+          <div className={cn(
+            "absolute bottom-0 right-0 w-16 h-16 rounded-tl-full",
+            isDarkMode ? "bg-green-500/10" : "bg-green-200/50"
+          )}></div>
+        </Card>
+        
+        <Card className={cn(
+          "relative overflow-hidden",
+          isDarkMode ? "bg-gradient-to-br from-purple-900/40 to-purple-800/40" : "bg-gradient-to-br from-purple-50 to-purple-100"
+        )}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Followers
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{shop.followers_count}</div>
+            <div className="flex items-center mt-1">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <p className="text-xs text-green-500">+4 new this week</p>
+            </div>
+          </CardContent>
+          <div className={cn(
+            "absolute bottom-0 right-0 w-16 h-16 rounded-tl-full",
+            isDarkMode ? "bg-purple-500/10" : "bg-purple-200/50"
+          )}></div>
+        </Card>
+      </div>
+
+      <h2 className={cn(
+        "text-xl font-semibold mb-4",
+        isDarkMode ? "text-white" : "text-gray-900"
+      )}>
+        Quick Actions
+      </h2>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <Button variant="outline" onClick={() => navigate('/shop/' + shop.id)} className="h-auto py-4 justify-start gap-3">
+          <Store className="h-5 w-5" />
+          <div className="text-left">
+            <div className="font-medium">View Shop</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">See your shop's page</div>
+          </div>
+        </Button>
+        
+        <Button variant="outline" className="h-auto py-4 justify-start gap-3" onClick={() => setOpenOrderDialog(true)}>
+          <ShoppingBag className="h-5 w-5" />
+          <div className="text-left">
+            <div className="font-medium">Orders</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Manage shop orders</div>
+          </div>
+        </Button>
+        
+        <Button variant="outline" className="h-auto py-4 justify-start gap-3">
+          <Tag className="h-5 w-5" />
+          <div className="text-left">
+            <div className="font-medium">Products</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Manage your products</div>
+          </div>
+        </Button>
+        
+        <Button variant="outline" className="h-auto py-4 justify-start gap-3" onClick={() => navigate('/admin/dashboard/settings')}>
+          <Settings className="h-5 w-5" />
+          <div className="text-left">
+            <div className="font-medium">Settings</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Edit shop settings</div>
+          </div>
+        </Button>
+      </div>
+    </>
+  );
+
   return (
     <div className={cn(
       "min-h-screen",
       isDarkMode ? "bg-gray-900" : "bg-gray-50"
     )}>
       <header className={cn(
-        "py-4 px-6 flex justify-between items-center border-b",
+        "py-4 px-4 md:px-6 flex justify-between items-center border-b sticky top-0 z-10",
         isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
       )}>
         <div className="flex items-center gap-3">
@@ -139,83 +263,92 @@ const AdminDashboard = () => {
         </div>
       </header>
 
-      <main className="container mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">Shop Overview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Owner:</span>
-                  <span className="font-medium">{shop.ownerName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Email:</span>
-                  <span className="font-medium">{shop.ownerEmail}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Phone:</span>
-                  <span className="font-medium">{shop.phoneNumber || 'Not provided'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Address:</span>
-                  <span className="font-medium">{shop.address}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Followers:</span>
-                  <span className="font-medium">{shop.followers_count}</span>
-                </div>
+      <main className="container mx-auto py-4 px-4 md:py-6 md:px-8 mb-16 md:mb-0">
+        {/* Mobile Navigation for the bottom of the screen */}
+        {isMobile && (
+          <div className={cn(
+            "fixed bottom-0 left-0 right-0 z-10 border-t p-2 grid grid-cols-4 gap-1",
+            isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+          )}>
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "flex flex-col items-center justify-center h-16 rounded-md gap-1",
+                activeView === 'overview' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => setActiveView('overview')}
+            >
+              <BarChart className="h-5 w-5" />
+              <span className="text-xs">Overview</span>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "flex flex-col items-center justify-center h-16 rounded-md gap-1",
+                activeView === 'orders' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => setActiveView('orders')}
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <span className="text-xs">Orders</span>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "flex flex-col items-center justify-center h-16 rounded-md gap-1", 
+                activeView === 'products' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => setActiveView('products')}
+            >
+              <Tag className="h-5 w-5" />
+              <span className="text-xs">Products</span>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "flex flex-col items-center justify-center h-16 rounded-md gap-1",
+                activeView === 'settings' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => navigate('/admin/dashboard/settings')}
+            >
+              <Settings className="h-5 w-5" />
+              <span className="text-xs">Settings</span>
+            </Button>
+          </div>
+        )}
+
+        {isMobile ? (
+          <>
+            {activeView === 'overview' && renderOverview()}
+            {activeView === 'orders' && (
+              <div className="py-4">
+                <h2 className="text-xl font-semibold mb-4">Orders</h2>
+                <Card>
+                  <CardContent className="py-8 flex flex-col items-center justify-center">
+                    <ShoppingBag className="h-12 w-12 text-gray-300 mb-4" />
+                    <p className="text-center text-gray-500">Orders feature coming soon</p>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-
-          <ShopSalesStats shopId={shop.id} />
-        </div>
-
-        <Separator className="my-6" />
-
-        <h2 className={cn(
-          "text-xl font-semibold mb-4",
-          isDarkMode ? "text-white" : "text-gray-900"
-        )}>
-          Quick Actions
-        </h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <Button variant="outline" onClick={() => navigate('/shop/' + shop.id)} className="h-auto py-4 justify-start gap-3">
-            <Store className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">View Shop</div>
-              <div className="text-sm text-gray-500">See your shop's page</div>
-            </div>
-          </Button>
-          
-          <Button variant="outline" className="h-auto py-4 justify-start gap-3" onClick={() => setOpenOrderDialog(true)}>
-            <ShoppingBag className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Orders</div>
-              <div className="text-sm text-gray-500">Manage shop orders</div>
-            </div>
-          </Button>
-          
-          <Button variant="outline" className="h-auto py-4 justify-start gap-3">
-            <Tag className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Products</div>
-              <div className="text-sm text-gray-500">Manage your products</div>
-            </div>
-          </Button>
-          
-          <Button variant="outline" className="h-auto py-4 justify-start gap-3" onClick={() => setOpenSettingsDialog(true)}>
-            <Settings className="h-5 w-5" />
-            <div className="text-left">
-              <div className="font-medium">Settings</div>
-              <div className="text-sm text-gray-500">Edit shop settings</div>
-            </div>
-          </Button>
-        </div>
+            )}
+            {activeView === 'products' && (
+              <div className="py-4">
+                <h2 className="text-xl font-semibold mb-4">Products</h2>
+                <Card>
+                  <CardContent className="py-8 flex flex-col items-center justify-center">
+                    <Tag className="h-12 w-12 text-gray-300 mb-4" />
+                    <p className="text-center text-gray-500">Products management coming soon</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </>
+        ) : (
+          renderOverview()
+        )}
       </main>
 
       <Dialog open={openOrderDialog} onOpenChange={setOpenOrderDialog}>
