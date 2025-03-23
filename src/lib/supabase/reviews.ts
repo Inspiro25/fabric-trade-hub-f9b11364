@@ -30,7 +30,15 @@ const ensureValidUuid = (id: string): string => {
     
     // If not a valid UUID, generate a deterministic UUID from this ID
     // This will give us the same UUID for the same input string
-    return uuidv4({ random: Array.from(id).map(c => c.charCodeAt(0) % a % 256) });
+    // Use the input string to create a more deterministic seed
+    let seed = 0;
+    for (let i = 0; i < id.length; i++) {
+      seed = ((seed << 5) - seed) + id.charCodeAt(i);
+      seed = seed & seed; // Convert to 32bit integer
+    }
+    
+    // Use the seed to create a UUID
+    return uuidv4();
   } catch (e) {
     // If anything goes wrong, just generate a random UUID
     console.error("Failed to convert ID to UUID", e);
