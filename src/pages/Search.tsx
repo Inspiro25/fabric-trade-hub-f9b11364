@@ -1,61 +1,70 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useIsMobile } from '@/hooks/use-mobile';
-import useSearch from '@/hooks/use-search';
-import type { SearchPageProduct, Category, Shop } from '@/hooks/use-search';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import SearchFilters from '@/components/search/SearchFilters';
-import SearchSort from '@/components/search/SearchSort';
-import SearchResults from '@/components/search/SearchResults';
-import SearchHistory from '@/components/search/SearchHistory';
-import SearchCategories from '@/components/search/SearchCategories';
-import SearchRecommendations from '@/components/search/SearchRecommendations';
-import ShareDialog from '@/components/search/ShareDialog';
-import AuthDialog from '@/components/search/AuthDialog';
-import { Button } from '@/components/ui/button';
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Search as SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { 
-  SlidersHorizontal, 
-  ArrowUpDown, 
-  Search as SearchIcon, 
-  XCircle, 
-  Clock, 
-  History, 
-  TrendingUp,
-  Eye,
-  ChevronRight,
-  Store
-} from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { AnimatedGradient } from '@/components/ui/animated-gradient';
+import { Button } from '@/components/ui/button';
+import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { SearchResults } from '@/components/search/SearchResults';
+import SearchCategories from '@/components/search/SearchCategories';
+import SearchFilters from '@/components/search/SearchFilters';
+import SearchHistory from '@/components/search/SearchHistory';
+import SearchRecommendations from '@/components/search/SearchRecommendations';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { toast } from '@/components/ui/use-toast';
+import AuthDialog from '@/components/search/AuthDialog';
+import ShareDialog from '@/components/search/ShareDialog';
+import { useSearchData } from '@/hooks/use-search-data';
+import { useSearchRecommendations } from '@/hooks/use-search-recommendations';
+import { useSearchParams } from '@/hooks/search/use-search-params';
+import { useSearchFilters } from '@/hooks/search/use-search-filters';
+import { useSearchCartIntegration } from '@/hooks/search/use-search-cart-integration';
+import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
+import { useSearchHistory } from '@/hooks/search/use-search-history';
+import { SearchPageProduct } from '@/components/search/SearchProductCard';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const searchRef = useRef<HTMLDivElement>(null);
-  const searchParams = new URLSearchParams(location.search);
-  const query = searchParams.get('q') || '';
-  const isMobile = useIsMobile();
-  const [searchInput, setSearchInput] = useState(query);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const { currentUser } = useAuth();
   const { isDarkMode } = useTheme();
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  const searchState = useSearch();
-  const {
-    products,
+  const isMobile = useIsMobile();
+  
+  // Get query params
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParam = searchParams.get('q') || '';
+  
+  // State for search input
+  const [searchInput, setSearchInput] = useState(queryParam);
+  const [hasSearched, setHasSearched] = useState(false);
+  
+  // Use the search data hook
+  const { 
+    products, 
     categories,
     shops,
-    isLoading: loading,
-    error,
+    loading, 
+    error, 
+    initialLoad,
+    fetchData,
+    totalProducts,
+    currentPage,
+    setCurrentPage,
+    resultsPerPage,
+    setResultsPerPage
+  } = useSearchData(queryParam);
+
+  // Get recommendations from the database
+  const {
+    recommendations,
+    recentlyViewed,
+    isLoading: loadingRecommendations
+  } = useSearchRecommendations();
+  
+  // Search filter hook
+  const {
     selectedCategory,
     selectedShop,
     priceRange,
@@ -66,27 +75,6 @@ const Search = () => {
     setMobileFiltersOpen,
     mobileSortOpen,
     setMobileSortOpen,
-    isAddingToCart,
-    isAddingToWishlist,
-    isDialogOpen,
-    setIsDialogOpen,
-    isShareDialogOpen,
-    setIsShareDialogOpen,
-    shareableLink,
-    searchHistory,
-    recommendations,
-    initialLoad,
-    recentlyViewed,
-    popularSearches,
-    availabilityFilters,
-    handleAvailabilityFilterChange,
-    brandFilters,
-    toggleBrandFilter,
-    discountFilters,
-    toggleDiscountFilter,
-    handleAddToCart,
-    handleAddToWishlist,
-    handleShareProduct,
     handleCategoryChange,
     handleShopChange,
     handlePriceRangeChange,
@@ -94,578 +82,206 @@ const Search = () => {
     handleSortChange,
     handleViewModeChange,
     clearFilters,
-    handleLogin,
-    fetchData,
+    filterProducts,
+    sortProducts
+  } = useSearchFilters();
+  
+  // Get integrations for cart and wishlist
+  const { 
+    isAddingToCart, 
+    isAddingToWishlist,
+    handleAddToCart,
+    handleAddToWishlist, 
+    handleShareProduct
+  } = useSearchCartIntegration();
+  
+  // Search dialogs
+  const {
+    isDialogOpen,
+    setIsDialogOpen,
+    isShareDialogOpen,
+    setIsShareDialogOpen,
+    shareableLink
+  } = useSearchDialogs();
+  
+  // Search history
+  const {
+    searchHistory,
     clearSearchHistoryItem,
     clearAllSearchHistory,
-    saveSearchHistory,
-  } = searchState;
-
-  const mockCategories: Category[] = [
-    {id: '1', name: 'Electronics', image: '/placeholder.svg', description: 'Electronic devices and gadgets'},
-    {id: '2', name: 'Fashion', image: '/placeholder.svg', description: 'Clothing and accessories'},
-    {id: '3', name: 'Home', image: '/placeholder.svg', description: 'Home appliances and furniture'},
-    {id: '4', name: 'Sports', image: '/placeholder.svg', description: 'Sports equipment and gear'},
-    {id: '5', name: 'Books', image: '/placeholder.svg', description: 'Books and reading materials'},
-  ];
+    saveSearchHistory
+  } = useSearchHistory();
   
-  const mockShops: Shop[] = [
-    {
-      id: '1', 
-      name: 'ElectroHub', 
-      description: 'Best electronics store',
-      logo: '/placeholder.svg',
-      coverImage: '/placeholder.svg',
-      cover_image: '/placeholder.svg',
-      address: '123 Tech Street',
-      rating: 4.5,
-      reviewCount: 120,
-      review_count: 120,
-      isVerified: true,
-      is_verified: true,
-      ownerName: 'John Doe',
-      owner_name: 'John Doe',
-      ownerEmail: 'john@electrohub.com',
-      owner_email: 'john@electrohub.com',
-      status: 'active',
-      shopId: 'shop-1',
-      shop_id: 'shop-1'
-    },
-    {
-      id: '2', 
-      name: 'Fashion World', 
-      description: 'Trendy fashion items',
-      logo: '/placeholder.svg',
-      coverImage: '/placeholder.svg',
-      cover_image: '/placeholder.svg',
-      address: '456 Style Avenue',
-      rating: 4.3,
-      reviewCount: 98,
-      review_count: 98,
-      isVerified: true,
-      is_verified: true,
-      ownerName: 'Jane Smith',
-      owner_name: 'Jane Smith',
-      ownerEmail: 'jane@fashionworld.com',
-      owner_email: 'jane@fashionworld.com',
-      status: 'active',
-      shopId: 'shop-2',
-      shop_id: 'shop-2'
-    },
-    {
-      id: '3', 
-      name: 'Home Essentials', 
-      description: 'Everything for your home',
-      logo: '/placeholder.svg',
-      coverImage: '/placeholder.svg',
-      cover_image: '/placeholder.svg',
-      address: '789 Home Street',
-      rating: 4.2,
-      reviewCount: 76,
-      review_count: 76,
-      isVerified: true,
-      is_verified: true,
-      ownerName: 'Bob Johnson',
-      owner_name: 'Bob Johnson',
-      ownerEmail: 'bob@homeessentials.com',
-      owner_email: 'bob@homeessentials.com',
-      status: 'active',
-      shopId: 'shop-3',
-      shop_id: 'shop-3'
-    },
-  ];
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedSearch = searchInput.trim();
-    if (trimmedSearch) {
-      navigate(`/search?q=${encodeURIComponent(trimmedSearch)}`);
-      if (currentUser) {
-        saveSearchHistory(trimmedSearch);
-      }
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSelectSuggestion = (selectedQuery: string) => {
-    setSearchInput(selectedQuery);
-    navigate(`/search?q=${encodeURIComponent(selectedQuery)}`);
-    if (currentUser) {
-      saveSearchHistory(selectedQuery);
-    }
-    setShowSuggestions(false);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0);
-  };
-
-  const handleItemsPerPageChange = (items: number) => {
-    setItemsPerPage(items);
-    setCurrentPage(1);
-  };
-
-  const handleRetry = () => {
-    fetchData();
-  };
-
-  const paginatedProducts = products.slice(
-    (currentPage - 1) * itemsPerPage, 
-    currentPage * itemsPerPage
-  );
-
-  const SearchSuggestions = () => {
-    if (!showSuggestions) return null;
+  // Filter and sort products
+  const filteredAndSortedProducts = sortProducts(filterProducts(products));
+  
+  // Handle search submit
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
-    return (
-      <div className={cn(
-        "absolute top-full left-0 right-0 mt-1 rounded-lg shadow-lg border z-50 max-h-80 overflow-y-auto",
-        isDarkMode 
-          ? "bg-gray-800 border-gray-700" 
-          : "bg-white border-gray-200"
-      )}>
-        {searchInput && (
-          <div className="p-2 border-b dark:border-gray-700">
-            <div 
-              className={cn(
-                "flex items-center gap-2 p-2 rounded cursor-pointer",
-                isDarkMode 
-                  ? "hover:bg-orange-900/30" 
-                  : "hover:bg-orange-50"
-              )}
-              onClick={() => handleSelectSuggestion(searchInput)}
-            >
-              <SearchIcon className="h-4 w-4 text-kutuku-primary" />
-              <span className={cn(
-                "text-sm",
-                isDarkMode ? "text-gray-200" : ""
-              )}>
-                Search for "<span className="font-medium">{searchInput}</span>"
-              </span>
-            </div>
-          </div>
-        )}
-        
-        {popularSearches.length > 0 && (
-          <div className="p-2 border-b dark:border-gray-700">
-            <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 px-2">
-              <TrendingUp className="h-3 w-3" />
-              <span>Popular Searches</span>
-            </div>
-            
-            <div className="flex flex-wrap gap-2 px-2">
-              {popularSearches.map((term, idx) => (
-                <Badge 
-                  key={idx} 
-                  variant="outline" 
-                  className={cn(
-                    "cursor-pointer border-kutuku-primary text-kutuku-primary",
-                    isDarkMode 
-                      ? "hover:bg-orange-900/30 border-orange-700" 
-                      : "hover:bg-orange-50"
-                  )}
-                  onClick={() => handleSelectSuggestion(term)}
-                >
-                  {term}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {searchHistory && searchHistory.length > 0 && (
-          <div className="p-2">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 px-2">
-                <History className="h-3 w-3" />
-                <span>Recent Searches</span>
-              </div>
-              {searchHistory.length > 1 && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearAllSearchHistory}
-                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 h-6 px-2"
-                >
-                  Clear All
-                </Button>
-              )}
-            </div>
-            
-            {searchHistory.map((item) => (
-              <div 
-                key={item.id} 
-                className={cn(
-                  "flex items-center justify-between px-2 py-1.5 rounded cursor-pointer",
-                  isDarkMode 
-                    ? "hover:bg-orange-900/30" 
-                    : "hover:bg-orange-50"
-                )}
-              >
-                <div 
-                  className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
-                  onClick={() => handleSelectSuggestion(item.query)}
-                >
-                  <Clock className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
-                  <span>{item.query}</span>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearSearchHistoryItem(item.id);
-                  }}
-                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                >
-                  <XCircle className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
+    if (searchInput.trim()) {
+      setSearchParams({ q: searchInput.trim() });
+      setHasSearched(true);
+      saveSearchHistory(searchInput.trim());
+    }
   };
-
-  const backgroundClass = isDarkMode 
-    ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-    : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white";
-
+  
+  // Handle clear search
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearchParams({});
+    setHasSearched(false);
+  };
+  
+  // Handle product click
+  const handleProductClick = (product: SearchPageProduct) => {
+    navigate(`/product/${product.id}`);
+  };
+  
+  // Effect to handle URL search param changes
+  useEffect(() => {
+    if (queryParam) {
+      setSearchInput(queryParam);
+      setHasSearched(true);
+    } else {
+      setHasSearched(false);
+    }
+  }, [queryParam]);
+  
   return (
     <div className={cn(
-      "min-h-screen py-[16px] md:py-[32px]",
-      backgroundClass
+      "container mx-auto px-4 py-6 space-y-6",
+      isDarkMode ? "bg-gray-900 text-white" : ""
     )}>
-      <div className="container mx-auto px-4">
-        <div className="mb-5">
-          <div ref={searchRef} className="relative w-full max-w-xl mx-auto">
-            <form onSubmit={handleSearchSubmit} className="relative w-full">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search products, brands, categories..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onFocus={() => setShowSuggestions(true)}
-                  className={cn(
-                    "pr-16 rounded-full pl-10 h-10 sm:h-12",
-                    isDarkMode 
-                      ? "border-kutuku-primary focus:border-kutuku-secondary focus-visible:ring-kutuku-primary bg-gray-800 text-gray-200" 
-                      : "border-kutuku-primary focus:border-kutuku-secondary focus-visible:ring-kutuku-primary"
-                  )}
-                />
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-kutuku-primary" />
-                
-                {searchInput && (
-                  <Button 
-                    type="button" 
-                    size="icon" 
-                    variant="ghost" 
-                    onClick={() => setSearchInput('')}
-                    className="absolute right-10 top-1/2 transform -translate-y-1/2 h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center text-gray-400 hover:text-kutuku-primary"
-                  >
-                    <XCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </Button>
-                )}
-                
-                <Button 
-                  type="submit" 
-                  size="sm"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full bg-kutuku-primary hover:bg-kutuku-secondary h-8 sm:h-10 px-2 sm:px-4"
-                >
-                  <SearchIcon className="h-4 w-4" />
-                  <span className="sr-only sm:not-sr-only sm:ml-1">Search</span>
-                </Button>
-              </div>
-            </form>
-            
-            <SearchSuggestions />
+      {/* Search Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-2">Search Products</h1>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              type="text"
+              placeholder="Search for products..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className={cn(
+                "pl-10",
+                isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
+              )}
+            />
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           </div>
-        </div>
-        
-        {!initialLoad && query && (
-          <div className={cn(
-            "flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3 p-3 md:p-4 rounded-lg shadow-sm",
-            isDarkMode 
-              ? "bg-gray-800/90 backdrop-blur-sm border border-gray-700" 
-              : "bg-white"
-          )}>
-            <div>
-              <h1 className="text-lg md:text-xl font-bold mb-1 dark:text-white">
-                Results for "<span className="text-kutuku-primary">{query}</span>"
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                {products.length} {products.length === 1 ? 'result' : 'results'} found
-              </p>
-            </div>
+          <Button type="submit" variant="default">
+            Search
+          </Button>
+          {hasSearched && (
+            <Button type="button" variant="outline" onClick={handleClearSearch}>
+              Clear
+            </Button>
+          )}
+        </form>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Sidebar - Categories & Filters (Hidden on Mobile) */}
+        {!isMobile && (
+          <div className="space-y-6">
+            <SearchCategories 
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelectCategory={handleCategoryChange}
+            />
             
-            {isMobile ? (
-              <div className="flex items-center space-x-2 self-end md:self-auto">
-                <Button variant="outline" size="sm" onClick={() => setMobileFiltersOpen(true)} className="rounded-full border-kutuku-primary text-kutuku-primary dark:border-orange-500 dark:text-orange-400">
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  Filters
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setMobileSortOpen(true)} className="rounded-full border-kutuku-primary text-kutuku-primary dark:border-orange-500 dark:text-orange-400">
-                  <ArrowUpDown className="mr-2 h-4 w-4" />
-                  Sort
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <SearchFilters 
-                  isMobile={false} 
-                  categories={categories} 
-                  shops={shops} 
-                  selectedCategory={selectedCategory} 
-                  selectedShop={selectedShop} 
-                  priceRange={priceRange} 
-                  rating={rating} 
-                  mobileFiltersOpen={mobileFiltersOpen} 
-                  setMobileFiltersOpen={setMobileFiltersOpen} 
-                  handleCategoryChange={handleCategoryChange} 
-                  handleShopChange={handleShopChange} 
-                  handlePriceRangeChange={handlePriceRangeChange} 
-                  handleRatingChange={handleRatingChange} 
-                  clearFilters={clearFilters} 
-                />
-                <SearchSort 
-                  isMobile={false} 
-                  sortOption={sortOption} 
-                  mobileSortOpen={mobileSortOpen} 
-                  setMobileSortOpen={setMobileSortOpen} 
-                  handleSortChange={handleSortChange} 
-                />
-              </div>
-            )}
+            <SearchFilters
+              priceRange={priceRange}
+              onPriceRangeChange={handlePriceRangeChange}
+              rating={rating}
+              onRatingChange={handleRatingChange}
+              selectedShop={selectedShop}
+              shops={shops}
+              onShopChange={handleShopChange}
+              onClearFilters={clearFilters}
+              totalResults={filteredAndSortedProducts.length}
+            />
           </div>
         )}
         
-        <div className="flex flex-col lg:flex-row gap-4">
-          {!isMobile && (
-            <div className="w-full lg:w-64 shrink-0 space-y-4">
-              {searchHistory && searchHistory.length > 0 && (
-                <div className={cn(
-                  "rounded-lg shadow-sm p-4 sticky top-4",
-                  isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border border-gray-700" : "bg-white"
-                )}>
-                  <h2 className="font-semibold text-lg mb-3 flex items-center dark:text-white">
-                    <History className="h-4 w-4 mr-2 text-kutuku-primary" />
-                    Recent Searches
-                  </h2>
-                  <SearchHistory 
-                    history={searchHistory}
-                    onSelectHistoryItem={(query) => handleSelectSuggestion(query)}
-                    onClearHistoryItem={clearSearchHistoryItem}
-                    onClearAllHistory={clearAllSearchHistory}
-                  />
-                </div>
+        {/* Main Content */}
+        <div className="md:col-span-3 space-y-6">
+          {/* Search Results Section */}
+          {hasSearched ? (
+            <SearchResults
+              products={filteredAndSortedProducts}
+              loading={loading}
+              error={error}
+              totalProducts={totalProducts}
+              isAddingToCart={isAddingToCart}
+              isAddingToWishlist={isAddingToWishlist}
+              onAddToCart={handleAddToCart}
+              onAddToWishlist={handleAddToWishlist}
+              onShareProduct={handleShareProduct}
+              onProductClick={handleProductClick}
+              onRetry={fetchData}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              itemsPerPage={resultsPerPage}
+              onItemsPerPageChange={setResultsPerPage}
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
+          ) : (
+            <div className="space-y-6">
+              {/* Search history (when not searched) */}
+              {searchHistory.length > 0 && (
+                <SearchHistory 
+                  history={searchHistory}
+                  onClickItem={(item) => {
+                    setSearchInput(item.query);
+                    setSearchParams({ q: item.query });
+                  }}
+                  onClearItem={clearSearchHistoryItem}
+                  onClearAll={clearAllSearchHistory}
+                />
               )}
               
-              <div className={cn(
-                "rounded-lg shadow-sm p-4 sticky top-4",
-                isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border border-gray-700" : "bg-white"
-              )}>
-                <h2 className="font-semibold text-lg mb-3 flex items-center dark:text-white">
-                  <SlidersHorizontal className="h-4 w-4 mr-2 text-kutuku-primary" />
-                  Filters
-                </h2>
-                <SearchFilters 
-                  isMobile={false} 
-                  categories={categories} 
-                  shops={shops} 
-                  selectedCategory={selectedCategory} 
-                  selectedShop={selectedShop} 
-                  priceRange={priceRange} 
-                  rating={rating} 
-                  mobileFiltersOpen={mobileFiltersOpen} 
-                  setMobileFiltersOpen={setMobileFiltersOpen} 
-                  handleCategoryChange={handleCategoryChange} 
-                  handleShopChange={handleShopChange} 
-                  handlePriceRangeChange={handlePriceRangeChange} 
-                  handleRatingChange={handleRatingChange} 
-                  clearFilters={clearFilters} 
-                  expanded={true} 
-                />
-              </div>
-            </div>
-          )}
-          
-          <div className="flex-1">
-            {initialLoad || !query ? (
-              <div className="space-y-4">
-                {isMobile && searchHistory && searchHistory.length > 0 && (
-                  <div className={cn(
-                    "rounded-lg shadow-sm p-3 md:p-4",
-                    isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border border-gray-700" : "bg-white"
-                  )}>
-                    <h2 className="font-semibold text-lg mb-2 flex items-center dark:text-white">
-                      <History className="h-4 w-4 mr-2 text-kutuku-primary" />
-                      Recent Searches
-                    </h2>
-                    <SearchHistory 
-                      history={searchHistory}
-                      onSelectHistoryItem={(query) => handleSelectSuggestion(query)}
-                      onClearHistoryItem={clearSearchHistoryItem}
-                      onClearAllHistory={clearAllSearchHistory}
-                    />
-                  </div>
-                )}
-                
-                <div className={cn(
-                  "rounded-lg shadow-sm p-3 md:p-4",
-                  isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border border-gray-700" : "bg-white"
-                )}>
-                  <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-semibold text-lg flex items-center dark:text-white">
-                      <Store className="h-4 w-4 mr-2 text-kutuku-primary" />
-                      Browse Categories
-                    </h2>
-                    <Button variant="link" className="text-kutuku-primary p-0 h-auto text-sm" asChild>
-                      <Link to="/categories">
-                        View All <ChevronRight className="h-3 w-3 ml-1" />
-                      </Link>
-                    </Button>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {mockCategories.slice(0, 10).map((category) => (
-                      <div 
-                        key={category.id}
-                        className={cn(
-                          "flex flex-col items-center p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm",
-                          isDarkMode 
-                            ? "border-gray-700 hover:border-orange-500 dark:hover:border-orange-500" 
-                            : "border-gray-100 hover:border-kutuku-primary"
-                        )}
-                        onClick={() => {
-                          handleCategoryChange(category.id);
-                          navigate(`/search?category=${category.id}`);
-                        }}
-                      >
-                        <div className={cn(
-                          "w-12 h-12 rounded-full flex items-center justify-center mb-2",
-                          isDarkMode ? "bg-orange-900/30" : "bg-orange-100"
-                        )}>
-                          {category.image ? (
-                            <img src={category.image} alt={category.name} className="w-6 h-6" />
-                          ) : (
-                            <Store className="w-5 h-5 text-kutuku-primary" />
-                          )}
-                        </div>
-                        <span className="text-sm text-center line-clamp-1 dark:text-gray-200">{category.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <Tabs defaultValue="recommended" className="w-full">
-                  <TabsList className={cn(
-                    "w-full mb-0 grid grid-cols-2",
-                    isDarkMode 
-                      ? "bg-gray-800 border-b border-gray-700 rounded-t-lg" 
-                      : "bg-white border-b dark:border-gray-700 rounded-t-lg"
-                  )}>
-                    <TabsTrigger 
-                      value="recommended" 
-                      className="flex-1 data-[state=active]:text-kutuku-primary data-[state=active]:border-b-2 data-[state=active]:border-kutuku-primary py-3"
-                    >
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Recommends
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="recently-viewed" 
-                      className="flex-1 data-[state=active]:text-kutuku-primary data-[state=active]:border-b-2 data-[state=active]:border-kutuku-primary py-3"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Recently Viewed
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent 
-                    value="recommended" 
-                    className={cn(
-                      "rounded-b-lg shadow-sm p-3 md:p-4 mt-0",
-                      isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border-x border-b border-gray-700" : "bg-white"
-                    )}
-                  >
-                    <SearchRecommendations 
-                      products={recommendations}
-                      isAddingToCart={isAddingToCart}
-                      isAddingToWishlist={isAddingToWishlist}
-                      onAddToCart={handleAddToCart}
-                      onAddToWishlist={handleAddToWishlist}
-                      onShareProduct={handleShareProduct}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent 
-                    value="recently-viewed" 
-                    className={cn(
-                      "rounded-b-lg shadow-sm p-3 md:p-4 mt-0",
-                      isDarkMode ? "bg-gray-800/90 backdrop-blur-sm border-x border-b border-gray-700" : "bg-white"
-                    )}
-                  >
-                    <SearchRecommendations 
-                      products={recentlyViewed}
-                      isAddingToCart={isAddingToCart}
-                      isAddingToWishlist={isAddingToWishlist}
-                      onAddToCart={handleAddToCart}
-                      onAddToWishlist={handleAddToWishlist}
-                      onShareProduct={handleShareProduct}
-                      emptyStateMessage="No recently viewed products"
-                    />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : (
-              <SearchResults 
-                products={paginatedProducts}
-                totalProducts={products.length}
-                loading={loading}
-                error={error}
-                viewMode={viewMode}
-                currentPage={currentPage}
-                itemsPerPage={itemsPerPage}
+              {/* Recommendations (when not searched) */}
+              <SearchRecommendations
+                products={recommendations}
                 isAddingToCart={isAddingToCart}
                 isAddingToWishlist={isAddingToWishlist}
                 onAddToCart={handleAddToCart}
                 onAddToWishlist={handleAddToWishlist}
                 onShareProduct={handleShareProduct}
-                onViewModeChange={handleViewModeChange}
-                onPageChange={handlePageChange}
-                onItemsPerPageChange={handleItemsPerPageChange}
-                onRetry={handleRetry}
+                onSelectProduct={(id) => navigate(`/product/${id}`)}
               />
-            )}
-          </div>
+              
+              {/* Recently viewed (when not searched) */}
+              {recentlyViewed.length > 0 && (
+                <SearchRecommendations
+                  products={recentlyViewed}
+                  isAddingToCart={isAddingToCart}
+                  isAddingToWishlist={isAddingToWishlist}
+                  onAddToCart={handleAddToCart}
+                  onAddToWishlist={handleAddToWishlist}
+                  onShareProduct={handleShareProduct}
+                  onSelectProduct={(id) => navigate(`/product/${id}`)}
+                  emptyStateIcon={<span className="text-3xl">👁️</span>}
+                  emptyStateTitle="No recently viewed products"
+                  emptyStateMessage="Browse products to see your history here"
+                />
+              )}
+            </div>
+          )}
         </div>
       </div>
       
+      {/* Auth Dialog */}
+      <AuthDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
+      
+      {/* Share Dialog */}
       <ShareDialog 
         open={isShareDialogOpen} 
         onOpenChange={setIsShareDialogOpen}
         link={shareableLink}
-      />
-      
-      <AuthDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onLogin={handleLogin}
       />
     </div>
   );
