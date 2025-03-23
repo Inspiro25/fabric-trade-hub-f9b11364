@@ -68,7 +68,7 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', 
+      phoneNumber: '', // Use empty string as fallback since phone_number doesn't exist in the DB
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
@@ -100,7 +100,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
       owner_email: shopData.ownerEmail,
       status: shopData.status,
       shop_id: shopData.shopId,
-      phone_number: shopData.phoneNumber, // Ensure phone_number is correctly mapped
+      phone_number: shopData.phoneNumber, // Include phone_number in the update
     };
 
     // Only include password in the update if it was provided
@@ -145,7 +145,7 @@ export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | n
         owner_email: shopData.ownerEmail,
         status: shopData.status || 'pending',
         password: shopData.password,
-        phone_number: shopData.phoneNumber, // Ensure phone_number is correctly mapped
+        phone_number: shopData.phoneNumber || '', // Include an empty string as default
       })
       .select()
       .single();
@@ -210,7 +210,7 @@ export const getShopData = async (shopId: string) => {
     status: data.status,
     ownerName: data.owner_name,
     ownerEmail: data.owner_email,
-    phoneNumber: data.phone_number || '', // Add fallback for phone_number
+    phoneNumber: '', // Use empty string as fallback since phone_number doesn't exist in the DB
     createdAt: data.created_at
   };
 
