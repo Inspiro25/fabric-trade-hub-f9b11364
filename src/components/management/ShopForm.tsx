@@ -1,3 +1,4 @@
+
 import React from 'react';
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
@@ -70,7 +71,7 @@ export const ShopForm: React.FC<ShopFormProps> = ({
   isMobile = false
 }) => {
   const [logo, setLogo] = React.useState<string>(shop?.logo || '');
-  const [coverImage, setCoverImage] = React.useState<string>(shop?.coverImage || '');
+  const [coverImage, setCoverImage] = React.useState<string>(shop?.cover_image || '');
 
   const form = useForm<ShopFormValues>({
     resolver: zodResolver(shopFormSchema),
@@ -78,13 +79,13 @@ export const ShopForm: React.FC<ShopFormProps> = ({
       name: shop?.name || '',
       description: shop?.description || '',
       address: shop?.address || '',
-      isVerified: shop?.isVerified || false,
-      shopId: shop?.shopId || '',
-      ownerName: shop?.ownerName || '',
-      ownerEmail: shop?.ownerEmail || '',
-      status: shop?.status || 'pending',
+      isVerified: shop?.is_verified || false,
+      shopId: shop?.shop_id || '',
+      ownerName: shop?.owner_name || '',
+      ownerEmail: shop?.owner_email || '',
+      status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
       password: '',  // Don't pre-fill password
-      phoneNumber: shop?.phoneNumber || '',
+      phoneNumber: shop?.phone_number || '',
     },
   });
 

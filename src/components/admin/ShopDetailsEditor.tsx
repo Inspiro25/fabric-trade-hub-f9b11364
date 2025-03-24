@@ -30,7 +30,7 @@ interface ShopDetailsEditorProps {
 const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logo, setLogo] = useState(shop.logo);
-  const [coverImage, setCoverImage] = useState(shop.coverImage);
+  const [coverImage, setCoverImage] = useState(shop.cover_image);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -48,7 +48,7 @@ const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
       const updateData = {
         ...data,
         logo,
-        coverImage
+        cover_image: coverImage
       };
       
       const success = await updateShop(shop.id, updateData);

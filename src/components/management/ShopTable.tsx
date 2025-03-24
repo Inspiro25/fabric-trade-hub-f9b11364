@@ -65,7 +65,7 @@ const ShopTable: React.FC<ShopTableProps> = ({
               
               {!isMobile && (
                 <TableCell>
-                  {shop.ownerName || "No owner assigned"}
+                  {shop.owner_name || "No owner assigned"}
                 </TableCell>
               )}
               
@@ -85,7 +85,7 @@ const ShopTable: React.FC<ShopTableProps> = ({
               
               {!isMobile && (
                 <TableCell>
-                  {shop.isVerified ? 
+                  {shop.is_verified ? 
                     <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                       Verified
                     </Badge> : 

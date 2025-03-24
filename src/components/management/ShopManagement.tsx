@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -13,18 +14,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Shop } from '@/lib/shops/types';
 
 const shopFormSchema = z.object({
   name: z.string().min(2, { message: "Shop name must be at least 2 characters." }).max(50),
-  status: z.enum(["active", "pending", "suspended"]).optional().default("pending"),
+  status: z.enum(["active", "pending", "suspended"]).default("pending"),
   address: z.string().optional(),
   password: z.string().optional(),
   description: z.string().optional(),
@@ -32,19 +34,19 @@ const shopFormSchema = z.object({
   shopId: z.string().optional(),
   coverImage: z.string().optional(),
   ownerName: z.string().optional(),
-  ownerEmail: z.string().optional().email({ message: "Please enter a valid email" }).or(z.literal('')),
+  ownerEmail: z.string().email({ message: "Please enter a valid email" }).optional(),
   phoneNumber: z.string().optional(),
-  isVerified: z.boolean().optional().default(false),
+  isVerified: z.boolean().default(false),
 });
 
 type ShopFormValues = z.infer<typeof shopFormSchema>;
 
 const ShopManagement: React.FC = () => {
-  const [shops, setShops] = useState<any[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddingShop, setIsAddingShop] = useState(false);
-  const [selectedShop, setSelectedShop] = useState<any | null>(null);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [shopToDelete, setShopToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -100,24 +102,24 @@ const ShopManagement: React.FC = () => {
   
   const handleAddShop = async (data: ShopFormValues) => {
     try {
+      const shopData = {
+        name: data.name,
+        status: data.status,
+        address: data.address || '',
+        description: data.description || '',
+        logo: data.logo || '',
+        shop_id: data.shopId || '',
+        cover_image: data.coverImage || '',
+        owner_name: data.ownerName || '',
+        owner_email: data.ownerEmail || '',
+        phone_number: data.phoneNumber || '',
+        is_verified: data.isVerified || false,
+        password: data.password || ''
+      };
+      
       const { data: newShop, error } = await supabase
         .from('shops')
-        .insert([
-          {
-            name: data.name,
-            status: data.status,
-            address: data.address,
-            description: data.description,
-            logo: data.logo,
-            shop_id: data.shopId,
-            cover_image: data.coverImage,
-            owner_name: data.ownerName,
-            owner_email: data.ownerEmail,
-            phone_number: data.phoneNumber,
-            is_verified: data.isVerified,
-            password: data.password
-          }
-        ])
+        .insert([shopData])
         .select()
         .single();
         
@@ -137,29 +139,31 @@ const ShopManagement: React.FC = () => {
     if (!selectedShop) return;
     
     try {
+      const shopData = {
+        name: data.name,
+        status: data.status,
+        address: data.address || '',
+        description: data.description || '',
+        logo: data.logo || '',
+        shop_id: data.shopId || '',
+        cover_image: data.coverImage || '',
+        owner_name: data.ownerName || '',
+        owner_email: data.ownerEmail || '',
+        phone_number: data.phoneNumber || '',
+        is_verified: data.isVerified,
+        password: data.password
+      };
+      
       const { error } = await supabase
         .from('shops')
-        .update({
-          name: data.name,
-          status: data.status,
-          address: data.address,
-          description: data.description,
-          logo: data.logo,
-          shop_id: data.shopId,
-          cover_image: data.coverImage,
-          owner_name: data.ownerName,
-          owner_email: data.ownerEmail,
-          phone_number: data.phoneNumber,
-          is_verified: data.isVerified,
-          password: data.password
-        })
+        .update(shopData)
         .eq('id', selectedShop.id);
         
       if (error) throw error;
       
       setShops(shops.map(shop => 
         shop.id === selectedShop.id 
-          ? { ...shop, ...data, shop_id: data.shopId, cover_image: data.coverImage, owner_name: data.ownerName, owner_email: data.ownerEmail, phone_number: data.phoneNumber, is_verified: data.isVerified } 
+          ? { ...shop, ...shopData } 
           : shop
       ));
       
@@ -199,11 +203,11 @@ const ShopManagement: React.FC = () => {
     }
   };
   
-  const handleEdit = (shop: any) => {
+  const handleEdit = (shop: Shop) => {
     setSelectedShop(shop);
     form.reset({
       name: shop.name,
-      status: shop.status || "pending",
+      status: shop.status as "active" | "pending" | "suspended",
       address: shop.address || "",
       description: shop.description || "",
       logo: shop.logo || "",
@@ -228,7 +232,7 @@ const ShopManagement: React.FC = () => {
     setIsConfirmDeleteOpen(true);
   };
   
-  const handleShopLogin = (shop: any) => {
+  const handleShopLogin = (shop: Shop) => {
     sessionStorage.setItem('adminShopId', shop.id);
     navigate('/admin/dashboard');
   };

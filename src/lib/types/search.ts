@@ -1,166 +1,105 @@
-import { SearchPageProduct } from '@/hooks/search/types';
 
-export type SortOption = 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity' | 'relevance';
-
-export interface ProductFilters {
-  query?: string;
+export interface SearchPageProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  sale_price?: number | null;
+  salePrice?: number;
+  images: string[];
+  category_id?: string;
   category?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  minRating?: number;
-  sortBy?: SortOption;
-  page?: number;
-  limit?: number;
-  shop?: string;
+  colors?: string[];
+  sizes?: string[];
+  is_new?: boolean;
+  isNew?: boolean;
+  is_trending?: boolean;
+  isTrending?: boolean;
+  rating?: number;
+  review_count?: number;
+  reviewCount?: number;
+  stock?: number;
+  tags?: string[];
+  shop_id?: string;
+  shop?: {
+    id: string;
+    name: string;
+    logo?: string;
+  } | null;
+  // Additional frontend properties
+  image?: string;
 }
 
-export interface SearchFilterReturn {
-  query: string;
-  setQuery: (query: string) => void;
-  category: string | null;
-  setCategory: (category: string | null) => void;
-  priceRange: number[];
-  setPriceRange: (range: number[]) => void;
-  ratings: number | null;
-  setRatings: (rating: number | null) => void;
-  sortOption: SortOption;
-  setSortOption: (option: SortOption) => void;
-  viewMode: 'grid' | 'list';
-  setViewMode: (mode: 'grid' | 'list') => void;
-  resetFilters: () => void;
-  // Filter options from useSearchFilters
-  selectedCategory: string | null;
-  selectedShop: string | null;
-  rating: number | null;
-  brandFilters: string[];
-  discountFilters: string[];
-  availabilityFilters: {
-    inStock: boolean;
-    fastDelivery: boolean;
-    dealOfDay: boolean;
-  };
-  mobileFiltersOpen: boolean;
-  setMobileFiltersOpen: (open: boolean) => void;
-  mobileSortOpen: boolean;
-  setMobileSortOpen: (open: boolean) => void;
-  handleCategoryChange: (category: string | null) => void;
-  handleShopChange: (shop: string | null) => void;
-  handlePriceRangeChange: (value: number[]) => void;
-  handleRatingChange: (value: number | null) => void;
-  handleSortChange: (value: string) => void;
-  handleViewModeChange: (mode: 'grid' | 'list') => void;
-  toggleBrandFilter: (brand: string) => void;
-  toggleDiscountFilter: (discount: string) => void;
-  handleAvailabilityFilterChange: (key: string) => void;
-  clearFilters: () => void;
-  filterProducts: (products: any[]) => any[];
-  sortProducts: (products: any[]) => any[];
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
 }
 
-export interface SearchDataReturn {
+export interface Shop {
+  id: string;
+  name: string;
+  description?: string;
+  logo?: string;
+  cover_image?: string;
+  rating?: number;
+  review_count?: number;
+  followers_count?: number;
+}
+
+// Base ProductCard props that all variants share
+export interface ProductCardBaseProps {
+  product: SearchPageProduct;
+  isAddingToCart?: boolean;
+  isAddingToWishlist?: boolean;
+  onAddToCart?: (product: SearchPageProduct) => void;
+  onAddToWishlist?: (product: SearchPageProduct) => void;
+  onShare?: (product: SearchPageProduct) => void;
+  onClick?: (product: SearchPageProduct) => void;
+  buttonColor?: string;
+  viewMode?: 'grid' | 'list';
+  isCompact?: boolean;
+  highlight?: string;
+}
+
+export interface SearchFiltersProps {
+  categories?: Category[];
+  priceRanges?: { id: string; name: string; min: number; max: number }[];
+  ratings?: { id: string; name: string; value: number }[];
+  activeFilters: string[];
+  onFilterChange: (filters: string[]) => void;
+}
+
+export interface SearchResultsProps {
   products: SearchPageProduct[];
-  categories: any[];
-  shops: any[];
-  loading: boolean;
-  error: string | null;
-  initialLoad: boolean;
-  fetchData: () => Promise<void>;
+  isLoading?: boolean;
+  error?: string;
   totalProducts: number;
-  pageCount: number;
+  isAddingToCart?: string;
+  isAddingToWishlist?: string;
+  onAddToCart?: (product: SearchPageProduct) => void;
+  onAddToWishlist?: (product: SearchPageProduct) => void;
+  onShareProduct?: (product: SearchPageProduct) => void;
+  onProductClick?: (product: SearchPageProduct) => void;
+  onSelectProduct?: (id: string) => void;
+  onRetry?: () => void;
   currentPage: number;
-  setCurrentPage: (page: number) => void;
-  resultsPerPage: number;
-  setResultsPerPage: (items: number) => void;
+  onPageChange: (page: number) => void;
+  itemsPerPage: number;
+  onItemsPerPageChange: (count: number) => void;
+  viewMode: 'grid' | 'list';
+  onViewModeChange: (mode: 'grid' | 'list') => void;
 }
 
-export interface SearchReturn {
-  // Search state
-  query: string;
-  setQuery: (query: string) => void;
-  category: string | null;
-  setCategory: (category: string | null) => void;
-  priceRange: number[];
-  setPriceRange: (range: number[]) => void;
-  ratings: number | null;
-  setRatings: (rating: number | null) => void;
-  sortOption: SortOption;
-  setSortOption: (option: SortOption) => void;
-  viewMode: 'grid' | 'list';
-  setViewMode: (mode: 'grid' | 'list') => void;
-  
-  // Results state
-  products: SearchPageProduct[];
-  isLoading: boolean;
-  error: string | null;
-  totalProducts: number;
-  pageCount: number;
-  
-  // Pagination
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
-  resultsPerPage: number;
-  setResultsPerPage: (items: number) => void;
-  
-  // Search status
-  hasSearched: boolean;
-  executeSearch: () => Promise<any>;
-  resetFilters: () => void;
-  
-  // Cart integration
-  handleAddToCart: (product: SearchPageProduct) => void;
-  
-  // Search history
-  searchHistory: any[];
-  clearSearchHistoryItem: (id: string) => void;
-  clearAllSearchHistory: () => void;
-  saveSearchHistory: (query: string) => void;
-  
-  // Recommendations
-  recommendations: SearchPageProduct[];
-  
-  // From useSearchFilters
-  selectedCategory: string | null;
-  selectedShop: string | null;
-  rating: number | null;
-  mobileFiltersOpen: boolean;
-  setMobileFiltersOpen: (open: boolean) => void;
-  mobileSortOpen: boolean;
-  setMobileSortOpen: (open: boolean) => void;
-  handleCategoryChange: (category: string | null) => void;
-  handleShopChange: (shop: string | null) => void;
-  handlePriceRangeChange: (value: number[]) => void;
-  handleRatingChange: (value: number | null) => void;
-  handleSortChange: (value: string) => void;
-  handleViewModeChange: (mode: 'grid' | 'list') => void;
-  clearFilters: () => void;
-  
-  // Additional features
-  isAddingToCart: string | null;
-  isAddingToWishlist: string | null;
-  handleAddToWishlist: (product: SearchPageProduct) => void;
-  handleShareProduct: (product: SearchPageProduct) => void;
-  isDialogOpen: boolean;
-  setIsDialogOpen: (open: boolean) => void;
-  isShareDialogOpen: boolean;
-  setIsShareDialogOpen: (open: boolean) => void;
-  shareableLink: string;
-  initialLoad: boolean;
-  recentlyViewed: SearchPageProduct[];
-  popularSearches: string[];
-  availabilityFilters: {
-    inStock: boolean;
-    fastDelivery: boolean;
-    dealOfDay: boolean;
-  };
-  handleAvailabilityFilterChange: (key: string) => void;
-  brandFilters: string[];
-  toggleBrandFilter: (brand: string) => void;
-  discountFilters: string[];
-  toggleDiscountFilter: (discount: string) => void;
-  fetchData: () => Promise<void>;
-  handleLogin: () => void;
-  
-  // Additional data-related properties needed by the search page
-  categories: any[];
-  shops: any[];
+export interface SearchRecommendationsProps {
+  recommendedProducts: SearchPageProduct[];
+  isAddingToCart?: string;
+  isAddingToWishlist?: string;
+  onAddToCart?: (product: SearchPageProduct) => void;
+  onAddToWishlist?: (product: SearchPageProduct) => void;
+  onShareProduct?: (product: SearchPageProduct) => void;
+  onSelectProduct?: (id: string) => void;
+  title?: string;
+  emptyStateMessage?: string;
 }

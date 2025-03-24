@@ -48,7 +48,7 @@ const ShopInfoCard: React.FC<ShopInfoCardProps> = ({ shop }) => {
             <User className="h-4 w-4 text-gray-500 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400">Owner</p>
-              <p className="font-medium text-sm">{shop.ownerName}</p>
+              <p className="font-medium text-sm">{shop.owner_name}</p>
             </div>
           </div>
           
@@ -56,7 +56,7 @@ const ShopInfoCard: React.FC<ShopInfoCardProps> = ({ shop }) => {
             <Mail className="h-4 w-4 text-gray-500 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
-              <p className="font-medium text-sm break-all">{shop.ownerEmail}</p>
+              <p className="font-medium text-sm break-all">{shop.owner_email}</p>
             </div>
           </div>
           
@@ -64,7 +64,7 @@ const ShopInfoCard: React.FC<ShopInfoCardProps> = ({ shop }) => {
             <Phone className="h-4 w-4 text-gray-500 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400">Phone</p>
-              <p className="font-medium text-sm">{shop.phoneNumber || 'Not provided'}</p>
+              <p className="font-medium text-sm">{shop.phone_number || 'Not provided'}</p>
             </div>
           </div>
           
@@ -80,11 +80,11 @@ const ShopInfoCard: React.FC<ShopInfoCardProps> = ({ shop }) => {
             <Clock className="h-4 w-4 text-gray-500 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400">Joined</p>
-              <p className="font-medium text-sm">{formatDate(shop.createdAt)}</p>
+              <p className="font-medium text-sm">{formatDate(shop.created_at || '')}</p>
             </div>
           </div>
           
-          {shop.isVerified && (
+          {shop.is_verified && (
             <div className="mt-2">
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-100 text-xs dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
                 Verified Shop

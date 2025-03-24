@@ -1,39 +1,69 @@
-import { Product } from '@/lib/products';
-import { getShopById } from './crud';
-import { getShopProducts as supabaseGetShopProducts } from '@/lib/supabase/products';
-import { shops } from './mockData';
 
-// Function to get products for a shop
-export const getShopProducts = async (shopId: string, allProducts?: Product[]): Promise<Product[]> => {
+import { Shop } from "./types";
+import { supabase } from "@/integrations/supabase/client";
+
+// This is a mock function to fetch products for a shop
+export const getShopProducts = async (shopId: string) => {
   try {
-    const shop = await getShopById(shopId);
-    if (!shop) return [];
-    
-    // Get products from Supabase
-    const products = await supabaseGetShopProducts(shopId);
-    
-    if (products && products.length > 0) {
-      return products;
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('shop_id', shopId);
+      
+    if (error) {
+      console.error('Error fetching shop products:', error);
+      return [];
     }
     
-    // If allProducts was provided, use it for the fallback
-    if (allProducts && shop.productIds && shop.productIds.length > 0) {
-      return allProducts.filter(product => shop.productIds.includes(product.id));
-    }
-    
-    // Otherwise just return an empty array
-    return [];
+    return data || [];
   } catch (error) {
-    console.error(`Error fetching products for shop ${shopId}:`, error);
-    
-    // Fallback to filtering by productIds if allProducts was provided
-    if (allProducts) {
-      const shop = shops.find(s => s.id === shopId);
-      if (shop && shop.productIds && shop.productIds.length > 0) {
-        return allProducts.filter(product => shop.productIds.includes(product.id));
-      }
+    console.error('Error in getShopProducts:', error);
+    return [];
+  }
+};
+
+// The logic for adding and removing a product to/from a shop was previously 
+// using a productIds property which doesn't exist. Let's fix that:
+
+export const addProductToShop = async (shop: Shop, productId: string) => {
+  // In a real app, you would update the database
+  try {
+    // Update the product to set its shop_id to the current shop's id
+    const { error } = await supabase
+      .from('products')
+      .update({ shop_id: shop.id })
+      .eq('id', productId);
+      
+    if (error) {
+      console.error('Error adding product to shop:', error);
+      return false;
     }
     
-    return [];
+    return true;
+  } catch (error) {
+    console.error('Error in addProductToShop:', error);
+    return false;
+  }
+};
+
+export const removeProductFromShop = async (shop: Shop, productId: string) => {
+  // In a real app, you would update the database
+  try {
+    // Update the product to remove its shop_id
+    const { error } = await supabase
+      .from('products')
+      .update({ shop_id: null })
+      .eq('id', productId)
+      .eq('shop_id', shop.id); // Only if it belongs to this shop
+      
+    if (error) {
+      console.error('Error removing product from shop:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in removeProductFromShop:', error);
+    return false;
   }
 };

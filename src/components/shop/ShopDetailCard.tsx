@@ -5,7 +5,7 @@ import { MapPin, Star, CheckCircle, Calendar, ShoppingBag, Users } from 'lucide-
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { Shop } from '@/lib/shops';
+import { Shop } from '@/lib/shops/types';
 
 interface ShopDetailCardProps {
   shop: Shop;
@@ -19,14 +19,14 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
   productsCount 
 }) => {
   const { isDarkMode } = useTheme();
-  const createdDate = new Date(shop.createdAt);
+  const createdDate = new Date(shop.created_at || Date.now());
   const timeAgo = formatDistanceToNow(createdDate, { addSuffix: true });
 
   return (
     <Card className={`overflow-hidden border-none shadow-md ${isDarkMode ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-white'}`}>
       <div className="h-28 relative">
         <img 
-          src={shop.coverImage} 
+          src={shop.cover_image} 
           alt={shop.name}
           className={`w-full h-full object-cover ${isDarkMode ? 'opacity-70' : 'opacity-80'}`}
         />
@@ -45,7 +45,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
           <div className="ml-3">
             <div className="flex items-center">
               <h2 className={`text-sm font-semibold ${isDarkMode ? 'text-white' : ''}`}>{shop.name}</h2>
-              {shop.isVerified && (
+              {shop.is_verified && (
                 <CheckCircle className="h-3 w-3 text-green-500 ml-1.5" />
               )}
             </div>
@@ -54,7 +54,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
               <Star className="h-2.5 w-2.5 text-yellow-500 mr-1" />
               <span>{shop.rating.toFixed(1)}</span>
               <span className="mx-1">•</span>
-              <span>{shop.reviewCount} reviews</span>
+              <span>{shop.review_count} reviews</span>
               <span className="mx-1">•</span>
               <Users className={`h-2.5 w-2.5 ${isDarkMode ? 'text-orange-400' : 'text-orange-500'} mr-1`} />
               <span>{followersCount} followers</span>

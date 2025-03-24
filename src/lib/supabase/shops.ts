@@ -32,7 +32,10 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
       phone_number: data.phone_number || '',
       address: data.address || '',
       status: data.status || 'pending',
-      is_verified: data.is_verified || false
+      is_verified: data.is_verified || false,
+      created_at: data.created_at,
+      shop_id: data.shop_id,
+      password: data.password
     };
   } catch (error) {
     console.error('Error in getShopById:', error);
@@ -42,7 +45,7 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
 
 export const updateShop = async (
   id: string, 
-  shopData: Partial<Omit<Shop, 'id'>> & { password?: string }
+  shopData: Partial<Shop>
 ): Promise<boolean> => {
   try {
     const { error } = await supabase
@@ -58,6 +61,64 @@ export const updateShop = async (
     return true;
   } catch (error) {
     console.error('Error in updateShop:', error);
+    return false;
+  }
+};
+
+export const fetchShops = async (): Promise<Shop[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching shops:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchShops:', error);
+    return [];
+  }
+};
+
+export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .insert([shopData])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating shop:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in createShop:', error);
+    return null;
+  }
+};
+
+export const deleteShop = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('shops')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting shop:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteShop:', error);
     return false;
   }
 };
@@ -142,22 +203,7 @@ export const getShopsByIds = async (shopIds: string[]): Promise<Shop[]> => {
       return [];
     }
     
-    return (data || []).map(shop => ({
-      id: shop.id,
-      name: shop.name,
-      description: shop.description || '',
-      logo: shop.logo || '',
-      cover_image: shop.cover_image || '',
-      rating: shop.rating || 0,
-      review_count: shop.review_count || 0,
-      followers_count: shop.followers_count || 0,
-      owner_name: shop.owner_name || '',
-      owner_email: shop.owner_email || '',
-      phone_number: shop.phone_number || '',
-      address: shop.address || '',
-      status: shop.status || 'pending',
-      is_verified: shop.is_verified || false
-    }));
+    return data || [];
   } catch (error) {
     console.error('Error in getShopsByIds:', error);
     return [];
@@ -178,22 +224,7 @@ export const getPopularShops = async (limit = 5): Promise<Shop[]> => {
       return [];
     }
     
-    return (data || []).map(shop => ({
-      id: shop.id,
-      name: shop.name,
-      description: shop.description || '',
-      logo: shop.logo || '',
-      cover_image: shop.cover_image || '',
-      rating: shop.rating || 0,
-      review_count: shop.review_count || 0,
-      followers_count: shop.followers_count || 0,
-      owner_name: shop.owner_name || '',
-      owner_email: shop.owner_email || '',
-      phone_number: shop.phone_number || '',
-      address: shop.address || '',
-      status: shop.status || 'pending',
-      is_verified: shop.is_verified || false
-    }));
+    return data || [];
   } catch (error) {
     console.error('Error in getPopularShops:', error);
     return [];
