@@ -1,19 +1,33 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
-import { updateShop } from '@/lib/supabase/shops';
-import { Shop } from '@/lib/shops/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
-import FileUpload from '@/components/ui/file-upload';
+import { supabase } from '@/integrations/supabase/client';
+import { Shop } from '@/lib/shops/types';
+import { updateShop } from '@/lib/supabase/shops';
+import { Loader } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const shopSettingsSchema = z.object({
+  name: z.string().min(2, { message: "Shop name must be at least 2 characters." }),
+  description: z.string().optional(),
+  logo: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal('')),
+  coverImage: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal('')),
+  ownerName: z.string().optional(),
+  ownerEmail: z.string().email({ message: "Please enter a valid email" }).optional().or(z.literal('')),
+  phoneNumber: z.string().optional(),
+  address: z.string().optional(),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }).optional().or(z.literal('')),
+});
+
+type ShopSettingsFormValues = z.infer<typeof shopSettingsSchema>;
 
 interface ShopSettingsProps {
   shop: Shop;
@@ -21,227 +35,390 @@ interface ShopSettingsProps {
 }
 
 const ShopSettings: React.FC<ShopSettingsProps> = ({ shop, onUpdateSuccess }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [logo, setLogo] = useState<string>(shop.logo || '');
-  const [coverImage, setCoverImage] = useState<string>(shop.coverImage || '');
-  const { isDarkMode } = useTheme();
-  const isMobile = useIsMobile();
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('basic');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+  const form = useForm<ShopSettingsFormValues>({
+    resolver: zodResolver(shopSettingsSchema),
     defaultValues: {
-      name: shop.name,
-      description: shop.description,
-      address: shop.address,
-      phoneNumber: shop.phoneNumber || '',
-      ownerName: shop.ownerName,
-      ownerEmail: shop.ownerEmail,
+      name: shop.name || '',
+      description: shop.description || '',
+      logo: shop.logo || '',
+      coverImage: shop.cover_image || '',
+      ownerName: shop.owner_name || '',
+      ownerEmail: shop.owner_email || '',
+      phoneNumber: shop.phone_number || '',
+      address: shop.address || '',
       password: '',
-      isVerified: shop.isVerified
-    }
+    },
   });
-
-  const onSubmit = async (data: any) => {
-    setIsSubmitting(true);
+  
+  const uploadImage = async (file: File, path: string): Promise<string> => {
     try {
-      // Update shop data with new logo/cover if changed
-      const updateData = {
-        ...data,
-        logo,
-        coverImage
-      };
+      // Check if shops bucket exists, create if not
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const shopsBucket = buckets?.find(b => b.name === 'shops');
       
-      const success = await updateShop(shop.id, updateData);
-      
-      if (success) {
-        toast.success('Shop settings updated successfully');
-        if (onUpdateSuccess) {
-          onUpdateSuccess();
-        }
-      } else {
-        toast.error('Failed to update shop settings');
+      if (!shopsBucket) {
+        await supabase.storage.createBucket('shops', {
+          public: true
+        });
       }
+      
+      // Upload the file
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${shop.id}/${path}_${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('shops')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Get the public URL
+      const { data: publicUrl } = supabase.storage
+        .from('shops')
+        .getPublicUrl(data.path);
+      
+      return publicUrl.publicUrl;
     } catch (error) {
-      console.error('Error updating shop:', error);
-      toast.error('An error occurred while updating settings');
-    } finally {
-      setIsSubmitting(false);
+      console.error(`Error uploading ${path} image:`, error);
+      toast.error(`Failed to upload ${path} image`);
+      throw error;
     }
   };
-
-  return (
-    <div className="space-y-6">
-      <Card className={cn(
-        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-      )}>
-        <CardHeader>
-          <CardTitle>Shop Settings</CardTitle>
-          <CardDescription>
-            Update your shop information and appearance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Shop Name</Label>
-                <Input 
-                  id="name" 
-                  placeholder="Enter shop name" 
-                  {...register("name", { required: "Shop name is required" })}
-                  className={cn(
-                    errors.name && "border-red-500",
-                    isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                  )}
-                />
-                {errors.name && <p className="text-red-500 text-sm">{errors.name.message as string}</p>}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input 
-                  id="phoneNumber" 
-                  placeholder="Enter phone number" 
-                  {...register("phoneNumber")}
-                  className={cn(
-                    isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                  )}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
-                placeholder="Enter shop description" 
-                {...register("description", { required: "Description is required" })}
-                className={cn(
-                  errors.description && "border-red-500",
-                  isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                )}
-                rows={4}
-              />
-              {errors.description && <p className="text-red-500 text-sm">{errors.description.message as string}</p>}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input 
-                id="address" 
-                placeholder="Enter shop address" 
-                {...register("address", { required: "Address is required" })}
-                className={cn(
-                  errors.address && "border-red-500",
-                  isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                )}
-              />
-              {errors.address && <p className="text-red-500 text-sm">{errors.address.message as string}</p>}
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ownerName">Owner Name</Label>
-                <Input 
-                  id="ownerName" 
-                  placeholder="Enter owner name" 
-                  {...register("ownerName", { required: "Owner name is required" })}
-                  className={cn(
-                    errors.ownerName && "border-red-500",
-                    isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                  )}
-                />
-                {errors.ownerName && <p className="text-red-500 text-sm">{errors.ownerName.message as string}</p>}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ownerEmail">Owner Email</Label>
-                <Input 
-                  id="ownerEmail" 
-                  placeholder="Enter owner email" 
-                  {...register("ownerEmail", { 
-                    required: "Owner email is required",
-                    pattern: {
-                      value: /\S+@\S+\.\S+/,
-                      message: "Invalid email address"
-                    }
-                  })}
-                  className={cn(
-                    errors.ownerEmail && "border-red-500",
-                    isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                  )}
-                />
-                {errors.ownerEmail && <p className="text-red-500 text-sm">{errors.ownerEmail.message as string}</p>}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">New Password (leave empty to keep current)</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="Enter new password (optional)" 
-                {...register("password")}
-                className={cn(
-                  isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-                )}
-              />
-            </div>
-            
-            <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+  
+  const onSubmit = async (data: ShopSettingsFormValues) => {
+    setIsLoading(true);
+    
+    try {
+      let logoUrl = data.logo;
+      let coverImageUrl = data.coverImage;
       
-      <Card className={cn(
-        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-      )}>
-        <CardHeader>
-          <CardTitle>Shop Appearance</CardTitle>
-          <CardDescription>
-            Update your shop logo and cover image
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="logo">Shop Logo</Label>
-              <FileUpload
-                initialImage={logo}
-                onUploadComplete={setLogo}
-                bucketName="shops"
-                folderPath="logos"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Upload a square logo image for your shop (recommended: 400x400px)
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="coverImage">Cover Image</Label>
-              <FileUpload
-                initialImage={coverImage}
-                onUploadComplete={setCoverImage}
-                bucketName="shops"
-                folderPath="covers"
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Upload a banner image for your shop (recommended: 1200x400px)
-              </p>
-            </div>
-          </div>
+      // Upload logo if a new one was selected
+      if (logoFile) {
+        logoUrl = await uploadImage(logoFile, 'logo');
+      }
+      
+      // Upload cover image if a new one was selected
+      if (coverFile) {
+        coverImageUrl = await uploadImage(coverFile, 'cover');
+      }
+      
+      const updatedShopData = {
+        name: data.name,
+        description: data.description,
+        logo: logoUrl,
+        cover_image: coverImageUrl,
+        owner_name: data.ownerName,
+        owner_email: data.ownerEmail,
+        phone_number: data.phoneNumber,
+        address: data.address,
+      };
+      
+      // Only include password if it was provided
+      if (data.password) {
+        Object.assign(updatedShopData, { password: data.password });
+      }
+      
+      // Update the shop in the database
+      await updateShop(shop.id, updatedShopData);
+      
+      toast.success('Shop settings updated successfully');
+      
+      if (onUpdateSuccess) {
+        onUpdateSuccess();
+      }
+    } catch (error) {
+      console.error('Error updating shop settings:', error);
+      toast.error('Failed to update shop settings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setLogoFile(e.target.files[0]);
+    }
+  };
+  
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setCoverFile(e.target.files[0]);
+    }
+  };
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Shop Settings</CardTitle>
+        <CardDescription>Manage your shop details and information</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="branding">Branding</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
+          </TabsList>
           
-          <Button 
-            onClick={handleSubmit(onSubmit)} 
-            disabled={isSubmitting} 
-            className="w-full md:w-auto mt-4"
-          >
-            {isSubmitting ? "Saving..." : "Update Appearance"}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <TabsContent value="basic" className="m-0">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Shop Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your shop name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Tell customers about your shop..."
+                            className="min-h-32" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          A brief description of your shop and what you offer
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="branding" className="m-0">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="logo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Logo URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          You can provide a URL or upload a new image
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <FormLabel>Upload New Logo</FormLabel>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        className="mt-1"
+                      />
+                      {logoFile && (
+                        <p className="text-xs text-green-600 mt-1">
+                          New logo selected: {logoFile.name}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {shop.logo && (
+                      <div className="flex items-center">
+                        <div className="w-16 h-16 overflow-hidden rounded-md">
+                          <img 
+                            src={shop.logo} 
+                            alt="Current logo" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="ml-2 text-sm text-gray-500">Current Logo</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="coverImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cover Image URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          A banner image to display at the top of your shop page
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <FormLabel>Upload New Cover Image</FormLabel>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverChange}
+                        className="mt-1"
+                      />
+                      {coverFile && (
+                        <p className="text-xs text-green-600 mt-1">
+                          New cover image selected: {coverFile.name}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {shop.cover_image && (
+                      <div>
+                        <span className="text-sm text-gray-500">Current Cover Image:</span>
+                        <div className="w-full h-24 overflow-hidden rounded-md mt-1">
+                          <img 
+                            src={shop.cover_image} 
+                            alt="Current cover" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="contact" className="m-0">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="ownerName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Owner/Manager Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="ownerEmail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contact Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="example@example.com" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          Used for order notifications and customer inquiries
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Phone Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="+1234567890" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Business Address</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="123 Main St, City, Country" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="security" className="m-0">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Update Password</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            placeholder="New password (leave blank to keep current)" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter a new password to change your login credentials
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="border p-4 rounded-md bg-yellow-50">
+                    <h3 className="text-sm font-medium text-amber-800">Security Information</h3>
+                    <p className="text-sm text-amber-700 mt-1">
+                      For enhanced security measures such as two-factor authentication, please contact the platform administrator.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };
 

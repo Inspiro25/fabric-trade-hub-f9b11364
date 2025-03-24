@@ -1,329 +1,620 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Plus, Edit, Trash, Check, X, Search } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shop } from '@/lib/shops/types';
-import { createShop, updateShop, getShopById } from '@/lib/supabase/shops';
-import { ArrowLeft } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { ShopFormValues } from '@/components/management/ShopForm';
+import { Textarea } from '@/components/ui/textarea';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
-// Define the schema to match exactly with ShopFormValues
-const shopSchema = yup.object({
-  name: yup.string().required('Shop name is required'),
-  description: yup.string().required('Description is required'),
-  logo: yup.string().required('Logo URL is required'),
-  coverImage: yup.string().required('Cover image URL is required'),
-  address: yup.string().required('Address is required'),
-  isVerified: yup.boolean().required(),
-  shopId: yup.string().required('Shop ID is required'),
-  ownerName: yup.string().required('Owner name is required'),
-  ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
-  status: yup.string().oneOf(['active', 'pending', 'suspended']).required('Status is required'),
-  password: yup.string().required('Password is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
+const shopFormSchema = z.object({
+  name: z.string().min(2, { message: "Shop name must be at least 2 characters." }).max(50),
+  status: z.enum(["active", "pending", "suspended"]).optional().default("pending"),
+  address: z.string().optional(),
+  password: z.string().optional(),
+  description: z.string().optional(),
+  logo: z.string().optional(),
+  shopId: z.string().optional(),
+  coverImage: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerEmail: z.string().optional().email({ message: "Please enter a valid email" }).or(z.literal('')),
+  phoneNumber: z.string().optional(),
+  isVerified: z.boolean().optional().default(false),
 });
 
-type ShopSchemaType = yup.InferType<typeof shopSchema>;
+type ShopFormValues = z.infer<typeof shopFormSchema>;
 
 const ShopManagement: React.FC = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shops, setShops] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isAddingShop, setIsAddingShop] = useState(false);
+  const [selectedShop, setSelectedShop] = useState<any | null>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [shopToDelete, setShopToDelete] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [shopData, setShopData] = useState<Shop | null>(null);
-  const shopId = sessionStorage.getItem('adminShopId');
-  const isMobile = useIsMobile();
-
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<ShopFormValues>({
-    resolver: yupResolver<ShopSchemaType>(shopSchema),
+  const { isDarkMode } = useTheme();
+  
+  const form = useForm<ShopFormValues>({
+    resolver: zodResolver(shopFormSchema),
     defaultValues: {
-      name: '',
-      description: '',
-      logo: '',
-      coverImage: '',
-      address: '',
+      name: "",
+      status: "pending",
+      address: "",
+      description: "",
+      logo: "",
+      shopId: "",
+      coverImage: "",
+      ownerName: "",
+      ownerEmail: "",
+      phoneNumber: "",
       isVerified: false,
-      shopId: '',
-      ownerName: '',
-      ownerEmail: '',
-      status: 'pending',
-      password: '',
-      phoneNumber: '',
-    },
-  });
-
-  useEffect(() => {
-    const fetchShopData = async () => {
-      if (shopId) {
-        const shop = await getShopById(shopId);
-        if (shop) {
-          setShopData(shop);
-          setValue('name', shop.name);
-          setValue('description', shop.description);
-          setValue('logo', shop.logo);
-          setValue('coverImage', shop.coverImage);
-          setValue('address', shop.address);
-          setValue('isVerified', shop.isVerified);
-          setValue('shopId', shop.shopId || '');
-          setValue('ownerName', shop.ownerName);
-          setValue('ownerEmail', shop.ownerEmail);
-          setValue('status', shop.status);
-          setValue('password', shop.password || '');
-          setValue('phoneNumber', shop.phoneNumber || '');
-        } else {
-          toast.error('Shop not found');
-          navigate('/admin/login');
-        }
-      }
-    };
-
-    fetchShopData();
-  }, [shopId, setValue, navigate]);
-
-  const submitForm = async (data: ShopFormValues) => {
-    try {
-      setIsSubmitting(true);
-    
-      const shopData: Omit<Shop, 'id'> = {
-        name: data.name,
-        description: data.description,
-        logo: data.logo,
-        coverImage: data.coverImage,
-        address: data.address,
-        ownerName: data.ownerName,
-        ownerEmail: data.ownerEmail,
-        phoneNumber: data.phoneNumber, 
-        status: data.status as 'active' | 'pending' | 'suspended',
-        isVerified: data.isVerified || false,
-        rating: 0,
-        reviewCount: 0,
-        followers: 0,
-        followers_count: 0,
-        productIds: [],
-        createdAt: new Date().toISOString(),
-        shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
-        password: data.password,
-      };
-    
-      if (shopId) {
-        const success = await updateShop(shopId, shopData);
-        if (success) {
-          toast.success('Shop updated successfully');
-        } else {
-          toast.error('Failed to update shop');
-        }
-      } else {
-        const newShopId = await createShop(shopData);
-        if (newShopId) {
-          toast.success('Shop created successfully');
-          navigate(`/admin/dashboard`);
-        } else {
-          toast.error('Failed to create shop');
-        }
-      }
-    } catch (error) {
-      console.error('Error creating/updating shop:', error);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+  
+  useEffect(() => {
+    fetchShops();
+  }, []);
+  
+  const fetchShops = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('shops')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      
+      setShops(data || []);
+    } catch (error) {
+      console.error('Error fetching shops:', error);
+      toast.error('Failed to load shops');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const filteredShops = searchQuery 
+    ? shops.filter(shop => 
+        shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shop.owner_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shop.owner_email?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : shops;
+  
+  const handleAddShop = async (data: ShopFormValues) => {
+    try {
+      const { data: newShop, error } = await supabase
+        .from('shops')
+        .insert([
+          {
+            name: data.name,
+            status: data.status,
+            address: data.address,
+            description: data.description,
+            logo: data.logo,
+            shop_id: data.shopId,
+            cover_image: data.coverImage,
+            owner_name: data.ownerName,
+            owner_email: data.ownerEmail,
+            phone_number: data.phoneNumber,
+            is_verified: data.isVerified,
+            password: data.password
+          }
+        ])
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      setShops([newShop, ...shops]);
+      setIsAddingShop(false);
+      form.reset();
+      toast.success('Shop added successfully');
+    } catch (error) {
+      console.error('Error adding shop:', error);
+      toast.error('Failed to add shop');
+    }
+  };
+  
+  const handleEditShop = async (data: ShopFormValues) => {
+    if (!selectedShop) return;
+    
+    try {
+      const { error } = await supabase
+        .from('shops')
+        .update({
+          name: data.name,
+          status: data.status,
+          address: data.address,
+          description: data.description,
+          logo: data.logo,
+          shop_id: data.shopId,
+          cover_image: data.coverImage,
+          owner_name: data.ownerName,
+          owner_email: data.ownerEmail,
+          phone_number: data.phoneNumber,
+          is_verified: data.isVerified,
+          password: data.password
+        })
+        .eq('id', selectedShop.id);
+        
+      if (error) throw error;
+      
+      setShops(shops.map(shop => 
+        shop.id === selectedShop.id 
+          ? { ...shop, ...data, shop_id: data.shopId, cover_image: data.coverImage, owner_name: data.ownerName, owner_email: data.ownerEmail, phone_number: data.phoneNumber, is_verified: data.isVerified } 
+          : shop
+      ));
+      
+      setSelectedShop(null);
+      form.reset();
+      toast.success('Shop updated successfully');
+    } catch (error) {
+      console.error('Error updating shop:', error);
+      toast.error('Failed to update shop');
+    }
+  };
+  
+  const handleDeleteShop = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('shops')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      setShops(shops.filter(shop => shop.id !== id));
+      setIsConfirmDeleteOpen(false);
+      setShopToDelete(null);
+      toast.success('Shop deleted successfully');
+    } catch (error) {
+      console.error('Error deleting shop:', error);
+      toast.error('Failed to delete shop');
+    }
+  };
+  
+  const handleShopFormSubmit = (data: ShopFormValues) => {
+    if (selectedShop) {
+      handleEditShop(data);
+    } else {
+      handleAddShop(data);
+    }
+  };
+  
+  const handleEdit = (shop: any) => {
+    setSelectedShop(shop);
+    form.reset({
+      name: shop.name,
+      status: shop.status || "pending",
+      address: shop.address || "",
+      description: shop.description || "",
+      logo: shop.logo || "",
+      shopId: shop.shop_id || "",
+      coverImage: shop.cover_image || "",
+      ownerName: shop.owner_name || "",
+      ownerEmail: shop.owner_email || "",
+      phoneNumber: shop.phone_number || "",
+      isVerified: shop.is_verified || false,
+      password: ""
+    });
+  };
+  
+  const handleCancelForm = () => {
+    setSelectedShop(null);
+    setIsAddingShop(false);
+    form.reset();
+  };
+  
+  const confirmDelete = (id: string) => {
+    setShopToDelete(id);
+    setIsConfirmDeleteOpen(true);
+  };
+  
+  const handleShopLogin = (shop: any) => {
+    sessionStorage.setItem('adminShopId', shop.id);
+    navigate('/admin/dashboard');
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <Button
-        variant="outline"
-        size="icon"
-        className="rounded-full mb-4"
-        onClick={() => navigate('/admin/dashboard')}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="sr-only">Back to Dashboard</span>
-      </Button>
-      <h1 className="text-2xl font-semibold mb-4">
-        {shopId ? 'Edit Shop' : 'Create Shop'}
-      </h1>
-      <form onSubmit={handleSubmit(submitForm)} className="max-w-lg space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="name">Shop Name</Label>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input id="name" {...field} type="text" placeholder="Enter shop name" />
-              )}
-            />
-            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-          </div>
-          
-          <div>
-            <Label htmlFor="shopId">Shop ID</Label>
-            <Controller
-              name="shopId"
-              control={control}
-              render={({ field }) => (
-                <Input id="shopId" {...field} type="text" placeholder="Enter shop ID" />
-              )}
-            />
-            {errors.shopId && <p className="text-red-500 text-sm">{errors.shopId.message}</p>}
-          </div>
-        </div>
-        
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => (
-              <Textarea id="description" {...field} placeholder="Enter shop description" />
-            )}
-          />
-          {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="logo">Logo URL</Label>
-            <Controller
-              name="logo"
-              control={control}
-              render={({ field }) => (
-                <Input id="logo" {...field} type="url" placeholder="Enter logo URL" />
-              )}
-            />
-            {errors.logo && <p className="text-red-500 text-sm">{errors.logo.message}</p>}
-          </div>
-          
-          <div>
-            <Label htmlFor="coverImage">Cover Image URL</Label>
-            <Controller
-              name="coverImage"
-              control={control}
-              render={({ field }) => (
-                <Input id="coverImage" {...field} type="url" placeholder="Enter cover image URL" />
-              )}
-            />
-            {errors.coverImage && <p className="text-red-500 text-sm">{errors.coverImage.message}</p>}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="ownerName">Owner Name</Label>
-            <Controller
-              name="ownerName"
-              control={control}
-              render={({ field }) => (
-                <Input id="ownerName" {...field} type="text" placeholder="Enter owner name" />
-              )}
-            />
-            {errors.ownerName && <p className="text-red-500 text-sm">{errors.ownerName.message}</p>}
-          </div>
-          
-          <div>
-            <Label htmlFor="ownerEmail">Owner Email</Label>
-            <Controller
-              name="ownerEmail"
-              control={control}
-              render={({ field }) => (
-                <Input id="ownerEmail" {...field} type="email" placeholder="Enter owner email" />
-              )}
-            />
-            {errors.ownerEmail && <p className="text-red-500 text-sm">{errors.ownerEmail.message}</p>}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="phoneNumber">Phone Number</Label>
-            <Controller
-              name="phoneNumber"
-              control={control}
-              render={({ field }) => (
-                <Input id="phoneNumber" {...field} type="tel" placeholder="Enter phone number" />
-              )}
-            />
-            {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>}
-          </div>
-          
-          <div>
-            <Label htmlFor="address">Address</Label>
-            <Controller
-              name="address"
-              control={control}
-              render={({ field }) => (
-                <Input id="address" {...field} type="text" placeholder="Enter address" />
-              )}
-            />
-            {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Controller
-              name="password"
-              control={control}
-              render={({ field }) => (
-                <Input id="password" {...field} type="password" placeholder="Enter password" />
-              )}
-            />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
-          </div>
-          
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <Controller
-            name="isVerified"
-            control={control}
-            render={({ field }) => (
-              <Switch id="isVerified" checked={field.value} onCheckedChange={field.onChange} />
-            )}
-          />
-          <Label htmlFor="isVerified">Is Verified</Label>
-          {errors.isVerified && <p className="text-red-500 text-sm">{errors.isVerified.message}</p>}
-        </div>
-        
-        <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
-          {isSubmitting ? 'Submitting...' : shopId ? 'Update Shop' : 'Create Shop'}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Shop Management</h1>
+        <Button onClick={() => setIsAddingShop(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Shop
         </Button>
-      </form>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>All Shops</CardTitle>
+          <CardDescription>Manage all partner shops on the platform</CardDescription>
+          <div className="relative mt-2">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search shops..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredShops.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No shops found</p>
+              {searchQuery && (
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => setSearchQuery('')}
+                >
+                  Clear Search
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Shop Name</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredShops.map((shop) => (
+                    <TableRow key={shop.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {shop.logo ? (
+                            <img 
+                              src={shop.logo} 
+                              alt={shop.name} 
+                              className="w-8 h-8 rounded-full object-cover" 
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-xs text-gray-500">
+                                {shop.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          {shop.name}
+                          {shop.is_verified && (
+                            <Check className="h-4 w-4 text-blue-500" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <div>{shop.owner_name || "—"}</div>
+                          <div className="text-gray-500 text-xs">{shop.owner_email || "—"}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className={cn(
+                          "px-2 py-1 rounded-full text-xs inline-flex items-center",
+                          shop.status === "active" ? "bg-green-100 text-green-800" :
+                          shop.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                          "bg-red-100 text-red-800"
+                        )}>
+                          {shop.status || "pending"}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(shop)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-500"
+                            onClick={() => confirmDelete(shop.id)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleShopLogin(shop)}
+                          >
+                            Login
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      <Sheet open={isAddingShop || !!selectedShop} onOpenChange={(open) => {
+        if (!open) handleCancelForm();
+      }}>
+        <SheetContent className={cn(
+          "sm:max-w-md",
+          isDarkMode ? "dark bg-gray-900 text-white" : ""
+        )}>
+          <SheetHeader>
+            <SheetTitle>
+              {selectedShop ? "Edit Shop" : "Add New Shop"}
+            </SheetTitle>
+            <SheetDescription>
+              {selectedShop 
+                ? "Update shop details here. Click save when you're done."
+                : "Add a new shop to the platform."
+              }
+            </SheetDescription>
+          </SheetHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleShopFormSubmit)} className="space-y-4 py-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shop Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter shop name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Enter shop description" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="logo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="coverImage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cover Image URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="isVerified"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <FormLabel>Verified Shop</FormLabel>
+                      <FormDescription>
+                        Mark this shop as a verified partner
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <Separator />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="ownerName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Owner Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Shop owner's name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="ownerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Owner Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="owner@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+1234567890" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Shop's physical address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="shopId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shop ID (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Custom shop identifier" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      A unique identifier for this shop
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{selectedShop ? "New Password (leave blank to keep current)" : "Password"}</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Shop login password" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Used for shop admin login
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" type="button" onClick={handleCancelForm}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {selectedShop ? "Update Shop" : "Add Shop"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </SheetContent>
+      </Sheet>
+      
+      <Dialog open={isConfirmDeleteOpen} onOpenChange={setIsConfirmDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this shop? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsConfirmDeleteOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => shopToDelete && handleDeleteShop(shopToDelete)}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

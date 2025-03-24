@@ -1,491 +1,625 @@
+
 import React, { useState, useEffect } from 'react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Product, createProduct, updateProduct } from '@/lib/products';
-import { Save, X, Plus, Minus, TagIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import { fetchCategories } from '@/lib/supabase/products';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import MultiImageUpload from '@/components/ui/multi-image-upload';
 import { Switch } from '@/components/ui/switch';
-import { FormDescription } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import { fetchCategories, createProduct, updateProduct } from '@/lib/supabase/products';
+import { Plus, X, Loader } from 'lucide-react';
+import { Product } from '@/lib/products';
+import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
-// Validation schema
-const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  price: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "Price must be a valid number greater than 0",
-  }),
-  salePrice: z.string().refine(val => val === '' || (!isNaN(Number(val)) && Number(val) >= 0), {
-    message: "Sale price must be a valid number",
-  }).optional(),
-  category: z.string().min(1, "Category is required"),
-  stock: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
-    message: "Stock must be a valid number",
-  }),
+// Form schema for product
+const productSchema = z.object({
+  name: z.string().min(3, 'Product name must be at least 3 characters'),
+  description: z.string().optional(),
+  price: z.coerce.number().min(0, 'Price must be a positive number'),
+  salePrice: z.coerce.number().min(0).optional().nullable(),
+  stock: z.coerce.number().min(0, 'Stock must be a positive number').default(0),
+  category: z.string().optional(),
   isNew: z.boolean().default(false),
   isTrending: z.boolean().default(false),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type ProductFormValues = z.infer<typeof productSchema>;
 
 interface ProductEditorProps {
   mode: 'add' | 'edit';
-  product: Product | null;
+  product?: Product | null;
   shopId: string;
-  onSave: (data: any) => void;
+  onSave: (product: Product) => void;
   onCancel: () => void;
 }
 
-const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, onSave, onCancel }) => {
-  const [productImages, setProductImages] = useState<string[]>(
-    product?.images || []
-  );
+const ProductEditor: React.FC<ProductEditorProps> = ({ 
+  mode, 
+  product, 
+  shopId,
+  onSave,
+  onCancel
+}) => {
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('details');
+  const [images, setImages] = useState<string[]>(product?.images || []);
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [colors, setColors] = useState<string[]>(product?.colors || []);
-  const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
-  const [tags, setTags] = useState<string[]>(product?.tags || []);
   const [newColor, setNewColor] = useState('');
+  const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
   const [newSize, setNewSize] = useState('');
+  const [tags, setTags] = useState<string[]>(product?.tags || []);
   const [newTag, setNewTag] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || '',
       description: product?.description || '',
-      price: product ? String(product.price) : '',
-      salePrice: product?.salePrice ? String(product.salePrice) : '',
+      price: product?.price || 0,
+      salePrice: product?.salePrice || null,
+      stock: product?.stock || 0,
       category: product?.category || '',
-      stock: product ? String(product.stock) : '',
-      isNew: product?.isNew || mode === 'add',
+      isNew: product?.isNew || false,
       isTrending: product?.isTrending || false,
     },
   });
-
+  
+  // Fetch categories
   useEffect(() => {
-    const loadCategories = async () => {
+    const getCategories = async () => {
       try {
-        setIsLoadingCategories(true);
-        const categoriesData = await fetchCategories();
-        console.log('Categories loaded in component:', categoriesData);
-        setCategories(categoriesData);
+        const categoryData = await fetchCategories();
+        setCategories(categoryData);
       } catch (error) {
-        console.error('Failed to load categories:', error);
+        console.error('Error fetching categories:', error);
         toast.error('Failed to load categories');
-      } finally {
-        setIsLoadingCategories(false);
       }
     };
-
-    loadCategories();
+    
+    getCategories();
   }, []);
-
-  const onSubmit = async (data: FormValues) => {
-    if (productImages.length === 0) {
-      toast.error('Please add at least one product image');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      // Convert string values to numbers
-      const formattedData = {
-        name: data.name,
-        description: data.description,
-        price: Number(data.price),
-        salePrice: data.salePrice && data.salePrice !== '' ? Number(data.salePrice) : undefined,
-        stock: Number(data.stock),
-        category: data.category,
-        shopId,
-        images: productImages,
-        colors,
-        sizes,
-        tags,
-        rating: product?.rating || 4.0,
-        reviewCount: product?.reviewCount || 0,
-        isNew: data.isNew, 
-        isTrending: data.isTrending,
-      };
-      
-      let result;
-      
-      if (mode === 'add') {
-        // Create new product in database
-        const productId = await createProduct(formattedData);
-        if (productId) {
-          result = { ...formattedData, id: productId };
-          toast.success('Product created successfully');
-        } else {
-          toast.error('Failed to create product');
-          setIsSubmitting(false);
-          return;
-        }
-      } else if (product) {
-        // Update existing product
-        const success = await updateProduct(product.id, formattedData);
-        if (success) {
-          result = { ...formattedData, id: product.id };
-          toast.success('Product updated successfully');
-        } else {
-          toast.error('Failed to update product');
-          setIsSubmitting(false);
-          return;
-        }
-      }
-      
-      onSave(result);
-    } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error('An error occurred while saving the product');
-    } finally {
-      setIsSubmitting(false);
+  
+  const handleAddImage = () => {
+    if (newImageUrl && !images.includes(newImageUrl)) {
+      setImages([...images, newImageUrl]);
+      setNewImageUrl('');
     }
   };
-
-  const addColor = () => {
+  
+  const handleRemoveImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+  
+  const handleAddColor = () => {
     if (newColor && !colors.includes(newColor)) {
       setColors([...colors, newColor]);
       setNewColor('');
     }
   };
-
-  const removeColor = (colorToRemove: string) => {
-    setColors(colors.filter(color => color !== colorToRemove));
+  
+  const handleRemoveColor = (index: number) => {
+    setColors(colors.filter((_, i) => i !== index));
   };
-
-  const addSize = () => {
+  
+  const handleAddSize = () => {
     if (newSize && !sizes.includes(newSize)) {
       setSizes([...sizes, newSize]);
       setNewSize('');
     }
   };
-
-  const removeSize = (sizeToRemove: string) => {
-    setSizes(sizes.filter(size => size !== sizeToRemove));
+  
+  const handleRemoveSize = (index: number) => {
+    setSizes(sizes.filter((_, i) => i !== index));
   };
-
-  const addTag = () => {
+  
+  const handleAddTag = () => {
     if (newTag && !tags.includes(newTag)) {
       setTags([...tags, newTag]);
       setNewTag('');
     }
   };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+  
+  const handleRemoveTag = (index: number) => {
+    setTags(tags.filter((_, i) => i !== index));
   };
-
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setUploadedImages([...uploadedImages, ...filesArray]);
+    }
+  };
+  
+  const uploadImages = async (): Promise<string[]> => {
+    if (uploadedImages.length === 0) return images;
+    
+    setIsUploading(true);
+    const uploadedUrls: string[] = [...images];
+    
+    try {
+      // Check if the bucket exists, create it if it doesn't
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const productBucket = buckets?.find(b => b.name === 'products');
+      
+      if (!productBucket) {
+        await supabase.storage.createBucket('products', {
+          public: true
+        });
+      }
+      
+      // Upload each image
+      for (const file of uploadedImages) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${shopId}/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('products')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (error) {
+          console.error('Error uploading image:', error);
+          continue;
+        }
+        
+        const { data: publicUrl } = supabase.storage
+          .from('products')
+          .getPublicUrl(data.path);
+          
+        uploadedUrls.push(publicUrl.publicUrl);
+      }
+      
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Error in image upload process:', error);
+      toast.error('Some images failed to upload');
+      return uploadedUrls;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  const onSubmit = async (data: ProductFormValues) => {
+    setLoading(true);
+    
+    try {
+      const uploadedImageUrls = await uploadImages();
+      
+      const productData: Omit<Product, 'id'> = {
+        name: data.name,
+        description: data.description || '',
+        price: data.price,
+        salePrice: data.salePrice || null,
+        images: uploadedImageUrls,
+        category: data.category || '',
+        shopId: shopId,
+        colors: colors,
+        sizes: sizes,
+        isNew: data.isNew,
+        isTrending: data.isTrending,
+        stock: data.stock,
+        tags: tags,
+        rating: product?.rating || 0,
+        reviewCount: product?.reviewCount || 0,
+      };
+      
+      if (mode === 'add') {
+        const newProductId = await createProduct(productData);
+        
+        if (newProductId) {
+          toast.success('Product created successfully');
+          onSave({ id: newProductId, ...productData });
+        } else {
+          throw new Error('Failed to create product');
+        }
+      } else if (mode === 'edit' && product) {
+        const success = await updateProduct(product.id, productData);
+        
+        if (success) {
+          toast.success('Product updated successfully');
+          onSave({ id: product.id, ...productData });
+        } else {
+          throw new Error('Failed to update product');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast.error('Failed to save product');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>{mode === 'add' ? 'Add New Product' : 'Edit Product'}</CardTitle>
         <CardDescription>
           {mode === 'add' 
-            ? 'Fill in the details to add a new product to your shop inventory'
-            : 'Update the product details in your inventory'
-          }
+            ? 'Create a new product for your shop' 
+            : 'Update the details of your existing product'}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        disabled={isLoadingCategories}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.length > 0 ? (
-                            categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="details">Basic Details</TabsTrigger>
+            <TabsTrigger value="images">Images</TabsTrigger>
+            <TabsTrigger value="variants">Variants</TabsTrigger>
+            <TabsTrigger value="tags">Tags</TabsTrigger>
+          </TabsList>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <TabsContent value="details" className="space-y-4 mt-0">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter product name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Enter product description" 
+                          className="min-h-32" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="salePrice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sale Price (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            step="0.01" 
+                            placeholder="Enter sale price if on sale"
+                            value={field.value === null ? '' : field.value}
+                            onChange={(e) => {
+                              const value = e.target.value === '' ? null : parseFloat(e.target.value);
+                              field.onChange(value);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="stock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stock Quantity</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem 
+                                key={category.id} 
+                                value={category.id}
+                              >
                                 {category.name}
                               </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="no-categories" disabled>
-                              No categories available
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter product description" 
-                      className="min-h-[100px]" 
-                      {...field} 
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="isNew"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4">
+                        <div className="space-y-1">
+                          <FormLabel>Mark as New</FormLabel>
+                          <FormDescription>
+                            Display a "New" badge on this product
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isTrending"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between space-x-3 space-y-0 rounded-md border p-4">
+                        <div className="space-y-1">
+                          <FormLabel>Mark as Trending</FormLabel>
+                          <FormDescription>
+                            Show this product in trending sections
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="images" className="space-y-4 mt-0">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Current Images</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      {images.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img 
+                            src={image} 
+                            alt={`Product image ${index + 1}`}
+                            className="h-24 w-full object-cover rounded-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Add Images</h3>
+                    <div className="flex gap-2">
+                      <Input
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="Image URL"
+                        className="flex-1"
+                      />
+                      <Button type="button" onClick={handleAddImage} size="sm">
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Or upload images directly:</p>
+                    <Input 
+                      type="file" 
+                      onChange={handleFileChange} 
+                      accept="image/*" 
+                      multiple 
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price ($)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="29.99" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="salePrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sale Price ($)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Optional" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="stock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stock Quantity</FormLabel>
-                    <FormControl>
-                      <Input placeholder="50" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="isNew"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                      <FormLabel>Mark as New</FormLabel>
-                      <FormDescription className="text-xs">
-                        Highlight this product as newly added
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="isTrending"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                      <FormLabel>Mark as Trending</FormLabel>
-                      <FormDescription className="text-xs">
-                        Feature this product in trending sections
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div>
-              <FormLabel>Product Images</FormLabel>
-              <div className="mt-2">
-                <MultiImageUpload
-                  initialImages={productImages}
-                  onImagesChange={setProductImages}
-                  bucketName="products"
-                  folderPath={`shop-${shopId}`}
-                  maxFiles={6}
-                />
-              </div>
-              <p className="text-sm text-gray-500 mt-1">Upload up to 6 product images. First image will be used as the main product image.</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <FormLabel>Colors</FormLabel>
-                <div className="flex gap-2 mt-2">
-                  <Input 
-                    placeholder="Add a color" 
-                    value={newColor}
-                    onChange={(e) => setNewColor(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={addColor}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                    {uploadedImages.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium">{uploadedImages.length} images selected for upload</p>
+                        <p className="text-xs text-muted-foreground">Images will be uploaded when you save the product</p>
+                      </div>
+                    )}
+                    {isUploading && (
+                      <div className="flex items-center text-sm text-amber-600">
+                        <Loader className="animate-spin h-3 w-3 mr-2" />
+                        Uploading images...
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {colors.map(color => (
-                    <div key={color} className="flex items-center bg-gray-100 px-2 py-1 rounded-md text-xs">
-                      {color}
-                      <button
-                        type="button"
-                        onClick={() => removeColor(color)}
-                        className="ml-1 text-gray-500 hover:text-red-500"
+              </TabsContent>
+              
+              <TabsContent value="variants" className="space-y-6 mt-0">
+                {/* Colors */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Colors</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {colors.map((color, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <div 
+                          className="h-3 w-3 rounded-full" 
+                          style={{ backgroundColor: color }}
+                        ></div>
+                        <span className="text-sm">{color}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveColor(index)}
+                          className="text-gray-500 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      value={newColor}
+                      onChange={(e) => setNewColor(e.target.value)}
+                      placeholder="Add color (e.g. Red, #FF0000)"
+                      className="flex-1"
+                    />
+                    <Button type="button" onClick={handleAddColor} size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <FormLabel>Sizes</FormLabel>
-                <div className="flex gap-2 mt-2">
-                  <Input 
-                    placeholder="Add a size" 
-                    value={newSize}
-                    onChange={(e) => setNewSize(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={addSize}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {sizes.map(size => (
-                    <div key={size} className="flex items-center bg-gray-100 px-2 py-1 rounded-md text-xs">
-                      {size}
-                      <button
-                        type="button"
-                        onClick={() => removeSize(size)}
-                        className="ml-1 text-gray-500 hover:text-red-500"
+                
+                {/* Sizes */}
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Sizes</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {sizes.map((size, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <span className="text-sm">{size}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSize(index)}
+                          className="text-gray-500 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      value={newSize}
+                      onChange={(e) => setNewSize(e.target.value)}
+                      placeholder="Add size (e.g. S, M, L, XL, 38, 40)"
+                      className="flex-1"
+                    />
+                    <Button type="button" onClick={handleAddSize} size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              </TabsContent>
               
-              <div>
-                <FormLabel>Tags</FormLabel>
-                <div className="flex gap-2 mt-2">
-                  <Input 
-                    placeholder="Add a tag" 
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={addTag}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {tags.map(tag => (
-                    <div key={tag} className="flex items-center bg-gray-100 px-2 py-1 rounded-md text-xs">
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="ml-1 text-gray-500 hover:text-red-500"
+              <TabsContent value="tags" className="space-y-4 mt-0">
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Product Tags</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Tags help customers find your products and improve search results.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {tags.map((tag, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center gap-1 bg-gray-100 rounded-full px-3 py-1"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <span className="text-sm">{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(index)}
+                          className="text-gray-500 hover:text-red-500"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Add tag (e.g. summer, casual, cotton)"
+                      className="flex-1"
+                    />
+                    <Button type="button" onClick={handleAddTag} size="sm">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
                 </div>
+              </TabsContent>
+              
+              <div className="flex justify-end gap-2 mt-6">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={onCancel}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={loading || isUploading}
+                >
+                  {loading && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+                  {mode === 'add' ? 'Create Product' : 'Update Product'}
+                </Button>
               </div>
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                <Save className="mr-2 h-4 w-4" />
-                {isSubmitting 
-                  ? (mode === 'add' ? 'Creating...' : 'Saving...') 
-                  : (mode === 'add' ? 'Add Product' : 'Save Changes')
-                }
-              </Button>
-            </div>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </Tabs>
       </CardContent>
     </Card>
   );

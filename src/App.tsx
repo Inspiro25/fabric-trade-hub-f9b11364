@@ -1,94 +1,115 @@
-
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-
-// Layout components
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ShoppingCartProvider } from '@/contexts/CartContext';
+import { WishlistProvider } from '@/contexts/WishlistContext';
+import { RecentlyViewedProvider } from '@/contexts/RecentlyViewedContext';
 import MainLayout from '@/components/layout/MainLayout';
-import DashboardLayout from '@/components/management/DashboardLayout';
-
-// Main pages
-import Home from '@/pages/Index';
-import ProductDetail from '@/pages/ProductDetail';
-import Products from '@/pages/TrendingNow'; // Using TrendingNow as Products page
-import Checkout from '@/pages/Checkout';
-import NotFound from '@/pages/NotFound';
-import ShopDetail from '@/pages/ShopDetail';
-import Shops from '@/pages/Shops';
-import Cart from '@/pages/Cart';
-import Categories from '@/pages/NewArrivals'; // Using NewArrivals as Categories page
-import CategoryPage from '@/pages/CategoryPage'; // New category page
-import Login from '@/pages/Authentication'; // Using Authentication for Login
-import Register from '@/pages/Authentication'; // Using Authentication for Register too
-import ForgotPassword from '@/pages/Authentication'; // Using Authentication for ForgotPassword
-import ResetPassword from '@/pages/Authentication'; // Using Authentication for ResetPassword
-import Account from '@/pages/Profile'; // Using Profile as Account
-import AccountOrders from '@/pages/Orders'; // Using Orders as AccountOrders
-import AccountWishlist from '@/pages/Wishlist'; // Using Wishlist as AccountWishlist
-import AccountSettings from '@/pages/Settings'; // Using Settings as AccountSettings
+import AuthLayout from '@/components/layout/AuthLayout';
+import ManagementLayout from '@/components/layout/ManagementLayout';
+import Index from '@/pages/Index';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
 import Search from '@/pages/Search';
-import OrderSuccess from '@/pages/OrderConfirmation'; // Using OrderConfirmation as OrderSuccess
+import ProductDetail from '@/pages/ProductDetail';
+import CategoryPage from '@/pages/CategoryPage';
+import ShopDetail from '@/pages/ShopDetail';
+import CartPage from '@/pages/CartPage';
+import WishlistPage from '@/pages/WishlistPage';
+import CheckoutPage from '@/pages/CheckoutPage';
+import ProfilePage from '@/pages/ProfilePage';
+import FAQ from '@/pages/FAQ';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
+import NewArrivals from '@/pages/NewArrivals';
+import TrendingPage from '@/pages/TrendingPage';
+import FlashSalePage from '@/pages/FlashSalePage';
 import Offers from '@/pages/Offers';
-
-// Management pages
-import ManagementLogin from '@/pages/ManagementLogin';
-import ManagementDashboard from '@/pages/ManagementDashboard';
-import ManagementShops from '@/pages/ManagementShops';
-import ManagementUsers from '@/pages/ManagementPartners'; // Using ManagementPartners as ManagementUsers
-import ManagementAnalytics from '@/pages/ManagementShopPerformance'; // Using ManagementShopPerformance as ManagementAnalytics
-import ManagementSettings from '@/pages/Settings'; // Using Settings as ManagementSettings
-import ManagementOffers from '@/pages/ManagementOffers';
-
-// Admin pages
+import Page404 from '@/pages/Page404';
 import AdminLogin from '@/pages/AdminLogin';
 import ShopDashboard from '@/pages/ShopDashboard';
-import AdminDashboard from '@/pages/AdminDashboard';
+import ShopProductsManager from '@/pages/ShopProductsManager';
+import AdminSettings from '@/pages/AdminSettings';
+import ManagementDashboard from '@/pages/ManagementDashboard';
+import ManagementShops from '@/pages/ManagementShops';
+import ManagementCategories from '@/pages/ManagementCategories';
+import ManagementUsers from '@/pages/ManagementUsers';
+import ManagementSettings from '@/pages/ManagementSettings';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
-function App() {
+const queryClient = new QueryClient();
+
+const App: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  const { currentUser } = useAuth();
+
   return (
-    <Routes>
-      {/* Main routes */}
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<Home />} />
-        <Route path="products" element={<Products />} />
-        <Route path="products/:id" element={<ProductDetail />} />
-        <Route path="product/:id" element={<ProductDetail />} /> {/* Added this route for compatibility with ProductCard links */}
-        <Route path="shops" element={<Shops />} />
-        <Route path="shops/:id" element={<ShopDetail />} />
-        <Route path="shop/:id" element={<ShopDetail />} /> {/* Keeping this for backwards compatibility */}
-        <Route path="cart" element={<Cart />} />
-        <Route path="checkout" element={<Checkout />} />
-        <Route path="categories" element={<Categories />} />
-        <Route path="category/:categorySlug" element={<CategoryPage />} /> {/* New category page route */}
-        <Route path="search" element={<Search />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-        <Route path="account" element={<Account />} />
-        <Route path="account/orders" element={<AccountOrders />} />
-        <Route path="account/wishlist" element={<AccountWishlist />} />
-        <Route path="account/settings" element={<AccountSettings />} />
-        <Route path="order-success" element={<OrderSuccess />} />
-        <Route path="offers" element={<Offers />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-
-      {/* Management routes */}
-      <Route path="management/login" element={<ManagementLogin />} />
-      <Route path="management" element={<DashboardLayout />}>
-        <Route path="dashboard" element={<ManagementDashboard />} />
-        <Route path="shops" element={<ManagementShops />} />
-        <Route path="users" element={<ManagementUsers />} />
-        <Route path="analytics" element={<ManagementAnalytics />} />
-        <Route path="settings" element={<ManagementSettings />} />
-        <Route path="offers" element={<ManagementOffers />} />
-      </Route>
-
-      {/* Shop admin routes */}
-      <Route path="admin/login" element={<AdminLogin />} />
-      <Route path="admin/dashboard" element={<AdminDashboard />} />
-    </Routes>
+    <div className={cn("min-h-screen", isDarkMode ? "dark" : "")}>
+      <ThemeProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <ShoppingCartProvider>
+              <WishlistProvider>
+                <RecentlyViewedProvider>
+                  <Router>
+                    <Routes>
+                      <Route path="/" element={<MainLayout />}>
+                        <Route index element={<Index />} />
+                        <Route path="search" element={<Search />} />
+                        <Route path="product/:id" element={<ProductDetail />} />
+                        <Route path="category/:id" element={<CategoryPage />} />
+                        <Route path="shop/:id" element={<ShopDetail />} />
+                        <Route path="cart" element={<CartPage />} />
+                        <Route path="wishlist" element={<WishlistPage />} />
+                        <Route path="checkout" element={<CheckoutPage />} />
+                        <Route path="profile" element={<ProfilePage />} />
+                        <Route path="faq" element={<FAQ />} />
+                        <Route path="about" element={<About />} />
+                        <Route path="contact" element={<Contact />} />
+                        <Route path="new-arrivals" element={<NewArrivals />} />
+                        <Route path="trending" element={<TrendingPage />} />
+                        <Route path="flash-sale" element={<FlashSalePage />} />
+                        <Route path="offers" element={<Offers />} />
+                        <Route path="*" element={<Page404 />} />
+                      </Route>
+                      
+                      <Route path="/auth" element={<AuthLayout />}>
+                        <Route path="login" element={<Login />} />
+                        <Route path="register" element={<Register />} />
+                        <Route path="forgot-password" element={<ForgotPassword />} />
+                      </Route>
+                      
+                      {/* Admin Routes */}
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/admin/dashboard" element={<ShopDashboard />} />
+                      <Route path="/admin/products" element={<ShopProductsManager />} />
+                      <Route path="/admin/settings" element={<AdminSettings />} />
+                      
+                      {/* Management Routes */}
+                      <Route path="/management" element={<ManagementLayout />}>
+                        <Route path="dashboard" element={<ManagementDashboard />} />
+                        <Route path="shops" element={<ManagementShops />} />
+                        <Route path="categories" element={<ManagementCategories />} />
+                        <Route path="users" element={<ManagementUsers />} />
+                        <Route path="settings" element={<ManagementSettings />} />
+                      </Route>
+                    </Routes>
+                  </Router>
+                </RecentlyViewedProvider>
+              </WishlistProvider>
+            </ShoppingCartProvider>
+            <Toaster />
+          </QueryClientProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </div>
   );
-}
+};
 
 export default App;

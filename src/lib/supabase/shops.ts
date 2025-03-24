@@ -1,118 +1,55 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { Shop } from "@/lib/shops/types";
+import { supabase } from '@/integrations/supabase/client';
+import { Shop } from '@/lib/shops/types';
 
-// Function to fetch all shops from Supabase
-export const fetchShops = async (): Promise<Shop[]> => {
+export const getShopById = async (id: string): Promise<Shop | null> => {
   try {
-    const { data: shops, error } = await supabase
-      .from('shops')
-      .select('*');
-    
-    if (error) {
-      console.error('Error fetching shops:', error);
-      throw error;
-    }
-    
-    if (!shops) return [];
-    
-    return shops.map((shop: any) => ({
-      id: shop?.id || '',
-      name: shop?.name || '',
-      description: shop?.description || '',
-      logo: shop?.logo || '/placeholder.svg',
-      coverImage: shop?.cover_image || '/placeholder.svg',
-      address: shop?.address || '',
-      ownerName: shop?.owner_name || '',
-      ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', 
-      rating: shop?.rating || 0,
-      reviewCount: shop?.review_count || 0,
-      followers: shop?.followers_count || 0,
-      productIds: [], // We'll fetch products separately
-      isVerified: shop?.is_verified || false,
-      status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
-      createdAt: shop?.created_at || '',
-      shopId: shop?.shop_id || '',
-      password: shop?.password || '', 
-      followers_count: shop?.followers_count || 0, 
-    }));
-  } catch (error) {
-    console.error('Error fetching shops:', error);
-    return [];
-  }
-};
-
-// Function to get a shop by ID
-export const getShopById = async (id: string): Promise<Shop | undefined> => {
-  try {
-    const { data: shop, error } = await supabase
+    const { data, error } = await supabase
       .from('shops')
       .select('*')
       .eq('id', id)
-      .maybeSingle();
-    
+      .single();
+      
     if (error) {
-      console.error(`Error fetching shop ${id}:`, error);
-      return undefined;
+      console.error('Error fetching shop:', error);
+      return null;
     }
     
-    if (!shop) return undefined;
+    if (!data) return null;
     
+    // Map database fields to our Shop type
     return {
-      id: shop?.id || '',
-      name: shop?.name || '',
-      description: shop?.description || '',
-      logo: shop?.logo || '/placeholder.svg',
-      coverImage: shop?.cover_image || '/placeholder.svg',
-      address: shop?.address || '',
-      ownerName: shop?.owner_name || '',
-      ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', // Using the new column with a default value
-      rating: shop?.rating || 0,
-      reviewCount: shop?.review_count || 0,
-      followers: shop?.followers_count || 0,
-      productIds: [], // We'll fetch products separately
-      isVerified: shop?.is_verified || false,
-      status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
-      createdAt: shop?.created_at || '',
-      shopId: shop?.shop_id || '',
-      password: shop?.password || '', 
-      followers_count: shop?.followers_count || 0, 
+      id: data.id,
+      name: data.name,
+      description: data.description || '',
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      phone_number: data.phone_number || '',
+      address: data.address || '',
+      status: data.status || 'pending',
+      is_verified: data.is_verified || false
     };
   } catch (error) {
-    console.error(`Error fetching shop ${id}:`, error);
-    return undefined;
+    console.error('Error in getShopById:', error);
+    return null;
   }
 };
 
-// Function to update a shop
-export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<boolean> => {
+export const updateShop = async (
+  id: string, 
+  shopData: Partial<Omit<Shop, 'id'>> & { password?: string }
+): Promise<boolean> => {
   try {
-    const updateData: any = {
-      name: shopData.name,
-      description: shopData.description,
-      logo: shopData.logo,
-      cover_image: shopData.coverImage,
-      address: shopData.address,
-      is_verified: shopData.isVerified,
-      owner_name: shopData.ownerName,
-      owner_email: shopData.ownerEmail,
-      status: shopData.status,
-      shop_id: shopData.shopId,
-      phone_number: shopData.phoneNumber, // Include phone_number in the update
-    };
-
-    // Only include password in the update if it was provided
-    if (shopData.password) {
-      updateData.password = shopData.password;
-    }
-    
     const { error } = await supabase
       .from('shops')
-      .update(updateData)
+      .update(shopData)
       .eq('id', id);
-    
+      
     if (error) {
       console.error('Error updating shop:', error);
       return false;
@@ -120,99 +57,145 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
     
     return true;
   } catch (error) {
-    console.error('Error updating shop:', error);
+    console.error('Error in updateShop:', error);
     return false;
   }
 };
 
-// Function to create a new shop
-export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | null> => {
+export const fetchShopFollowers = async (shopId: string) => {
   try {
-    // Generate a simple shop ID
-    const shopIdValue = shopData.shopId || `shop-${Math.floor(Math.random() * 10000)}`;
+    const { data, error } = await supabase
+      .from('shop_follower_details')
+      .select('*')
+      .eq('shop_id', shopId)
+      .order('followed_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching shop followers:', error);
+      return [];
+    }
     
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchShopFollowers:', error);
+    return [];
+  }
+};
+
+export const fetchShopSalesAnalytics = async (shopId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('shop_sales_analytics')
+      .select('*')
+      .eq('shop_id', shopId)
+      .order('date', { ascending: false })
+      .limit(30);
+      
+    if (error) {
+      console.error('Error fetching shop sales analytics:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchShopSalesAnalytics:', error);
+    return [];
+  }
+};
+
+export const checkShopCredentials = async (name: string, password: string): Promise<string | null> => {
+  try {
     const { data, error } = await supabase
       .from('shops')
-      .insert({
-        name: shopData.name,
-        description: shopData.description,
-        logo: shopData.logo,
-        cover_image: shopData.coverImage,
-        address: shopData.address,
-        is_verified: shopData.isVerified,
-        shop_id: shopIdValue,
-        owner_name: shopData.ownerName,
-        owner_email: shopData.ownerEmail,
-        status: shopData.status || 'pending',
-        password: shopData.password,
-        phone_number: shopData.phoneNumber || '', // Include phone_number in the insert
-      })
-      .select()
+      .select('id, password')
+      .eq('name', name)
       .single();
-    
-    if (error) {
-      console.error('Error creating shop:', error);
+      
+    if (error || !data) {
+      console.error('Error checking shop credentials:', error);
       return null;
     }
     
-    return data?.id || null;
+    // Very basic check - in a real app you would use proper password hashing
+    if (data.password === password) {
+      return data.id;
+    }
+    
+    return null;
   } catch (error) {
-    console.error('Error creating shop:', error);
+    console.error('Error in checkShopCredentials:', error);
     return null;
   }
 };
 
-// Function to delete a shop
-export const deleteShop = async (id: string): Promise<boolean> => {
+export const getShopsByIds = async (shopIds: string[]): Promise<Shop[]> => {
+  if (!shopIds.length) return [];
+  
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('shops')
-      .delete()
-      .eq('id', id);
-    
+      .select('*')
+      .in('id', shopIds);
+      
     if (error) {
-      console.error('Error deleting shop:', error);
-      return false;
+      console.error('Error fetching shops by ids:', error);
+      return [];
     }
     
-    return true;
+    return (data || []).map(shop => ({
+      id: shop.id,
+      name: shop.name,
+      description: shop.description || '',
+      logo: shop.logo || '',
+      cover_image: shop.cover_image || '',
+      rating: shop.rating || 0,
+      review_count: shop.review_count || 0,
+      followers_count: shop.followers_count || 0,
+      owner_name: shop.owner_name || '',
+      owner_email: shop.owner_email || '',
+      phone_number: shop.phone_number || '',
+      address: shop.address || '',
+      status: shop.status || 'pending',
+      is_verified: shop.is_verified || false
+    }));
   } catch (error) {
-    console.error('Error deleting shop:', error);
-    return false;
+    console.error('Error in getShopsByIds:', error);
+    return [];
   }
 };
 
-// Function to get shop data
-export const getShopData = async (shopId: string) => {
-  const { data, error } = await supabase
-    .from('shops')
-    .select('*')
-    .eq('id', shopId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching shop:', error);
-    throw new Error('Failed to fetch shop data');
+export const getPopularShops = async (limit = 5): Promise<Shop[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('status', 'active')
+      .order('followers_count', { ascending: false })
+      .limit(limit);
+      
+    if (error) {
+      console.error('Error fetching popular shops:', error);
+      return [];
+    }
+    
+    return (data || []).map(shop => ({
+      id: shop.id,
+      name: shop.name,
+      description: shop.description || '',
+      logo: shop.logo || '',
+      cover_image: shop.cover_image || '',
+      rating: shop.rating || 0,
+      review_count: shop.review_count || 0,
+      followers_count: shop.followers_count || 0,
+      owner_name: shop.owner_name || '',
+      owner_email: shop.owner_email || '',
+      phone_number: shop.phone_number || '',
+      address: shop.address || '',
+      status: shop.status || 'pending',
+      is_verified: shop.is_verified || false
+    }));
+  } catch (error) {
+    console.error('Error in getPopularShops:', error);
+    return [];
   }
-
-  // Transform the shop data to match our frontend data structure
-  const transformedShop = {
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    logo: data.logo,
-    coverImage: data.cover_image,
-    address: data.address,
-    isVerified: data.is_verified,
-    followersCount: data.followers_count,
-    reviewCount: data.review_count,
-    rating: data.rating,
-    status: data.status,
-    ownerName: data.owner_name,
-    ownerEmail: data.owner_email,
-    phoneNumber: data.phone_number || '', // Add the phone_number with a default
-    createdAt: data.created_at
-  };
-
-  return transformedShop;
 };

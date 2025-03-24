@@ -41,7 +41,7 @@ export const useSearchCartIntegration = () => {
         tags: product.tags || []
       };
       
-      addToCart(cartItem);
+      addToCart(cartItem, 1, "", ""); // Fix: Add the missing arguments
       setIsAddingToCart('');
     }, 500);
     
