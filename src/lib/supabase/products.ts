@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/lib/products";
+import { Product, adaptProduct } from "@/lib/types/product";
 
 // Function to fetch all products from Supabase
 export const fetchProducts = async (): Promise<Product[]> => {
@@ -16,24 +16,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
     
     if (!products) return [];
     
-    return products.map((product: any) => ({
-      id: product?.id || '',
-      name: product?.name || '',
-      description: product?.description || '',
-      price: product?.price || 0,
-      salePrice: product?.sale_price,
-      images: product?.images || [],
-      category: product?.category_id || '',
-      colors: product?.colors || [],
-      sizes: product?.sizes || [],
-      isNew: product?.is_new || false,
-      isTrending: product?.is_trending || false,
-      rating: product?.rating || 0,
-      reviewCount: product?.review_count || 0,
-      stock: product?.stock || 0,
-      tags: product?.tags || [],
-      shopId: product?.shop_id || '',
-    }));
+    return products.map((product: any) => adaptProduct(product));
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
@@ -57,24 +40,7 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
     
     if (!product) return undefined;
     
-    return {
-      id: product?.id || '',
-      name: product?.name || '',
-      description: product?.description || '',
-      price: product?.price || 0,
-      salePrice: product?.sale_price,
-      images: product?.images || [],
-      category: product?.category_id || '',
-      colors: product?.colors || [],
-      sizes: product?.sizes || [],
-      isNew: product?.is_new || false,
-      isTrending: product?.is_trending || false,
-      rating: product?.rating || 0,
-      reviewCount: product?.review_count || 0,
-      stock: product?.stock || 0,
-      tags: product?.tags || [],
-      shopId: product?.shop_id || '',
-    };
+    return adaptProduct(product);
   } catch (error) {
     console.error(`Error fetching product ${id}:`, error);
     return undefined;
@@ -97,24 +63,7 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
     
     if (!products) return [];
     
-    return products.map((product: any) => ({
-      id: product?.id || '',
-      name: product?.name || '',
-      description: product?.description || '',
-      price: product?.price || 0,
-      salePrice: product?.sale_price,
-      images: product?.images || [],
-      category: product?.category_id || '',
-      colors: product?.colors || [],
-      sizes: product?.sizes || [],
-      isNew: product?.is_new || false,
-      isTrending: product?.is_trending || false,
-      rating: product?.rating || 0,
-      reviewCount: product?.review_count || 0,
-      stock: product?.stock || 0,
-      tags: product?.tags || [],
-      shopId: product?.shop_id || '',
-    }));
+    return products.map((product: any) => adaptProduct(product));
   } catch (error) {
     console.error(`Error fetching products for shop ${shopId}:`, error);
     return [];

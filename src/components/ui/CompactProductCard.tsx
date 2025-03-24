@@ -35,7 +35,7 @@ const CompactProductCard: React.FC<CompactProductCardProps> = ({ product, classN
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
+    addToCart(product, 1, '', '');
   };
 
   const formattedPrice = product?.price?.toFixed(2);

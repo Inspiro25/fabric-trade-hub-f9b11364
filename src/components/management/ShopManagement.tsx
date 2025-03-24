@@ -21,7 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Shop } from '@/lib/shops/types';
+import { Shop, ShopStatus } from '@/lib/shops/types';
 
 const shopFormSchema = z.object({
   name: z.string().min(2, { message: "Shop name must be at least 2 characters." }).max(50),
@@ -79,22 +79,42 @@ const ShopManagement: React.FC = () => {
         .from('shops')
         .select('*')
         .order('created_at', { ascending: false });
-        
-      if (error) throw error;
       
-      const shopsWithProductCount = data?.map(shop => ({
-        ...shop,
-        product_count: shop.product_count || 0
-      })) || [];
-      
-      setShops(shopsWithProductCount as Shop[]);
-    } catch (error) {
-      console.error('Error fetching shops:', error);
-      toast.error('Failed to load shops');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    if (error) throw error;
+    
+    const shopsWithDefaultValues = (data || []).map(shop => ({
+      id: shop.id,
+      name: shop.name,
+      logo: shop.logo || '',
+      cover_image: shop.cover_image || '',
+      description: shop.description || '',
+      owner_name: shop.owner_name || '',
+      owner_email: shop.owner_email || '',
+      address: shop.address || '',
+      phone: shop.phone_number || '',
+      phone_number: shop.phone_number || '',
+      website: shop.website || '',
+      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: shop.categories || [],
+      is_verified: shop.is_verified || false,
+      rating: shop.rating || 0,
+      review_count: shop.review_count || 0,
+      followers_count: shop.followers_count || 0,
+      product_count: shop.product_count || 0,
+      created_at: shop.created_at,
+      tags: shop.tags || [],
+      status: shop.status as string,
+      shop_id: shop.shop_id || ''
+    }));
+    
+    setShops(shopsWithDefaultValues as Shop[]);
+  } catch (error) {
+    console.error('Error fetching shops:', error);
+    toast.error('Failed to load shops');
+  } finally {
+    setIsLoading(false);
+  }
+};
   
   const filteredShops = searchQuery 
     ? shops.filter(shop => 
@@ -317,7 +337,6 @@ const ShopManagement: React.FC = () => {
                               </span>
                             </div>
                           )}
-                          {shop.name}
                           {shop.is_verified && (
                             <Check className="h-4 w-4 text-blue-500" />
                           )}

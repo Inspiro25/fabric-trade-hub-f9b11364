@@ -9,6 +9,7 @@ export interface Shop {
   owner_email: string;
   address: string;
   phone: string;
+  phone_number?: string; // For backward compatibility
   website: string;
   social_media: {
     facebook?: string;
@@ -20,10 +21,19 @@ export interface Shop {
   is_verified: boolean;
   rating: number;
   followers_count: number;
+  review_count?: number; // Added review_count
   product_count?: number; // Added product_count
   created_at: string;
   tags: string[];
   status: string;
+  shop_id?: string; // Added for backward compatibility
+}
+
+export enum ShopStatus {
+  Active = "active",
+  Pending = "pending",
+  Suspended = "suspended",
+  Closed = "closed"
 }
 
 export interface ShopWithProducts extends Shop {

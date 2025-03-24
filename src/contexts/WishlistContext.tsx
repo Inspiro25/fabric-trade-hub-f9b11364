@@ -15,6 +15,9 @@ export interface WishlistContextType {
   wishlistCount: number;
   isInWishlist: (productId: string) => boolean;
   isAddingToWishlist: string | null;
+  // Adding properties needed by other components
+  wishlist: string[];
+  isLoading: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextType>({
@@ -26,6 +29,9 @@ const WishlistContext = createContext<WishlistContextType>({
   wishlistCount: 0,
   isInWishlist: () => false,
   isAddingToWishlist: null,
+  // Adding default values for new properties
+  wishlist: [],
+  isLoading: false,
 });
 
 export const useWishlist = () => useContext(WishlistContext);
@@ -34,6 +40,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(true);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
+  const [wishlist, setWishlist] = useState<string[]>([]);
   const { currentUser, isAuthenticated } = useAuth();
 
   const fetchWishlist = useCallback(async () => {
@@ -44,6 +51,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (storedWishlist) {
           const parsedWishlist = JSON.parse(storedWishlist);
           setWishlistItems(parsedWishlist.map((item: any) => adaptProduct(item)));
+          setWishlist(parsedWishlist.map((item: any) => item.id));
         }
       } catch (error) {
         console.error('Error fetching guest wishlist:', error);
@@ -55,7 +63,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       setIsWishlistLoading(true);
       const { data, error } = await supabase
-        .from('wishlist')
+        .from('user_wishlists')
         .select('product_id, products(*)')
         .eq('user_id', currentUser.id);
 
@@ -65,7 +73,9 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       if (data) {
         const products = data.map((item) => adaptProduct(item.products));
+        const productIds = data.map((item) => item.product_id);
         setWishlistItems(products);
+        setWishlist(productIds);
       }
     } catch (error) {
       console.error('Error fetching wishlist:', error);
@@ -90,12 +100,13 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (!isAuthenticated || !currentUser?.id) {
         // If not authenticated, store in local storage
         const storedWishlist = localStorage.getItem('guest_wishlist');
-        let wishlist = storedWishlist ? JSON.parse(storedWishlist) : [];
+        let wishlistData = storedWishlist ? JSON.parse(storedWishlist) : [];
         
-        if (!wishlist.some((item: Product) => item.id === product.id)) {
-          wishlist.push(product);
-          localStorage.setItem('guest_wishlist', JSON.stringify(wishlist));
-          setWishlistItems(wishlist);
+        if (!wishlistData.some((item: Product) => item.id === product.id)) {
+          wishlistData.push(product);
+          localStorage.setItem('guest_wishlist', JSON.stringify(wishlistData));
+          setWishlistItems(wishlistData);
+          setWishlist(wishlistData.map((item: Product) => item.id));
         }
         
         setIsAddingToWishlist(null);
@@ -103,7 +114,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       const { error } = await supabase
-        .from('wishlist')
+        .from('user_wishlists')
         .insert({
           user_id: currentUser.id,
           product_id: product.id,
@@ -120,6 +131,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       } else {
         setWishlistItems((prev) => [...prev, product]);
+        setWishlist((prev) => [...prev, product.id]);
         toast({
           title: "Added to wishlist",
           description: "Item has been added to your wishlist.",
@@ -143,17 +155,18 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // If not authenticated, remove from local storage
         const storedWishlist = localStorage.getItem('guest_wishlist');
         if (storedWishlist) {
-          const wishlist = JSON.parse(storedWishlist).filter(
+          const wishlistData = JSON.parse(storedWishlist).filter(
             (item: Product) => item.id !== productId
           );
-          localStorage.setItem('guest_wishlist', JSON.stringify(wishlist));
-          setWishlistItems(wishlist);
+          localStorage.setItem('guest_wishlist', JSON.stringify(wishlistData));
+          setWishlistItems(wishlistData);
+          setWishlist(wishlistData.map((item: Product) => item.id));
         }
         return;
       }
 
       const { error } = await supabase
-        .from('wishlist')
+        .from('user_wishlists')
         .delete()
         .eq('user_id', currentUser.id)
         .eq('product_id', productId);
@@ -163,6 +176,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       setWishlistItems((prev) => prev.filter((item) => item.id !== productId));
+      setWishlist((prev) => prev.filter((id) => id !== productId));
       toast({
         title: "Removed from wishlist",
         description: "Item has been removed from your wishlist.",
@@ -183,11 +197,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // If not authenticated, clear local storage
         localStorage.removeItem('guest_wishlist');
         setWishlistItems([]);
+        setWishlist([]);
         return;
       }
 
       const { error } = await supabase
-        .from('wishlist')
+        .from('user_wishlists')
         .delete()
         .eq('user_id', currentUser.id);
 
@@ -196,6 +211,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
 
       setWishlistItems([]);
+      setWishlist([]);
       toast({
         title: "Wishlist cleared",
         description: "All items have been removed from your wishlist.",
@@ -211,8 +227,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const isInWishlist = useCallback(
-    (productId: string) => wishlistItems.some((item) => item.id === productId),
-    [wishlistItems]
+    (productId: string) => wishlist.includes(productId),
+    [wishlist]
   );
 
   const contextValue: WishlistContextType = {
@@ -221,9 +237,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     addToWishlist,
     removeFromWishlist,
     clearWishlist,
-    wishlistCount: wishlistItems.length,
+    wishlistCount: wishlist.length,
     isInWishlist,
     isAddingToWishlist,
+    // Add the new properties
+    wishlist,
+    isLoading: isWishlistLoading,
   };
 
   return (

@@ -33,7 +33,7 @@ export function adaptProduct(product: any): Product {
     salePrice: product.salePrice || product.sale_price || null,
     images: product.images || [],
     description: product.description || '',
-    category_id: product.category_id || product.category || '',
+    category_id: product.category_id || product.categoryId || product.category || '',
     category: product.category || product.category_id || '',
     colors: product.colors || [],
     sizes: product.sizes || [],

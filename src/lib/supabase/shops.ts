@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Shop, ShopStatus } from '@/lib/shops/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,13 +15,30 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
     
     if (!data) return null;
     
-    // Ensure the status is of the correct type and add product_count if missing
-    const status = data.status as ShopStatus;
-    
+    // Transform the data to match the Shop interface
     return {
-      ...data,
-      status,
-      product_count: data.product_count || 0
+      id: data.id,
+      name: data.name,
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      description: data.description || '',
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      address: data.address || '',
+      phone: data.phone_number || '',
+      phone_number: data.phone_number || '',
+      website: data.website || '',
+      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: data.categories || [],
+      is_verified: data.is_verified || false,
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      product_count: data.product_count || 0,
+      created_at: data.created_at,
+      tags: data.tags || [],
+      status: data.status as string,
+      shop_id: data.shop_id || ''
     } as Shop;
   } catch (error) {
     console.error('Error fetching shop:', error);
@@ -47,9 +63,28 @@ export const fetchShops = async (): Promise<Shop[]> => {
     }
     
     return data.map(shop => ({
-      ...shop,
-      // Add default product_count if it doesn't exist in the data
-      product_count: shop.product_count || 0
+      id: shop.id,
+      name: shop.name,
+      logo: shop.logo || '',
+      cover_image: shop.cover_image || '',
+      description: shop.description || '',
+      owner_name: shop.owner_name || '',
+      owner_email: shop.owner_email || '',
+      address: shop.address || '',
+      phone: shop.phone_number || '',
+      phone_number: shop.phone_number || '',
+      website: shop.website || '',
+      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: shop.categories || [],
+      is_verified: shop.is_verified || false,
+      rating: shop.rating || 0,
+      review_count: shop.review_count || 0,
+      followers_count: shop.followers_count || 0,
+      product_count: shop.product_count || 0,
+      created_at: shop.created_at,
+      tags: shop.tags || [],
+      status: shop.status as string,
+      shop_id: shop.shop_id || ''
     })) as Shop[];
   } catch (error) {
     console.error('Error in fetchShops:', error);
@@ -60,15 +95,16 @@ export const fetchShops = async (): Promise<Shop[]> => {
 // Function to update a shop
 export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<Shop | null> => {
   try {
-    // Ensure the status is of the correct type if it's being updated
-    let updatedData = { ...shopData };
-    if (updatedData.status) {
-      updatedData.status = updatedData.status as ShopStatus;
-    }
+    // Convert the Shop interface to match what the database expects
+    const dbShopData = {
+      ...shopData,
+      phone_number: shopData.phone || shopData.phone_number,
+      shop_id: shopData.shop_id
+    };
     
     const { data, error } = await supabase
       .from('shops')
-      .update(updatedData)
+      .update(dbShopData)
       .eq('id', id)
       .select()
       .single();
@@ -78,9 +114,28 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<S
     if (!data) return null;
     
     return {
-      ...data,
-      status: data.status as ShopStatus,
-      product_count: data.product_count || 0
+      id: data.id,
+      name: data.name,
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      description: data.description || '',
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      address: data.address || '',
+      phone: data.phone_number || '',
+      phone_number: data.phone_number || '',
+      website: data.website || '',
+      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: data.categories || [],
+      is_verified: data.is_verified || false,
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      product_count: data.product_count || 0,
+      created_at: data.created_at,
+      tags: data.tags || [],
+      status: data.status as string,
+      shop_id: data.shop_id || ''
     } as Shop;
   } catch (error) {
     console.error('Error updating shop:', error);
@@ -108,9 +163,28 @@ export const createShop = async (shopData: Omit<Shop, 'id' | 'created_at'>): Pro
     if (error) throw error;
     
     return {
-      ...data,
-      status: data.status as ShopStatus,
-      product_count: data.product_count || 0
+      id: data.id,
+      name: data.name,
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      description: data.description || '',
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      address: data.address || '',
+      phone: data.phone_number || '',
+      phone_number: data.phone_number || '',
+      website: data.website || '',
+      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: data.categories || [],
+      is_verified: data.is_verified || false,
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      product_count: data.product_count || 0,
+      created_at: data.created_at,
+      tags: data.tags || [],
+      status: data.status as string,
+      shop_id: data.shop_id || ''
     } as Shop;
   } catch (error) {
     console.error('Error creating shop:', error);
@@ -148,9 +222,28 @@ export const verifyShop = async (id: string): Promise<Shop | null> => {
     if (error) throw error;
     
     return {
-      ...data,
-      status: data.status as ShopStatus,
-      product_count: data.product_count || 0
+      id: data.id,
+      name: data.name,
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      description: data.description || '',
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      address: data.address || '',
+      phone: data.phone_number || '',
+      phone_number: data.phone_number || '',
+      website: data.website || '',
+      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: data.categories || [],
+      is_verified: data.is_verified || false,
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      product_count: data.product_count || 0,
+      created_at: data.created_at,
+      tags: data.tags || [],
+      status: data.status as string,
+      shop_id: data.shop_id || ''
     } as Shop;
   } catch (error) {
     console.error('Error verifying shop:', error);
@@ -171,8 +264,28 @@ export const suspendShop = async (id: string): Promise<Shop | null> => {
     if (error) throw error;
     
     return {
-      ...data,
-      product_count: data.product_count || 0
+      id: data.id,
+      name: data.name,
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      description: data.description || '',
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      address: data.address || '',
+      phone: data.phone_number || '',
+      phone_number: data.phone_number || '',
+      website: data.website || '',
+      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: data.categories || [],
+      is_verified: data.is_verified || false,
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      product_count: data.product_count || 0,
+      created_at: data.created_at,
+      tags: data.tags || [],
+      status: data.status as string,
+      shop_id: data.shop_id || ''
     } as Shop;
   } catch (error) {
     console.error('Error suspending shop:', error);
@@ -193,8 +306,28 @@ export const activateShop = async (id: string): Promise<Shop | null> => {
     if (error) throw error;
     
     return {
-      ...data,
-      product_count: data.product_count || 0
+      id: data.id,
+      name: data.name,
+      logo: data.logo || '',
+      cover_image: data.cover_image || '',
+      description: data.description || '',
+      owner_name: data.owner_name || '',
+      owner_email: data.owner_email || '',
+      address: data.address || '',
+      phone: data.phone_number || '',
+      phone_number: data.phone_number || '',
+      website: data.website || '',
+      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: data.categories || [],
+      is_verified: data.is_verified || false,
+      rating: data.rating || 0,
+      review_count: data.review_count || 0,
+      followers_count: data.followers_count || 0,
+      product_count: data.product_count || 0,
+      created_at: data.created_at,
+      tags: data.tags || [],
+      status: data.status as string,
+      shop_id: data.shop_id || ''
     } as Shop;
   } catch (error) {
     console.error('Error activating shop:', error);
@@ -214,9 +347,28 @@ export const getVerifiedShops = async (): Promise<Shop[]> => {
     if (error) throw error;
     
     return (data || []).map(shop => ({
-      ...shop,
-      status: shop.status as ShopStatus,
-      product_count: shop.product_count || 0
+      id: shop.id,
+      name: shop.name,
+      logo: shop.logo || '',
+      cover_image: shop.cover_image || '',
+      description: shop.description || '',
+      owner_name: shop.owner_name || '',
+      owner_email: shop.owner_email || '',
+      address: shop.address || '',
+      phone: shop.phone_number || '',
+      phone_number: shop.phone_number || '',
+      website: shop.website || '',
+      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: shop.categories || [],
+      is_verified: shop.is_verified || false,
+      rating: shop.rating || 0,
+      review_count: shop.review_count || 0,
+      followers_count: shop.followers_count || 0,
+      product_count: shop.product_count || 0,
+      created_at: shop.created_at,
+      tags: shop.tags || [],
+      status: shop.status as string,
+      shop_id: shop.shop_id || ''
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching verified shops:', error);
@@ -237,9 +389,28 @@ export const getTrendingShops = async (limit = 5): Promise<Shop[]> => {
     if (error) throw error;
     
     return (data || []).map(shop => ({
-      ...shop,
-      status: shop.status as ShopStatus,
-      product_count: shop.product_count || 0
+      id: shop.id,
+      name: shop.name,
+      logo: shop.logo || '',
+      cover_image: shop.cover_image || '',
+      description: shop.description || '',
+      owner_name: shop.owner_name || '',
+      owner_email: shop.owner_email || '',
+      address: shop.address || '',
+      phone: shop.phone_number || '',
+      phone_number: shop.phone_number || '',
+      website: shop.website || '',
+      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+      categories: shop.categories || [],
+      is_verified: shop.is_verified || false,
+      rating: shop.rating || 0,
+      review_count: shop.review_count || 0,
+      followers_count: shop.followers_count || 0,
+      product_count: shop.product_count || 0,
+      created_at: shop.created_at,
+      tags: shop.tags || [],
+      status: shop.status as string,
+      shop_id: shop.shop_id || ''
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching trending shops:', error);
@@ -277,3 +448,6 @@ export const checkShopCredentials = async (shopName: string, password: string): 
     return null;
   }
 };
+
+// Export the ShopStatus enum to use in other files
+export { ShopStatus } from '@/lib/shops/types';
