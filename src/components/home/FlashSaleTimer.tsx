@@ -2,16 +2,69 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Flame, Zap, Percent, ArrowRight } from 'lucide-react';
+import { Flame, Zap, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { getDealOfTheDay, DealProduct } from '@/lib/products/deal';
 
 export default function FlashSaleTimer() {
   const [timeLeft, setTimeLeft] = useState({
-    hours: 5,
-    minutes: 30,
+    hours: 0,
+    minutes: 0,
     seconds: 0
   });
   
+  const [deal, setDeal] = useState<DealProduct | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { isDarkMode } = useTheme();
+  
+  // Fetch deal of the day
+  useEffect(() => {
+    const fetchDeal = async () => {
+      try {
+        const dealData = await getDealOfTheDay();
+        setDeal(dealData);
+        
+        // Set timer based on deal end time
+        if (dealData && dealData.endTime) {
+          const endTime = new Date(dealData.endTime).getTime();
+          const now = new Date().getTime();
+          const difference = endTime - now;
+          
+          // Convert to hours, minutes, seconds
+          if (difference > 0) {
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            
+            setTimeLeft({ hours, minutes, seconds });
+          }
+        } else {
+          // Default 5 hour timer if no deal is found
+          setTimeLeft({
+            hours: 5,
+            minutes: 0,
+            seconds: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching deal of the day:', error);
+        // Default timer
+        setTimeLeft({
+          hours: 5,
+          minutes: 0,
+          seconds: 0
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchDeal();
+  }, []);
+  
+  // Timer countdown effect
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -26,15 +79,15 @@ export default function FlashSaleTimer() {
             newMinutes = 59;
           }
           return {
-            hours: newHours,
-            minutes: newMinutes,
+            hours: newHours < 0 ? 0 : newHours,
+            minutes: newMinutes < 0 ? 0 : newMinutes,
             seconds: 59
           };
         }
         
         return {
-          hours: newHours,
-          minutes: newMinutes,
+          hours: newHours < 0 ? 0 : newHours,
+          minutes: newMinutes < 0 ? 0 : newMinutes,
           seconds: newSeconds
         };
       });
@@ -43,6 +96,29 @@ export default function FlashSaleTimer() {
     return () => clearInterval(timer);
   }, []);
   
+  if (loading) {
+    return (
+      <div className={cn(
+        "relative py-3 overflow-hidden animate-pulse",
+        isDarkMode ? "bg-gray-800" : "bg-orange-600/95"
+      )}>
+        <div className="container mx-auto px-4 h-12"></div>
+      </div>
+    );
+  }
+  
+  // If all time is zero and we have a deal, reset to a new timeframe
+  if (timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 && deal) {
+    // Reset to 24 hours
+    setTimeout(() => {
+      setTimeLeft({
+        hours: 24,
+        minutes: 0,
+        seconds: 0
+      });
+    }, 1000);
+  }
+  
   return (
     <motion.section 
       initial={{ opacity: 0, y: -10 }}
@@ -50,7 +126,12 @@ export default function FlashSaleTimer() {
       transition={{ duration: 0.4 }}
       className="relative py-3 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-orange-500 opacity-95"></div>
+      <div className={cn(
+        "absolute inset-0",
+        isDarkMode 
+          ? "bg-gradient-to-r from-orange-900/90 to-orange-800/90" 
+          : "bg-gradient-to-r from-orange-600 to-orange-500 opacity-95"
+      )}></div>
       
       {/* Animated particles */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
@@ -100,10 +181,26 @@ export default function FlashSaleTimer() {
             </div>
             <div>
               <h2 className="text-sm md:text-base font-bold text-white flex items-center">
-                FLASH SALE
-                <Zap className="h-3 w-3 ml-1 text-yellow-300 animate-pulse" />
+                {deal ? (
+                  <>
+                    {deal.discountPercentage}% OFF FLASH SALE
+                    <Zap className="h-3 w-3 ml-1 text-yellow-300 animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    FLASH SALE
+                    <Zap className="h-3 w-3 ml-1 text-yellow-300 animate-pulse" />
+                  </>
+                )}
               </h2>
-              <p className="text-white/80 text-xs">Limited time offers!</p>
+              {deal && (
+                <p className="text-white/80 text-xs line-clamp-1">
+                  {deal.name} – Now ₹{deal.salePrice || 0}
+                </p>
+              )}
+              {!deal && (
+                <p className="text-white/80 text-xs">Limited time offers!</p>
+              )}
             </div>
           </div>
           
@@ -152,8 +249,8 @@ export default function FlashSaleTimer() {
             transition={{ delay: 0.4 }}
           >
             <Button size="sm" className="bg-white text-orange-600 hover:bg-orange-50 transition-colors shadow-md border-b-2 border-orange-200 font-bold text-xs py-1 px-3 group" asChild>
-              <Link to="/flash-sale" className="flex items-center">
-                SHOP NOW 
+              <Link to={deal ? `/product/${deal.id}` : "/flash-sale"} className="flex items-center">
+                {deal ? "SHOP NOW" : "VIEW ALL"} 
                 <ArrowRight className="ml-1 h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
             </Button>
