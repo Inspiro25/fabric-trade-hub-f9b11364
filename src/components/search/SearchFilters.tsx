@@ -4,6 +4,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Category } from '@/hooks/search/types';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
 export interface SearchFiltersProps {
   categories: Category[];
@@ -24,6 +26,8 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
   applyFilters,
   clearFilters,
 }) => {
+  const { isDarkMode } = useTheme();
+
   const handleCategoryChange = (categoryId: string) => {
     if (activeCategories.includes(categoryId)) {
       setActiveCategories(activeCategories.filter((id) => id !== categoryId));
@@ -37,9 +41,15 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
   };
 
   return (
-    <div className="space-y-6 sticky top-4">
+    <div className={cn(
+      "space-y-6 sticky top-4",
+      isDarkMode && "text-gray-100"
+    )}>
       <div>
-        <h3 className="text-lg font-semibold mb-3">Categories</h3>
+        <h3 className={cn(
+          "text-lg font-semibold mb-3",
+          isDarkMode && "text-gray-100"
+        )}>Categories</h3>
         <div className="space-y-2">
           {categories.map((category) => (
             <div key={category.id} className="flex items-center space-x-2">
@@ -47,14 +57,21 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
                 id={`category-${category.id}`}
                 checked={activeCategories.includes(category.id)}
                 onCheckedChange={() => handleCategoryChange(category.id)}
+                className={isDarkMode ? "border-gray-600" : ""}
               />
               <label
                 htmlFor={`category-${category.id}`}
-                className="text-sm cursor-pointer"
+                className={cn(
+                  "text-sm cursor-pointer",
+                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                )}
               >
                 {category.name}
                 {category.product_count !== undefined && (
-                  <span className="text-gray-500 ml-1">({category.product_count})</span>
+                  <span className={cn(
+                    "ml-1",
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  )}>({category.product_count})</span>
                 )}
               </label>
             </div>
@@ -63,7 +80,10 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold mb-3">Price Range</h3>
+        <h3 className={cn(
+          "text-lg font-semibold mb-3",
+          isDarkMode && "text-gray-100"
+        )}>Price Range</h3>
         <div className="px-2">
           <Slider
             defaultValue={[priceRange[0], priceRange[1]]}
@@ -71,8 +91,12 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
             step={10}
             value={[priceRange[0], priceRange[1]]}
             onValueChange={handlePriceChange}
+            className={isDarkMode ? "data-[disabled]:bg-gray-700" : ""}
           />
-          <div className="flex justify-between mt-2 text-sm">
+          <div className={cn(
+            "flex justify-between mt-2 text-sm",
+            isDarkMode ? "text-gray-300" : "text-gray-700"
+          )}>
             <span>${priceRange[0]}</span>
             <span>${priceRange[1]}</span>
           </div>
@@ -80,10 +104,23 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
       </div>
 
       <div className="flex flex-col space-y-2 pt-4">
-        <Button onClick={applyFilters} className="w-full">
+        <Button 
+          onClick={applyFilters} 
+          className={cn(
+            "w-full",
+            isDarkMode && "bg-orange-600 hover:bg-orange-700 text-white"
+          )}
+        >
           Apply Filters
         </Button>
-        <Button variant="outline" onClick={clearFilters} className="w-full">
+        <Button 
+          variant={isDarkMode ? "outline" : "outline"} 
+          onClick={clearFilters} 
+          className={cn(
+            "w-full",
+            isDarkMode && "border-gray-600 text-gray-300 hover:bg-gray-800"
+          )}
+        >
           Clear Filters
         </Button>
       </div>

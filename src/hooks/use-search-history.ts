@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SearchHistoryItem {
   id: string;
@@ -13,12 +14,13 @@ interface SearchHistoryItem {
 export const useSearchHistory = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
+  const { isDarkMode } = useTheme();
 
   const fetchSearchHistory = useCallback(async () => {
     setIsLoading(true);
     try {
-      if (currentUser) {
+      if (isAuthenticated && currentUser?.id) {
         // Fetch from database if user is logged in
         const { data, error } = await supabase
           .from('search_history')
@@ -51,7 +53,7 @@ export const useSearchHistory = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser?.id, isAuthenticated]);
 
   useEffect(() => {
     fetchSearchHistory();
@@ -75,7 +77,7 @@ export const useSearchHistory = () => {
         user_id: currentUser?.id
       };
       
-      if (currentUser) {
+      if (isAuthenticated && currentUser?.id) {
         // Save to database for logged in users
         const { error } = await supabase
           .from('search_history')
@@ -97,11 +99,11 @@ export const useSearchHistory = () => {
     } catch (error) {
       console.error('Error adding search history item:', error);
     }
-  }, [currentUser, fetchSearchHistory, searchHistory]);
+  }, [currentUser?.id, fetchSearchHistory, isAuthenticated, searchHistory]);
 
   const clearSearchHistoryItem = useCallback(async (id: string) => {
     try {
-      if (currentUser) {
+      if (isAuthenticated && currentUser?.id) {
         // Delete from database for logged in users
         const { error } = await supabase
           .from('search_history')
@@ -116,17 +118,17 @@ export const useSearchHistory = () => {
       const updatedHistory = searchHistory.filter(item => item.id !== id);
       setSearchHistory(updatedHistory);
       
-      if (!currentUser) {
+      if (!isAuthenticated) {
         localStorage.setItem('guest_search_history', JSON.stringify(updatedHistory));
       }
     } catch (error) {
       console.error('Error removing search history item:', error);
     }
-  }, [currentUser, searchHistory]);
+  }, [currentUser?.id, isAuthenticated, searchHistory]);
 
   const clearAllSearchHistory = useCallback(async () => {
     try {
-      if (currentUser) {
+      if (isAuthenticated && currentUser?.id) {
         // Delete all search history for this user
         const { error } = await supabase
           .from('search_history')
@@ -142,13 +144,14 @@ export const useSearchHistory = () => {
     } catch (error) {
       console.error('Error clearing search history:', error);
     }
-  }, [currentUser]);
+  }, [currentUser?.id, isAuthenticated]);
 
   return {
     searchHistory,
     isLoading,
     addSearchHistoryItem,
     clearSearchHistoryItem,
-    clearAllSearchHistory
+    clearAllSearchHistory,
+    className: isDarkMode ? 'dark-mode-search-history' : 'light-mode-search-history'
   };
 };

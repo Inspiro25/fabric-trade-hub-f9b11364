@@ -2,27 +2,49 @@
 export interface Shop {
   id: string;
   name: string;
-  description: string;
   logo: string;
   cover_image: string;
-  address: string;
-  phone_number?: string;
+  description: string;
   owner_name: string;
   owner_email: string;
-  password?: string;
-  rating: number;
-  review_count: number;
-  followers_count: number;
+  address: string;
+  phone: string;
+  website: string;
+  social_media: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    pinterest?: string;
+  };
+  categories: string[];
   is_verified: boolean;
-  status: string;
+  rating: number;
+  followers_count: number;
+  product_count?: number; // Added product_count
   created_at: string;
-  shop_id?: string;
-  product_count: number;
+  tags: string[];
+  status: string;
 }
 
-// Add ShopStatus enum
-export enum ShopStatus {
-  ACTIVE = "active",
-  PENDING = "pending",
-  SUSPENDED = "suspended"
+export interface ShopWithProducts extends Shop {
+  products: any[];
+}
+
+export interface ShopFollower {
+  id: string;
+  shop_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface FollowersResponse {
+  count: number;
+  followers: ShopFollower[];
+}
+
+export interface ShopStatsResponse {
+  followers_count: number;
+  orders_count: number;
+  products_count: number;
+  revenue: number;
 }

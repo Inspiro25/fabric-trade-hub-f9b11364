@@ -33,7 +33,7 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
           "h-8 w-8 p-0 border-r",
           isDarkMode 
             ? "border-gray-600 data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
-            : "border-gray-200 data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+            : "border-gray-200 data-[state=on]:bg-orange-100 data-[state=on]:text-orange-600"
         )}
       >
         <LayoutGrid className="h-4 w-4" />
@@ -45,7 +45,7 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
           "h-8 w-8 p-0",
           isDarkMode 
             ? "data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
-            : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+            : "data-[state=on]:bg-orange-100 data-[state=on]:text-orange-600"
         )}
       >
         <List className="h-4 w-4" />

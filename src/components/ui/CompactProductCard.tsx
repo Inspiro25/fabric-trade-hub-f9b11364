@@ -1,155 +1,124 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Product } from '@/lib/types/product';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
-import { toast } from "sonner";
-import { Product } from '@/lib/products';
+import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface CompactProductCardProps {
   product: Product;
-  onAddToCart?: () => void;
+  className?: string;
 }
 
-const CompactProductCard: React.FC<CompactProductCardProps> = ({
-  product,
-  onAddToCart,
-}) => {
-  const { isDarkMode } = useTheme();
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+const CompactProductCard: React.FC<CompactProductCardProps> = ({ product, className }) => {
+  const { addToWishlist, isInWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
-  const isFavorited = isInWishlist(product.id);
+  const { isDarkMode } = useTheme();
 
-  const toggleWishlist = (e: React.MouseEvent) => {
+  const isProductInWishlist = product && product.id ? isInWishlist(product.id) : false;
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (isFavorited) {
+    if (isProductInWishlist) {
       removeFromWishlist(product.id);
-      toast.info("Removed from wishlist");
     } else {
-      addToWishlist(product.id);
-      toast.success("Added to wishlist");
+      addToWishlist(product);
     }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (onAddToCart) {
-      onAddToCart();
-    } else {
-      addToCart(product, 1, product.colors[0] || '', product.sizes[0] || '');
-      toast.success(`Added ${product.name} to cart`);
-    }
+    addToCart(product, 1);
   };
 
-  const discountPercentage = product.salePrice ? Math.round(((product.price - product.salePrice) / product.price) * 100) : 0;
+  const formattedPrice = product?.price?.toFixed(2);
+  const discountedPrice = product?.salePrice ? product.salePrice.toFixed(2) : null;
 
   return (
     <Link to={`/product/${product.id}`} className={cn(
-      "block rounded-lg overflow-hidden border",
-      isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
+      "block overflow-hidden rounded-md transition-all hover:shadow-md",
+      isDarkMode ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200",
+      className
     )}>
-      <div className="flex h-[85px]">
-        <div className="w-[85px] h-[85px] relative">
-          <img 
-            src={product.images[0]} 
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-          {product.salePrice && (
-            <div className="absolute bottom-0 left-0 bg-red-500 text-white text-[8px] font-bold px-1 py-0.5">
-              {discountPercentage}% OFF
-            </div>
-          )}
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <img
+          src={product.images?.[0] || '/placeholder.svg'}
+          alt={product.name}
+          className="h-full w-full object-cover transition-transform hover:scale-105"
+        />
+        <div className="absolute top-2 right-2 flex space-x-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "h-8 w-8 rounded-full",
+              isDarkMode 
+                ? "bg-gray-900/80 hover:bg-gray-900 text-gray-300" 
+                : "bg-white/80 hover:bg-white shadow-sm"
+            )}
+            onClick={handleWishlistToggle}
+          >
+            <Heart 
+              className={cn(
+                "h-4 w-4", 
+                isProductInWishlist 
+                  ? "fill-red-500 text-red-500" 
+                  : isDarkMode ? "text-gray-300" : "text-gray-600"
+              )} 
+            />
+          </Button>
         </div>
-        
-        <div className="flex-1 p-1.5 flex flex-col justify-between overflow-hidden">
-          <div>
-            <h3 className={cn(
-              "text-xs font-medium line-clamp-1 mb-0.5",
-              isDarkMode && "text-white"
-            )}>
-              {product.name}
-            </h3>
-            
-            <div className="flex items-center text-[10px] mb-1">
-              {product.rating > 0 && (
-                <div className="flex items-center">
-                  <span className="text-green-600 font-medium flex items-center">
-                    {product.rating.toFixed(1)}
-                  </span>
-                  <Star className="h-2 w-2 text-yellow-500 ml-0.5" />
-                  <span className={cn(
-                    "ml-0.5",
-                    isDarkMode ? "text-gray-400" : "text-gray-500"
-                  )}>
-                    ({product.reviewCount})
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {product.salePrice ? (
-                <>
-                  <span className={cn(
-                    "text-xs font-semibold",
-                    isDarkMode ? "text-orange-400" : "text-gray-900"
-                  )}>
-                    ₹{product.salePrice.toFixed(2)}
-                  </span>
-                  <span className={cn(
-                    "ml-1 text-[8px] line-through",
-                    isDarkMode ? "text-gray-400" : "text-gray-500"
-                  )}>
-                    ₹{product.price.toFixed(2)}
-                  </span>
-                </>
-              ) : (
+      </div>
+      <div className="p-3">
+        <h3 className={cn(
+          "font-medium truncate",
+          isDarkMode ? "text-gray-200" : "text-gray-800"
+        )}>
+          {product.name}
+        </h3>
+        <div className="mt-1 flex items-center justify-between">
+          <div className="flex items-center space-x-1">
+            {discountedPrice ? (
+              <>
                 <span className={cn(
-                  "text-xs font-semibold",
-                  isDarkMode && "text-gray-200"
+                  "font-medium",
+                  isDarkMode ? "text-orange-400" : "text-orange-600"
                 )}>
-                  ₹{product.price.toFixed(2)}
+                  ${discountedPrice}
                 </span>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-5 w-5 p-0"
-                onClick={toggleWishlist}
-              >
-                <Heart className={cn(
-                  "h-3 w-3", 
-                  isFavorited ? "fill-red-500 text-red-500" : isDarkMode ? "text-gray-400" : "text-gray-500"
-                )} />
-              </Button>
-              
-              <Button
-                size="icon"
-                variant="ghost"
-                className={cn(
-                  "h-5 w-5 p-0",
-                  isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
-                )}
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="h-3 w-3" />
-              </Button>
-            </div>
+                <span className="text-sm text-gray-500 line-through">
+                  ${formattedPrice}
+                </span>
+              </>
+            ) : (
+              <span className={cn(
+                "font-medium",
+                isDarkMode ? "text-gray-200" : "text-gray-900"
+              )}>
+                ${formattedPrice}
+              </span>
+            )}
           </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            className={cn(
+              "h-8 w-8 rounded-full",
+              isDarkMode 
+                ? "bg-orange-600/90 hover:bg-orange-600 text-white" 
+                : "bg-orange-100 hover:bg-orange-200 text-orange-600"
+            )}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </Link>

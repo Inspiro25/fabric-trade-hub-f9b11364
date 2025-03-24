@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SearchBarProps {
   initialQuery?: string;
@@ -25,6 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [query, setQuery] = useState(initialQuery);
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
 
   // Update local state if initialQuery changes
   useEffect(() => {
@@ -50,13 +52,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  // Apply dark mode styling based on context and variant
+  const getStyles = () => {
+    if (variant === 'dark' || isDarkMode) {
+      return "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400";
+    } else if (variant === 'minimal') {
+      return "border-0 bg-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0";
+    }
+    return "";
+  };
+
   return (
     <form onSubmit={handleSubmit} className={cn("relative w-full", className)}>
       <div className="relative">
         <Search 
           className={cn(
             "absolute left-3 top-1/2 -translate-y-1/2", 
-            variant === 'dark' ? "text-gray-400" : "text-gray-500"
+            (variant === 'dark' || isDarkMode) ? "text-gray-400" : "text-gray-500"
           )} 
           size={18} 
         />
@@ -66,11 +78,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className={cn(
-            "pl-10 pr-10 py-2 w-full",
-            variant === 'minimal' && "border-0 bg-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0",
-            variant === 'dark' && "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
-          )}
+          className={cn("pl-10 pr-10 py-2 w-full", getStyles())}
           autoFocus={autoFocus}
         />
         
@@ -80,7 +88,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
             variant="ghost"
             size="icon"
             onClick={handleClear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6"
+            className={cn(
+              "absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6",
+              isDarkMode && "hover:bg-gray-700 text-gray-400"
+            )}
           >
             <X size={16} />
             <span className="sr-only">Clear search</span>
