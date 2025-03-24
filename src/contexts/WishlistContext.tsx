@@ -11,6 +11,7 @@ interface WishlistContextType {
   removeFromWishlist: (productId: string) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   isLoading: boolean;
+  isAddingToWishlist?: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -19,6 +20,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
   const { currentUser } = useAuth();
   
   useEffect(() => {
@@ -179,7 +181,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       addToWishlist, 
       removeFromWishlist, 
       isInWishlist, 
-      isLoading 
+      isLoading,
+      isAddingToWishlist
     }}>
       {children}
       {showAuthDialog && (

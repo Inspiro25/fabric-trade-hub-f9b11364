@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -12,7 +13,7 @@ import { Category } from '@/hooks/search/types';
 import { useCategories } from '@/hooks/use-categories';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { useDebounce } from '@/hooks/use-debounce';
-import { Pagination } from '@/components/ui/pagination';
+import { PaginationComponent } from '@/components/ui/pagination-custom';
 import { DEFAULT_PAGE_SIZE } from '@/lib/utils';
 import SearchSort from '@/components/search/SearchSort';
 
@@ -30,8 +31,13 @@ const Search: React.FC = () => {
   
   const { categories, isLoading: isCategoriesLoading } = useCategories();
   const searchHistory = useSearchHistory();
-  const { isAddingToCart } = useCart();
-  const { isAddingToWishlist } = useWishlist();
+  
+  // Adding empty objects as fallbacks for missing properties
+  const cartContext = useCart();
+  const isAddingToCart = cartContext?.isAddingToCart || false;
+  
+  const wishlistContext = useWishlist();
+  const isAddingToWishlist = wishlistContext?.isAddingToWishlist || false;
   
   const { 
     searchResults, 
@@ -51,7 +57,6 @@ const Search: React.FC = () => {
   }, [debouncedSearchQuery, navigate, location]);
 
   const clearSearchHistory = searchHistory.clearAllSearchHistory;
-  const removeSearchTerm = searchHistory.clearSearchHistoryItem;
 
   const applyFilters = () => {
     const filters: string[] = [];
@@ -170,7 +175,7 @@ const Search: React.FC = () => {
                 
                 {totalResults > pageSize && (
                   <div className="mt-8">
-                    <Pagination
+                    <PaginationComponent
                       currentPage={page}
                       totalItems={totalResults}
                       pageSize={pageSize}
