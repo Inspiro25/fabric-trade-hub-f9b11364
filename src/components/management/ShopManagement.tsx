@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -83,7 +82,12 @@ const ShopManagement: React.FC = () => {
         
       if (error) throw error;
       
-      setShops(data || []);
+      const shopsWithProductCount = data?.map(shop => ({
+        ...shop,
+        product_count: shop.product_count || 0
+      })) || [];
+      
+      setShops(shopsWithProductCount as Shop[]);
     } catch (error) {
       console.error('Error fetching shops:', error);
       toast.error('Failed to load shops');
@@ -114,7 +118,8 @@ const ShopManagement: React.FC = () => {
         owner_email: data.ownerEmail || '',
         phone_number: data.phoneNumber || '',
         is_verified: data.isVerified || false,
-        password: data.password || ''
+        password: data.password || '',
+        product_count: 0
       };
       
       const { data: newShop, error } = await supabase

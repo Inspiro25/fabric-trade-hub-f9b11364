@@ -1,466 +1,295 @@
-
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Percent, Tag, Clock, ArrowRight, ArrowLeft, ShoppingBag } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import ProductCard from '@/components/ui/ProductCard';
-import { Offer, getActiveOffers } from '@/lib/supabase/offers';
-import { useQuery } from '@tanstack/react-query';
-import { fetchProducts } from '@/lib/products/base';
-import { Product } from '@/lib/types/product';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/lib/types/product';
+import ProductCard from '@/components/ui/ProductCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 const Offers = () => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const isMobile = useIsMobile();
-  const [discountedProducts, setDiscountedProducts] = useState<Product[]>([]);
   const { isDarkMode } = useTheme();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('relevance');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+  const [activeOffers, setActiveOffers] = useState<any[]>([]);
+  const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
+  const [highlightedProducts, setHighlightedProducts] = useState<Product[]>([]);
   
-  const { data: offers = [], isLoading, error } = useQuery({
-    queryKey: ['offers'],
-    queryFn: getActiveOffers,
-  });
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Fetch products when component mounts
   useEffect(() => {
-    const loadProducts = async () => {
+    const fetchOffers = async () => {
       try {
-        const products = await fetchProducts();
-        // Filter products with sale price for the featured deals section
-        const discounted = products.filter(product => product.salePrice).slice(0, 8);
-        setDiscountedProducts(discounted);
-      } catch (error) {
-        console.error("Error loading products:", error);
+        const now = new Date();
+        const { data, error } = await supabase
+          .from('offers')
+          .select('*')
+          .eq('is_active', true)
+          .in('type', ['discount', 'sale'])
+          .gte('expiry', now.toISOString())
+          .order('expiry', { ascending: true });
+        
+        if (error) {
+          console.error('Error fetching active offers:', error);
+          setError('Failed to load offers');
+          return;
+        }
+        
+        if (data) {
+          setActiveOffers(data);
+          
+          // Select the first offer and highlight its products
+          if (data.length > 0) {
+            setSelectedOffer(data[0]);
+            highlightOfferProducts(data[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch offers:', err);
+        setError('Failed to load offers');
       }
     };
     
-    loadProducts();
+    fetchOffers();
   }, []);
-  
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+
+  const highlightOfferProducts = async (offer: any) => {
+    if (!offer || !offer.product_ids) {
+      setHighlightedProducts([]);
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .in('id', offer.product_ids);
+      
+      if (error) {
+        console.error('Error fetching products for offer:', error);
+        setError('Failed to load products for offer');
+        return;
+      }
+      
+      if (data) {
+        setHighlightedProducts(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch products for offer:', err);
+      setError('Failed to load products for offer');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        let query = supabase
+          .from('products')
+          .select('*');
+        
+        if (searchTerm) {
+          query = query.ilike('name', `%${searchTerm}%`);
+        }
+        
+        if (sortBy === 'price') {
+          query = query.order('price', { ascending: sortOrder === 'asc' });
+        } else if (sortBy === 'rating') {
+          query = query.order('rating', { ascending: sortOrder === 'desc' });
+        } else if (sortBy === 'newest') {
+          query = query.order('created_at', { ascending: false });
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error('Error fetching products:', error);
+          setError('Failed to load products');
+        } else {
+          setProducts(data || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+        setError('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, [searchTerm, sortBy, sortOrder]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value);
   };
   
+  const toggleSortOrder = () => {
+    setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const handleOfferClick = (offer: any) => {
+    setSelectedOffer(offer);
+    highlightOfferProducts(offer);
+  };
+
   return (
-    <div className={cn(
-      "min-h-screen",
-      isDarkMode 
-        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
-    )}>
-      <main className={`${isMobile ? 'pt-6 px-3' : 'pt-12 px-4'} pb-16`}>
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center mb-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              asChild 
-              className={cn(
-                "mr-2 h-8 w-8",
-                isDarkMode && "text-gray-200 hover:text-white hover:bg-gray-700"
-              )}
-            >
-              <Link to="/" aria-label="Back to home">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <h1 className={cn(
-              "text-xl md:text-3xl font-bold",
-              isDarkMode && "text-white"
-            )}>Special Offers</h1>
+    <>
+      <Helmet>
+        <title>Offers & Discounts</title>
+        <meta name="description" content="Find the best deals and discounts on our products." />
+      </Helmet>
+
+      <div className={cn("min-h-screen py-12", isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50")}>
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl font-bold mb-6">
+            Exclusive Offers & Discounts
+          </h1>
+
+          <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+            <div className="flex items-center w-full md:w-auto mb-3 md:mb-0">
+              <div className="relative w-full">
+                <Input
+                  type="search"
+                  placeholder="Search products..."
+                  className="pl-10 pr-3 py-2 rounded-md w-full"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center"
+                onClick={() => setFiltersOpen(!filtersOpen)}
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                Filters
+              </Button>
+              
+              <div className="relative">
+                <select
+                  className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
+                  value={sortBy}
+                  onChange={handleSortChange}
+                >
+                  <option value="relevance">Relevance</option>
+                  <option value="price">Price</option>
+                  <option value="rating">Rating</option>
+                  <option value="newest">Newest</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  {sortOrder === 'asc' ? (
+                    <SortAsc className="h-4 w-4" onClick={toggleSortOrder} />
+                  ) : (
+                    <SortDesc className="h-4 w-4" onClick={toggleSortOrder} />
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <p className={cn(
-            "mb-2 ml-8 text-sm md:text-base",
-            isDarkMode ? "text-gray-300" : "text-muted-foreground"
-          )}>Discover great deals and discounts on your favorite products</p>
-          
-          <div className="mb-3">
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className={cn(
-                "mb-3 w-full grid grid-cols-3 p-1 rounded-xl",
-                isDarkMode && "bg-gray-800 border border-gray-700"
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Active Offers Section */}
+            <div className="md:col-span-1">
+              <Card className={cn(
+                "mb-6",
+                isDarkMode ? "bg-gray-800" : "bg-white"
               )}>
-                <TabsTrigger 
-                  value="all" 
-                  className={cn(
-                    "rounded-lg text-xs md:text-sm",
-                    isDarkMode && "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400"
-                  )}
-                >All</TabsTrigger>
-                <TabsTrigger 
-                  value="deals" 
-                  className={cn(
-                    "rounded-lg text-xs md:text-sm",
-                    isDarkMode && "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400"
-                  )}
-                >Deals</TabsTrigger>
-                <TabsTrigger 
-                  value="coupons" 
-                  className={cn(
-                    "rounded-lg text-xs md:text-sm",
-                    isDarkMode && "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400"
-                  )}
-                >Coupons</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all" className="space-y-3">
-                <section className="mb-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <h2 className={cn(
-                      "text-lg md:text-xl font-semibold",
-                      isDarkMode && "text-white"
-                    )}>Featured Deals</h2>
-                    {discountedProducts.length > 4 && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        asChild
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-3">Active Offers</h3>
+                  <ul className="space-y-2">
+                    {activeOffers.map(offer => (
+                      <li
+                        key={offer.id}
                         className={cn(
-                          "text-sm",
-                          isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-primary"
+                          "cursor-pointer p-2 rounded-md hover:bg-gray-100",
+                          isDarkMode ? "hover:bg-gray-700" : "",
+                          selectedOffer?.id === offer.id ? "bg-blue-500 text-white hover:bg-blue-600" : ""
                         )}
+                        onClick={() => handleOfferClick(offer)}
                       >
-                        <Link to="/search?discount=true">
-                          View all
-                          <ArrowRight className="ml-1 h-3 w-3" />
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                  {discountedProducts.length > 0 ? (
-                    <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
-                      {discountedProducts.slice(0, isMobile ? 2 : 4).map((product) => (
-                        <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={cn(
-                      "text-center py-10 rounded-xl shadow-sm",
-                      isDarkMode ? "bg-gray-800 text-gray-300" : "bg-white"
-                    )}>
-                      <ShoppingBag className={cn(
-                        "h-12 w-12 mx-auto mb-4 opacity-50",
-                        isDarkMode ? "text-gray-500" : "text-muted-foreground"
-                      )} />
-                      <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No featured deals available at the moment.</p>
-                    </div>
-                  )}
-                </section>
-                
-                <section>
-                  <h2 className={cn(
-                    "text-lg md:text-xl font-semibold mb-2",
-                    isDarkMode && "text-white"
-                  )}>Available Offers</h2>
-                  {isLoading ? (
-                    <div className="flex justify-center items-center py-10">
-                      <div className="animate-pulse space-y-4 w-full">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className={cn(
-                            "h-40 rounded-xl w-full",
-                            isDarkMode ? "bg-gray-700" : "bg-gray-200"
-                          )}></div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : error ? (
-                    <div className={cn(
-                      "text-center py-10 rounded-xl shadow-sm",
-                      isDarkMode ? "bg-gray-800" : "bg-white"
-                    )}>
-                      <p className={cn(
-                        "mb-2",
-                        isDarkMode ? "text-red-400" : "text-red-500"
-                      )}>Error loading offers</p>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => window.location.reload()}
-                        className={isDarkMode && "border-gray-600 text-gray-200 hover:bg-gray-700"}
-                      >
-                        Try Again
-                      </Button>
-                    </div>
-                  ) : offers.length === 0 ? (
-                    <div className={cn(
-                      "text-center py-10 rounded-xl shadow-sm",
-                      isDarkMode ? "bg-gray-800" : "bg-white"
-                    )}>
-                      <Tag className={cn(
-                        "h-12 w-12 mx-auto mb-4 opacity-50",
-                        isDarkMode ? "text-gray-500" : "text-muted-foreground"
-                      )} />
-                      <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No offers available at the moment.</p>
-                    </div>
-                  ) : (
-                    <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
-                      {offers.map((offer) => (
-                        <Card key={offer.id} className={cn(
-                          "overflow-hidden transition-all duration-300 hover:shadow-md",
-                          isDarkMode 
-                            ? "bg-gray-800 border-gray-700" 
-                            : "border border-gray-100 shadow-sm"
-                        )}>
-                          {offer.banner_image && (
-                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100">
-                              <img 
-                                src={offer.banner_image} 
-                                alt={offer.title} 
-                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                              />
-                              {offer.type === "percentage" && offer.discount && (
-                                <div className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2 py-1 text-xs font-semibold flex items-center">
-                                  <Percent className="h-3 w-3 mr-1" />
-                                  {offer.discount}% OFF
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <CardHeader className="p-3 pb-1">
-                            <div className="flex justify-between items-start">
-                              <CardTitle className={cn(
-                                "text-base md:text-lg font-semibold",
-                                isDarkMode && "text-white"
-                              )}>{offer.title}</CardTitle>
-                              {!offer.banner_image && (
-                                <>
-                                  {offer.type === "percentage" && offer.discount && (
-                                    <div className={cn(
-                                      "rounded-full px-2 py-1 text-xs font-semibold flex items-center",
-                                      isDarkMode 
-                                        ? "bg-red-900/40 text-red-300" 
-                                        : "bg-red-100 text-red-600"
-                                    )}>
-                                      <Percent className="h-3 w-3 mr-1" />
-                                      {offer.discount}% OFF
-                                    </div>
-                                  )}
-                                  {offer.type === "shipping" && (
-                                    <div className={cn(
-                                      "rounded-full px-2 py-1 text-xs font-semibold",
-                                      isDarkMode 
-                                        ? "bg-green-900/40 text-green-300" 
-                                        : "bg-green-100 text-green-600"
-                                    )}>
-                                      Free Shipping
-                                    </div>
-                                  )}
-                                  {offer.type === "bogo" && (
-                                    <div className={cn(
-                                      "rounded-full px-2 py-1 text-xs font-semibold",
-                                      isDarkMode 
-                                        ? "bg-blue-900/40 text-blue-300" 
-                                        : "bg-blue-100 text-blue-600"
-                                    )}>
-                                      Buy 1 Get 1
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="p-3 pt-1">
-                            <p className={cn(
-                              "text-xs md:text-sm mb-2 line-clamp-2",
-                              isDarkMode ? "text-gray-300" : "text-muted-foreground"
-                            )}>{offer.description}</p>
-                            
-                            <div className="flex flex-wrap gap-2 items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                <Tag className={cn(
-                                  "h-4 w-4 mr-1",
-                                  isDarkMode ? "text-gray-400" : "text-muted-foreground"
-                                )} />
-                                <code className={cn(
-                                  "px-2 py-1 rounded text-xs font-mono",
-                                  isDarkMode ? "bg-gray-700" : "bg-gray-100"
-                                )}>
-                                  {offer.code}
-                                </code>
-                              </div>
-                              <div className={cn(
-                                "flex items-center text-xs",
-                                isDarkMode ? "text-gray-400" : "text-muted-foreground"
-                              )}>
-                                <Clock className="h-3 w-3 mr-1" />
-                                Expires: {formatDate(offer.expiry)}
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center justify-between mt-2">
-                              <div className={cn(
-                                "text-xs",
-                                isDarkMode ? "text-gray-400" : "text-muted-foreground"
-                              )}>
-                                By: {offer.shops?.name || "Platform"}
-                              </div>
-                              {offer.shop_id && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className={cn(
-                                    "p-0 h-auto hover:bg-transparent",
-                                    isDarkMode 
-                                      ? "text-orange-400 hover:text-orange-300" 
-                                      : "text-primary hover:text-primary/80"
-                                  )}
-                                  asChild
-                                >
-                                  <Link to={`/shop/${offer.shop_id}`}>
-                                    Shop Now
-                                    <ArrowRight className="ml-1 h-3 w-3" />
-                                  </Link>
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              </TabsContent>
-              
-              <TabsContent value="deals">
-                {discountedProducts.length > 0 ? (
-                  <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
-                    {discountedProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
+                        {offer.title}
+                      </li>
                     ))}
-                  </div>
-                ) : (
-                  <div className={cn(
-                    "text-center py-10 rounded-xl shadow-sm",
-                    isDarkMode ? "bg-gray-800" : "bg-white"
-                  )}>
-                    <ShoppingBag className={cn(
-                      "h-12 w-12 mx-auto mb-4 opacity-50",
-                      isDarkMode ? "text-gray-500" : "text-muted-foreground"
-                    )} />
-                    <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No deals available at the moment.</p>
-                  </div>
-                )}
-              </TabsContent>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Highlighted Products Section */}
+            <div className="md:col-span-3">
+              <h2 className="text-xl font-semibold mb-4">
+                {selectedOffer ? selectedOffer.title : 'All Products'}
+              </h2>
               
-              <TabsContent value="coupons">
-                <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-3 gap-4'}`}>
-                  {offers
-                    .filter(offer => offer.type === "percentage")
-                    .map((offer) => (
-                    <Card key={offer.id} className={cn(
-                      "overflow-hidden shadow-sm",
-                      isDarkMode 
-                        ? "bg-gray-800 border-gray-700" 
-                        : "border border-gray-100"
-                    )}>
-                      <CardHeader className="p-3 pb-1">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className={cn(
-                            "text-base md:text-lg font-semibold",
-                            isDarkMode && "text-white"
-                          )}>{offer.title}</CardTitle>
-                          {offer.discount && (
-                            <div className={cn(
-                              "rounded-full px-2 py-1 text-xs font-semibold flex items-center",
-                              isDarkMode 
-                                ? "bg-red-900/40 text-red-300" 
-                                : "bg-red-100 text-red-600"
-                            )}>
-                              <Percent className="h-3 w-3 mr-1" />
-                              {offer.discount}% OFF
-                            </div>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-1">
-                        <p className={cn(
-                          "text-xs md:text-sm mb-2 line-clamp-2",
-                          isDarkMode ? "text-gray-300" : "text-muted-foreground"
-                        )}>{offer.description}</p>
-                        
-                        <div className="flex flex-wrap gap-2 items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            <Tag className={cn(
-                              "h-4 w-4 mr-1",
-                              isDarkMode ? "text-gray-400" : "text-muted-foreground"
-                            )} />
-                            <code className={cn(
-                              "px-2 py-1 rounded text-xs font-mono",
-                              isDarkMode ? "bg-gray-700" : "bg-gray-100"
-                            )}>
-                              {offer.code}
-                            </code>
-                          </div>
-                          <div className={cn(
-                            "flex items-center text-xs",
-                            isDarkMode ? "text-gray-400" : "text-muted-foreground"
-                          )}>
-                            <Clock className="h-3 w-3 mr-1" />
-                            Expires: {formatDate(offer.expiry)}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-2">
-                          <div className={cn(
-                            "text-xs",
-                            isDarkMode ? "text-gray-400" : "text-muted-foreground"
-                          )}>
-                            By: {offer.shops?.name || "Platform"}
-                          </div>
-                          {offer.shop_id && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className={cn(
-                                "p-0 h-auto hover:bg-transparent",
-                                isDarkMode 
-                                  ? "text-orange-400 hover:text-orange-300" 
-                                  : "text-primary hover:text-primary/80"
-                              )}
-                              asChild
-                            >
-                              <Link to={`/shop/${offer.shop_id}`}>
-                                Shop Now
-                                <ArrowRight className="ml-1 h-3 w-3" />
-                              </Link>
-                            </Button>
-                          )}
-                        </div>
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Card key={i} className="overflow-hidden">
+                      <Skeleton className="h-40 w-full" />
+                      <CardContent className="p-3">
+                        <Skeleton className="h-4 w-full mt-2" />
+                        <Skeleton className="h-4 w-20 mt-2" />
                       </CardContent>
                     </Card>
                   ))}
-                  
-                  {offers.filter(offer => offer.type === "percentage").length === 0 && (
-                    <div className={cn(
-                      "col-span-full text-center py-10 rounded-xl shadow-sm",
-                      isDarkMode ? "bg-gray-800" : "bg-white"
-                    )}>
-                      <Tag className={cn(
-                        "h-12 w-12 mx-auto mb-4 opacity-50",
-                        isDarkMode ? "text-gray-500" : "text-muted-foreground"
-                      )} />
-                      <p className={isDarkMode ? "text-gray-400" : "text-muted-foreground"}>No coupons available at the moment.</p>
-                    </div>
-                  )}
                 </div>
-              </TabsContent>
-            </Tabs>
+              ) : error ? (
+                <div className="text-center p-8 border rounded-lg">
+                  <p className="text-red-500">{error}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {highlightedProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      salePrice={product.salePrice}
+                      image={product.images[0]}
+                      category={product.category}
+                      isNew={product.isNew}
+                      isTrending={product.isTrending}
+                      rating={product.rating}
+                      reviewCount={product.reviewCount}
+                      variant="compact"
+                      product={product}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 };
 

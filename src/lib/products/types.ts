@@ -13,13 +13,12 @@ export interface Product {
   stock: number;
   rating: number;
   review_count: number;
-  reviewCount?: number; // Compatibility field
   shop_id: string | null;
   is_new: boolean;
   is_trending: boolean;
   tags: string[];
   
-  // Add compatibility properties for easier migration
+  // Compatibility getters for easier migration
   get salePrice(): number | null | undefined {
     return this.sale_price;
   }
@@ -34,6 +33,10 @@ export interface Product {
   
   get shopId(): string | null {
     return this.shop_id;
+  }
+  
+  get reviewCount(): number {
+    return this.review_count;
   }
 }
 
@@ -52,11 +55,11 @@ export function adaptProduct(product: any): Product {
     sizes: product.sizes || [],
     stock: product.stock || 0,
     rating: product.rating || 0,
-    review_count: product.review_count ?? product.reviewCount || 0,
-    reviewCount: product.reviewCount ?? product.review_count || 0,
+    review_count: product.review_count ?? (product.reviewCount || 0),
+    reviewCount: product.reviewCount ?? (product.review_count || 0),
     shop_id: product.shop_id ?? product.shopId,
     is_new: product.is_new ?? product.isNew || false,
     is_trending: product.is_trending ?? product.isTrending || false,
     tags: product.tags || [],
-  };
+  } as Product;
 }

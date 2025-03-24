@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Product } from '@/lib/types/product';
+import { adaptProduct } from '@/lib/products/types';
 
 export interface ProductCardProps {
   id: string;
@@ -21,6 +22,7 @@ export interface ProductCardProps {
   variant?: string;
   product?: Product;
   layout?: string;
+  highlight?: string; // Add highlight property
   onAddToCart?: (id: string) => void;
   onAddToWishlist?: (id: string) => void;
 }
@@ -39,20 +41,28 @@ const ProductCard: React.FC<ProductCardProps> = ({
   variant,
   product,
   layout,
+  highlight,
   onAddToCart,
   onAddToWishlist
 }) => {
   // If a full product object is passed, use it for all properties
-  const productId = product?.id || id;
-  const productName = product?.name || name;
-  const productPrice = product?.price || price;
-  const productSalePrice = product?.sale_price || salePrice;
-  const productImage = product?.images?.[0] || image;
-  const productCategory = product?.category || category;
-  const productIsNew = product?.is_new || isNew;
-  const productIsTrending = product?.is_trending || isTrending;
-  const productRating = product?.rating || rating;
-  const productReviewCount = product?.review_count || reviewCount;
+  // Also handle both camelCase and snake_case property naming conventions
+  let adaptedProduct: any = null;
+  if (product) {
+    adaptedProduct = adaptProduct(product);
+  }
+  
+  const productId = adaptedProduct?.id || id;
+  const productName = adaptedProduct?.name || name;
+  const productPrice = adaptedProduct?.price || price;
+  const productSalePrice = adaptedProduct?.sale_price || salePrice;
+  const productImage = adaptedProduct?.images?.[0] || image;
+  const productCategory = adaptedProduct?.category || category;
+  const productIsNew = adaptedProduct?.is_new || isNew;
+  const productIsTrending = adaptedProduct?.is_trending || isTrending;
+  const productRating = adaptedProduct?.rating || rating;
+  const productReviewCount = adaptedProduct?.review_count || reviewCount;
+  const productHighlight = highlight;
 
   // Calculate discount percentage if sale price exists
   const discountPercentage = productSalePrice
@@ -93,6 +103,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
           {productSalePrice && (
             <Badge variant="secondary" className="bg-red-500 text-white hover:bg-red-600">-{discountPercentage}%</Badge>
+          )}
+          {productHighlight && (
+            <Badge variant="secondary" className="bg-green-500 text-white hover:bg-green-600">{productHighlight}</Badge>
           )}
         </div>
         

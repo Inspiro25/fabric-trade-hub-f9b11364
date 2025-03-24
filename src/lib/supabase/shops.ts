@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { Shop, ShopStatus } from '@/lib/shops/types';
+import { Shop } from '@/lib/shops/types';
+import { ShopStatus } from '@/lib/shops/types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Function to get a shop by its ID
@@ -35,19 +35,24 @@ export const fetchShops = async (): Promise<Shop[]> => {
   try {
     const { data, error } = await supabase
       .from('shops')
-      .select('*')
-      .order('name');
+      .select('*');
+      
+    if (error) {
+      console.error('Error fetching shops:', error);
+      throw error;
+    }
     
-    if (error) throw error;
+    if (!data) {
+      return [];
+    }
     
-    // Ensure each shop has the correct status type and product_count
-    return (data || []).map(shop => ({
+    return data.map(shop => ({
       ...shop,
-      status: shop.status as ShopStatus,
+      // Add default product_count if it doesn't exist in the data
       product_count: shop.product_count || 0
     })) as Shop[];
   } catch (error) {
-    console.error('Error fetching shops:', error);
+    console.error('Error in fetchShops:', error);
     return [];
   }
 };

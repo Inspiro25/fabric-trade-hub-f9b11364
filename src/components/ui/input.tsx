@@ -1,3 +1,3 @@
 
-// Re-export from Input.tsx to maintain backward compatibility
-export { Input, type InputProps } from './Input';
+// Just re-export from Input.tsx to resolve casing issues
+export { Input } from './Input';

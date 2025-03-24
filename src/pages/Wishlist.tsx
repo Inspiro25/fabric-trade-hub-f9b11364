@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -23,7 +22,6 @@ const Wishlist = () => {
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
 
-  // Check authentication on mount
   useEffect(() => {
     if (!authLoading && !currentUser) {
       setShowAuthDialog(true);
@@ -59,7 +57,6 @@ const Wishlist = () => {
         }
         
         if (data && data.length > 0) {
-          // Map the data to ensure it includes all required properties
           const mappedProducts = data.map(item => ({
             ...item,
             category: item.category_id || '',
@@ -165,7 +162,21 @@ const Wishlist = () => {
               "grid"
             )}>
               {wishlistItems.map((product) => (
-                <ProductCard key={product.id} product={product} variant="compact" />
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  salePrice={product.salePrice}
+                  image={product.images[0]}
+                  category={product.category}
+                  isNew={product.isNew}
+                  isTrending={product.isTrending}
+                  rating={product.rating}
+                  reviewCount={product.reviewCount}
+                  variant="compact"
+                  product={product}
+                />
               ))}
             </div>
           </div>

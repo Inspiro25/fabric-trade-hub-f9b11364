@@ -1,5 +1,5 @@
-
-import { Shop, ShopStatus } from './types';
+import { Shop } from './types';
+import { ShopStatus } from './types';
 
 const mockShops: Shop[] = [
   {

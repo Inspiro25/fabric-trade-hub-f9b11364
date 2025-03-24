@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import SEO from '@/components/shared/SEO';
+import { Helmet } from 'react-helmet-async';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useSearch } from '@/hooks/use-search';
 import { useSearchHistory } from '@/hooks/search/use-search-history';
-import { useSearchViewMode, useSearchFilters } from '@/hooks/search/use-search-filters';
-import { useSearchPagination } from '@/hooks/search/use-search-pagination';
-import SearchBar from '@/components/search/SearchBar';
+import { useSearchViewMode, useSearchFilters, useSearchPagination } from '@/hooks/search/use-search-filters';
 import { SearchFilters } from '@/components/search/SearchFilters';
 import SearchResults from '@/components/search/SearchResults';
 import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext';
@@ -17,61 +15,61 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronRight, Search as SearchIcon, History, Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SearchPageProduct } from '@/hooks/search/types';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Separator } from '@/components/ui/separator';
 import SearchSort from '@/components/search/SearchSort';
 
-export interface SortOption {
-  label: string;
-  value: string;
-}
-
-const SearchPage: React.FC = () => {
+const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
+  const { addToCart, isAddingToCart } = useCart();
+  const { addToWishlist, isAddingToWishlist } = useWishlist();
   const { recentlyViewed, addToRecentlyViewed } = useRecentlyViewed();
   const { isDarkMode } = useTheme();
   const isMobile = useMediaQuery('(max-width: 768px)');
-  
+
+  // Get query params
   const queryParams = new URLSearchParams(location.search);
   const initialQuery = queryParams.get('q') || '';
-  
+
+  // Search state
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
-  
-  const { searchHistory, clearAllSearchHistory: clearSearchHistory, clearSearchHistoryItem: removeSearchTerm } = useSearchHistory(null);
+
+  // Search history
+  const { searchHistory, clearSearchHistory, removeSearchTerm } = useSearchHistory();
   const [showSearchHistory, setShowSearchHistory] = useState(false);
-  
+
+  // Pagination
   const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } = useSearchPagination();
-  
+
+  // View mode (grid/list)
   const { viewMode, setViewMode } = useSearchViewMode();
-  
+
+  // Filters
   const { activeFilters, toggleFilter, clearFilters } = useSearchFilters();
-  
-  const sortOptions: SortOption[] = [
+
+  // Sort options
+  const sortOptions = [
     { label: 'Relevance', value: 'relevance' },
     { label: 'Price: Low to High', value: 'price_asc' },
     { label: 'Price: High to Low', value: 'price_desc' },
     { label: 'Newest', value: 'newest' },
-    { label: 'Rating', value: 'rating' },
+    { label: 'Rating', value: 'rating' }
   ];
-  const [sortOption, setSortOption] = useState<string>('relevance');
   
-  const [isAddingToCart, setIsAddingToCart] = useState<string | boolean>(false);
-  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | boolean>(false);
-  
+  const [sortOption, setSortOption] = useState('relevance');
+
+  // Fetch search results with all required parameters
   const { searchResults, isLoading, error, totalResults } = useSearch(
-    debouncedQuery,
-    currentPage,
+    debouncedQuery, 
+    currentPage, 
     itemsPerPage,
     activeFilters
   );
-  
+
+  // Update URL when query changes
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQuery) {
@@ -79,161 +77,119 @@ const SearchPage: React.FC = () => {
       if (currentPage > 1) {
         params.set('page', currentPage.toString());
       }
-      navigate({ search: params.toString() }, { replace: true });
+      navigate({
+        search: params.toString()
+      }, {
+        replace: true
+      });
     }
   }, [debouncedQuery, currentPage, navigate]);
-  
+
+  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-      setCurrentPage(1);
+      setCurrentPage(1); // Reset to first page on new search
     }, 300);
-    
     return () => clearTimeout(timer);
   }, [query, setCurrentPage]);
-  
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  // Handle search input
+  const handleSearchChange = (e) => {
     setQuery(e.target.value);
     setShowSearchHistory(e.target.value === '');
   };
-  
-  const handleSearchSubmit = (e: React.FormEvent) => {
+
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
     setDebouncedQuery(query);
     setShowSearchHistory(false);
   };
-  
-  const handleSearchHistoryClick = (term: string) => {
+
+  // Handle search history item click
+  const handleSearchHistoryClick = (term) => {
     setQuery(term);
     setDebouncedQuery(term);
     setShowSearchHistory(false);
   };
-  
-  const handleProductClick = (product: SearchPageProduct) => {
-    addToRecentlyViewed(product.id);
+
+  // Handle product click
+  const handleProductClick = (product) => {
+    addToRecentlyViewed(product);
     navigate(`/product/${product.id}`);
   };
-  
-  const handleAddToCart = useCallback((product: SearchPageProduct) => {
-    setIsAddingToCart(product.id);
-    
-    setTimeout(() => {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        images: product.images
-      });
-      setIsAddingToCart(false);
-      
-      toast({
-        title: 'Added to cart',
-        description: `${product.name} has been added to your cart`,
-      });
-    }, 500);
-  }, [addToCart, toast]);
-  
-  const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
-    setIsAddingToWishlist(product.id);
-    
-    setTimeout(() => {
-      addToWishlist(product.id);
-      setIsAddingToWishlist(false);
-      
-      toast({
-        title: 'Added to wishlist',
-        description: `${product.name} has been added to your wishlist`,
-      });
-    }, 500);
-  }, [addToWishlist, toast]);
-  
-  const handleShareProduct = useCallback((product: SearchPageProduct) => {
+
+  // Handle add to cart
+  const handleAddToCart = useCallback((product) => {
+    addToCart(product);
+  }, [addToCart]);
+
+  // Handle add to wishlist
+  const handleAddToWishlist = useCallback((product) => {
+    addToWishlist(product);
+  }, [addToWishlist]);
+
+  // Handle share product
+  const handleShareProduct = useCallback((product) => {
+    // Implementation depends on your sharing mechanism
     console.log('Share product:', product);
-    
+    // Example: Copy link to clipboard
     const productUrl = `${window.location.origin}/product/${product.id}`;
     navigator.clipboard.writeText(productUrl);
-    
     toast({
       title: 'Link copied',
-      description: 'Product link copied to clipboard',
+      description: 'Product link copied to clipboard'
     });
   }, [toast]);
-  
+
   return (
     <>
-      <SEO 
-        title={debouncedQuery ? `Search: ${debouncedQuery}` : 'Search Products'}
-        description={`Search results for ${debouncedQuery || 'all products'}`}
-      />
-      
-      <div className={cn(
-        "min-h-screen pb-10",
-        isDarkMode ? "bg-gray-900" : "bg-gray-50"
-      )}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="relative mb-6">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <Input
-                type="search"
-                placeholder="Search for products..."
-                className={cn(
-                  "pl-10 pr-4 py-2 w-full rounded-lg",
-                  isDarkMode 
-                    ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400" 
-                    : "bg-white border-gray-200"
-                )}
-                value={query}
-                onChange={handleSearchChange}
-                onFocus={() => setShowSearchHistory(query === '')}
-              />
+      <Helmet>
+        <title>{debouncedQuery ? `Search: ${debouncedQuery}` : 'Search Products'}</title>
+        <meta name="description" content={`Search results for ${debouncedQuery || 'all products'}`} />
+      </Helmet>
+
+      <div className={cn("min-h-screen pb-10", isDarkMode ? "bg-gray-900" : "bg-gray-50")}>
+        <div className="bg-white py-4 shadow-sm">
+          <div className="container mx-auto px-4">
+            <form onSubmit={handleSearchSubmit} className="flex items-center">
+              <div className="relative flex-1">
+                <Input
+                  type="search"
+                  placeholder="Search for products..."
+                  value={query}
+                  onChange={handleSearchChange}
+                  className="pr-10"
+                />
+                <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+              </div>
+              <Button type="submit" className="ml-3">
+                Search
+              </Button>
             </form>
             
-            {showSearchHistory && Array.isArray(searchHistory) && searchHistory.length > 0 && (
-              <Card className={cn(
-                "absolute z-10 w-full mt-1 shadow-lg",
-                isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-              )}>
+            {showSearchHistory && searchHistory.length > 0 && (
+              <Card className="absolute top-14 left-0 mt-2 w-full z-10">
                 <CardContent className="p-2">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <History size={14} className="mr-1" />
-                      <span>Recent Searches</span>
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <History className="h-4 w-4" />
+                      Recent Searches
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 text-xs"
-                      onClick={clearSearchHistory}
-                    >
+                    <Button variant="ghost" size="sm" onClick={clearSearchHistory}>
                       Clear All
                     </Button>
                   </div>
                   <ul>
-                    {searchHistory.map((item, index) => (
-                      <li key={index} className="flex items-center justify-between">
-                        <button
-                          className={cn(
-                            "flex items-center w-full text-left px-2 py-1.5 rounded-md text-sm",
-                            isDarkMode 
-                              ? "hover:bg-gray-700 text-gray-200" 
-                              : "hover:bg-gray-100 text-gray-700"
-                          )}
-                          onClick={() => handleSearchHistoryClick(typeof item === 'string' ? item : item.query)}
-                        >
-                          <Clock size={14} className="mr-2 text-gray-400" />
-                          {typeof item === 'string' ? item : item.query}
+                    {searchHistory.map((term) => (
+                      <li key={term} className="flex items-center justify-between px-2 py-1 hover:bg-gray-100 rounded-md">
+                        <button onClick={() => handleSearchHistoryClick(term)} className="flex items-center gap-2 w-full text-left">
+                          <Clock className="h-3 w-3 text-gray-400" />
+                          {term}
                         </button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeSearchTerm(typeof item === 'string' ? item : item.id);
-                          }}
-                        >
-                          <X size={14} />
+                        <Button variant="ghost" size="icon" onClick={() => removeSearchTerm(term)}>
+                          <X className="h-4 w-4" />
                         </Button>
                       </li>
                     ))}
@@ -242,110 +198,36 @@ const SearchPage: React.FC = () => {
               </Card>
             )}
           </div>
+        </div>
+        
+        <div className="container mx-auto px-4 py-4">
+          <div className="relative mb-6">
+            
+          </div>
           
           {debouncedQuery && (
             <div className="mb-4">
-              <h1 className={cn(
-                "text-xl font-semibold mb-1",
-                isDarkMode ? "text-white" : "text-gray-800"
-              )}>
+              <h1 className={cn("text-xl font-semibold mb-1", isDarkMode ? "text-white" : "text-gray-800")}>
                 Search results for "{debouncedQuery}"
               </h1>
-              <p className={cn(
-                "text-sm",
-                isDarkMode ? "text-gray-400" : "text-gray-500"
-              )}>
+              <p className={cn("text-sm", isDarkMode ? "text-gray-400" : "text-gray-500")}>
                 {isLoading ? 'Searching...' : `Found ${totalResults} results`}
               </p>
             </div>
           )}
           
           <div className="flex flex-col md:flex-row gap-4">
-            <div className={cn(
-              "w-full md:w-64 shrink-0",
-              isMobile ? "order-2" : "order-1"
-            )}>
-              <SearchFilters 
-                darkMode={isDarkMode}
-                clearFilters={clearFilters}
-              />
-              
-              {recentlyViewed.length > 0 && (
-                <Card className={cn(
-                  "mt-4",
-                  isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-                )}>
-                  <CardContent className="p-3">
-                    <h3 className={cn(
-                      "text-sm font-medium mb-2",
-                      isDarkMode ? "text-white" : "text-gray-800"
-                    )}>
-                      Recently Viewed
-                    </h3>
-                    <div className="space-y-2">
-                      {recentlyViewed.slice(0, 3).map(product => (
-                        <button
-                          key={product.id}
-                          className={cn(
-                            "flex items-center w-full p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700",
-                            isDarkMode ? "text-gray-200" : "text-gray-700"
-                          )}
-                          onClick={() => navigate(`/product/${product.id}`)}
-                        >
-                          <div className="w-10 h-10 rounded overflow-hidden bg-gray-200 mr-2">
-                            <img 
-                              src={product.image} 
-                              alt={product.name} 
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <p className="text-xs font-medium truncate">{product.name}</p>
-                            <p className="text-xs text-gray-500">${product.price.toFixed(2)}</p>
-                          </div>
-                          <ChevronRight size={14} className="text-gray-400" />
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+            <div className={cn("w-full md:w-1/4", isMobile ? "order-2" : "order-1")}>
+              <SearchFilters />
             </div>
             
-            <div className={cn(
-              "flex-1",
-              isMobile ? "order-1" : "order-2"
-            )}>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+            <div className={cn("flex-1", isMobile ? "order-1" : "order-2")}>
+              <div className="flex items-center justify-between mb-4">
                 <SearchSort
-                  options={sortOptions}
-                  value={sortOption}
-                  onChange={setSortOption}
+                  sortOptions={sortOptions}
+                  sortOption={sortOption}
+                  setSortOption={setSortOption}
                 />
-                
-                <div className="flex items-center">
-                  <span className={cn(
-                    "text-xs mr-2",
-                    isDarkMode ? "text-gray-400" : "text-gray-500"
-                  )}>
-                    Show:
-                  </span>
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                    className={cn(
-                      "text-xs rounded border px-2 py-1 mr-4",
-                      isDarkMode 
-                        ? "bg-gray-800 border-gray-700 text-white" 
-                        : "bg-white border-gray-200"
-                    )}
-                  >
-                    <option value={12}>12</option>
-                    <option value={24}>24</option>
-                    <option value={36}>36</option>
-                    <option value={48}>48</option>
-                  </select>
-                </div>
               </div>
               
               <SearchResults
@@ -353,8 +235,8 @@ const SearchPage: React.FC = () => {
                 isLoading={isLoading}
                 error={error}
                 totalProducts={totalResults}
-                isAddingToCart={isAddingToCart}
-                isAddingToWishlist={isAddingToWishlist}
+                isAddingToCart={isAddingToCart as string}
+                isAddingToWishlist={isAddingToWishlist as string}
                 onAddToCart={handleAddToCart}
                 onAddToWishlist={handleAddToWishlist}
                 onShareProduct={handleShareProduct}

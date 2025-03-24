@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { SearchPageProduct } from './types';
+import { adaptProduct } from '@/lib/products/types';
 
 export const useSearchCartIntegration = () => {
   const [isAddingToCart, setIsAddingToCart] = useState<string>('');
@@ -15,33 +16,34 @@ export const useSearchCartIntegration = () => {
     
     // Small delay to show loading state
     setTimeout(() => {
-      // Convert the search product to cart item
-      const cartItem = {
+      // Convert the search product to cart item and adapt it to the Product type
+      const adaptedProduct = adaptProduct({
         id: product.id,
         name: product.name,
         price: product.price,
+        sale_price: product.sale_price,
         salePrice: product.sale_price,
         image: product.images[0], // Use first image as thumbnail
-        description: product.description || '',
         images: product.images,
+        description: product.description || '',
+        category_id: product.category_id || '',
         category: product.category_id || '',
-        categoryName: product.category_id || '',
         colors: product.colors || [],
         sizes: product.sizes || [],
-        quantity: 1,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
         stock: product.stock || 0,
+        rating: product.rating || 0,
+        review_count: product.review_count || 0,
+        reviewCount: product.review_count || 0,
+        shop_id: product.shop_id || '',
         shopId: product.shop_id || '',
-        shopName: product.shop_id || '',
+        is_new: product.is_new || false,
         isNew: product.is_new || false,
-        isFavorite: false,
+        is_trending: product.is_trending || false,
         isTrending: product.is_trending || false,
-        isSale: !!product.sale_price,
         tags: product.tags || []
-      };
+      });
       
-      addToCart(cartItem, 1, "", ""); // Fix: Add the missing arguments
+      addToCart(adaptedProduct, 1, "", "");
       setIsAddingToCart('');
     }, 500);
     
@@ -54,32 +56,33 @@ export const useSearchCartIntegration = () => {
     // Small delay to show loading state
     setTimeout(() => {
       // Convert the search product to wishlist item
-      const wishlistItem = {
+      const adaptedProduct = adaptProduct({
         id: product.id,
         name: product.name,
         price: product.price,
+        sale_price: product.sale_price,
         salePrice: product.sale_price,
         image: product.images[0], // Use first image as thumbnail
-        description: product.description || '',
         images: product.images,
+        description: product.description || '',
+        category_id: product.category_id || '',
         category: product.category_id || '',
-        categoryName: product.category_id || '',
         colors: product.colors || [],
         sizes: product.sizes || [],
-        quantity: 1,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
         stock: product.stock || 0,
+        rating: product.rating || 0,
+        review_count: product.review_count || 0,
+        reviewCount: product.review_count || 0,
+        shop_id: product.shop_id || '',
         shopId: product.shop_id || '',
-        shopName: product.shop_id || '',
+        is_new: product.is_new || false,
         isNew: product.is_new || false,
-        isFavorite: true,
+        is_trending: product.is_trending || false,
         isTrending: product.is_trending || false,
-        isSale: !!product.sale_price,
         tags: product.tags || []
-      };
+      });
       
-      addToWishlist(wishlistItem);
+      addToWishlist(adaptedProduct);
       setIsAddingToWishlist('');
     }, 500);
     

@@ -19,3 +19,10 @@ export interface Shop {
   shop_id?: string;
   product_count: number;
 }
+
+// Add ShopStatus enum that's referenced in the error
+export enum ShopStatus {
+  ACTIVE = "active",
+  PENDING = "pending",
+  SUSPENDED = "suspended"
+}
