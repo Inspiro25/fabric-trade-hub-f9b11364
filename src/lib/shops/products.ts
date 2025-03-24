@@ -22,9 +22,6 @@ export const getShopProducts = async (shopId: string) => {
   }
 };
 
-// The logic for adding and removing a product to/from a shop was previously 
-// using a productIds property which doesn't exist. Let's fix that:
-
 export const addProductToShop = async (shop: Shop, productId: string) => {
   // In a real app, you would update the database
   try {

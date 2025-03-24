@@ -1,7 +1,7 @@
 
 import { Shop } from './types';
 
-export const mockShops: Shop[] = [
+const mockShops: Shop[] = [
   {
     id: '1',
     name: 'Eternity Clothing',

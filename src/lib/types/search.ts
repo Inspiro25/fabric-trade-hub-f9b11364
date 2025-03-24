@@ -43,9 +43,21 @@ export interface Shop {
   description?: string;
   logo?: string;
   cover_image?: string;
+  coverImage?: string;
   rating?: number;
   review_count?: number;
+  reviewCount?: number;
   followers_count?: number;
+  followersCount?: number;
+  followers?: number;
+  is_verified?: boolean;
+  isVerified?: boolean;
+}
+
+export interface SortOption {
+  id: string;
+  name: string;
+  value: string;
 }
 
 // Base ProductCard props that all variants share
@@ -60,6 +72,20 @@ export interface ProductCardBaseProps {
   buttonColor?: string;
   viewMode?: 'grid' | 'list';
   isCompact?: boolean;
+  highlight?: string;
+}
+
+export interface ProductCardProps {
+  id: string;
+  name: string;
+  price: number;
+  salePrice?: number;
+  image: string;
+  category?: string;
+  isNew?: boolean;
+  isTrending?: boolean;
+  rating?: number;
+  reviewCount?: number;
   highlight?: string;
 }
 

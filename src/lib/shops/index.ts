@@ -1,18 +1,28 @@
 
-// Export types
-export type { Shop } from './types';
+import { Shop } from './types';
+import { getShopById, fetchShops, updateShop, createShop, deleteShop } from '@/lib/supabase/shops';
+import mockShops from './mockData';
 
-// Export the mock data for testing
-export { shops } from './mockData';
-
-// Export CRUD methods
+// Re-export the functions to provide a consistent API
 export { 
-  fetchShops, 
   getShopById, 
+  fetchShops, 
   updateShop, 
   createShop, 
-  deleteShop 
-} from './crud';
+  deleteShop,
+  mockShops 
+};
 
-// Export products methods
-export { getShopProducts } from './products';
+// Export the shop products related functions
+export * from './products';
+
+// Additional functions can be added here for specific business logic
+export const getActiveShops = async (): Promise<Shop[]> => {
+  const shops = await fetchShops();
+  return shops.filter(shop => shop.status === 'active');
+};
+
+export const getVerifiedShops = async (): Promise<Shop[]> => {
+  const shops = await fetchShops();
+  return shops.filter(shop => shop.is_verified);
+};

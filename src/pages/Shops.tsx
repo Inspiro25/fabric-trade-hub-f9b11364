@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import SearchErrorState from '@/components/search/SearchErrorState';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { Shop } from '@/lib/shops/types';
 
 const Shops = () => {
   const { 
@@ -147,7 +148,7 @@ const Shops = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredShops.map(shop => (
+            {filteredShops.map((shop: any) => (
               <Link 
                 to={`/shops/${shop.id}`} 
                 key={shop.id} 
@@ -159,11 +160,11 @@ const Shops = () => {
                 )}>
                   <div className="relative h-24 bg-gradient-to-r from-kutuku-light to-kutuku-light/50">
                     <img 
-                      src={shop.coverImage} 
+                      src={shop.coverImage || shop.cover_image} 
                       alt={shop.name} 
                       className="w-full h-full object-cover" 
                     />
-                    {shop.isVerified && (
+                    {(shop.isVerified || shop.is_verified) && (
                       <Badge className="absolute top-2 right-2 bg-green-500 text-white border-none text-xs px-1.5 font-normal flex gap-0.5 items-center">
                         <CheckCircle className="h-2.5 w-2.5" />
                         Verified
@@ -197,13 +198,13 @@ const Shops = () => {
                           <span className={cn(
                             "text-xs ml-1",
                             isDarkMode ? "text-gray-400" : "text-gray-500"
-                          )}>({shop.reviewCount})</span>
+                          )}>({shop.reviewCount || shop.review_count})</span>
                           <span className="mx-1 text-gray-300">•</span>
                           <Users className="h-3 w-3 text-purple-500 mr-0.5" />
                           <span className={cn(
                             "text-xs",
                             isDarkMode && "text-gray-300"
-                          )}>{shop.followers || shop.followers_count || 0}</span>
+                          )}>{shop.followersCount || shop.followers_count || 0}</span>
                         </div>
                       </div>
                     </div>

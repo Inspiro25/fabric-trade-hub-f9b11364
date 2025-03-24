@@ -1,107 +1,47 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SortAsc } from 'lucide-react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SlidersHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 import { SortOption } from '@/lib/types/search';
 
-interface FilterOption {
-  label: string;
-  value: string;
-}
+const sortOptions: SortOption[] = [
+  { id: 'featured', name: 'Featured', value: 'featured' },
+  { id: 'newest', name: 'Newest', value: 'newest' },
+  { id: 'price-low', name: 'Price: Low to High', value: 'price-low' },
+  { id: 'price-high', name: 'Price: High to Low', value: 'price-high' },
+  { id: 'rating', name: 'Highest Rated', value: 'rating' },
+];
 
 interface SearchSortProps {
-  isMobile: boolean;
-  sortOption: string;
-  mobileSortOpen: boolean;
-  setMobileSortOpen: (open: boolean) => void;
-  handleSortChange: (value: string) => void;
+  activeSortOption: string;
+  onSortChange: (option: string) => void;
 }
 
-const SearchSort: React.FC<SearchSortProps> = ({
-  isMobile,
-  sortOption,
-  mobileSortOpen,
-  setMobileSortOpen,
-  handleSortChange
-}) => {
-  const sortOptions: FilterOption[] = [
-    { label: 'Newest', value: 'newest' },
-    { label: 'Price: Low to High', value: 'price-asc' },
-    { label: 'Price: High to Low', value: 'price-desc' },
-    { label: 'Rating', value: 'rating' },
-    { label: 'Popularity', value: 'popularity' },
-    { label: 'Relevance', value: 'relevance' }
-  ];
-
-  const renderSortContent = () => (
-    <div className="grid gap-4 py-4">
-      <div>
-        <Label htmlFor="sort">Sort By</Label>
-        <Select value={sortOption || "relevance"} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Relevance" />
-          </SelectTrigger>
-          <SelectContent>
-            {sortOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <Sheet open={mobileSortOpen} onOpenChange={setMobileSortOpen}>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
-            <SortAsc className="mr-2 h-4 w-4" />
-            Sort
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="sm:hidden">
-          <SheetHeader>
-            <SheetTitle>Sort</SheetTitle>
-            <SheetDescription>
-              Sort the search results based on your preference.
-            </SheetDescription>
-          </SheetHeader>
-          {renderSortContent()}
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
+const SearchSort: React.FC<SearchSortProps> = ({ activeSortOption, onSortChange }) => {
+  const { isDarkMode } = useTheme();
+  
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <SortAsc className="mr-2 h-4 w-4" />
-          Sort
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Sort By</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <Select value={sortOption || "relevance"} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Relevance" />
-            </SelectTrigger>
-            <SelectContent>
-              {sortOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center">
+      <Select value={activeSortOption} onValueChange={onSortChange}>
+        <SelectTrigger className={cn(
+          "h-8 pl-2 pr-1 py-1 gap-1",
+          isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
+        )}>
+          <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent className={isDarkMode ? "bg-gray-800 border-gray-700" : ""}>
+          {sortOptions.map((option) => (
+            <SelectItem key={option.id} value={option.value}>
+              {option.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 

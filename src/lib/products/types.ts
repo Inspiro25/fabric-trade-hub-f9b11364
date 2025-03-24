@@ -7,11 +7,13 @@ export interface Product {
   images: string[];
   description: string;
   category_id: string;
+  category?: string;
   colors: string[];
   sizes: string[];
   stock: number;
   rating: number;
   review_count: number;
+  reviewCount?: number;
   shop_id: string | null;
   is_new: boolean;
   is_trending: boolean;

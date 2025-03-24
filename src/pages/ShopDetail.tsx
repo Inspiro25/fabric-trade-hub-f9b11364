@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getShopById, getShopProducts } from '@/lib/shops';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductGrid from '@/components/features/ProductGrid';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
-import { Shop } from '@/lib/shops';
+import { Shop } from '@/lib/shops/types';
 import ShopReviewsTab from '@/components/reviews/ShopReviewsTab';
 import { checkFollowStatus, followShop, unfollowShop, getShopFollowersCount } from '@/lib/supabase/shopFollows';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,7 +79,12 @@ const ShopDetail = () => {
           setShop(shopData);
           
           const productsData = await getShopProducts(id);
-          setShopProducts(productsData);
+          // Convert database product schema to Product type by adding reviewCount
+          const convertedProducts = productsData.map((product: any) => ({
+            ...product,
+            reviewCount: product.review_count
+          }));
+          setShopProducts(convertedProducts);
           
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
@@ -264,7 +270,7 @@ const ShopDetail = () => {
                     <h4 className={`font-medium mb-1 ${isDarkMode ? 'text-orange-400' : 'text-orange-700'} text-[11px]`}>Rating</h4>
                     <div className="flex items-center">
                       <Star className="h-3 w-3 text-yellow-500 mr-1" />
-                      <span>{shop.rating.toFixed(1)} ({shop.reviewCount} reviews)</span>
+                      <span>{shop.rating.toFixed(1)} ({shop.review_count} reviews)</span>
                     </div>
                   </div>
                   <div className={`${isDarkMode ? 'bg-gray-700/60' : 'bg-orange-50'} p-2 rounded-md`}>

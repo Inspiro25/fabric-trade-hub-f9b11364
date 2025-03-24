@@ -17,6 +17,9 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
     
     if (!data) return null;
     
+    // Ensure status is of the correct type
+    const status = data.status as 'active' | 'pending' | 'suspended';
+    
     // Map database fields to our Shop type
     return {
       id: data.id,
@@ -31,7 +34,7 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
       owner_email: data.owner_email || '',
       phone_number: data.phone_number || '',
       address: data.address || '',
-      status: data.status || 'pending',
+      status: status || 'pending',
       is_verified: data.is_verified || false,
       created_at: data.created_at,
       shop_id: data.shop_id,
@@ -77,7 +80,10 @@ export const fetchShops = async (): Promise<Shop[]> => {
       return [];
     }
     
-    return data || [];
+    return data.map(shop => ({
+      ...shop,
+      status: shop.status as 'active' | 'pending' | 'suspended'
+    })) || [];
   } catch (error) {
     console.error('Error in fetchShops:', error);
     return [];
@@ -86,6 +92,12 @@ export const fetchShops = async (): Promise<Shop[]> => {
 
 export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> => {
   try {
+    // Ensure name is present as it's required by supabase
+    if (!shopData.name) {
+      console.error('Shop name is required');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('shops')
       .insert([shopData])
@@ -97,7 +109,10 @@ export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> 
       return null;
     }
     
-    return data;
+    return {
+      ...data,
+      status: data.status as 'active' | 'pending' | 'suspended'
+    };
   } catch (error) {
     console.error('Error in createShop:', error);
     return null;
@@ -203,7 +218,10 @@ export const getShopsByIds = async (shopIds: string[]): Promise<Shop[]> => {
       return [];
     }
     
-    return data || [];
+    return data.map(shop => ({
+      ...shop,
+      status: shop.status as 'active' | 'pending' | 'suspended'
+    })) || [];
   } catch (error) {
     console.error('Error in getShopsByIds:', error);
     return [];
@@ -224,7 +242,10 @@ export const getPopularShops = async (limit = 5): Promise<Shop[]> => {
       return [];
     }
     
-    return data || [];
+    return data.map(shop => ({
+      ...shop,
+      status: shop.status as 'active' | 'pending' | 'suspended'
+    })) || [];
   } catch (error) {
     console.error('Error in getPopularShops:', error);
     return [];
