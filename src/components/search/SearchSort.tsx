@@ -1,47 +1,72 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SlidersHorizontal } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
-import { SortOption } from '@/lib/types/search';
-
-const sortOptions: SortOption[] = [
-  { id: 'featured', name: 'Featured', value: 'featured' },
-  { id: 'newest', name: 'Newest', value: 'newest' },
-  { id: 'price-low', name: 'Price: Low to High', value: 'price-low' },
-  { id: 'price-high', name: 'Price: High to Low', value: 'price-high' },
-  { id: 'rating', name: 'Highest Rated', value: 'rating' },
-];
 
 interface SearchSortProps {
   activeSortOption: string;
   onSortChange: (option: string) => void;
 }
 
+const SORT_OPTIONS = [
+  { value: 'featured', label: 'Featured' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'price-low', label: 'Price: Low to High' },
+  { value: 'price-high', label: 'Price: High to Low' },
+  { value: 'rating', label: 'Rating' },
+];
+
 const SearchSort: React.FC<SearchSortProps> = ({ activeSortOption, onSortChange }) => {
   const { isDarkMode } = useTheme();
   
+  // Get the label of the active sort option
+  const activeSortLabel = SORT_OPTIONS.find(option => option.value === activeSortOption)?.label || 'Sort';
+
   return (
-    <div className="flex items-center">
-      <Select value={activeSortOption} onValueChange={onSortChange}>
-        <SelectTrigger className={cn(
-          "h-8 pl-2 pr-1 py-1 gap-1",
-          isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white"
-        )}>
-          <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
-          <SelectValue placeholder="Sort by" />
-        </SelectTrigger>
-        <SelectContent className={isDarkMode ? "bg-gray-800 border-gray-700" : ""}>
-          {sortOptions.map((option) => (
-            <SelectItem key={option.id} value={option.value}>
-              {option.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline" 
+          className={cn(
+            "h-8",
+            isDarkMode ? "border-gray-700 bg-gray-800" : ""
+          )}
+        >
+          <span className="mr-1 text-xs">{activeSortLabel}</span>
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align="end"
+        className={cn(
+          isDarkMode ? "bg-gray-800 border-gray-700" : ""
+        )}
+      >
+        {SORT_OPTIONS.map(option => (
+          <DropdownMenuItem
+            key={option.value}
+            onClick={() => onSortChange(option.value)}
+            className={cn(
+              "flex items-center justify-between",
+              isDarkMode ? "focus:bg-gray-700" : ""
+            )}
+          >
+            <span>{option.label}</span>
+            {activeSortOption === option.value && (
+              <Check className="h-4 w-4 ml-2" />
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

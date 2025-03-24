@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { SortOption } from '@/lib/types/search';
 
 export function useSearchFilters() {
   const [filters, setFilters] = useState<string[]>([]);

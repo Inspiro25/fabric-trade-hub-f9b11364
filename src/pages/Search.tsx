@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { Loader2, Filter, Search as SearchIcon, X, SlidersHorizontal } from 'lucide-react';
-import SearchFilters from '@/components/search/SearchFilters';
+import { SearchFilters } from '@/components/search/SearchFilters';
 import SearchResults from '@/components/search/SearchResults';
 import SearchSort from '@/components/search/SearchSort';
 import { useSearchFilters } from '@/hooks/use-search-filters';
@@ -19,8 +19,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { SortOption } from '@/lib/types/search';
-import { SearchPageProduct } from '@/lib/types/search';
 
 // Define search query interface
 interface SearchQuery {
@@ -44,10 +42,15 @@ const Search = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   
-  const { isLoading, error, products, totalProducts } = useSearch(searchQuery, filters, sortOption, currentPage, itemsPerPage);
-  const { addToCart, cartLoading } = useCart();
-  const { addToWishlist, wishlistLoading } = useWishlist();
+  const searchResult = useSearch(searchQuery, filters, sortOption);
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
   const isMobile = useIsMobile();
+
+  // Extract values from search result
+  const { isLoading, error } = searchResult;
+  const products = searchResult.products || [];
+  const totalProducts = searchResult.totalProducts || 0;
 
   // Load recent searches from localStorage on component mount
   useEffect(() => {
@@ -107,24 +110,24 @@ const Search = () => {
   };
 
   // Handle adding product to cart
-  const handleAddToCart = (product: SearchPageProduct) => {
+  const handleAddToCart = (product: any) => {
     addToCart({
       id: product.id,
       name: product.name,
       price: product.salePrice || product.price,
       quantity: 1,
-      image: product.images[0] || '',
+      images: product.images || [],
     });
     toast.success(`Added ${product.name} to cart`);
   };
 
   // Handle adding product to wishlist
-  const handleAddToWishlist = (product: SearchPageProduct) => {
+  const handleAddToWishlist = (product: any) => {
     addToWishlist({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0] || '',
+      images: product.images || [],
     });
     toast.success(`Added ${product.name} to wishlist`);
   };
@@ -386,8 +389,6 @@ const Search = () => {
                   onItemsPerPageChange={handleItemsPerPageChange}
                   viewMode={viewMode}
                   onViewModeChange={handleViewModeChange}
-                  isAddingToCart={cartLoading}
-                  isAddingToWishlist={wishlistLoading}
                   onAddToCart={handleAddToCart}
                   onAddToWishlist={handleAddToWishlist}
                   onShareProduct={() => {}}

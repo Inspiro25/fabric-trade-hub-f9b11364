@@ -1,7 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Shop } from '@/lib/shops/types';
+import { Shop, ShopStatus } from '@/lib/shops/types';
+import { v4 as uuidv4 } from 'uuid';
 
+// Function to get a shop by its ID
 export const getShopById = async (id: string): Promise<Shop | null> => {
   try {
     const { data, error } = await supabase
@@ -9,116 +11,101 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
       .select('*')
       .eq('id', id)
       .single();
-      
-    if (error) {
-      console.error('Error fetching shop:', error);
-      return null;
-    }
+    
+    if (error) throw error;
     
     if (!data) return null;
     
-    // Ensure status is of the correct type
-    const status = data.status as 'active' | 'pending' | 'suspended';
+    // Ensure the status is of the correct type
+    const status = data.status as ShopStatus;
     
-    // Map database fields to our Shop type
     return {
-      id: data.id,
-      name: data.name,
-      description: data.description || '',
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      phone_number: data.phone_number || '',
-      address: data.address || '',
-      status: status || 'pending',
-      is_verified: data.is_verified || false,
-      created_at: data.created_at,
-      shop_id: data.shop_id,
-      password: data.password
-    };
+      ...data,
+      status
+    } as Shop;
   } catch (error) {
-    console.error('Error in getShopById:', error);
+    console.error('Error fetching shop:', error);
     return null;
   }
 };
 
-export const updateShop = async (
-  id: string, 
-  shopData: Partial<Shop>
-): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('shops')
-      .update(shopData)
-      .eq('id', id);
-      
-    if (error) {
-      console.error('Error updating shop:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error in updateShop:', error);
-    return false;
-  }
-};
-
+// Function to fetch all shops
 export const fetchShops = async (): Promise<Shop[]> => {
   try {
     const { data, error } = await supabase
       .from('shops')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('name');
     
-    if (error) {
-      console.error('Error fetching shops:', error);
-      return [];
-    }
+    if (error) throw error;
     
-    return data.map(shop => ({
+    // Ensure each shop has the correct status type
+    return (data || []).map(shop => ({
       ...shop,
-      status: shop.status as 'active' | 'pending' | 'suspended'
-    })) || [];
+      status: shop.status as ShopStatus
+    })) as Shop[];
   } catch (error) {
-    console.error('Error in fetchShops:', error);
+    console.error('Error fetching shops:', error);
     return [];
   }
 };
 
-export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> => {
+// Function to update a shop
+export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<Shop | null> => {
   try {
-    // Ensure name is present as it's required by supabase
-    if (!shopData.name) {
-      console.error('Shop name is required');
-      return null;
+    // Ensure the status is of the correct type if it's being updated
+    let updatedData = { ...shopData };
+    if (updatedData.status) {
+      updatedData.status = updatedData.status as ShopStatus;
     }
-
+    
     const { data, error } = await supabase
       .from('shops')
-      .insert([shopData])
+      .update(updatedData)
+      .eq('id', id)
       .select()
       .single();
     
-    if (error) {
-      console.error('Error creating shop:', error);
-      return null;
-    }
+    if (error) throw error;
+    
+    if (!data) return null;
     
     return {
       ...data,
-      status: data.status as 'active' | 'pending' | 'suspended'
-    };
+      status: data.status as ShopStatus
+    } as Shop;
   } catch (error) {
-    console.error('Error in createShop:', error);
+    console.error('Error updating shop:', error);
     return null;
   }
 };
 
+// Function to create a new shop
+export const createShop = async (shopData: Omit<Shop, 'id' | 'created_at'>): Promise<Shop | null> => {
+  try {
+    const newShop = {
+      ...shopData,
+      id: uuidv4(),
+      created_at: new Date().toISOString(),
+      status: shopData.status as ShopStatus
+    };
+    
+    const { data, error } = await supabase
+      .from('shops')
+      .insert([newShop])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return data as Shop;
+  } catch (error) {
+    console.error('Error creating shop:', error);
+    return null;
+  }
+};
+
+// Function to delete a shop
 export const deleteShop = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
@@ -126,128 +113,114 @@ export const deleteShop = async (id: string): Promise<boolean> => {
       .delete()
       .eq('id', id);
     
-    if (error) {
-      console.error('Error deleting shop:', error);
-      return false;
-    }
+    if (error) throw error;
     
     return true;
   } catch (error) {
-    console.error('Error in deleteShop:', error);
+    console.error('Error deleting shop:', error);
     return false;
   }
 };
 
-export const fetchShopFollowers = async (shopId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('shop_follower_details')
-      .select('*')
-      .eq('shop_id', shopId)
-      .order('followed_at', { ascending: false });
-      
-    if (error) {
-      console.error('Error fetching shop followers:', error);
-      return [];
-    }
-    
-    return data || [];
-  } catch (error) {
-    console.error('Error in fetchShopFollowers:', error);
-    return [];
-  }
-};
-
-export const fetchShopSalesAnalytics = async (shopId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('shop_sales_analytics')
-      .select('*')
-      .eq('shop_id', shopId)
-      .order('date', { ascending: false })
-      .limit(30);
-      
-    if (error) {
-      console.error('Error fetching shop sales analytics:', error);
-      return [];
-    }
-    
-    return data || [];
-  } catch (error) {
-    console.error('Error in fetchShopSalesAnalytics:', error);
-    return [];
-  }
-};
-
-export const checkShopCredentials = async (name: string, password: string): Promise<string | null> => {
+// Function to verify a shop
+export const verifyShop = async (id: string): Promise<Shop | null> => {
   try {
     const { data, error } = await supabase
       .from('shops')
-      .select('id, password')
-      .eq('name', name)
+      .update({ is_verified: true })
+      .eq('id', id)
+      .select()
       .single();
-      
-    if (error || !data) {
-      console.error('Error checking shop credentials:', error);
-      return null;
-    }
     
-    // Very basic check - in a real app you would use proper password hashing
-    if (data.password === password) {
-      return data.id;
-    }
+    if (error) throw error;
     
-    return null;
+    return {
+      ...data,
+      status: data.status as ShopStatus
+    } as Shop;
   } catch (error) {
-    console.error('Error in checkShopCredentials:', error);
+    console.error('Error verifying shop:', error);
     return null;
   }
 };
 
-export const getShopsByIds = async (shopIds: string[]): Promise<Shop[]> => {
-  if (!shopIds.length) return [];
-  
+// Function to suspend a shop
+export const suspendShop = async (id: string): Promise<Shop | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .update({ status: 'suspended' as ShopStatus })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return data as Shop;
+  } catch (error) {
+    console.error('Error suspending shop:', error);
+    return null;
+  }
+};
+
+// Function to activate a shop
+export const activateShop = async (id: string): Promise<Shop | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .update({ status: 'active' as ShopStatus })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    return data as Shop;
+  } catch (error) {
+    console.error('Error activating shop:', error);
+    return null;
+  }
+};
+
+// Function to get verified shops
+export const getVerifiedShops = async (): Promise<Shop[]> => {
   try {
     const { data, error } = await supabase
       .from('shops')
       .select('*')
-      .in('id', shopIds);
-      
-    if (error) {
-      console.error('Error fetching shops by ids:', error);
-      return [];
-    }
+      .eq('is_verified', true)
+      .order('name');
     
-    return data.map(shop => ({
+    if (error) throw error;
+    
+    return (data || []).map(shop => ({
       ...shop,
-      status: shop.status as 'active' | 'pending' | 'suspended'
-    })) || [];
+      status: shop.status as ShopStatus
+    })) as Shop[];
   } catch (error) {
-    console.error('Error in getShopsByIds:', error);
+    console.error('Error fetching verified shops:', error);
     return [];
   }
 };
 
-export const getPopularShops = async (limit = 5): Promise<Shop[]> => {
+// Function to get trending shops
+export const getTrendingShops = async (limit = 5): Promise<Shop[]> => {
   try {
     const { data, error } = await supabase
       .from('shops')
       .select('*')
-      .eq('status', 'active')
+      .eq('is_verified', true)
       .order('followers_count', { ascending: false })
       .limit(limit);
-      
-    if (error) {
-      console.error('Error fetching popular shops:', error);
-      return [];
-    }
     
-    return data.map(shop => ({
+    if (error) throw error;
+    
+    return (data || []).map(shop => ({
       ...shop,
-      status: shop.status as 'active' | 'pending' | 'suspended'
-    })) || [];
+      status: shop.status as ShopStatus
+    })) as Shop[];
   } catch (error) {
-    console.error('Error in getPopularShops:', error);
+    console.error('Error fetching trending shops:', error);
     return [];
   }
 };

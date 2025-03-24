@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Slider } from '@/components/ui/slider';
@@ -8,12 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { X, Star } from 'lucide-react';
 
 export interface SearchFiltersProps {
-  selectedCategory: string | null;
-  categories: any[];
-  selectedShop: string | null;
-  shops: any[];
-  priceRange: [number, number];
-  rating: number;
+  selectedCategory?: string | null;
+  categories?: any[];
+  selectedShop?: string | null;
+  shops?: any[];
+  priceRange?: [number, number];
+  rating?: number;
   onCategoryChange?: (category: string) => void;
   onShopChange?: (shop: string) => void;
   onPriceRangeChange?: (range: [number, number]) => void;
@@ -29,6 +30,9 @@ export interface SearchFiltersProps {
   isMobile?: boolean;
   mobileFiltersOpen?: boolean;
   setMobileFiltersOpen?: (open: boolean) => void;
+  // For the current implementation
+  activeFilters?: string[];
+  onFilterChange?: (filters: string[]) => void;
 }
 
 export function SearchFilters({
@@ -52,7 +56,10 @@ export function SearchFilters({
   clearFilters,
   isMobile,
   mobileFiltersOpen,
-  setMobileFiltersOpen
+  setMobileFiltersOpen,
+  // Current implementation
+  activeFilters = [],
+  onFilterChange
 }: SearchFiltersProps) {
   // Use either new or legacy handlers
   const handleCategory = onCategoryChange || handleCategoryChange || (() => {});
@@ -60,6 +67,19 @@ export function SearchFilters({
   const handlePriceRange = onPriceRangeChange || handlePriceRangeChange || (() => {});
   const handleRating = onRatingChange || handleRatingChange || (() => {});
   const handleClearFilters = onClearFilters || clearFilters || (() => {});
+
+  // Handle filter changes for the current implementation
+  const handleFilterChange = (filter: string, add: boolean) => {
+    if (!onFilterChange) return;
+    
+    if (add) {
+      if (!activeFilters.includes(filter)) {
+        onFilterChange([...activeFilters, filter]);
+      }
+    } else {
+      onFilterChange(activeFilters.filter(f => f !== filter));
+    }
+  };
 
   // Mobile dialog content - same as desktop but in a dialog
   const filtersContent = (
@@ -165,6 +185,24 @@ export function SearchFilters({
                   {shop.name}
                 </label>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Active filters */}
+      {activeFilters && activeFilters.length > 0 && (
+        <div>
+          <h3 className="font-medium mb-2">Active Filters</h3>
+          <div className="flex flex-wrap gap-2">
+            {activeFilters.map((filter) => (
+              <Badge key={filter} variant="secondary" className="flex items-center gap-1">
+                {filter}
+                <X 
+                  className="h-3 w-3 cursor-pointer" 
+                  onClick={() => handleFilterChange(filter, false)}
+                />
+              </Badge>
             ))}
           </div>
         </div>

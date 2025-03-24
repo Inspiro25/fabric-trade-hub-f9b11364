@@ -1,203 +1,157 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
-// Product type for the recently viewed context
-export interface RecentlyViewedProduct {
+interface RecentlyViewedProduct {
   id: string;
   name: string;
   price: number;
   image: string;
-  category?: string;
-  viewedAt: Date;
+  viewedAt: number;
 }
 
-interface RecentlyViewedContextType {
+interface RecentlyViewedContextProps {
   recentlyViewed: RecentlyViewedProduct[];
-  addToRecentlyViewed: (product: RecentlyViewedProduct) => void;
+  addToRecentlyViewed: (product: Omit<RecentlyViewedProduct, 'viewedAt'>) => void;
   clearRecentlyViewed: () => void;
+  isLoading: boolean;
 }
 
-const RecentlyViewedContext = createContext<RecentlyViewedContextType>({
+const RecentlyViewedContext = createContext<RecentlyViewedContextProps>({
   recentlyViewed: [],
   addToRecentlyViewed: () => {},
   clearRecentlyViewed: () => {},
+  isLoading: false,
 });
 
 export const useRecentlyViewed = () => useContext(RecentlyViewedContext);
 
-const LOCAL_STORAGE_KEY = 'recentlyViewedProducts';
-const MAX_ITEMS = 10;
+const MAX_RECENTLY_VIEWED = 20;
+const STORAGE_KEY = 'recentlyViewed';
 
 export const RecentlyViewedProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedProduct[]>([]);
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const { currentUser } = useAuth();
 
-  // Load recent views on mount (from local storage or database)
+  // Load recently viewed items from localStorage or database
   useEffect(() => {
-    const loadRecentViews = async () => {
-      if (user && user.id) {
-        try {
-          // Load from database if user is authenticated
+    const loadRecentlyViewed = async () => {
+      setIsLoading(true);
+      try {
+        if (currentUser) {
+          // Load from database for logged in users
           const { data, error } = await supabase
-            .from('product_view_history')
-            .select('product_id, last_viewed_at, view_count')
-            .eq('user_id', user.id)
-            .order('last_viewed_at', { ascending: false })
-            .limit(MAX_ITEMS);
+            .from('recently_viewed')
+            .select('product_id, product_name, product_price, product_image, viewed_at')
+            .eq('user_id', currentUser.uid || '')
+            .order('viewed_at', { ascending: false })
+            .limit(MAX_RECENTLY_VIEWED);
 
           if (error) {
-            console.error('Error fetching recent views:', error);
-            loadFromLocalStorage();
-            return;
+            throw error;
           }
 
-          if (data && data.length > 0) {
-            // Fetch product details for each recent view
-            const productIds = data.map(item => item.product_id);
-            const { data: productsData, error: productsError } = await supabase
-              .from('products')
-              .select('id, name, price, images, category_id')
-              .in('id', productIds);
-
-            if (productsError) {
-              console.error('Error fetching products:', productsError);
-              loadFromLocalStorage();
-              return;
-            }
-
-            // Map products with view dates
-            const recentProducts: RecentlyViewedProduct[] = productsData.map(product => {
-              const viewItem = data.find(item => item.product_id === product.id);
-              return {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                image: product.images && product.images.length > 0 ? product.images[0] : '',
-                category: product.category_id,
-                viewedAt: viewItem ? new Date(viewItem.last_viewed_at) : new Date(),
-              };
-            });
-
-            setRecentlyViewed(recentProducts);
-          } else {
-            loadFromLocalStorage();
+          if (data) {
+            const formattedData = data.map(item => ({
+              id: item.product_id,
+              name: item.product_name,
+              price: item.product_price,
+              image: item.product_image,
+              viewedAt: new Date(item.viewed_at).getTime(),
+            }));
+            setRecentlyViewed(formattedData);
           }
-        } catch (error) {
-          console.error('Error in loadRecentViews:', error);
-          loadFromLocalStorage();
+        } else {
+          // Load from localStorage for guest users
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            setRecentlyViewed(JSON.parse(stored));
+          }
         }
-      } else {
-        loadFromLocalStorage();
+      } catch (err) {
+        console.error('Error loading recently viewed products:', err);
+        toast.error('Failed to load recently viewed products');
+        
+        // Fallback to localStorage if database fails
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setRecentlyViewed(JSON.parse(stored));
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const loadFromLocalStorage = () => {
-      try {
-        const storedItems = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (storedItems) {
-          const parsedItems = JSON.parse(storedItems);
-          // Convert string dates back to Date objects
-          const itemsWithDates = parsedItems.map((item: any) => ({
-            ...item,
-            viewedAt: new Date(item.viewedAt),
-          }));
-          setRecentlyViewed(itemsWithDates);
-        }
-      } catch (error) {
-        console.error('Error loading from localStorage:', error);
-      }
-    };
+    loadRecentlyViewed();
+  }, [currentUser]);
 
-    loadRecentViews();
-  }, [user]);
-
-  // Save to local storage whenever recentlyViewed changes
+  // Save to localStorage whenever it changes
   useEffect(() => {
+    if (!isLoading && !currentUser) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(recentlyViewed));
+    }
+  }, [recentlyViewed, isLoading, currentUser]);
+
+  const addToRecentlyViewed = async (product: Omit<RecentlyViewedProduct, 'viewedAt'>) => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(recentlyViewed));
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
-    }
-  }, [recentlyViewed]);
-
-  const addToRecentlyViewed = async (product: RecentlyViewedProduct) => {
-    // Check if product is already in the list
-    const existingIndex = recentlyViewed.findIndex(item => item.id === product.id);
-    let newList: RecentlyViewedProduct[] = [];
-
-    if (existingIndex >= 0) {
-      // Update existing product's viewedAt date
-      newList = [...recentlyViewed];
-      newList[existingIndex] = {
-        ...newList[existingIndex],
-        viewedAt: new Date(),
-      };
-    } else {
-      // Add new product to the beginning of the list
-      newList = [
-        { ...product, viewedAt: new Date() },
-        ...recentlyViewed,
-      ].slice(0, MAX_ITEMS); // Keep only MAX_ITEMS
-    }
-
-    setRecentlyViewed(newList);
-
-    // If user is logged in, update the database
-    if (user && user.id) {
-      try {
-        const { error } = await supabase
-          .from('product_view_history')
-          .upsert({
-            user_id: user.id,
-            product_id: product.id,
-            last_viewed_at: new Date().toISOString(),
-            view_count: 1, // This will be incremented by the database trigger
-          }, {
-            onConflict: 'user_id,product_id',
-          });
-
-        if (error) {
-          console.error('Error updating view history:', error);
-        }
-      } catch (error) {
-        console.error('Error in addToRecentlyViewed:', error);
+      const viewedAt = Date.now();
+      const newProduct = { ...product, viewedAt };
+      
+      // Remove duplicate if exists and add to beginning
+      const filtered = recentlyViewed.filter(item => item.id !== product.id);
+      const updated = [newProduct, ...filtered].slice(0, MAX_RECENTLY_VIEWED);
+      
+      setRecentlyViewed(updated);
+      
+      // Save to database if user is logged in
+      if (currentUser && currentUser.uid) {
+        await supabase.from('recently_viewed').upsert({
+          user_id: currentUser.uid,
+          product_id: product.id,
+          product_name: product.name,
+          product_price: product.price,
+          product_image: product.image,
+          viewed_at: new Date(viewedAt).toISOString(),
+        });
       }
+    } catch (err) {
+      console.error('Error adding to recently viewed:', err);
+      toast.error('Failed to update recently viewed products');
     }
   };
 
   const clearRecentlyViewed = async () => {
-    setRecentlyViewed([]);
-    
-    // Clear from local storage
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    
-    // If user is logged in, clear from database
-    if (user && user.id) {
-      try {
-        const { error } = await supabase
-          .from('product_view_history')
+    try {
+      setRecentlyViewed([]);
+      
+      // Clear from database if user is logged in
+      if (currentUser && currentUser.uid) {
+        await supabase
+          .from('recently_viewed')
           .delete()
-          .eq('user_id', user.id);
-          
-        if (error) {
-          console.error('Error clearing view history:', error);
-        }
-      } catch (error) {
-        console.error('Error in clearRecentlyViewed:', error);
+          .eq('user_id', currentUser.uid);
       }
+      
+      // Also clear from localStorage
+      localStorage.removeItem(STORAGE_KEY);
+      
+      toast.success('Recently viewed products cleared');
+    } catch (err) {
+      console.error('Error clearing recently viewed products:', err);
+      toast.error('Failed to clear recently viewed products');
     }
   };
 
   return (
-    <RecentlyViewedContext.Provider
-      value={{
-        recentlyViewed,
-        addToRecentlyViewed,
-        clearRecentlyViewed,
-      }}
-    >
+    <RecentlyViewedContext.Provider value={{
+      recentlyViewed,
+      addToRecentlyViewed,
+      clearRecentlyViewed,
+      isLoading,
+    }}>
       {children}
     </RecentlyViewedContext.Provider>
   );
