@@ -4,6 +4,7 @@ export interface Product {
   name: string;
   price: number;
   sale_price?: number | null;
+  salePrice?: number | null;
   images: string[];
   description: string;
   category_id: string;
@@ -13,31 +14,14 @@ export interface Product {
   stock: number;
   rating: number;
   review_count: number;
+  reviewCount?: number;
   shop_id: string | null;
+  shopId?: string | null;
   is_new: boolean;
+  isNew?: boolean;
   is_trending: boolean;
+  isTrending?: boolean;
   tags: string[];
-  
-  // Compatibility getters for easier migration
-  get salePrice(): number | null | undefined {
-    return this.sale_price;
-  }
-  
-  get isNew(): boolean {
-    return this.is_new;
-  }
-  
-  get isTrending(): boolean {
-    return this.is_trending;
-  }
-  
-  get shopId(): string | null {
-    return this.shop_id;
-  }
-  
-  get reviewCount(): number {
-    return this.review_count;
-  }
 }
 
 // Add adapter function to convert between property naming styles
@@ -47,6 +31,7 @@ export function adaptProduct(product: any): Product {
     name: product.name,
     price: product.price,
     sale_price: product.sale_price ?? product.salePrice,
+    salePrice: product.salePrice ?? product.sale_price,
     images: product.images || [],
     description: product.description || '',
     category_id: product.category_id ?? product.category,
@@ -58,8 +43,11 @@ export function adaptProduct(product: any): Product {
     review_count: product.review_count ?? (product.reviewCount || 0),
     reviewCount: product.reviewCount ?? (product.review_count || 0),
     shop_id: product.shop_id ?? product.shopId,
+    shopId: product.shopId ?? product.shop_id,
     is_new: product.is_new ?? product.isNew || false,
+    isNew: product.isNew ?? product.is_new || false,
     is_trending: product.is_trending ?? product.isTrending || false,
+    isTrending: product.isTrending ?? product.is_trending || false,
     tags: product.tags || [],
   } as Product;
 }

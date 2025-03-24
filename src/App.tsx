@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -6,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { RecentlyViewedProvider } from '@/contexts/RecentlyViewedContext';
+import { HelmetProvider } from 'react-helmet-async';
 import MainLayout from '@/components/layout/MainLayout';
 import AuthLayout from '@/components/layout/AuthLayout';
 import ManagementLayout from '@/components/layout/ManagementLayout';
@@ -25,49 +27,50 @@ import ManagementShops from '@/pages/ManagementShops';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { HelmetProvider } from 'react-helmet-async';
 
 const App: React.FC = () => {
   const { isDarkMode } = useTheme();
   const { currentUser } = useAuth();
 
   return (
-    <div className={cn("min-h-screen", isDarkMode ? "dark" : "")}>
-      <ThemeProvider>
-        <AuthProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <RecentlyViewedProvider>
-                <Routes>
-                  <Route path="/" element={<MainLayout />}>
-                    <Route index element={<Index />} />
-                    <Route path="search" element={<Search />} />
-                    <Route path="product/:id" element={<ProductDetail />} />
-                    <Route path="category/:id" element={<CategoryPage />} />
-                    <Route path="shop/:id" element={<ShopDetail />} />
-                    <Route path="new-arrivals" element={<NewArrivals />} />
-                    <Route path="offers" element={<Offers />} />
-                  </Route>
-                  
-                  {/* Admin Routes */}
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin/dashboard" element={<ShopDashboard />} />
-                  <Route path="/admin/products" element={<ShopProductsManager />} />
-                  <Route path="/admin/settings" element={<AdminSettings />} />
-                  
-                  {/* Management Routes */}
-                  <Route path="/management" element={<ManagementLayout />}>
-                    <Route path="dashboard" element={<ManagementDashboard />} />
-                    <Route path="shops" element={<ManagementShops />} />
-                  </Route>
-                </Routes>
-                <Toaster />
-              </RecentlyViewedProvider>
-            </CartProvider>
-          </WishlistProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </div>
+    <HelmetProvider>
+      <div className={cn("min-h-screen", isDarkMode ? "dark" : "")}>
+        <ThemeProvider>
+          <AuthProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <RecentlyViewedProvider>
+                  <Routes>
+                    <Route path="/" element={<MainLayout />}>
+                      <Route index element={<Index />} />
+                      <Route path="search" element={<Search />} />
+                      <Route path="product/:id" element={<ProductDetail />} />
+                      <Route path="category/:id" element={<CategoryPage />} />
+                      <Route path="shop/:id" element={<ShopDetail />} />
+                      <Route path="new-arrivals" element={<NewArrivals />} />
+                      <Route path="offers" element={<Offers />} />
+                    </Route>
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/dashboard" element={<ShopDashboard />} />
+                    <Route path="/admin/products" element={<ShopProductsManager />} />
+                    <Route path="/admin/settings" element={<AdminSettings />} />
+                    
+                    {/* Management Routes */}
+                    <Route path="/management" element={<ManagementLayout />}>
+                      <Route path="dashboard" element={<ManagementDashboard />} />
+                      <Route path="shops" element={<ManagementShops />} />
+                    </Route>
+                  </Routes>
+                  <Toaster />
+                </RecentlyViewedProvider>
+              </CartProvider>
+            </WishlistProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </div>
+    </HelmetProvider>
   );
 };
 

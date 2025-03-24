@@ -38,3 +38,14 @@ export interface SearchFilterGroup {
   name: string;
   options: SearchFilterOption[];
 }
+
+// Add Category interface
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  parent_id?: string | null;
+  slug?: string;
+  product_count?: number;
+}
