@@ -3,11 +3,10 @@ import { useState, useEffect } from 'react';
 import { fetchShops } from '@/lib/supabase/shops';
 import mockShops from '@/lib/shops/mockData';
 import { Shop } from '@/lib/shops/types';
-import { adaptShop } from '@/lib/shops/types';
 
 export function useShopSearch() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [shops, setShops] = useState<any[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,9 +32,7 @@ export function useShopSearch() {
           shopsData = mockShops;
         }
         
-        // Adapt shops to use camelCase for frontend
-        const adaptedShops = shopsData.map(shop => adaptShop(shop));
-        setShops(adaptedShops);
+        setShops(shopsData);
       } catch (err) {
         console.error('Error in useShopSearch:', err);
         setError('Failed to fetch shops data. Please try again later.');

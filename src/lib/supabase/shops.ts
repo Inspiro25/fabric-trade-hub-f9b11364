@@ -21,7 +21,8 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
     
     return {
       ...data,
-      status
+      status,
+      product_count: data.product_count || 0
     } as Shop;
   } catch (error) {
     console.error('Error fetching shop:', error);
@@ -39,10 +40,11 @@ export const fetchShops = async (): Promise<Shop[]> => {
     
     if (error) throw error;
     
-    // Ensure each shop has the correct status type
+    // Ensure each shop has the correct status type and product_count
     return (data || []).map(shop => ({
       ...shop,
-      status: shop.status as ShopStatus
+      status: shop.status as ShopStatus,
+      product_count: shop.product_count || 0
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching shops:', error);
@@ -72,7 +74,8 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<S
     
     return {
       ...data,
-      status: data.status as ShopStatus
+      status: data.status as ShopStatus,
+      product_count: data.product_count || 0
     } as Shop;
   } catch (error) {
     console.error('Error updating shop:', error);
@@ -87,7 +90,8 @@ export const createShop = async (shopData: Omit<Shop, 'id' | 'created_at'>): Pro
       ...shopData,
       id: uuidv4(),
       created_at: new Date().toISOString(),
-      status: shopData.status as ShopStatus
+      status: shopData.status as ShopStatus,
+      product_count: shopData.product_count || 0
     };
     
     const { data, error } = await supabase
@@ -98,7 +102,11 @@ export const createShop = async (shopData: Omit<Shop, 'id' | 'created_at'>): Pro
     
     if (error) throw error;
     
-    return data as Shop;
+    return {
+      ...data,
+      status: data.status as ShopStatus,
+      product_count: data.product_count || 0
+    } as Shop;
   } catch (error) {
     console.error('Error creating shop:', error);
     return null;
@@ -136,7 +144,8 @@ export const verifyShop = async (id: string): Promise<Shop | null> => {
     
     return {
       ...data,
-      status: data.status as ShopStatus
+      status: data.status as ShopStatus,
+      product_count: data.product_count || 0
     } as Shop;
   } catch (error) {
     console.error('Error verifying shop:', error);
@@ -156,7 +165,10 @@ export const suspendShop = async (id: string): Promise<Shop | null> => {
     
     if (error) throw error;
     
-    return data as Shop;
+    return {
+      ...data,
+      product_count: data.product_count || 0
+    } as Shop;
   } catch (error) {
     console.error('Error suspending shop:', error);
     return null;
@@ -175,7 +187,10 @@ export const activateShop = async (id: string): Promise<Shop | null> => {
     
     if (error) throw error;
     
-    return data as Shop;
+    return {
+      ...data,
+      product_count: data.product_count || 0
+    } as Shop;
   } catch (error) {
     console.error('Error activating shop:', error);
     return null;
@@ -195,7 +210,8 @@ export const getVerifiedShops = async (): Promise<Shop[]> => {
     
     return (data || []).map(shop => ({
       ...shop,
-      status: shop.status as ShopStatus
+      status: shop.status as ShopStatus,
+      product_count: shop.product_count || 0
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching verified shops:', error);
@@ -217,10 +233,42 @@ export const getTrendingShops = async (limit = 5): Promise<Shop[]> => {
     
     return (data || []).map(shop => ({
       ...shop,
-      status: shop.status as ShopStatus
+      status: shop.status as ShopStatus,
+      product_count: shop.product_count || 0
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching trending shops:', error);
     return [];
+  }
+};
+
+// Function to check shop credentials (username/password)
+export const checkShopCredentials = async (shopName: string, password: string): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .select('id, name, password')
+      .eq('name', shopName)
+      .single();
+    
+    if (error) {
+      console.error('Error checking shop credentials:', error);
+      return null;
+    }
+    
+    if (!data) {
+      console.log('Shop not found');
+      return null;
+    }
+    
+    // Simple password check (in a real app, you'd use proper password hashing)
+    if (data.password === password) {
+      return data.id;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error checking shop credentials:', error);
+    return null;
   }
 };
