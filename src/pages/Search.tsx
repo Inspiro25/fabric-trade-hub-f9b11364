@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sheet,
   SheetContent,
@@ -18,14 +19,21 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import useSearch from '@/hooks/use-search';
 import SearchResults from '@/components/search/SearchResults';
@@ -132,7 +140,7 @@ const Search = () => {
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {search.searchHistory.map(item => (
+              {search.searchHistory.map((item: string) => (
                 <Badge
                   key={item}
                   variant="secondary"
@@ -183,7 +191,7 @@ const Search = () => {
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={null}>All Categories</SelectItem>
+                          <SelectItem value="">All Categories</SelectItem>
                           {search.categories.map(category => (
                             <SelectItem key={category.id} value={category.id}>
                               {category.name}

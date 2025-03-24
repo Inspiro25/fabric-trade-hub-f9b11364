@@ -3,17 +3,33 @@ import React from 'react';
 import { GridProductCard } from './GridProductCard';
 import { ListProductCard } from './ListProductCard';
 import { CompactProductCard } from './CompactProductCard';
-import { ProductCardSkeleton } from './ProductCardSkeleton';
-import type { ProductCardBaseProps, SearchPageProduct } from '@/hooks/search/types';
+import { SearchPageProduct } from '@/hooks/search/types';
 
-const ProductCard = ({ viewMode = 'grid', ...props }: ProductCardBaseProps) => {
-  if (viewMode === 'list') {
-    return <ListProductCard {...props} />;
-  } else {
-    return <GridProductCard {...props} />;
+export interface ProductCardProps {
+  product: SearchPageProduct;
+  isAddingToCart?: string | boolean;
+  isAddingToWishlist?: string | boolean;
+  onAddToCart?: (product: SearchPageProduct) => void;
+  onAddToWishlist?: (product: SearchPageProduct) => void;
+  onShare?: (product: SearchPageProduct) => void;
+  onClick?: (product: SearchPageProduct) => void;
+  buttonColor?: string;
+  viewMode?: 'grid' | 'list';
+  isCompact?: boolean;
+}
+
+const ProductCard: React.FC<ProductCardProps> = (props) => {
+  const { viewMode = 'grid', isCompact = false, ...rest } = props;
+  
+  if (isCompact) {
+    return <CompactProductCard {...rest} />;
   }
+  
+  if (viewMode === 'list') {
+    return <ListProductCard {...rest} />;
+  }
+  
+  return <GridProductCard {...rest} />;
 };
 
-export { ProductCardSkeleton, CompactProductCard };
-export type { SearchPageProduct, ProductCardBaseProps };
 export default ProductCard;

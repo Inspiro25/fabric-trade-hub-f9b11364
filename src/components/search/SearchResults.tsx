@@ -1,5 +1,6 @@
+
 import React, { useCallback } from 'react';
-import { SearchProductCard, SearchProductCardSkeleton } from './SearchProductCard';
+import { SearchProductCardSkeleton } from './SearchProductCard';
 import { SearchPageProduct } from '@/hooks/search/types';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
@@ -13,6 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchViewMode } from '@/hooks/search/use-search-filters';
 import SearchPagination from './SearchPagination';
+import ProductCard from './product-card';
 
 export interface SearchResultsProps {
   products: SearchPageProduct[];
@@ -194,16 +196,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           : "flex flex-col gap-4"
       )}>
         {products.map(product => (
-          <SearchProductCard
+          <ProductCard
             key={product.id}
             product={product}
+            isAddingToCart={isAddingToCart === product.id}
+            isAddingToWishlist={isAddingToWishlist === product.id}
             onAddToCart={() => handleAddToCart(product)}
             onAddToWishlist={() => handleAddToWishlist(product)}
             onShare={() => handleShare(product)}
             onClick={() => handleProductClick(product)}
             viewMode={viewMode}
             buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
-            isCompact={false}
           />
         ))}
       </div>

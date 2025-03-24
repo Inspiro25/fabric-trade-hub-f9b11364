@@ -39,8 +39,8 @@ export interface Shop {
 // Base ProductCard props that all variants share
 export interface ProductCardBaseProps {
   product: SearchPageProduct;
-  isAddingToCart?: string;
-  isAddingToWishlist?: string;
+  isAddingToCart?: boolean;
+  isAddingToWishlist?: boolean;
   onAddToCart?: (product: SearchPageProduct) => void;
   onAddToWishlist?: (product: SearchPageProduct) => void;
   onShare?: (product: SearchPageProduct) => void;

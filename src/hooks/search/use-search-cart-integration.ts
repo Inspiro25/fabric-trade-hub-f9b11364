@@ -22,19 +22,23 @@ export const useSearchCartIntegration = () => {
         price: product.price,
         salePrice: product.sale_price,
         image: product.images[0], // Use first image as thumbnail
-        category: product.category_id,
-        categoryName: product.category_id,
+        description: product.description || '',
+        images: product.images,
+        category: product.category_id || '',
+        categoryName: product.category_id || '',
         colors: product.colors || [],
         sizes: product.sizes || [],
         quantity: 1,
         rating: product.rating || 0,
         reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
         shopId: product.shop_id || '',
         shopName: product.shop_id || '',
         isNew: product.is_new || false,
         isFavorite: false,
         isTrending: product.is_trending || false,
         isSale: !!product.sale_price,
+        tags: product.tags || []
       };
       
       addToCart(cartItem);
@@ -56,19 +60,23 @@ export const useSearchCartIntegration = () => {
         price: product.price,
         salePrice: product.sale_price,
         image: product.images[0], // Use first image as thumbnail
-        category: product.category_id,
-        categoryName: product.category_id,
+        description: product.description || '',
+        images: product.images,
+        category: product.category_id || '',
+        categoryName: product.category_id || '',
         colors: product.colors || [],
         sizes: product.sizes || [],
         quantity: 1,
         rating: product.rating || 0,
         reviewCount: product.review_count || 0,
+        stock: product.stock || 0,
         shopId: product.shop_id || '',
         shopName: product.shop_id || '',
         isNew: product.is_new || false,
         isFavorite: true,
         isTrending: product.is_trending || false,
         isSale: !!product.sale_price,
+        tags: product.tags || []
       };
       
       addToWishlist(wishlistItem);
