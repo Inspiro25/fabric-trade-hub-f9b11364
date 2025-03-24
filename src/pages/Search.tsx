@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import SEO from '@/components/shared/SEO';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -39,28 +38,21 @@ const SearchPage: React.FC = () => {
   const { isDarkMode } = useTheme();
   const isMobile = useMediaQuery('(max-width: 768px)');
   
-  // Get query params
   const queryParams = new URLSearchParams(location.search);
   const initialQuery = queryParams.get('q') || '';
   
-  // Search state
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   
-  // Search history
   const { searchHistory, clearAllSearchHistory: clearSearchHistory, clearSearchHistoryItem: removeSearchTerm } = useSearchHistory(null);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   
-  // Pagination
   const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } = useSearchPagination();
   
-  // View mode (grid/list)
   const { viewMode, setViewMode } = useSearchViewMode();
   
-  // Filters
   const { activeFilters, toggleFilter, clearFilters } = useSearchFilters();
   
-  // Sort options
   const sortOptions: SortOption[] = [
     { label: 'Relevance', value: 'relevance' },
     { label: 'Price: Low to High', value: 'price_asc' },
@@ -70,11 +62,9 @@ const SearchPage: React.FC = () => {
   ];
   const [sortOption, setSortOption] = useState<string>('relevance');
   
-  // Local state for loading indicators
   const [isAddingToCart, setIsAddingToCart] = useState<string | boolean>(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | boolean>(false);
   
-  // Fetch search results
   const { searchResults, isLoading, error, totalResults } = useSearch(
     debouncedQuery,
     currentPage,
@@ -82,7 +72,6 @@ const SearchPage: React.FC = () => {
     activeFilters
   );
   
-  // Update URL when query changes
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQuery) {
@@ -94,47 +83,40 @@ const SearchPage: React.FC = () => {
     }
   }, [debouncedQuery, currentPage, navigate]);
   
-  // Debounce search query
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
-      setCurrentPage(1); // Reset to first page on new search
+      setCurrentPage(1);
     }, 300);
     
     return () => clearTimeout(timer);
   }, [query, setCurrentPage]);
   
-  // Handle search input
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     setShowSearchHistory(e.target.value === '');
   };
   
-  // Handle search submission
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setDebouncedQuery(query);
     setShowSearchHistory(false);
   };
   
-  // Handle search history item click
   const handleSearchHistoryClick = (term: string) => {
     setQuery(term);
     setDebouncedQuery(term);
     setShowSearchHistory(false);
   };
   
-  // Handle product click
   const handleProductClick = (product: SearchPageProduct) => {
     addToRecentlyViewed(product.id);
     navigate(`/product/${product.id}`);
   };
   
-  // Handle add to cart
   const handleAddToCart = useCallback((product: SearchPageProduct) => {
     setIsAddingToCart(product.id);
     
-    // Simulate API request
     setTimeout(() => {
       addToCart({
         id: product.id,
@@ -151,11 +133,9 @@ const SearchPage: React.FC = () => {
     }, 500);
   }, [addToCart, toast]);
   
-  // Handle add to wishlist
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
     setIsAddingToWishlist(product.id);
     
-    // Simulate API request
     setTimeout(() => {
       addToWishlist(product.id);
       setIsAddingToWishlist(false);
@@ -167,12 +147,9 @@ const SearchPage: React.FC = () => {
     }, 500);
   }, [addToWishlist, toast]);
   
-  // Handle share product
   const handleShareProduct = useCallback((product: SearchPageProduct) => {
-    // Implementation depends on your sharing mechanism
     console.log('Share product:', product);
     
-    // Example: Copy link to clipboard
     const productUrl = `${window.location.origin}/product/${product.id}`;
     navigator.clipboard.writeText(productUrl);
     
@@ -184,10 +161,10 @@ const SearchPage: React.FC = () => {
   
   return (
     <>
-      <Helmet>
-        <title>{debouncedQuery ? `Search: ${debouncedQuery}` : 'Search Products'}</title>
-        <meta name="description" content={`Search results for ${debouncedQuery || 'all products'}`} />
-      </Helmet>
+      <SEO 
+        title={debouncedQuery ? `Search: ${debouncedQuery}` : 'Search Products'}
+        description={`Search results for ${debouncedQuery || 'all products'}`}
+      />
       
       <div className={cn(
         "min-h-screen pb-10",
@@ -212,7 +189,6 @@ const SearchPage: React.FC = () => {
               />
             </form>
             
-            {/* Search History Dropdown */}
             {showSearchHistory && Array.isArray(searchHistory) && searchHistory.length > 0 && (
               <Card className={cn(
                 "absolute z-10 w-full mt-1 shadow-lg",
@@ -285,7 +261,6 @@ const SearchPage: React.FC = () => {
           )}
           
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Filters sidebar */}
             <div className={cn(
               "w-full md:w-64 shrink-0",
               isMobile ? "order-2" : "order-1"
@@ -295,7 +270,6 @@ const SearchPage: React.FC = () => {
                 clearFilters={clearFilters}
               />
               
-              {/* Recently viewed section */}
               {recentlyViewed.length > 0 && (
                 <Card className={cn(
                   "mt-4",
@@ -338,12 +312,10 @@ const SearchPage: React.FC = () => {
               )}
             </div>
             
-            {/* Main content */}
             <div className={cn(
               "flex-1",
               isMobile ? "order-1" : "order-2"
             )}>
-              {/* Sort and view options */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                 <SearchSort
                   options={sortOptions}
@@ -376,7 +348,6 @@ const SearchPage: React.FC = () => {
                 </div>
               </div>
               
-              {/* Search results */}
               <SearchResults
                 products={searchResults}
                 isLoading={isLoading}

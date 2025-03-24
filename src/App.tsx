@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -26,6 +25,7 @@ import ManagementShops from '@/pages/ManagementShops';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { HelmetProvider } from 'react-helmet-async';
 
 const App: React.FC = () => {
   const { isDarkMode } = useTheme();

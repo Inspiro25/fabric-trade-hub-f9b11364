@@ -1,31 +1,28 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Star, Heart } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Product } from '@/lib/types/product';
 
 export interface ProductCardProps {
   id: string;
   name: string;
   price: number;
-  salePrice?: number;
-  image?: string;
-  images?: string[];
+  salePrice?: number | null;
+  image: string;
   category?: string;
   isNew?: boolean;
   isTrending?: boolean;
   rating?: number;
   reviewCount?: number;
-  highlight?: string;
-  layout?: string; // Added layout property
-  onAddToCart?: () => void;
-  onAddToWishlist?: () => void;
-  className?: string;
-  buttonColor?: string;
-  product?: any; // Added product property for compatibility
-  variant?: string; // Added variant property for compatibility
+  variant?: string;
+  product?: Product;
+  layout?: string;
+  onAddToCart?: (id: string) => void;
+  onAddToWishlist?: (id: string) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -34,116 +31,143 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   salePrice,
   image,
-  images,
   category,
   isNew,
   isTrending,
   rating = 0,
   reviewCount = 0,
-  highlight,
+  variant,
+  product,
+  layout,
   onAddToCart,
-  onAddToWishlist,
-  className,
-  buttonColor,
+  onAddToWishlist
 }) => {
-  // Use first image from images array if available, otherwise use image prop
-  const displayImage = images && images.length > 0 ? images[0] : image || '/placeholder.svg';
-  
-  // Calculate discount percentage if there's a sale price
-  const discountPercentage = salePrice ? Math.round((1 - salePrice / price) * 100) : 0;
+  // If a full product object is passed, use it for all properties
+  const productId = product?.id || id;
+  const productName = product?.name || name;
+  const productPrice = product?.price || price;
+  const productSalePrice = product?.sale_price || salePrice;
+  const productImage = product?.images?.[0] || image;
+  const productCategory = product?.category || category;
+  const productIsNew = product?.is_new || isNew;
+  const productIsTrending = product?.is_trending || isTrending;
+  const productRating = product?.rating || rating;
+  const productReviewCount = product?.review_count || reviewCount;
+
+  // Calculate discount percentage if sale price exists
+  const discountPercentage = productSalePrice
+    ? Math.round(((productPrice - productSalePrice) / productPrice) * 100)
+    : 0;
+
+  const isCompact = variant === 'compact';
 
   return (
-    <div className={cn(
-      "group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-all duration-300 hover:shadow-md overflow-hidden border border-gray-200 dark:border-gray-700",
-      className
+    <Card className={cn(
+      "overflow-hidden transition-all duration-200 hover:shadow-md group h-full",
+      isCompact ? "border-0 shadow-none" : ""
     )}>
-      {/* Badges */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        {isNew && (
-          <Badge className="bg-blue-500">New</Badge>
-        )}
-        {isTrending && (
-          <Badge className="bg-purple-500">Trending</Badge>
-        )}
-        {salePrice && (
-          <Badge className="bg-red-500">{discountPercentage}% OFF</Badge>
-        )}
-        {highlight && (
-          <Badge className="bg-amber-500">{highlight}</Badge>
-        )}
-      </div>
-      
-      {/* Product Link and Image */}
-      <Link to={`/product/${id}`} className="block overflow-hidden aspect-square">
-        <img
-          src={displayImage}
-          alt={name}
-          className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-        />
-      </Link>
-      
-      {/* Product Info */}
-      <div className="p-3">
-        {category && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">{category}</span>
-        )}
-        
-        <Link to={`/product/${id}`} className="block">
-          <h3 className="font-medium text-sm sm:text-base mt-1 truncate dark:text-gray-100">{name}</h3>
+      <div className="relative">
+        <Link to={`/product/${productId}`} className="block">
+          <div className={cn(
+            "relative aspect-square overflow-hidden bg-gray-100",
+            isCompact ? "rounded-md" : ""
+          )}>
+            <img
+              src={productImage}
+              alt={productName}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/placeholder.svg';
+              }}
+            />
+          </div>
         </Link>
         
-        {/* Price and Rating */}
-        <div className="flex justify-between items-center mt-2">
-          <div className="flex items-center gap-1">
-            {salePrice ? (
-              <>
-                <span className="font-bold text-sm sm:text-base dark:text-gray-100">
-                  ${salePrice}
-                </span>
-                <span className="text-xs line-through text-gray-500 dark:text-gray-400">
-                  ${price}
-                </span>
-              </>
-            ) : (
-              <span className="font-bold text-sm sm:text-base dark:text-gray-100">
-                ${price}
-              </span>
-            )}
-          </div>
-          
-          {rating > 0 && (
-            <div className="flex items-center">
-              <Star size={14} className="text-yellow-400 fill-yellow-400" />
-              <span className="text-xs ml-1 dark:text-gray-300">{rating} ({reviewCount})</span>
-            </div>
+        {/* Badges */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {productIsNew && (
+            <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600">New</Badge>
+          )}
+          {productIsTrending && (
+            <Badge variant="secondary" className="bg-orange-500 text-white hover:bg-orange-600">Trending</Badge>
+          )}
+          {productSalePrice && (
+            <Badge variant="secondary" className="bg-red-500 text-white hover:bg-red-600">-{discountPercentage}%</Badge>
           )}
         </div>
         
-        {/* Action Buttons */}
-        <div className="flex gap-2 mt-3">
-          <Button 
-            onClick={onAddToCart} 
-            size="sm" 
-            className={cn(
-              "w-full text-xs",
-              buttonColor
-            )}
-          >
-            <ShoppingCart size={14} className="mr-1" />
-            Add to Cart
-          </Button>
-          
-          <Button
-            onClick={onAddToWishlist}
-            size="icon"
-            variant="outline"
-            className="h-8 w-8"
-          >
-            <Heart size={14} />
-          </Button>
-        </div>
+        {/* Quick actions - Only show for non-compact variant */}
+        {!isCompact && (
+          <div className="absolute right-2 top-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onAddToWishlist?.(productId);
+              }}
+              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all"
+              aria-label="Add to wishlist"
+            >
+              <Heart className="h-4 w-4 text-red-500" />
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+      
+      <CardContent className={cn(
+        "flex flex-col",
+        isCompact ? "p-2" : "p-3"
+      )}>
+        <Link to={`/product/${productId}`} className="block">
+          <h3 className={cn(
+            "font-medium line-clamp-1",
+            isCompact ? "text-sm" : "text-base"
+          )}>
+            {productName}
+          </h3>
+          
+          {productCategory && !isCompact && (
+            <p className="text-xs text-muted-foreground mt-1">{productCategory}</p>
+          )}
+          
+          <div className="flex items-center mt-1 gap-1">
+            {productSalePrice ? (
+              <>
+                <span className="font-bold text-red-600">${productSalePrice.toFixed(2)}</span>
+                <span className="text-sm line-through text-muted-foreground">${productPrice.toFixed(2)}</span>
+              </>
+            ) : (
+              <span className="font-bold">${productPrice.toFixed(2)}</span>
+            )}
+          </div>
+          
+          {!isCompact && (
+            <div className="flex items-center mt-1">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={cn(
+                      "h-3 w-3",
+                      i < Math.floor(productRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                    )}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-muted-foreground ml-1">({productReviewCount})</span>
+            </div>
+          )}
+        </Link>
+        
+        {!isCompact && onAddToCart && (
+          <button
+            onClick={() => onAddToCart(productId)}
+            className="mt-3 text-xs py-1.5 px-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Add to Cart
+          </button>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
