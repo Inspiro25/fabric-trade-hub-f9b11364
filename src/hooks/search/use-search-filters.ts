@@ -1,133 +1,82 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState } from 'react';
 
-export const useSearchFilters = (initialCategory: string | null = null) => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
-  const [selectedShop, setSelectedShop] = useState<string | null>(null);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
-  const [rating, setRating] = useState<number | null>(null);
+export function useSearchFilters() {
+  const [filters, setFilters] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedShop, setSelectedShop] = useState<string>('');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [rating, setRating] = useState<number>(0);
   const [sortOption, setSortOption] = useState<string>('relevance');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [mobileSortOpen, setMobileSortOpen] = useState(false);
-  const [availabilityFilters, setAvailabilityFilters] = useState({
-    inStock: false,
-    outOfStock: false
-  });
-  const [brandFilters, setBrandFilters] = useState<Record<string, boolean>>({});
-  const [discountFilters, setDiscountFilters] = useState({
-    discounted: false,
-    nonDiscounted: false
-  });
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-  const handleCategoryChange = useCallback((category: string | null) => {
-    setSelectedCategory(category);
-  }, []);
-
-  const handleShopChange = useCallback((shop: string | null) => {
-    setSelectedShop(shop);
-  }, []);
-
-  const handlePriceRangeChange = useCallback((range: [number, number]) => {
-    setPriceRange(range);
-  }, []);
-
-  const handleRatingChange = useCallback((newRating: number | null) => {
-    setRating(newRating);
-  }, []);
-
-  const handleSortChange = useCallback((option: string) => {
-    setSortOption(option);
-  }, []);
-
-  const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  }, []);
-
-  const handleAvailabilityFilterChange = useCallback((key: keyof typeof availabilityFilters, value: boolean) => {
-    setAvailabilityFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  }, []);
-
-  const toggleBrandFilter = useCallback((brand: string) => {
-    setBrandFilters(prev => ({
-      ...prev,
-      [brand]: !prev[brand]
-    }));
-  }, []);
-
-  const toggleDiscountFilter = useCallback((key: keyof typeof discountFilters) => {
-    setDiscountFilters(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  }, []);
-
-  const clearFilters = useCallback(() => {
-    setSelectedCategory(null);
-    setSelectedShop(null);
-    setPriceRange([0, 10000]);
-    setRating(null);
-    setSortOption('relevance');
-    setAvailabilityFilters({
-      inStock: false,
-      outOfStock: false
-    });
-    setBrandFilters({});
-    setDiscountFilters({
-      discounted: false,
-      nonDiscounted: false
-    });
-  }, []);
-
-  // Reset other filters when category changes
-  useEffect(() => {
-    if (initialCategory !== selectedCategory && initialCategory !== null) {
-      setSelectedCategory(initialCategory);
-    }
-  }, [initialCategory]);
-
-  return {
-    selectedCategory,
-    selectedShop,
-    priceRange,
-    rating,
-    sortOption,
-    viewMode,
-    mobileFiltersOpen,
-    setMobileFiltersOpen,
-    mobileSortOpen,
-    setMobileSortOpen,
-    availabilityFilters,
-    handleAvailabilityFilterChange,
-    brandFilters,
-    toggleBrandFilter,
-    discountFilters,
-    toggleDiscountFilter,
-    handleCategoryChange,
-    handleShopChange,
-    handlePriceRangeChange,
-    handleRatingChange,
-    handleSortChange,
-    handleViewModeChange,
-    clearFilters,
-    setViewMode
+  const clearFilters = () => {
+    setFilters([]);
+    setSelectedCategory('');
+    setSelectedShop('');
+    setPriceRange([0, 1000]);
+    setRating(0);
+    setActiveFilters([]);
   };
-};
 
-// Export a separate hook just for view mode
-export const useSearchViewMode = () => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const addFilter = (filter: string) => {
+    if (!filters.includes(filter)) {
+      setFilters([...filters, filter]);
+    }
+  };
 
-  const handleViewModeChange = useCallback((mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  }, []);
+  const removeFilter = (filter: string) => {
+    setFilters(filters.filter(f => f !== filter));
+  };
+
+  const toggleFilter = (filter: string) => {
+    if (activeFilters.includes(filter)) {
+      setActiveFilters(activeFilters.filter(f => f !== filter));
+    } else {
+      setActiveFilters([...activeFilters, filter]);
+    }
+  };
 
   return {
+    filters,
+    setFilters,
+    addFilter,
+    removeFilter,
+    clearFilters,
+    selectedCategory,
+    setSelectedCategory,
+    selectedShop,
+    setSelectedShop,
+    priceRange,
+    setPriceRange,
+    rating,
+    setRating,
+    sortOption,
+    setSortOption,
     viewMode,
     setViewMode,
-    handleViewModeChange
+    mobileFiltersOpen,
+    setMobileFiltersOpen,
+    activeFilters,
+    toggleFilter
   };
-};
+}
+
+export function useSearchViewMode() {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  return { viewMode, setViewMode };
+}
+
+export function useSearchPagination(initialPage = 1, initialItemsPerPage = 12) {
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
+
+  return {
+    currentPage,
+    itemsPerPage,
+    setCurrentPage,
+    setItemsPerPage
+  };
+}

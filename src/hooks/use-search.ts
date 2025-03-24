@@ -16,7 +16,7 @@ export const useSearch = (
   query: string,
   page: number = 1,
   limit: number = 16,
-  filters?: string[]
+  filters?: string[] | number
 ): UseSearchResult => {
   const [searchResults, setSearchResults] = useState<SearchPageProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,19 +79,37 @@ export const useSearch = (
           .select('*', { count: 'exact', head: true })
           .or(`name.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`);
 
-        // Then get the page of products
-        const { data, error: fetchError } = await supabase
+        // Apply filters if provided
+        let queryBuilder = supabase
           .from('products')
           .select('*, shop:shop_id(name, logo)')
-          .or(`name.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`)
-          .range(offset, offset + limit - 1);
+          .or(`name.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`);
+        
+        // Add category filter if it exists in the filters array
+        if (filters && Array.isArray(filters) && filters.length > 0) {
+          // Apply each filter based on its type
+          filters.forEach(filter => {
+            if (filter.startsWith('category:')) {
+              const category = filter.split(':')[1];
+              queryBuilder = queryBuilder.eq('category_id', category);
+            } else if (filter.startsWith('price:')) {
+              const [min, max] = filter.split(':')[1].split('-').map(Number);
+              queryBuilder = queryBuilder.gte('price', min).lte('price', max);
+            }
+          });
+        }
+
+        // Apply pagination
+        queryBuilder = queryBuilder.range(offset, offset + limit - 1);
+
+        const { data, error: fetchError } = await queryBuilder;
 
         if (fetchError) {
           throw new Error(fetchError.message);
         }
 
         // Transform the data to match SearchPageProduct type
-        const transformedProducts: SearchPageProduct[] = data.map(product => ({
+        const transformedProducts: SearchPageProduct[] = (data || []).map(product => ({
           id: product.id,
           name: product.name,
           description: product.description || '',

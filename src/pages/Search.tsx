@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -6,22 +7,22 @@ import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useSearch } from '@/hooks/use-search';
 import { useSearchHistory } from '@/hooks/search/use-search-history';
-import { useSearchViewMode, useSearchFilters, useSearchPagination } from '@/hooks/search/use-search-filters';
-import { SearchBar } from '@/components/search/SearchBar';
+import { useSearchViewMode, useSearchFilters } from '@/hooks/search/use-search-filters';
+import { useSearchPagination } from '@/hooks/search/use-search-pagination';
+import SearchBar from '@/components/search/SearchBar';
 import { SearchFilters } from '@/components/search/SearchFilters';
 import SearchResults from '@/components/search/SearchResults';
 import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // Fixed import
+import { Input } from '@/components/ui/input';
 import { ChevronRight, Search as SearchIcon, History, Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Product } from '@/lib/products/types';
+import { SearchPageProduct } from '@/hooks/search/types';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Separator } from '@/components/ui/separator';
-import SearchSort from '@/components/search/SearchSort'; // Updated to match export type
-import { SearchPageProduct } from '@/hooks/search/types';
+import SearchSort from '@/components/search/SearchSort';
 
 export interface SortOption {
   label: string;
@@ -32,8 +33,8 @@ const SearchPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addToCart, isAddingToCart } = useCart();
-  const { addToWishlist, isAddingToWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
   const { recentlyViewed, addToRecentlyViewed } = useRecentlyViewed();
   const { isDarkMode } = useTheme();
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -47,7 +48,7 @@ const SearchPage: React.FC = () => {
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   
   // Search history
-  const { searchHistory, clearSearchHistory, removeSearchTerm } = useSearchHistory();
+  const { searchHistory, clearAllSearchHistory: clearSearchHistory, clearSearchHistoryItem: removeSearchTerm } = useSearchHistory(null);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   
   // Pagination
@@ -69,12 +70,16 @@ const SearchPage: React.FC = () => {
   ];
   const [sortOption, setSortOption] = useState<string>('relevance');
   
+  // Local state for loading indicators
+  const [isAddingToCart, setIsAddingToCart] = useState<string | boolean>(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | boolean>(false);
+  
   // Fetch search results
   const { searchResults, isLoading, error, totalResults } = useSearch(
     debouncedQuery,
     currentPage,
     itemsPerPage,
-    activeFilters as unknown as number
+    activeFilters
   );
   
   // Update URL when query changes
@@ -127,18 +132,40 @@ const SearchPage: React.FC = () => {
   
   // Handle add to cart
   const handleAddToCart = useCallback((product: SearchPageProduct) => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      images: product.images
-    });
-  }, [addToCart]);
+    setIsAddingToCart(product.id);
+    
+    // Simulate API request
+    setTimeout(() => {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        images: product.images
+      });
+      setIsAddingToCart(false);
+      
+      toast({
+        title: 'Added to cart',
+        description: `${product.name} has been added to your cart`,
+      });
+    }, 500);
+  }, [addToCart, toast]);
   
   // Handle add to wishlist
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
-    addToWishlist(product.id);
-  }, [addToWishlist]);
+    setIsAddingToWishlist(product.id);
+    
+    // Simulate API request
+    setTimeout(() => {
+      addToWishlist(product.id);
+      setIsAddingToWishlist(false);
+      
+      toast({
+        title: 'Added to wishlist',
+        description: `${product.name} has been added to your wishlist`,
+      });
+    }, 500);
+  }, [addToWishlist, toast]);
   
   // Handle share product
   const handleShareProduct = useCallback((product: SearchPageProduct) => {
@@ -186,7 +213,7 @@ const SearchPage: React.FC = () => {
             </form>
             
             {/* Search History Dropdown */}
-            {showSearchHistory && searchHistory.length > 0 && (
+            {showSearchHistory && Array.isArray(searchHistory) && searchHistory.length > 0 && (
               <Card className={cn(
                 "absolute z-10 w-full mt-1 shadow-lg",
                 isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
@@ -207,7 +234,7 @@ const SearchPage: React.FC = () => {
                     </Button>
                   </div>
                   <ul>
-                    {searchHistory.map((term, index) => (
+                    {searchHistory.map((item, index) => (
                       <li key={index} className="flex items-center justify-between">
                         <button
                           className={cn(
@@ -216,10 +243,10 @@ const SearchPage: React.FC = () => {
                               ? "hover:bg-gray-700 text-gray-200" 
                               : "hover:bg-gray-100 text-gray-700"
                           )}
-                          onClick={() => handleSearchHistoryClick(term)}
+                          onClick={() => handleSearchHistoryClick(typeof item === 'string' ? item : item.query)}
                         >
                           <Clock size={14} className="mr-2 text-gray-400" />
-                          {term}
+                          {typeof item === 'string' ? item : item.query}
                         </button>
                         <Button
                           variant="ghost"
@@ -227,7 +254,7 @@ const SearchPage: React.FC = () => {
                           className="h-6 w-6 p-0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            removeSearchTerm(term);
+                            removeSearchTerm(typeof item === 'string' ? item : item.id);
                           }}
                         >
                           <X size={14} />
@@ -264,8 +291,7 @@ const SearchPage: React.FC = () => {
               isMobile ? "order-2" : "order-1"
             )}>
               <SearchFilters 
-                activeFilters={activeFilters}
-                toggleFilter={toggleFilter}
+                darkMode={isDarkMode}
                 clearFilters={clearFilters}
               />
               
