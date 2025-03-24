@@ -26,7 +26,7 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
       throw error;
     }
     
-    if (!data || data.length === 0) {
+    if (!products || products.length === 0) {
       // Fallback to local data
       return getFallbackDeal();
     }
@@ -71,9 +71,10 @@ const getFallbackDeal = (): DealProduct | null => {
   
   // Calculate discount and find best deal
   const productsWithDiscounts = productsWithDiscount.map(product => {
-    const discountPercentage = Math.round(((product.price - (product.sale_price || 0)) / product.price) * 100);
+    const adaptedProduct = adaptProduct(product);
+    const discountPercentage = Math.round(((adaptedProduct.price - (adaptedProduct.sale_price || 0)) / adaptedProduct.price) * 100);
     return {
-      ...product,
+      ...adaptedProduct,
       discountPercentage,
       endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
     };

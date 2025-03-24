@@ -1,3 +1,3 @@
 
-// Just re-export from Input.tsx to resolve casing issues
-export { Input } from './Input';
+// Re-export from Input.tsx to maintain compatibility
+export * from './Input';

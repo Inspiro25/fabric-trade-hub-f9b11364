@@ -50,5 +50,5 @@ export interface Category {
   product_count?: number;
 }
 
-// Export Shop interface from here as well
-export { Shop } from '@/lib/shops/types';
+// Export Shop interface from here as well - using export type to avoid issues
+export type { Shop } from '@/lib/shops/types';

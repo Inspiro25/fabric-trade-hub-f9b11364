@@ -14,7 +14,7 @@ export * from '@/lib/products/categories';
 export * from '@/lib/products/collections';
 export * from '@/lib/products/deal';
 export * from '@/lib/products/trending';
-export { mockProducts } from '@/lib/products/mockData';
+export { mockProducts } from '@/lib/products/mockData'; // Export mockProducts
 
 // Import necessary types and functionality
 import { Product, adaptProduct } from '@/lib/products/types';

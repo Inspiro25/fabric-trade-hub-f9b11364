@@ -6,7 +6,7 @@ import './index.css'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { CartProvider } from '@/contexts/CartContext'
+import { CartProvider } from '@/contexts/CartContext'  // Fixed import path
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RecentlyViewedProvider } from '@/contexts/RecentlyViewedContext'
