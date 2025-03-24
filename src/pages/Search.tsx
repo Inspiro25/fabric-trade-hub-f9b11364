@@ -1,466 +1,380 @@
-
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useSearch } from '@/hooks/use-search';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { Loader2, Filter, Search as SearchIcon, X, SlidersHorizontal } from 'lucide-react';
+import { useSearch } from '@/hooks/use-search';
+import { useSearchHistory } from '@/hooks/search/use-search-history';
+import { useSearchViewMode, useSearchFilters, useSearchPagination } from '@/hooks/search/use-search-filters';
+import { SearchBar } from '@/components/search/SearchBar';
 import { SearchFilters } from '@/components/search/SearchFilters';
 import SearchResults from '@/components/search/SearchResults';
-import SearchSort from '@/components/search/SearchSort';
-import { useSearchFilters } from '@/hooks/use-search-filters';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input'; // Fixed import
+import { ChevronRight, Search as SearchIcon, History, Clock, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Product } from '@/lib/products/types';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import SearchSort from '@/components/search/SearchSort'; // Updated to match export type
+import { SearchPageProduct } from '@/hooks/search/types';
 
-// Define search query interface
-interface SearchQuery {
-  id: string;
-  query: string;
+export interface SortOption {
+  label: string;
+  value: string;
 }
 
-const Search = () => {
+const SearchPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { addToCart, isAddingToCart } = useCart();
+  const { addToWishlist, isAddingToWishlist } = useWishlist();
+  const { recentlyViewed, addToRecentlyViewed } = useRecentlyViewed();
   const { isDarkMode } = useTheme();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [inputValue, setInputValue] = useState(initialQuery);
-  const [recentSearches, setRecentSearches] = useState<SearchQuery[]>([]);
-  const [, setPopularSearches] = useState<SearchQuery[]>([]);
+  const isMobile = useMediaQuery('(max-width: 768px)');
   
-  const { filters, setFilters, clearFilters } = useSearchFilters();
-  const [sortOption, setSortOption] = useState('featured');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  // Get query params
+  const queryParams = new URLSearchParams(location.search);
+  const initialQuery = queryParams.get('q') || '';
   
-  const searchResult = useSearch(searchQuery, filters, sortOption);
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
-  const isMobile = useIsMobile();
-
-  // Extract values from search result
-  const { isLoading, error } = searchResult;
-  const products = searchResult.products || [];
-  const totalProducts = searchResult.totalProducts || 0;
-
-  // Load recent searches from localStorage on component mount
+  // Search state
+  const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
+  
+  // Search history
+  const { searchHistory, clearSearchHistory, removeSearchTerm } = useSearchHistory();
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+  
+  // Pagination
+  const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } = useSearchPagination();
+  
+  // View mode (grid/list)
+  const { viewMode, setViewMode } = useSearchViewMode();
+  
+  // Filters
+  const { activeFilters, toggleFilter, clearFilters } = useSearchFilters();
+  
+  // Sort options
+  const sortOptions: SortOption[] = [
+    { label: 'Relevance', value: 'relevance' },
+    { label: 'Price: Low to High', value: 'price_asc' },
+    { label: 'Price: High to Low', value: 'price_desc' },
+    { label: 'Newest', value: 'newest' },
+    { label: 'Rating', value: 'rating' },
+  ];
+  const [sortOption, setSortOption] = useState<string>('relevance');
+  
+  // Fetch search results
+  const { searchResults, isLoading, error, totalResults } = useSearch(
+    debouncedQuery,
+    currentPage,
+    itemsPerPage,
+    activeFilters as unknown as number
+  );
+  
+  // Update URL when query changes
   useEffect(() => {
-    try {
-      const savedSearches = localStorage.getItem('recentSearches');
-      if (savedSearches) {
-        const searches = JSON.parse(savedSearches);
-        setRecentSearches(searches.map((query: string, index: number) => ({
-          id: index.toString(),
-          query
-        })));
+    const params = new URLSearchParams();
+    if (debouncedQuery) {
+      params.set('q', debouncedQuery);
+      if (currentPage > 1) {
+        params.set('page', currentPage.toString());
       }
-      
-      // In a real app, you would fetch popular searches from the server
-      const mockPopular = [
-        'dress', 'sneakers', 'headphones', 'backpack', 'watch', 'phone case'
-      ].map((query, index) => ({ id: index.toString(), query }));
-      setPopularSearches(mockPopular);
-    } catch (error) {
-      console.error('Error loading saved searches:', error);
+      navigate({ search: params.toString() }, { replace: true });
     }
-  }, []);
-
-  // Save recent searches to localStorage whenever it changes
+  }, [debouncedQuery, currentPage, navigate]);
+  
+  // Debounce search query
   useEffect(() => {
-    try {
-      if (recentSearches.length > 0) {
-        const searches = recentSearches.map(item => item.query);
-        localStorage.setItem('recentSearches', JSON.stringify(searches));
-      }
-    } catch (error) {
-      console.error('Error saving searches:', error);
-    }
-  }, [recentSearches]);
-
-  // Handle search submission
-  const handleSearch = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setCurrentPage(1); // Reset to first page on new search
+    }, 300);
     
-    if (!inputValue.trim()) return;
-    
-    // Update URL params
-    setSearchParams({ q: inputValue.trim() });
-    
-    // Update search query state
-    setSearchQuery(inputValue.trim());
-    
-    // Add to recent searches if not already there
-    const normalizedQuery = inputValue.trim().toLowerCase();
-    if (!recentSearches.some(s => s.query.toLowerCase() === normalizedQuery)) {
-      const newSearch = { id: Date.now().toString(), query: inputValue.trim() };
-      setRecentSearches(prev => [newSearch, ...prev.slice(0, 9)]);
-    }
-    
-    // Reset to first page
-    setCurrentPage(1);
+    return () => clearTimeout(timer);
+  }, [query, setCurrentPage]);
+  
+  // Handle search input
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setShowSearchHistory(e.target.value === '');
   };
-
-  // Handle adding product to cart
-  const handleAddToCart = (product: any) => {
+  
+  // Handle search submission
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setDebouncedQuery(query);
+    setShowSearchHistory(false);
+  };
+  
+  // Handle search history item click
+  const handleSearchHistoryClick = (term: string) => {
+    setQuery(term);
+    setDebouncedQuery(term);
+    setShowSearchHistory(false);
+  };
+  
+  // Handle product click
+  const handleProductClick = (product: SearchPageProduct) => {
+    addToRecentlyViewed(product.id);
+    navigate(`/product/${product.id}`);
+  };
+  
+  // Handle add to cart
+  const handleAddToCart = useCallback((product: SearchPageProduct) => {
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.salePrice || product.price,
-      quantity: 1,
-      images: product.images || [],
-    });
-    toast.success(`Added ${product.name} to cart`);
-  };
-
-  // Handle adding product to wishlist
-  const handleAddToWishlist = (product: any) => {
-    addToWishlist({
-      id: product.id,
-      name: product.name,
       price: product.price,
-      images: product.images || [],
+      images: product.images
     });
-    toast.success(`Added ${product.name} to wishlist`);
-  };
-
-  // Handle filter changes
-  const handleFilterChange = (activeFilters: string[]) => {
-    setFilters(activeFilters);
-    setCurrentPage(1); // Reset to first page on filter change
-  };
-
-  // Handle sort change
-  const handleSortChange = (option: string) => {
-    setSortOption(option);
-    setCurrentPage(1); // Reset to first page on sort change
-  };
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll to top of results
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Handle items per page change
-  const handleItemsPerPageChange = (count: number) => {
-    setItemsPerPage(count);
-    setCurrentPage(1); // Reset to first page
-  };
-
-  // Handle view mode change
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  };
-
-  // Clear search
-  const handleClearSearch = () => {
-    setInputValue('');
-    setSearchQuery('');
-    setSearchParams({});
-  };
-
+  }, [addToCart]);
+  
+  // Handle add to wishlist
+  const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
+    addToWishlist(product.id);
+  }, [addToWishlist]);
+  
+  // Handle share product
+  const handleShareProduct = useCallback((product: SearchPageProduct) => {
+    // Implementation depends on your sharing mechanism
+    console.log('Share product:', product);
+    
+    // Example: Copy link to clipboard
+    const productUrl = `${window.location.origin}/product/${product.id}`;
+    navigator.clipboard.writeText(productUrl);
+    
+    toast({
+      title: 'Link copied',
+      description: 'Product link copied to clipboard',
+    });
+  }, [toast]);
+  
   return (
-    <div className={cn(
-      "min-h-screen pb-6",
-      isDarkMode ? "bg-gray-900" : "bg-gray-50"
-    )}>
-      {/* Top search bar */}
+    <>
+      <Helmet>
+        <title>{debouncedQuery ? `Search: ${debouncedQuery}` : 'Search Products'}</title>
+        <meta name="description" content={`Search results for ${debouncedQuery || 'all products'}`} />
+      </Helmet>
+      
       <div className={cn(
-        "sticky top-0 z-10 px-3 py-3 shadow-sm",
-        isDarkMode ? "bg-gray-800" : "bg-white"
+        "min-h-screen pb-10",
+        isDarkMode ? "bg-gray-900" : "bg-gray-50"
       )}>
-        <form onSubmit={handleSearch} className="container mx-auto flex items-center gap-2">
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Search products..."
-              className={cn(
-                "pl-9 pr-8 h-10", 
-                isDarkMode ? "bg-gray-700 border-gray-600" : ""
-              )}
-            />
-            {inputValue && (
-              <button
-                type="button"
-                onClick={() => setInputValue('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-          <Button type="submit" size="sm" className={cn(
-            "px-4",
-            isMobile ? "hidden" : ""
-          )}>
-            Search
-          </Button>
-          <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className={cn(
-                isDarkMode ? "border-gray-700 bg-gray-800" : ""
-              )}>
-                <Filter className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className={cn(
-              isDarkMode ? "bg-gray-800 text-white border-gray-700" : ""
-            )}>
-              <div className="py-6">
-                <h3 className="text-lg font-semibold">Filters</h3>
-                <div className="mt-4">
-                  <SearchFilters
-                    activeFilters={filters}
-                    onFilterChange={handleFilterChange}
-                  />
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </form>
-      </div>
-
-      <div className="container mx-auto px-3 py-4">
-        {/* Active filters and search info */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            {searchQuery ? (
-              <h1 className={cn(
-                "text-lg font-semibold",
-                isDarkMode ? "text-white" : ""
-              )}>
-                Search results for: <span className="font-bold text-primary">{searchQuery}</span>
-              </h1>
-            ) : (
-              <h1 className={cn(
-                "text-lg font-semibold",
-                isDarkMode ? "text-white" : ""
-              )}>All Products</h1>
-            )}
-            <p className={cn(
-              "text-sm",
-              isDarkMode ? "text-gray-400" : "text-gray-500"
-            )}>
-              {isLoading 
-                ? 'Loading...' 
-                : `Showing ${totalProducts} products`}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {filters.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearFilters}
+        <div className="container mx-auto px-4 py-4">
+          <div className="relative mb-6">
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <Input
+                type="search"
+                placeholder="Search for products..."
                 className={cn(
-                  "text-xs h-8",
-                  isDarkMode ? "border-gray-700 bg-gray-800" : ""
+                  "pl-10 pr-4 py-2 w-full rounded-lg",
+                  isDarkMode 
+                    ? "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400" 
+                    : "bg-white border-gray-200"
                 )}
-              >
-                Clear filters
-                <X className="ml-1 h-3 w-3" />
-              </Button>
-            )}
-            <Tabs value={viewMode} onValueChange={(v) => handleViewModeChange(v as 'grid' | 'list')}>
-              <TabsList className={cn(
-                "h-8",
-                isDarkMode ? "bg-gray-700" : ""
-              )}>
-                <TabsTrigger value="grid" className="px-2 h-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="7" height="7" x="3" y="3" rx="1" />
-                    <rect width="7" height="7" x="14" y="3" rx="1" />
-                    <rect width="7" height="7" x="14" y="14" rx="1" />
-                    <rect width="7" height="7" x="3" y="14" rx="1" />
-                  </svg>
-                </TabsTrigger>
-                <TabsTrigger value="list" className="px-2 h-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="8" x2="21" y1="6" y2="6" />
-                    <line x1="8" x2="21" y1="12" y2="12" />
-                    <line x1="8" x2="21" y1="18" y2="18" />
-                    <line x1="3" x2="3.01" y1="6" y2="6" />
-                    <line x1="3" x2="3.01" y1="12" y2="12" />
-                    <line x1="3" x2="3.01" y1="18" y2="18" />
-                  </svg>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <SearchSort activeSortOption={sortOption} onSortChange={handleSortChange} />
-          </div>
-        </div>
-
-        {/* Active filters */}
-        {filters.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {filters.map((filter) => (
-              <Badge
-                key={filter}
-                variant="secondary"
-                className={cn(
-                  "px-2 py-1 text-xs",
-                  isDarkMode ? "bg-gray-700 text-gray-200" : ""
-                )}
-              >
-                {filter}
-                <button
-                  onClick={() => setFilters(filters.filter((f) => f !== filter))}
-                  className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Desktop layout with sidebar */}
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Filters sidebar (desktop only) */}
-          {!isMobile && (
-            <aside className="w-full md:w-64 shrink-0">
+                value={query}
+                onChange={handleSearchChange}
+                onFocus={() => setShowSearchHistory(query === '')}
+              />
+            </form>
+            
+            {/* Search History Dropdown */}
+            {showSearchHistory && searchHistory.length > 0 && (
               <Card className={cn(
-                "sticky top-20",
-                isDarkMode ? "bg-gray-800 border-gray-700" : ""
+                "absolute z-10 w-full mt-1 shadow-lg",
+                isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
               )}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className={cn(
-                      "font-medium",
-                      isDarkMode ? "text-white" : ""
-                    )}>Filters</h3>
-                    {filters.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearFilters}
-                        className="h-8 px-2 text-xs"
-                      >
-                        Clear all
-                      </Button>
-                    )}
-                  </div>
-                  <SearchFilters
-                    activeFilters={filters}
-                    onFilterChange={handleFilterChange}
-                  />
-                </CardContent>
-              </Card>
-            </aside>
-          )}
-
-          {/* Main content */}
-          <div className="flex-1">
-            {/* Loading state */}
-            {isLoading ? (
-              <div className="flex justify-center items-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : error ? (
-              <div className={cn(
-                "text-center py-10",
-                isDarkMode ? "text-gray-300" : ""
-              )}>
-                <p className="text-red-500 mb-2">{error}</p>
-                <Button onClick={() => handleSearch()}>Retry</Button>
-              </div>
-            ) : (
-              <>
-                {/* Search results */}
-                <SearchResults
-                  products={products}
-                  totalProducts={totalProducts}
-                  currentPage={currentPage}
-                  onPageChange={handlePageChange}
-                  itemsPerPage={itemsPerPage}
-                  onItemsPerPageChange={handleItemsPerPageChange}
-                  viewMode={viewMode}
-                  onViewModeChange={handleViewModeChange}
-                  onAddToCart={handleAddToCart}
-                  onAddToWishlist={handleAddToWishlist}
-                  onShareProduct={() => {}}
-                  error=""
-                  isLoading={false}
-                />
-
-                {/* No results message */}
-                {products.length === 0 && !isLoading && !error && (
-                  <div className={cn(
-                    "text-center py-12 px-4",
-                    isDarkMode ? "text-gray-300" : ""
-                  )}>
-                    <h3 className="text-lg font-medium mb-2">No products found</h3>
-                    <p className={cn(
-                      "mb-6",
-                      isDarkMode ? "text-gray-400" : "text-gray-500"
-                    )}>
-                      Try a different search term or adjust your filters.
-                    </p>
-                    <Button onClick={handleClearSearch}>
-                      Clear search
+                <CardContent className="p-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <History size={14} className="mr-1" />
+                      <span>Recent Searches</span>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 text-xs"
+                      onClick={clearSearchHistory}
+                    >
+                      Clear All
                     </Button>
                   </div>
-                )}
-              </>
+                  <ul>
+                    {searchHistory.map((term, index) => (
+                      <li key={index} className="flex items-center justify-between">
+                        <button
+                          className={cn(
+                            "flex items-center w-full text-left px-2 py-1.5 rounded-md text-sm",
+                            isDarkMode 
+                              ? "hover:bg-gray-700 text-gray-200" 
+                              : "hover:bg-gray-100 text-gray-700"
+                          )}
+                          onClick={() => handleSearchHistoryClick(term)}
+                        >
+                          <Clock size={14} className="mr-2 text-gray-400" />
+                          {term}
+                        </button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeSearchTerm(term);
+                          }}
+                        >
+                          <X size={14} />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             )}
           </div>
-        </div>
-
-        {/* Recent searches section */}
-        {!searchQuery && recentSearches.length > 0 && (
-          <div className="mt-8">
-            <h2 className={cn(
-              "text-lg font-medium mb-3",
-              isDarkMode ? "text-white" : ""
+          
+          {debouncedQuery && (
+            <div className="mb-4">
+              <h1 className={cn(
+                "text-xl font-semibold mb-1",
+                isDarkMode ? "text-white" : "text-gray-800"
+              )}>
+                Search results for "{debouncedQuery}"
+              </h1>
+              <p className={cn(
+                "text-sm",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
+                {isLoading ? 'Searching...' : `Found ${totalResults} results`}
+              </p>
+            </div>
+          )}
+          
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Filters sidebar */}
+            <div className={cn(
+              "w-full md:w-64 shrink-0",
+              isMobile ? "order-2" : "order-1"
             )}>
-              Recent searches
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {recentSearches.map((item) => (
-                <Button
-                  key={item.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setInputValue(item.query);
-                    setSearchQuery(item.query);
-                    setSearchParams({ q: item.query });
-                  }}
-                  className={cn(
-                    "text-xs h-8",
-                    isDarkMode ? "border-gray-700 bg-gray-800 hover:bg-gray-700" : ""
-                  )}
-                >
-                  {item.query}
-                </Button>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setRecentSearches([])}
-                className="text-xs h-8"
-              >
-                Clear history
-              </Button>
+              <SearchFilters 
+                activeFilters={activeFilters}
+                toggleFilter={toggleFilter}
+                clearFilters={clearFilters}
+              />
+              
+              {/* Recently viewed section */}
+              {recentlyViewed.length > 0 && (
+                <Card className={cn(
+                  "mt-4",
+                  isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
+                )}>
+                  <CardContent className="p-3">
+                    <h3 className={cn(
+                      "text-sm font-medium mb-2",
+                      isDarkMode ? "text-white" : "text-gray-800"
+                    )}>
+                      Recently Viewed
+                    </h3>
+                    <div className="space-y-2">
+                      {recentlyViewed.slice(0, 3).map(product => (
+                        <button
+                          key={product.id}
+                          className={cn(
+                            "flex items-center w-full p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700",
+                            isDarkMode ? "text-gray-200" : "text-gray-700"
+                          )}
+                          onClick={() => navigate(`/product/${product.id}`)}
+                        >
+                          <div className="w-10 h-10 rounded overflow-hidden bg-gray-200 mr-2">
+                            <img 
+                              src={product.image} 
+                              alt={product.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <p className="text-xs font-medium truncate">{product.name}</p>
+                            <p className="text-xs text-gray-500">${product.price.toFixed(2)}</p>
+                          </div>
+                          <ChevronRight size={14} className="text-gray-400" />
+                        </button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+            
+            {/* Main content */}
+            <div className={cn(
+              "flex-1",
+              isMobile ? "order-1" : "order-2"
+            )}>
+              {/* Sort and view options */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                <SearchSort
+                  options={sortOptions}
+                  value={sortOption}
+                  onChange={setSortOption}
+                />
+                
+                <div className="flex items-center">
+                  <span className={cn(
+                    "text-xs mr-2",
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
+                  )}>
+                    Show:
+                  </span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                    className={cn(
+                      "text-xs rounded border px-2 py-1 mr-4",
+                      isDarkMode 
+                        ? "bg-gray-800 border-gray-700 text-white" 
+                        : "bg-white border-gray-200"
+                    )}
+                  >
+                    <option value={12}>12</option>
+                    <option value={24}>24</option>
+                    <option value={36}>36</option>
+                    <option value={48}>48</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Search results */}
+              <SearchResults
+                products={searchResults}
+                isLoading={isLoading}
+                error={error}
+                totalProducts={totalResults}
+                isAddingToCart={isAddingToCart}
+                isAddingToWishlist={isAddingToWishlist}
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+                onShareProduct={handleShareProduct}
+                onProductClick={handleProductClick}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={setItemsPerPage}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+              />
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
-export default Search;
+export default SearchPage;

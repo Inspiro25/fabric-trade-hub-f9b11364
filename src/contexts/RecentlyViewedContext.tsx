@@ -81,6 +81,46 @@ export const RecentlyViewedProvider: React.FC<{ children: React.ReactNode }> = (
         // Add at the beginning and limit to MAX_PRODUCTS
         return [newItem, ...filtered].slice(0, MAX_PRODUCTS);
       });
+      
+      // Also record in Supabase if user is logged in
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (session?.session?.user) {
+          const userId = session.session.user.id;
+          
+          // Check if this product is already viewed by this user
+          const { data } = await supabase
+            .from('product_view_history')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('product_id', productId)
+            .single();
+            
+          if (data) {
+            // Update existing record
+            await supabase
+              .from('product_view_history')
+              .update({
+                view_count: data.view_count + 1,
+                last_viewed_at: new Date().toISOString()
+              })
+              .eq('id', data.id);
+          } else {
+            // Create new record
+            await supabase
+              .from('product_view_history')
+              .insert({
+                user_id: userId,
+                product_id: productId,
+                view_count: 1
+              });
+          }
+        }
+      } catch (err) {
+        console.error('Error recording product view in database:', err);
+        // Continue execution, this is just for analytics
+      }
+      
     } catch (error) {
       console.error('Error adding to recently viewed:', error);
     }

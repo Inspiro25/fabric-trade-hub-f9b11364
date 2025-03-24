@@ -19,6 +19,7 @@ export interface Shop {
   product_count: number;
   created_at: string;
   product_ids?: string[];
+  shop_id?: string; // Adding this property that's used in some components
 }
 
 export interface ShopProduct {

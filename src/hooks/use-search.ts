@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { SearchPageProduct } from '@/lib/types/search';
+import { SearchPageProduct } from '@/hooks/search/types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseSearchResult {
@@ -8,12 +8,15 @@ interface UseSearchResult {
   isLoading: boolean;
   error: string | null;
   totalResults: number;
+  products?: SearchPageProduct[]; // Added for backwards compatibility
+  totalProducts?: number; // Added for backwards compatibility
 }
 
 export const useSearch = (
   query: string,
   page: number = 1,
-  limit: number = 16
+  limit: number = 16,
+  filters?: string[]
 ): UseSearchResult => {
   const [searchResults, setSearchResults] = useState<SearchPageProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,25 +91,25 @@ export const useSearch = (
         }
 
         // Transform the data to match SearchPageProduct type
-        const transformedProducts = data.map(product => ({
+        const transformedProducts: SearchPageProduct[] = data.map(product => ({
           id: product.id,
           name: product.name,
           description: product.description || '',
           price: product.price,
-          salePrice: product.sale_price,
+          sale_price: product.sale_price,
           images: product.images || [],
-          category: product.category_id || '',
+          category_id: product.category_id || '',
           rating: product.rating || 0,
-          reviewCount: product.review_count || 0,
+          review_count: product.review_count || 0,
           shop: product.shop ? {
             id: product.shop_id,
             name: product.shop.name,
             logo: product.shop.logo
-          } : null,
-          isNew: product.is_new || false,
+          } : product.shop_id,
+          is_new: product.is_new || false,
           colors: product.colors || [],
           sizes: product.sizes || [],
-          isTrending: product.is_trending || false
+          is_trending: product.is_trending || false
         }));
 
         setSearchResults(transformedProducts);
@@ -122,12 +125,14 @@ export const useSearch = (
     };
 
     fetchSearchResults();
-  }, [query, page, limit]);
+  }, [query, page, limit, filters]);
 
   return {
     searchResults,
     isLoading,
     error,
-    totalResults
+    totalResults,
+    products: searchResults, // Add alias for backward compatibility
+    totalProducts: totalResults // Add alias for backward compatibility
   };
 };

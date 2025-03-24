@@ -19,10 +19,13 @@ export interface ProductCardProps {
   rating?: number;
   reviewCount?: number;
   highlight?: string;
+  layout?: string; // Added layout property
   onAddToCart?: () => void;
   onAddToWishlist?: () => void;
   className?: string;
   buttonColor?: string;
+  product?: any; // Added product property for compatibility
+  variant?: string; // Added variant property for compatibility
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({

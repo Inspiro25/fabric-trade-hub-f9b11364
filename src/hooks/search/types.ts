@@ -1,4 +1,3 @@
-
 export interface SearchPageProduct {
   id: string;
   name: string;
@@ -16,6 +15,11 @@ export interface SearchPageProduct {
   stock?: number;
   tags?: string[];
   shop_id?: string;
+  shop?: {
+    id: string;
+    name: string;
+    logo: string;
+  } | string; // Allow both object and string for backward compatibility
 }
 
 export interface Category {
