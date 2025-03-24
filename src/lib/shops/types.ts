@@ -20,7 +20,7 @@ export interface Shop {
   product_count: number;
 }
 
-// Add ShopStatus enum that's referenced in the error
+// Add ShopStatus enum
 export enum ShopStatus {
   ACTIVE = "active",
   PENDING = "pending",

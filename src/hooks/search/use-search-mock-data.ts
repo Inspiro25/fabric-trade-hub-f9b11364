@@ -1,127 +1,112 @@
+
 import { useState, useEffect } from 'react';
-import { SearchPageProduct, Category, Shop } from './types';
+import { SearchPageProduct, Shop } from './types';
+import { mockProducts } from '@/lib/products/mockData';
+
+export interface UseSearchMockDataResult {
+  searchResults: SearchPageProduct[];
+  isLoading: boolean;
+  error: string | null;
+  totalResults: number;
+}
+
+// Helper function to convert Product to SearchPageProduct
+const convertToSearchPageProduct = (product: any): SearchPageProduct => {
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    sale_price: product.sale_price || product.salePrice,
+    images: product.images || [],
+    description: product.description || '',
+    category_id: product.category_id || product.category,
+    colors: product.colors || [],
+    sizes: product.sizes || [],
+    rating: product.rating || 0,
+    review_count: product.review_count || product.reviewCount || 0,
+    stock: product.stock || 0,
+    shop_id: product.shop_id || product.shopId || '',
+    is_new: product.is_new || product.isNew || false,
+    is_trending: product.is_trending || product.isTrending || false,
+    tags: product.tags || []
+  };
+};
 
 export const useSearchMockData = (
-  query: string, 
-  category: string, 
-  page: number, 
-  itemsPerPage: number
-) => {
-  const [loading, setLoading] = useState(false);
+  query: string,
+  page: number = 1,
+  limit: number = 10,
+  filters?: string[] | number
+): UseSearchMockDataResult => {
+  const [searchResults, setSearchResults] = useState<SearchPageProduct[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [products, setProducts] = useState<SearchPageProduct[]>([]);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [shops, setShops] = useState<Shop[]>([]);
-  const [initialLoad, setInitialLoad] = useState(true);
-  const [recommendations, setRecommendations] = useState<SearchPageProduct[]>([]);
-  const [recentlyViewed, setRecentlyViewed] = useState<SearchPageProduct[]>([]);
+  const [totalResults, setTotalResults] = useState<number>(0);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    const fetchMockResults = async () => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      try {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Mock categories
-      const mockCategories: Category[] = [
-        {id: '1', name: 'Electronics', image: '/placeholder.svg', description: 'Electronic devices and gadgets'},
-        {id: '2', name: 'Fashion', image: '/placeholder.svg', description: 'Clothing and accessories'},
-        {id: '3', name: 'Home', image: '/placeholder.svg', description: 'Home appliances and furniture'},
-        {id: '4', name: 'Sports', image: '/placeholder.svg', description: 'Sports equipment and gear'},
-        {id: '5', name: 'Books', image: '/placeholder.svg', description: 'Books and reading materials'},
-      ];
-      
-      // Mock shops
-      const mockShops: Shop[] = [
-        {
-          id: '1',
-          name: 'Fashion Forward',
-          description: 'Trendy clothing for all ages',
-          logo: 'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=150&auto=format&fit=crop',
-          cover_image: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800&auto=format&fit=crop',
-          rating: 4.8,
-          review_count: 532,
-          followers_count: 1200
-        },
-        {
-          id: '2',
-          name: 'Sportify',
-          description: 'Athletic wear for peak performance',
-          logo: 'https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?w=150&auto=format&fit=crop',
-          cover_image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&auto=format&fit=crop',
-          rating: 4.6,
-          review_count: 328,
-          followers_count: 850
-        },
-        {
-          id: '3',
-          name: 'Luxe Living',
-          description: 'High-end home accessories',
-          logo: 'https://images.unsplash.com/photo-1507680434567-5739c80be1ac?w=150&auto=format&fit=crop',
-          cover_image: 'https://images.unsplash.com/photo-1615874959474-d609969a20ed?w=800&auto=format&fit=crop',
-          rating: 4.9,
-          review_count: 216,
-          followers_count: 760
+        if (!query.trim()) {
+          setSearchResults([]);
+          setTotalResults(0);
+          return;
         }
-      ];
 
-      // Mock products
-      const mockProducts: SearchPageProduct[] = Array.from({ length: itemsPerPage }, (_, i) => ({
-        id: `product-${i + (page - 1) * itemsPerPage}`,
-        name: `${query || 'Sample'} Product ${i + (page - 1) * itemsPerPage}`,
-        description: 'This is a sample product description.',
-        price: Math.floor(Math.random() * 100) + 20,
-        sale_price: Math.random() > 0.5 ? Math.floor(Math.random() * 50) + 10 : null,
-        salePrice: Math.random() > 0.5 ? Math.floor(Math.random() * 50) + 10 : null,
-        images: ['/placeholder.svg'],
-        category: category || 'All',
-        category_id: category || 'All',
-        colors: ['red', 'blue', 'green'],
-        sizes: ['S', 'M', 'L'],
-        is_new: Math.random() > 0.5,
-        isNew: Math.random() > 0.5,
-        is_trending: Math.random() > 0.5,
-        isTrending: Math.random() > 0.5,
-        rating: Math.floor(Math.random() * 5) + 1,
-        review_count: Math.floor(Math.random() * 100),
-        reviewCount: Math.floor(Math.random() * 100),
-        stock: Math.floor(Math.random() * 50),
-        tags: ['sample', 'product'],
-        shop_id: 'shop-123',
-        shopId: 'shop-123',
-      }));
+        // Filter mock products based on search query
+        let filtered = mockProducts.filter(product =>
+          product.name.toLowerCase().includes(query.toLowerCase()) ||
+          product.description.toLowerCase().includes(query.toLowerCase()) ||
+          product.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+        );
 
-      setProducts(mockProducts);
-      setTotalProducts(100);
-      setCategories(mockCategories);
-      setShops(mockShops);
-      setRecommendations(mockProducts.slice(0, 4));
-      setRecentlyViewed(mockProducts.slice(4, 8));
-      setInitialLoad(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch products');
-    } finally {
-      setLoading(false);
-    }
-  };
+        // Apply category filters if provided
+        if (filters && Array.isArray(filters) && filters.length > 0) {
+          filtered = filtered.filter(product => {
+            // Check each filter
+            for (const filter of filters) {
+              if (filter.startsWith('category:')) {
+                const category = filter.split(':')[1];
+                if (product.category !== category && product.category_id !== category) {
+                  return false;
+                }
+              } else if (filter.startsWith('price:')) {
+                const [min, max] = filter.split(':')[1].split('-').map(Number);
+                if (product.price < min || product.price > max) {
+                  return false;
+                }
+              }
+            }
+            return true;
+          });
+        }
 
-  const handleRetry = () => {
-    fetchData();
-  };
+        setTotalResults(filtered.length);
 
-  return {
-    loading,
-    error,
-    products,
-    totalProducts,
-    categories,
-    shops,
-    initialLoad,
-    recommendations,
-    recentlyViewed,
-    fetchData,
-    handleRetry
-  };
+        // Apply pagination
+        const start = (page - 1) * limit;
+        const end = start + limit;
+        const paginatedResults = filtered.slice(start, end);
+
+        // Convert to SearchPageProduct type
+        const convertedResults = paginatedResults.map(convertToSearchPageProduct);
+
+        setSearchResults(convertedResults);
+      } catch (err) {
+        console.error('Error in mock search:', err);
+        setError('An error occurred while searching');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMockResults();
+  }, [query, page, limit, filters]);
+
+  return { searchResults, isLoading, error, totalResults };
 };

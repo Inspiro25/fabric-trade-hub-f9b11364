@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,6 +15,7 @@ import { Plus, X, Loader } from 'lucide-react';
 import { Product } from '@/lib/products';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { adaptProduct } from '@/lib/products/types';
 
 // Form schema for product
 const productSchema = z.object({
@@ -197,7 +197,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
     try {
       const uploadedImageUrls = await uploadImages();
       
-      const productData: Omit<Product, 'id'> = {
+      // Fix: Use adaptProduct to convert to the correct Product format
+      const productData = adaptProduct({
         name: data.name,
         description: data.description || '',
         price: data.price,
@@ -213,10 +214,12 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         tags: tags,
         rating: product?.rating || 0,
         reviewCount: product?.reviewCount || 0,
-      };
+      });
       
+      // Remove ID for creation since it will be auto-generated
       if (mode === 'add') {
-        const newProductId = await createProduct(productData);
+        const { id, ...productWithoutId } = productData;
+        const newProductId = await createProduct(productWithoutId);
         
         if (newProductId) {
           toast.success('Product created successfully');
@@ -229,7 +232,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
         
         if (success) {
           toast.success('Product updated successfully');
-          onSave({ id: product.id, ...productData });
+          onSave({ ...productData, id: product.id });
         } else {
           throw new Error('Failed to update product');
         }

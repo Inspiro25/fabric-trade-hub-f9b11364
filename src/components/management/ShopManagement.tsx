@@ -119,7 +119,11 @@ const ShopManagement: React.FC = () => {
         phone_number: data.phoneNumber || '',
         is_verified: data.isVerified || false,
         password: data.password || '',
-        product_count: 0
+        product_count: 0,
+        review_count: 0,
+        rating: 0,
+        followers_count: 0,
+        created_at: new Date().toISOString()
       };
       
       const { data: newShop, error } = await supabase
@@ -130,7 +134,7 @@ const ShopManagement: React.FC = () => {
         
       if (error) throw error;
       
-      setShops([newShop, ...shops]);
+      setShops([newShop as Shop, ...shops]);
       setIsAddingShop(false);
       form.reset();
       toast.success('Shop added successfully');

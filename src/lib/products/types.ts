@@ -24,7 +24,7 @@ export interface Product {
   tags: string[];
 }
 
-// Add adapter function to convert between property naming styles
+// Fix parentheses in operator precedence for || and ?? operations
 export function adaptProduct(product: any): Product {
   return {
     id: product.id,
@@ -44,10 +44,10 @@ export function adaptProduct(product: any): Product {
     reviewCount: product.reviewCount ?? (product.review_count || 0),
     shop_id: product.shop_id ?? product.shopId,
     shopId: product.shopId ?? product.shop_id,
-    is_new: product.is_new ?? product.isNew || false,
-    isNew: product.isNew ?? product.is_new || false,
-    is_trending: product.is_trending ?? product.isTrending || false,
-    isTrending: product.isTrending ?? product.is_trending || false,
+    is_new: product.is_new ?? (product.isNew || false),
+    isNew: product.isNew ?? (product.is_new || false),
+    is_trending: product.is_trending ?? (product.isTrending || false),
+    isTrending: product.isTrending ?? (product.is_trending || false),
     tags: product.tags || [],
   } as Product;
 }

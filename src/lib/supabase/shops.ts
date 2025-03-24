@@ -1,6 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { Shop } from '@/lib/shops/types';
-import { ShopStatus } from '@/lib/shops/types';
+import { Shop, ShopStatus } from '@/lib/shops/types';
 import { v4 as uuidv4 } from 'uuid';
 
 // Function to get a shop by its ID
@@ -16,7 +16,7 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
     
     if (!data) return null;
     
-    // Ensure the status is of the correct type
+    // Ensure the status is of the correct type and add product_count if missing
     const status = data.status as ShopStatus;
     
     return {

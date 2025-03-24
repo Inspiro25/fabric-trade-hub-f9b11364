@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/types/product';
-import { productStore } from '@/lib/types/product';
+import { Product, adaptProduct } from '@/lib/products/types';
 
 export interface DealProduct extends Product {
   discountPercentage: number;
@@ -27,34 +26,20 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
       throw error;
     }
     
-    if (!products || products.length === 0) {
+    if (!data || data.length === 0) {
       // Fallback to local data
       return getFallbackDeal();
     }
     
     // Calculate discount percentage for each product and find the best deal
     const productsWithDiscounts = products.map(product => {
-      const price = product.price || 0;
-      const salePrice = product.sale_price || 0;
+      const adaptedProduct = adaptProduct(product);
+      const price = adaptedProduct.price || 0;
+      const salePrice = adaptedProduct.sale_price || 0;
       const discountPercentage = price > 0 ? Math.round(((price - salePrice) / price) * 100) : 0;
       
       return {
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: price,
-        salePrice: salePrice,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
+        ...adaptedProduct,
         discountPercentage,
         endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
       };
@@ -73,17 +58,20 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
 };
 
 /**
- * Fallback to provide a deal from local data when database fetch fails
+ * Fallback to provide a deal from local products when database fetch fails
  */
 const getFallbackDeal = (): DealProduct | null => {
+  // Import productStore directly to avoid circular dependency
+  const { productStore } = require('@/lib/types/product');
+  
   // Get products from local store that have both regular price and sale price
-  const productsWithDiscount = productStore.products.filter(p => p.price && p.salePrice);
+  const productsWithDiscount = productStore.products.filter(p => p.price && p.sale_price);
   
   if (productsWithDiscount.length === 0) return null;
   
   // Calculate discount and find best deal
   const productsWithDiscounts = productsWithDiscount.map(product => {
-    const discountPercentage = Math.round(((product.price - (product.salePrice || 0)) / product.price) * 100);
+    const discountPercentage = Math.round(((product.price - (product.sale_price || 0)) / product.price) * 100);
     return {
       ...product,
       discountPercentage,

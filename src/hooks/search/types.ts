@@ -49,3 +49,6 @@ export interface Category {
   slug?: string;
   product_count?: number;
 }
+
+// Export Shop interface from here as well
+export { Shop } from '@/lib/shops/types';

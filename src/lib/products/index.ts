@@ -14,9 +14,10 @@ export * from '@/lib/products/categories';
 export * from '@/lib/products/collections';
 export * from '@/lib/products/deal';
 export * from '@/lib/products/trending';
+export { mockProducts } from '@/lib/products/mockData';
 
 // Import necessary types and functionality
-import { Product } from '@/lib/types/product';
+import { Product, adaptProduct } from '@/lib/products/types';
 import { supabase } from '@/integrations/supabase/client';
 
 // Add this function to fetch a single product by ID
@@ -35,25 +36,8 @@ export const fetchProductById = async (productId: string): Promise<Product | nul
     }
     
     if (data) {
-      // Map the database product to our Product type
-      return {
-        id: data.id,
-        name: data.name,
-        description: data.description || '',
-        price: data.price,
-        salePrice: data.sale_price,
-        rating: data.rating,
-        reviewCount: data.review_count,
-        images: data.images || [],
-        colors: data.colors || [],
-        sizes: data.sizes || [],
-        category: data.category_id || '',
-        tags: data.tags || [],
-        stock: data.stock || 0,
-        shopId: data.shop_id,
-        isNew: data.is_new || false,
-        isTrending: data.is_trending || false
-      };
+      // Use adaptProduct to correctly format the product
+      return adaptProduct(data);
     }
     
     return null;
@@ -83,25 +67,8 @@ export const getLatestNewArrivals = async (limit = 8): Promise<Product[]> => {
       return [];
     }
     
-    // Map database products to our Product type
-    return data.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      salePrice: product.sale_price,
-      images: product.images || [],
-      category: product.category_id || '',
-      colors: product.colors || [],
-      sizes: product.sizes || [],
-      isNew: product.is_new || false,
-      isTrending: product.is_trending || false,
-      rating: product.rating || 0,
-      reviewCount: product.review_count || 0,
-      stock: product.stock || 0,
-      tags: product.tags || [],
-      shopId: product.shop_id || '',
-    }));
+    // Map database products to our Product type using adaptProduct
+    return data.map(product => adaptProduct(product));
   } catch (error) {
     console.error('Error in getLatestNewArrivals:', error);
     return [];

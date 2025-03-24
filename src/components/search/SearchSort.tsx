@@ -1,45 +1,42 @@
 
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-export interface SortOption {
-  label: string;
-  value: string;
-}
-
-interface SearchSortProps {
-  options: SortOption[];
+export interface SearchSortProps {
   value: string;
   onChange: (value: string) => void;
-  className?: string;
 }
 
-const SearchSort: React.FC<SearchSortProps> = ({ 
-  options, 
-  value, 
-  onChange, 
-  className = '' 
-}) => {
+const SearchSort: React.FC<SearchSortProps> = ({ value, onChange }) => {
+  const sortOptions = [
+    { label: 'Most Relevant', value: 'relevance' },
+    { label: 'Newest', value: 'newest' },
+    { label: 'Price: Low to High', value: 'price_asc' },
+    { label: 'Price: High to Low', value: 'price_desc' },
+    { label: 'Rating', value: 'rating' },
+  ];
+
   return (
-    <div className={`${className}`}>
-      <div className="flex items-center gap-2">
-        <Label htmlFor="sort-select" className="whitespace-nowrap text-sm">
-          Sort by:
-        </Label>
-        <Select value={value} onValueChange={onChange}>
-          <SelectTrigger id="sort-select" className="h-8 w-[180px]">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="flex items-center space-x-2">
+      <span className="text-sm font-medium">Sort by:</span>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent>
+          {sortOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };
