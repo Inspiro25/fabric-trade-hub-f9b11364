@@ -359,7 +359,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
                         <FormLabel>Category</FormLabel>
                         <Select 
                           onValueChange={field.onChange} 
-                          defaultValue={field.value}
+                          defaultValue={field.value || undefined}
+                          value={field.value || undefined}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -367,14 +368,18 @@ const ProductEditor: React.FC<ProductEditorProps> = ({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem 
-                                key={category.id} 
-                                value={category.id}
-                              >
-                                {category.name}
-                              </SelectItem>
-                            ))}
+                            {categories.length > 0 ? (
+                              categories.map((category) => (
+                                <SelectItem 
+                                  key={category.id} 
+                                  value={category.id}
+                                >
+                                  {category.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />

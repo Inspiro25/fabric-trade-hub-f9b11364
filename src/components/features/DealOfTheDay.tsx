@@ -143,7 +143,7 @@ const DealOfTheDay = () => {
           
           {deal.colors.length > 0 && (
             <Select
-              value={selectedColor}
+              value={selectedColor || deal.colors[0]}
               onValueChange={setSelectedColor}
             >
               <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>
@@ -161,7 +161,7 @@ const DealOfTheDay = () => {
           
           {deal.sizes.length > 0 && (
             <Select
-              value={selectedSize}
+              value={selectedSize || deal.sizes[0]}
               onValueChange={setSelectedSize}
             >
               <SelectTrigger className={`w-full text-xs h-8 ${isDarkMode ? 'bg-gray-700 border-gray-600' : ''}`}>

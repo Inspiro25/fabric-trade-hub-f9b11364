@@ -41,7 +41,7 @@ const SearchSort: React.FC<SearchSortProps> = ({
     <div className="grid gap-4 py-4">
       <div>
         <Label htmlFor="sort">Sort By</Label>
-        <Select value={sortOption} onValueChange={handleSortChange}>
+        <Select value={sortOption || "relevance"} onValueChange={handleSortChange}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Relevance" />
           </SelectTrigger>
@@ -89,7 +89,7 @@ const SearchSort: React.FC<SearchSortProps> = ({
         <DropdownMenuLabel>Sort By</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <Select value={sortOption} onValueChange={handleSortChange}>
+          <Select value={sortOption || "relevance"} onValueChange={handleSortChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Relevance" />
             </SelectTrigger>
