@@ -2,12 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import SearchBar from '@/components/search/SearchBar';
-import SearchFilters from '@/components/search/SearchFilters';
+import { SearchFilters } from '@/components/search/SearchFilters';
 import SearchResults from '@/components/search/SearchResults';
 import SearchHistory from '@/components/search/SearchHistory';
 import SearchRecommendations from '@/components/search/SearchRecommendations';
 import { ArrowLeft, Filter, History } from 'lucide-react';
-import { SearchPageProduct } from '@/hooks/search/types';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -16,10 +15,12 @@ import { useSearchCartIntegration } from '@/hooks/search/use-search-cart-integra
 import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
 import { useSearchViewMode } from '@/hooks/search/use-search-filters';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useProductsBySearch } from '@/hooks/use-product-fetching';
+import { SortOption, SearchPageProduct } from '@/lib/types/search';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import AuthDialog from '@/components/search/AuthDialog';
+import { useSearch } from '@/hooks/use-search';
 
 interface SearchHistoryItem {
   query: string;
@@ -40,15 +41,13 @@ const Search = () => {
   const isMobile = useIsMobile();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   
-  // Fetch products using hook from use-product-fetching.ts
+  // Use the search hook for data fetching
   const { 
-    data: searchData,
+    searchResults,
     isLoading,
-    error
-  } = useProductsBySearch(query, currentPage, itemsPerPage);
-  
-  const products = searchData?.products || [];
-  const totalProducts = searchData?.total || 0;
+    error,
+    totalResults
+  } = useSearch(query, currentPage, itemsPerPage);
   
   // Use the search cart integration
   const { 
@@ -59,8 +58,16 @@ const Search = () => {
     handleShareProduct
   } = useSearchCartIntegration();
   
-  // Use search modal dialogs
-  const { LoginDialog, ShareDialog } = useSearchDialogs();
+  // Use search dialogs
+  const { 
+    isDialogOpen, 
+    setIsDialogOpen, 
+    isShareDialogOpen, 
+    setIsShareDialogOpen,
+    shareableLink,
+    setShareableLink,
+    handleLogin
+  } = useSearchDialogs();
   
   // Scroll to top when query changes
   useEffect(() => {
@@ -139,6 +146,48 @@ const Search = () => {
     // Retry the search query
     window.location.reload();
   };
+
+  // Component for login dialog
+  const LoginDialog = () => (
+    <AuthDialog
+      open={isDialogOpen}
+      onOpenChange={setIsDialogOpen}
+      onLogin={handleLogin}
+      title="Limited Functionality"
+      message="Sign in to save your cart items and access more features."
+    />
+  );
+
+  // Component for share dialog
+  const ShareDialog = () => (
+    <Sheet open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Share Product</SheetTitle>
+          <SheetDescription>
+            Copy the link below to share this product
+          </SheetDescription>
+        </SheetHeader>
+        <div className="py-4">
+          <div className="flex items-center">
+            <Input
+              value={shareableLink}
+              readOnly
+              className="mr-2"
+            />
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText(shareableLink);
+                toast.success('Link copied to clipboard');
+              }}
+            >
+              Copy
+            </Button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
   
   return (
     <div className={cn(
@@ -275,8 +324,8 @@ const Search = () => {
         {!query && initialLoad ? (
           <div className="py-8">
             <SearchHistory
-              onSelectQuery={handleSearch}
-              searchHistory={searchHistory.map(item => item.query)}
+              history={searchHistory.map(item => item.query)}
+              onHistoryItemClick={handleSearch}
             />
           </div>
         ) : (
@@ -288,12 +337,12 @@ const Search = () => {
                   isDarkMode ? "text-white" : ""
                 )}>
                   {isLoading ? 'Searching...' : (
-                    totalProducts > 0 
-                      ? `Results for "${query}" (${totalProducts})` 
+                    totalResults > 0 
+                      ? `Results for "${query}" (${totalResults})` 
                       : `No results for "${query}"`
                   )}
                 </h1>
-                {!isLoading && totalProducts === 0 && !error && (
+                {!isLoading && totalResults === 0 && !error && (
                   <p className={cn(
                     "text-sm",
                     isDarkMode ? "text-gray-400" : "text-gray-500"
@@ -306,10 +355,10 @@ const Search = () => {
             
             <div className="grid grid-cols-1 gap-6">
               <SearchResults
-                products={products}
+                products={searchResults}
                 loading={isLoading}
                 error={error}
-                totalProducts={totalProducts}
+                totalProducts={totalResults}
                 isAddingToCart={isAddingToCart}
                 isAddingToWishlist={isAddingToWishlist}
                 onAddToCart={handleAddToCart}
@@ -325,7 +374,7 @@ const Search = () => {
                 onViewModeChange={setViewMode}
               />
               
-              {!isLoading && totalProducts === 0 && !error && (
+              {!isLoading && totalResults === 0 && !error && (
                 <SearchRecommendations
                   recommendedProducts={[]}
                   isAddingToCart={isAddingToCart}

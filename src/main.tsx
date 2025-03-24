@@ -9,6 +9,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { CartProvider } from '@/contexts/CartContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RecentlyViewedProvider } from '@/contexts/RecentlyViewedContext'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -27,9 +28,11 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider>
           <WishlistProvider>
             <CartProvider>
-              <NotificationProvider>
-                <App />
-              </NotificationProvider>
+              <RecentlyViewedProvider>
+                <NotificationProvider>
+                  <App />
+                </NotificationProvider>
+              </RecentlyViewedProvider>
             </CartProvider>
           </WishlistProvider>
         </ThemeProvider>
