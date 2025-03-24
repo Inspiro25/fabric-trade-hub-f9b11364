@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
-import { Product } from '@/lib/products';
+import { Product, adaptProduct } from '@/lib/products/types';
 import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
@@ -36,6 +37,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isInitialized, setIsInitialized] = useState(false);
   const [hasPendingMigration, setHasPendingMigration] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
   
@@ -79,10 +81,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
   const addToCart = useCallback((product: Product, quantity: number, color: string, size: string) => {
-    addToCartOp(product, quantity, color, size);
+    setIsAddingToCart(true);
     
-    if (!currentUser) {
-      setShowAuthDialog(true);
+    try {
+      // Ensure product is properly formatted
+      const adaptedProduct = adaptProduct(product);
+      addToCartOp(adaptedProduct, quantity, color, size);
+      
+      if (!currentUser) {
+        setShowAuthDialog(true);
+      }
+    } finally {
+      setIsAddingToCart(false);
     }
   }, [addToCartOp, currentUser]);
 
@@ -128,7 +138,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isInCart: isInCartWrapper,
     isLoading,
     migrateCartToUser: migrateGuestCartToUser,
-    isAddingToCart: false
+    isAddingToCart
   }), [
     cartItems, 
     addToCart, 
@@ -139,7 +149,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getCartCountWrapper, 
     isInCartWrapper, 
     isLoading, 
-    migrateGuestCartToUser
+    migrateGuestCartToUser,
+    isAddingToCart
   ]);
 
   return (

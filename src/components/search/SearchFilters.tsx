@@ -53,7 +53,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
                 className="text-sm cursor-pointer"
               >
                 {category.name}
-                {category.product_count && (
+                {category.product_count !== undefined && (
                   <span className="text-gray-500 ml-1">({category.product_count})</span>
                 )}
               </label>

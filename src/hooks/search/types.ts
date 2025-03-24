@@ -18,6 +18,7 @@ export interface SearchPageProduct {
   is_new: boolean;
   is_trending: boolean;
   tags: string[];
+  shop?: Shop | string;
 }
 
 export interface UseSearchResult {
@@ -50,5 +51,5 @@ export interface Category {
   product_count?: number;
 }
 
-// Export Shop interface from here as well - using export type to avoid issues
+// Export Shop interface from here as well
 export type { Shop } from '@/lib/shops/types';

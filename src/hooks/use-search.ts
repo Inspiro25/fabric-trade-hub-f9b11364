@@ -119,15 +119,30 @@ export const useSearch = (
           category_id: product.category_id || '',
           rating: product.rating || 0,
           review_count: product.review_count || 0,
+          stock: product.stock || 0,
+          shop_id: product.shop_id || '',
           shop: product.shop ? {
             id: product.shop_id,
             name: product.shop.name,
-            logo: product.shop.logo
+            logo: product.shop.logo,
+            description: '',
+            cover_image: '',
+            address: '',
+            owner_name: '',
+            owner_email: '',
+            rating: 0,
+            review_count: 0,
+            followers_count: 0,
+            is_verified: false,
+            status: '',
+            created_at: '',
+            product_count: 0
           } : product.shop_id,
           is_new: product.is_new || false,
           colors: product.colors || [],
           sizes: product.sizes || [],
-          is_trending: product.is_trending || false
+          is_trending: product.is_trending || false,
+          tags: product.tags || []
         }));
 
         setSearchResults(transformedProducts);
