@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { Product, adaptProduct } from '@/lib/products/types';
-import { fetchNewArrivals } from '@/lib/products/filters';
+import { getNewArrivals } from '@/lib/products/filters';
 
 const NewArrivalsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,7 +23,7 @@ const NewArrivalsPage = () => {
       setError(null);
       
       try {
-        const newArrivals = await fetchNewArrivals();
+        const newArrivals = await getNewArrivals();
         
         // Make sure to convert the products to the right format
         if (Array.isArray(newArrivals)) {

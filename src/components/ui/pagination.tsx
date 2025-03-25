@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreHorizontal, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 
-interface PaginationProps {
+export interface PaginationProps {
   currentPage: number;
   totalItems: number;
   pageSize: number;
@@ -79,8 +79,26 @@ export const PaginationComponent: React.FC<PaginationProps> = ({
     return pages;
   };
 
+  // Create pagination UI
   return (
     <nav className="flex justify-center items-center space-x-1">
+      {/* First page button */}
+      {showFirstLastButtons && (
+        <Button
+          variant="outline"
+          size="icon"
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(1)}
+          className={cn(
+            "h-8 w-8",
+            isDarkMode ? "border-gray-700 text-gray-300" : ""
+          )}
+        >
+          <ChevronsLeft className="h-4 w-4" />
+          <span className="sr-only">First Page</span>
+        </Button>
+      )}
+      
       {/* Previous button */}
       <Button
         variant="outline"
@@ -144,9 +162,41 @@ export const PaginationComponent: React.FC<PaginationProps> = ({
         <ChevronRight className="h-4 w-4" />
         <span className="sr-only">Next Page</span>
       </Button>
+      
+      {/* Last page button */}
+      {showFirstLastButtons && (
+        <Button
+          variant="outline"
+          size="icon"
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className={cn(
+            "h-8 w-8",
+            isDarkMode ? "border-gray-700 text-gray-300" : ""
+          )}
+        >
+          <ChevronsRight className="h-4 w-4" />
+          <span className="sr-only">Last Page</span>
+        </Button>
+      )}
     </nav>
   );
 };
 
-// For backward compatibility
+// Export the same component as 'Pagination' for backward compatibility
 export const Pagination = PaginationComponent;
+
+// These are dummy components to satisfy import requirements in other components
+export const PaginationContent = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
+export const PaginationItem = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
+export const PaginationLink = ({ children, isActive, onClick }: { children: React.ReactNode, isActive?: boolean, onClick?: () => void }) => 
+  <button className={`${isActive ? 'font-bold' : ''}`} onClick={onClick}>{children}</button>;
+export const PaginationNext = ({ onClick, className }: { onClick?: () => void, className?: string }) => 
+  <button className={className} onClick={onClick}>Next</button>;
+export const PaginationPrevious = ({ onClick, className }: { onClick?: () => void, className?: string }) => 
+  <button className={className} onClick={onClick}>Previous</button>;
+export const PaginationFirst = ({ onClick, className }: { onClick?: () => void, className?: string }) => 
+  <button className={className} onClick={onClick}>First</button>;
+export const PaginationLast = ({ onClick, className }: { onClick?: () => void, className?: string }) => 
+  <button className={className} onClick={onClick}>Last</button>;
+export const PaginationEllipsis = () => <span>...</span>;

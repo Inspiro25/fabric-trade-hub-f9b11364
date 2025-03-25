@@ -1,4 +1,5 @@
-import { Shop } from './types';
+
+import { Shop, ShopStatus } from './types';
 
 // Create mock shop data
 export const mockShops: Shop[] = [

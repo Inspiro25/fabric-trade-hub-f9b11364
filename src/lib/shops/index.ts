@@ -1,28 +1,54 @@
 
-import { Shop } from './types';
-import { getShopById, fetchShops, updateShop, createShop, deleteShop } from '@/lib/supabase/shops';
-import mockShops from './mockData';
+// Re-export shop types and utilities
+export * from './types';
+export { mockShops, getPopularShops, getVerifiedShops, getShopById } from './mockData';
 
-// Re-export the functions to provide a consistent API
-export { 
-  getShopById, 
-  fetchShops, 
-  updateShop, 
-  createShop, 
-  deleteShop,
-  mockShops 
+// Import necessary utilities
+import { mockShops } from './mockData';
+import { Shop, adaptShopData } from './types';
+
+// Get a list of all shops
+export const getAllShops = (): Shop[] => {
+  return mockShops;
 };
 
-// Export the shop products related functions
-export * from './products';
-
-// Additional functions can be added here for specific business logic
-export const getActiveShops = async (): Promise<Shop[]> => {
-  const shops = await fetchShops();
-  return shops.filter(shop => shop.status === 'active');
+// Get a shop by ID
+export const findShopById = (id: string): Shop | undefined => {
+  return mockShops.find(shop => shop.id === id);
 };
 
-export const getVerifiedShops = async (): Promise<Shop[]> => {
-  const shops = await fetchShops();
-  return shops.filter(shop => shop.is_verified);
+// Search shops by name
+export const searchShops = (query: string): Shop[] => {
+  const normalizedQuery = query.toLowerCase();
+  return mockShops.filter(shop => (
+    shop.name.toLowerCase().includes(normalizedQuery) ||
+    shop.description.toLowerCase().includes(normalizedQuery)
+  ));
+};
+
+// Filter shops by category
+export const filterShopsByCategory = (category: string): Shop[] => {
+  const normalizedCategory = category.toLowerCase();
+  return mockShops.filter(shop => 
+    shop.categories.some(cat => cat.toLowerCase() === normalizedCategory)
+  );
+};
+
+// Get trending shops (most followers)
+export const getTrendingShops = (limit = 5): Shop[] => {
+  return [...mockShops]
+    .sort((a, b) => b.followers_count - a.followers_count)
+    .slice(0, limit);
+};
+
+// Get newest shops
+export const getNewestShops = (limit = 5): Shop[] => {
+  return [...mockShops]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+};
+
+// Adapter function to convert any shop data format to our Shop type
+export const adaptShopFromAPI = (data: any): Shop => {
+  return adaptShopData(data);
 };

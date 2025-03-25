@@ -5,12 +5,12 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { useHomeData } from '@/hooks/use-home-data';
 import { useCategories } from '@/hooks/use-categories';
-import { useBestSellers } from '@/hooks/use-best-sellers';
 import HomeHero from '@/components/home/HomeHero';
-import HomeCategories from '@/components/home/HomeCategories';
 import HomeNewArrivals from '@/components/home/HomeNewArrivals';
 import HomeTrendingProducts from '@/components/home/HomeTrendingProducts';
 import HomeFlashSale from '@/components/home/HomeFlashSale';
+import HomeCategories from '@/components/home/HomeCategories';
+import { useBestSellers } from '@/hooks/use-best-sellers';
 import HomeBestSellers from '@/components/home/HomeBestSellers';
 
 const IndexPage = () => {
@@ -163,7 +163,7 @@ const IndexPage = () => {
             </div>
             
             <HomeBestSellers 
-              products={bestSellers || []} 
+              products={bestSellers} 
               isLoading={isBestSellersLoading} 
             />
           </div>
