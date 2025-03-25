@@ -6,47 +6,48 @@ import { Container } from '@/components/ui/container';
 import { PageHeading } from '@/components/ui/page-heading';
 import ProductGrid from '@/components/product/ProductGrid';
 import { ProductSkeleton } from '@/components/product/ProductSkeleton';
-import { getProductsByCategory } from '@/lib/products/filters';
+import { fetchProductsByCategory } from '@/lib/products/filters';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { Product } from '@/lib/products/types';
+import { Product, adaptProduct } from '@/lib/products/types';
 
 const CategoryPage = () => {
-  const { categoryId } = useParams<{categoryId: string}>();
+  const { categoryId } = useParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const { isDarkMode } = useTheme();
   const [totalProducts, setTotalProducts] = useState(0);
-  
+
   useEffect(() => {
     const loadProducts = async () => {
       if (!categoryId) return;
-      
       setLoading(true);
       setError(null);
-      
       try {
-        // Get products for this category
-        const result = await getProductsByCategory(categoryId);
+        // The API returns { products: Product[], total: number }
+        const result = await fetchProductsByCategory(categoryId);
         
         if (result && Array.isArray(result)) {
           // Handle case where it returns just an array
-          setProducts(result);
-          setTotalProducts(result.length);
-        } else if (result && 'products' in result && 'total' in result) {
+          const adaptedProducts = result.map(product => adaptProduct(product));
+          setProducts(adaptedProducts);
+          setTotalProducts(adaptedProducts.length);
+        } else if (result && typeof result === 'object' && 'products' in result && 'total' in result) {
           // Handle case where it returns { products, total }
-          setProducts(result.products);
-          setTotalProducts(result.total);
+          const typedResult = result as { products: any[], total: number };
+          const adaptedProducts = typedResult.products.map(product => adaptProduct(product));
+          setProducts(adaptedProducts);
+          setTotalProducts(typedResult.total);
         } else {
           setProducts([]);
           setTotalProducts(0);
         }
         
         // Set category name from the first product or from the categoryId
-        if (result && Array.isArray(result) && result.length > 0) {
+        if (Array.isArray(result) && result.length > 0) {
           setCategoryName(result[0].category || categoryId);
         } else {
           setCategoryName(categoryId);
@@ -62,12 +63,10 @@ const CategoryPage = () => {
     
     loadProducts();
   }, [categoryId]);
-  
+
   // Format the category name for display
-  const formattedCategoryName = categoryName
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, char => char.toUpperCase());
-  
+  const formattedCategoryName = categoryName.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+
   return (
     <>
       <Helmet>
@@ -75,10 +74,7 @@ const CategoryPage = () => {
         <meta name="description" content={`Browse our collection of ${formattedCategoryName.toLowerCase()} products`} />
       </Helmet>
       
-      <div className={cn(
-        "py-8 min-h-[80vh]",
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50"
-      )}>
+      <div className={cn("py-8 min-h-[80vh]", isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50")}>
         <Container>
           <PageHeading 
             title={formattedCategoryName}

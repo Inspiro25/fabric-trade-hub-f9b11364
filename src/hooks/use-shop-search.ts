@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchShops } from '@/lib/supabase/shops';
-import mockShops from '@/lib/shops/mockData';
+import { mockShops } from '@/lib/shops/mockData';
 import { Shop } from '@/lib/shops/types';
 
 export function useShopSearch() {

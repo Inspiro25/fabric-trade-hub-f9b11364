@@ -1,47 +1,73 @@
 
 import React from 'react';
+import { Grid, List } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import ProductCard from '@/components/ui/ProductCard';
 import { Product } from '@/lib/products/types';
-import { ProductCard } from '@/components/ui/ProductCard';
-import { PaginationComponent } from '@/components/ui/pagination';
+import { PaginationComponent } from '@/components/ui/pagination-custom';
 
 interface ProductGridProps {
   products: Product[];
-  className?: string;
-  columns?: 2 | 3 | 4;
+  title?: string;
+  subtitle?: string;
   showPagination?: boolean;
+  totalItems?: number;
   currentPage?: number;
   pageSize?: number;
-  totalItems?: number;
   onPageChange?: (page: number) => void;
+  showViewToggle?: boolean;
 }
 
-const ProductGrid = ({
+const ProductGrid: React.FC<ProductGridProps> = ({
   products,
-  className = '',
-  columns = 4,
+  title,
+  subtitle,
   showPagination = false,
+  totalItems = 0,
   currentPage = 1,
   pageSize = 12,
-  totalItems,
-  onPageChange
-}: ProductGridProps) => {
+  onPageChange = () => {},
+  showViewToggle = false
+}) => {
+  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
   
-  const getColumnClass = () => {
-    switch(columns) {
-      case 2:
-        return 'grid-cols-1 sm:grid-cols-2';
-      case 3:
-        return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3';
-      case 4:
-      default:
-        return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
-    }
-  };
+  // Calculate total pages
+  const totalPages = Math.ceil((totalItems || products.length) / pageSize);
   
   return (
-    <div className={className}>
-      <div className={`grid ${getColumnClass()} gap-4`}>
-        {products.map(product => (
+    <div className="space-y-6">
+      {(title || subtitle) && (
+        <div className="text-center mb-8">
+          {title && <h2 className="text-2xl font-bold mb-2">{title}</h2>}
+          {subtitle && <p className="text-muted-foreground">{subtitle}</p>}
+        </div>
+      )}
+      
+      {showViewToggle && (
+        <div className="flex justify-end mb-4">
+          <div className="flex space-x-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="h-4 w-4" />
+              <span className="sr-only">Grid view</span>
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+              <span className="sr-only">List view</span>
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      <div className={`grid ${viewMode === 'grid' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1'} gap-4`}>
+        {products.map((product) => (
           <ProductCard
             key={product.id}
             id={product.id}
@@ -50,21 +76,22 @@ const ProductGrid = ({
             salePrice={product.sale_price}
             image={product.images[0]}
             category={product.category || product.category_id}
-            isNew={product.is_new}
-            isTrending={product.is_trending}
             rating={product.rating}
             reviewCount={product.review_count}
+            isNew={product.is_new}
+            isTrending={product.is_trending}
+            layout={viewMode === 'list' ? 'horizontal' : 'vertical'}
           />
         ))}
       </div>
       
-      {showPagination && totalItems && totalItems > pageSize && (
-        <div className="mt-6 flex justify-center">
+      {showPagination && totalPages > 1 && (
+        <div className="flex justify-center mt-8">
           <PaginationComponent
             currentPage={currentPage}
-            totalItems={totalItems}
+            totalItems={totalItems || products.length}
             pageSize={pageSize}
-            onPageChange={onPageChange || (() => {})}
+            onPageChange={onPageChange}
           />
         </div>
       )}

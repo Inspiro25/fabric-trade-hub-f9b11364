@@ -6,6 +6,8 @@ export { mockShops, getPopularShops, getVerifiedShops, getShopById } from './moc
 // Import necessary utilities
 import { mockShops } from './mockData';
 import { Shop, adaptShopData } from './types';
+import { Product } from '@/lib/products/types';
+import { mockProducts } from '@/lib/products/mockData';
 
 // Get a list of all shops
 export const getAllShops = (): Shop[] => {
@@ -46,6 +48,11 @@ export const getNewestShops = (limit = 5): Shop[] => {
   return [...mockShops]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, limit);
+};
+
+// Get shop products
+export const getShopProducts = (shopId: string): Product[] => {
+  return mockProducts.filter(product => product.shop_id === shopId);
 };
 
 // Adapter function to convert any shop data format to our Shop type

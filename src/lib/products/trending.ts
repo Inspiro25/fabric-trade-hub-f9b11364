@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/types/product';
+import { Product, adaptProduct } from '@/lib/products/types';
 
 // Function to get trending products with an enhanced algorithm 
 // that considers views, ratings, purchase frequency, and recency
@@ -104,25 +104,8 @@ export const getTrendingProducts = async (
       productsWithScore.sort((a, b) => b.trendingScore - a.trendingScore);
     }
     
-    // Map to Product type
-    return productsWithScore.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      salePrice: product.sale_price,
-      images: product.images || [],
-      category: product.category_id || '',
-      colors: product.colors || [],
-      sizes: product.sizes || [],
-      isNew: product.is_new || false,
-      isTrending: true, // Mark all as trending
-      rating: product.rating || 0,
-      reviewCount: product.review_count || 0,
-      stock: product.stock || 0,
-      tags: product.tags || [],
-      shopId: product.shop_id || '',
-    }));
+    // Map to Product type with proper adaptation
+    return productsWithScore.map(product => adaptProduct(product));
   } catch (error) {
     console.error('Error fetching trending products:', error);
     return [];

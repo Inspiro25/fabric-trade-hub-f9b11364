@@ -1,18 +1,17 @@
 
 import React from 'react';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-  PaginationFirst,
-  PaginationLast,
-} from './pagination';
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  ChevronsLeft,
+  ChevronsRight
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
-interface PaginationComponentProps {
+export interface PaginationComponentProps {
   currentPage: number;
   totalItems: number;
   pageSize: number;
@@ -28,6 +27,7 @@ export function PaginationComponent({
   siblingCount = 1,
 }: PaginationComponentProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
+  const { isDarkMode } = useTheme();
   
   // Generate page numbers
   const generatePagination = () => {
@@ -84,70 +84,196 @@ export function PaginationComponent({
   const pageNumbers = generatePagination();
 
   return (
-    <Pagination>
-      <PaginationContent>
-        {currentPage > 1 && (
-          <PaginationItem>
-            <PaginationFirst
-              aria-label="Go to first page"
-              onClick={() => onPageChange(1)}
-              role="button"
-            />
-          </PaginationItem>
-        )}
-        
-        {currentPage > 1 && (
-          <PaginationItem>
-            <PaginationPrevious
-              aria-label="Go to previous page"
-              onClick={() => onPageChange(currentPage - 1)}
-              role="button"
-            />
-          </PaginationItem>
-        )}
+    <nav className="flex justify-center items-center space-x-1">
+      {currentPage > 1 && (
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(
+            "h-8 w-8",
+            isDarkMode ? "border-gray-700 text-gray-300" : ""
+          )}
+          onClick={() => onPageChange(1)}
+          aria-label="Go to first page"
+        >
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {currentPage > 1 && (
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(
+            "h-8 w-8",
+            isDarkMode ? "border-gray-700 text-gray-300" : ""
+          )}
+          onClick={() => onPageChange(currentPage - 1)}
+          aria-label="Go to previous page"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+      )}
 
-        {pageNumbers.map((page, i) => {
-          if (page === 'leftEllipsis' || page === 'rightEllipsis') {
-            return (
-              <PaginationItem key={`ellipsis-${i}`}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            );
-          }
-
+      {pageNumbers.map((page, i) => {
+        if (page === 'leftEllipsis' || page === 'rightEllipsis') {
           return (
-            <PaginationItem key={page}>
-              <PaginationLink
-                isActive={page === currentPage}
-                onClick={() => onPageChange(page as number)}
-                role="button"
-              >
-                {page}
-              </PaginationLink>
-            </PaginationItem>
+            <span 
+              key={`ellipsis-${i}`}
+              className={cn(
+                "flex items-center justify-center h-8 w-8",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </span>
           );
-        })}
+        }
 
-        {currentPage < totalPages && (
-          <PaginationItem>
-            <PaginationNext
-              aria-label="Go to next page"
-              onClick={() => onPageChange(currentPage + 1)}
-              role="button"
-            />
-          </PaginationItem>
-        )}
-        
-        {currentPage < totalPages && (
-          <PaginationItem>
-            <PaginationLast
-              aria-label="Go to last page"
-              onClick={() => onPageChange(totalPages)}
-              role="button"
-            />
-          </PaginationItem>
-        )}
-      </PaginationContent>
-    </Pagination>
+        return (
+          <Button
+            key={page}
+            variant={currentPage === page ? "default" : "outline"}
+            size="icon"
+            className={cn(
+              "h-8 w-8",
+              currentPage === page 
+                ? (isDarkMode ? "bg-orange-600 text-white hover:bg-orange-700" : "") 
+                : (isDarkMode ? "border-gray-700 text-gray-300" : "")
+            )}
+            onClick={() => onPageChange(page as number)}
+            aria-label={`Go to page ${page}`}
+            aria-current={currentPage === page ? "page" : undefined}
+          >
+            {page}
+          </Button>
+        );
+      })}
+      
+      {currentPage < totalPages && (
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(
+            "h-8 w-8",
+            isDarkMode ? "border-gray-700 text-gray-300" : ""
+          )}
+          onClick={() => onPageChange(currentPage + 1)}
+          aria-label="Go to next page"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {currentPage < totalPages && (
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(
+            "h-8 w-8",
+            isDarkMode ? "border-gray-700 text-gray-300" : ""
+          )}
+          onClick={() => onPageChange(totalPages)}
+          aria-label="Go to last page"
+        >
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
+      )}
+    </nav>
   );
 }
+
+// Export needed components for other pagination-related imports
+export const Pagination: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="flex justify-center">{children}</div>
+);
+
+export const PaginationContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="flex items-center gap-1">{children}</div>
+);
+
+export const PaginationItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div>{children}</div>
+);
+
+export const PaginationLink: React.FC<{ 
+  children: React.ReactNode; 
+  isActive?: boolean; 
+  onClick?: () => void;
+}> = ({ children, isActive, onClick }) => (
+  <Button
+    variant={isActive ? "default" : "outline"}
+    size="icon"
+    className={isActive ? "font-bold" : ""}
+    onClick={onClick}
+  >
+    {children}
+  </Button>
+);
+
+export const PaginationNext: React.FC<{ 
+  onClick?: () => void; 
+  className?: string;
+}> = ({ onClick, className }) => (
+  <Button 
+    variant="outline"
+    size="icon"
+    className={className}
+    onClick={onClick}
+  >
+    <ChevronRight className="h-4 w-4" />
+    <span className="sr-only">Next</span>
+  </Button>
+);
+
+export const PaginationPrevious: React.FC<{ 
+  onClick?: () => void; 
+  className?: string;
+}> = ({ onClick, className }) => (
+  <Button 
+    variant="outline"
+    size="icon"
+    className={className}
+    onClick={onClick}
+  >
+    <ChevronLeft className="h-4 w-4" />
+    <span className="sr-only">Previous</span>
+  </Button>
+);
+
+export const PaginationFirst: React.FC<{ 
+  onClick?: () => void; 
+  className?: string;
+}> = ({ onClick, className }) => (
+  <Button 
+    variant="outline"
+    size="icon"
+    className={className}
+    onClick={onClick}
+  >
+    <ChevronsLeft className="h-4 w-4" />
+    <span className="sr-only">First</span>
+  </Button>
+);
+
+export const PaginationLast: React.FC<{ 
+  onClick?: () => void; 
+  className?: string;
+}> = ({ onClick, className }) => (
+  <Button 
+    variant="outline"
+    size="icon"
+    className={className}
+    onClick={onClick}
+  >
+    <ChevronsRight className="h-4 w-4" />
+    <span className="sr-only">Last</span>
+  </Button>
+);
+
+export const PaginationEllipsis: React.FC = () => (
+  <div className="flex h-9 w-9 items-center justify-center">
+    <MoreHorizontal className="h-4 w-4" />
+    <span className="sr-only">More pages</span>
+  </div>
+);

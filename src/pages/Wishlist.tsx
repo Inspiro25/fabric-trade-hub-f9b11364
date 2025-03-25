@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from "@/components/ui/button";
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
-import ProductCard from '@/components/product/ProductCard';
+import ProductCard from '@/components/ui/ProductCard';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PageHeading } from '@/components/ui/page-heading';
 import { ProductSkeleton } from '@/components/product/ProductSkeleton';
@@ -43,7 +43,7 @@ const WishlistPage = () => {
     selectedItemIds.forEach(id => {
       const product = wishlist.find(item => item.id === id);
       if (product) {
-        addToCart(product);
+        addToCart(product, 1, "", "");
       }
     });
     
@@ -88,7 +88,7 @@ const WishlistPage = () => {
             <EmptyState 
               title="Your wishlist is empty"
               description="Items you save will appear here"
-              icon="heart"
+              icon="package"
               actionText="Discover Products"
               actionHref="/search"
             />
@@ -149,11 +149,21 @@ const WishlistPage = () => {
                       />
                     </div>
                     <ProductCard
-                      product={product}
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      salePrice={product.sale_price}
+                      image={product.images[0]}
+                      category={product.category || product.category_id}
+                      isNew={product.is_new}
+                      isTrending={product.is_trending}
+                      rating={product.rating}
+                      reviewCount={product.review_count}
                       isAddingToCart={isAddingToCart === product.id}
                       onRemoveFromWishlist={() => removeFromWishlist(product.id)}
                       showWishlistButton={false}
                       showRemoveButton={true}
+                      onAddToCart={() => addToCart(product, 1, '', '')}
                     />
                   </div>
                 ))}

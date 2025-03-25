@@ -5,7 +5,7 @@ import { Product } from '@/lib/products/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ProductCard } from '@/components/ui/ProductCard';
+import ProductCard from '@/components/ui/ProductCard';
 
 interface HomeBestSellersProps {
   products: Product[];

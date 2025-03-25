@@ -2,13 +2,15 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Package, Search, ShoppingBag, AlertCircle } from 'lucide-react';
+import { Package, Search, ShoppingBag, AlertCircle, Heart } from 'lucide-react';
 
 interface EmptyStateProps {
   title: string;
   description?: string;
-  icon?: 'package' | 'search' | 'shopping-bag' | 'alert';
+  icon?: 'package' | 'search' | 'shopping-bag' | 'alert' | 'heart';
   className?: string;
+  actionText?: string;
+  actionHref?: string;
 }
 
 export const EmptyState = ({
@@ -16,6 +18,8 @@ export const EmptyState = ({
   description,
   icon = 'package',
   className,
+  actionText,
+  actionHref,
 }: EmptyStateProps) => {
   const { isDarkMode } = useTheme();
   
@@ -27,6 +31,8 @@ export const EmptyState = ({
         return <ShoppingBag size={48} />;
       case 'alert':
         return <AlertCircle size={48} />;
+      case 'heart':
+        return <Heart size={48} />;
       case 'package':
       default:
         return <Package size={48} />;
@@ -55,6 +61,19 @@ export const EmptyState = ({
         <p className="max-w-md mx-auto">
           {description}
         </p>
+      )}
+      {actionText && actionHref && (
+        <a 
+          href={actionHref}
+          className={cn(
+            "mt-4 inline-flex items-center px-4 py-2 rounded-md text-sm font-medium",
+            isDarkMode 
+              ? "bg-orange-600 text-white hover:bg-orange-700" 
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          )}
+        >
+          {actionText}
+        </a>
       )}
     </div>
   );
