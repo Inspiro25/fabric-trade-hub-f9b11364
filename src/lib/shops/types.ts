@@ -21,8 +21,8 @@ export interface Shop {
   is_verified: boolean;
   rating: number;
   followers_count: number;
-  review_count?: number; // Added review_count
-  product_count?: number; // Added product_count
+  review_count?: number;
+  product_count?: number;
   created_at: string;
   tags: string[];
   status: string;

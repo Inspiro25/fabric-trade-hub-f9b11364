@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { SearchPageProduct } from '@/hooks/search/types';
 import { supabase } from '@/integrations/supabase/client';
+import { adaptShopData } from '@/lib/shops/types';
 
 interface UseSearchResult {
   searchResults: SearchPageProduct[];
@@ -82,7 +83,7 @@ export const useSearch = (
         // Apply filters if provided
         let queryBuilder = supabase
           .from('products')
-          .select('*, shop:shop_id(name, logo)')
+          .select('*, shop:shop_id(name, logo, id, description, cover_image, address, owner_name, owner_email, rating, review_count, followers_count, is_verified, status, created_at, phone_number)')
           .or(`name.ilike.%${query}%,description.ilike.%${query}%,tags.cs.{${query}}`);
         
         // Add category filter if it exists in the filters array
@@ -121,23 +122,14 @@ export const useSearch = (
           review_count: product.review_count || 0,
           stock: product.stock || 0,
           shop_id: product.shop_id || '',
-          shop: product.shop ? {
-            id: product.shop_id,
-            name: product.shop.name,
-            logo: product.shop.logo,
-            description: '',
-            cover_image: '',
-            address: '',
-            owner_name: '',
-            owner_email: '',
-            rating: 0,
-            review_count: 0,
-            followers_count: 0,
-            is_verified: false,
-            status: '',
-            created_at: '',
-            product_count: 0
-          } : product.shop_id,
+          shop: product.shop ? adaptShopData({
+            ...product.shop,
+            phone: product.shop.phone_number,
+            product_count: 0,
+            social_media: {},
+            categories: [],
+            tags: []
+          }) : product.shop_id,
           is_new: product.is_new || false,
           colors: product.colors || [],
           sizes: product.sizes || [],

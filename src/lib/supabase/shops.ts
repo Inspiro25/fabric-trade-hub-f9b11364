@@ -1,8 +1,42 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Shop, ShopStatus } from '@/lib/shops/types';
-import { v4 as uuidv4 } from 'uuid';
+import { Shop, adaptShopData } from '@/lib/shops/types';
+import { Product } from '@/lib/products/types';
 
-// Function to get a shop by its ID
+const defaultShopValues = {
+  website: '',
+  social_media: { facebook: '', twitter: '', instagram: '', pinterest: '' },
+  categories: [],
+  product_count: 0,
+  tags: []
+};
+
+export const fetchShops = async (): Promise<Shop[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching shops:', error);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    return data.map(shop => adaptShopData({
+      ...shop,
+      ...defaultShopValues
+    })) as Shop[];
+  } catch (error) {
+    console.error('Error in fetchShops:', error);
+    return [];
+  }
+};
+
 export const getShopById = async (id: string): Promise<Shop | null> => {
   try {
     const { data, error } = await supabase
@@ -15,87 +49,18 @@ export const getShopById = async (id: string): Promise<Shop | null> => {
     
     if (!data) return null;
     
-    // Transform the data to match the Shop interface
-    return {
-      id: data.id,
-      name: data.name,
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      description: data.description || '',
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      address: data.address || '',
-      phone: data.phone_number || '',
-      phone_number: data.phone_number || '',
-      website: data.website || '',
-      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: data.categories || [],
-      is_verified: data.is_verified || false,
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      product_count: data.product_count || 0,
-      created_at: data.created_at,
-      tags: data.tags || [],
-      status: data.status as string,
-      shop_id: data.shop_id || ''
-    } as Shop;
+    return adaptShopData({
+      ...data,
+      ...defaultShopValues
+    }) as Shop;
   } catch (error) {
     console.error('Error fetching shop:', error);
     return null;
   }
 };
 
-// Function to fetch all shops
-export const fetchShops = async (): Promise<Shop[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('shops')
-      .select('*');
-      
-    if (error) {
-      console.error('Error fetching shops:', error);
-      throw error;
-    }
-    
-    if (!data) {
-      return [];
-    }
-    
-    return data.map(shop => ({
-      id: shop.id,
-      name: shop.name,
-      logo: shop.logo || '',
-      cover_image: shop.cover_image || '',
-      description: shop.description || '',
-      owner_name: shop.owner_name || '',
-      owner_email: shop.owner_email || '',
-      address: shop.address || '',
-      phone: shop.phone_number || '',
-      phone_number: shop.phone_number || '',
-      website: shop.website || '',
-      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: shop.categories || [],
-      is_verified: shop.is_verified || false,
-      rating: shop.rating || 0,
-      review_count: shop.review_count || 0,
-      followers_count: shop.followers_count || 0,
-      product_count: shop.product_count || 0,
-      created_at: shop.created_at,
-      tags: shop.tags || [],
-      status: shop.status as string,
-      shop_id: shop.shop_id || ''
-    })) as Shop[];
-  } catch (error) {
-    console.error('Error in fetchShops:', error);
-    return [];
-  }
-};
-
-// Function to update a shop
 export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<Shop | null> => {
   try {
-    // Convert the Shop interface to match what the database expects
     const dbShopData = {
       ...shopData,
       phone_number: shopData.phone || shopData.phone_number,
@@ -113,37 +78,16 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<S
     
     if (!data) return null;
     
-    return {
-      id: data.id,
-      name: data.name,
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      description: data.description || '',
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      address: data.address || '',
-      phone: data.phone_number || '',
-      phone_number: data.phone_number || '',
-      website: data.website || '',
-      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: data.categories || [],
-      is_verified: data.is_verified || false,
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      product_count: data.product_count || 0,
-      created_at: data.created_at,
-      tags: data.tags || [],
-      status: data.status as string,
-      shop_id: data.shop_id || ''
-    } as Shop;
+    return adaptShopData({
+      ...data,
+      ...defaultShopValues
+    }) as Shop;
   } catch (error) {
     console.error('Error updating shop:', error);
     return null;
   }
 };
 
-// Function to create a new shop
 export const createShop = async (shopData: Omit<Shop, 'id' | 'created_at'>): Promise<Shop | null> => {
   try {
     const newShop = {
@@ -162,37 +106,16 @@ export const createShop = async (shopData: Omit<Shop, 'id' | 'created_at'>): Pro
     
     if (error) throw error;
     
-    return {
-      id: data.id,
-      name: data.name,
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      description: data.description || '',
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      address: data.address || '',
-      phone: data.phone_number || '',
-      phone_number: data.phone_number || '',
-      website: data.website || '',
-      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: data.categories || [],
-      is_verified: data.is_verified || false,
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      product_count: data.product_count || 0,
-      created_at: data.created_at,
-      tags: data.tags || [],
-      status: data.status as string,
-      shop_id: data.shop_id || ''
-    } as Shop;
+    return adaptShopData({
+      ...data,
+      ...defaultShopValues
+    }) as Shop;
   } catch (error) {
     console.error('Error creating shop:', error);
     return null;
   }
 };
 
-// Function to delete a shop
 export const deleteShop = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
@@ -209,7 +132,6 @@ export const deleteShop = async (id: string): Promise<boolean> => {
   }
 };
 
-// Function to verify a shop
 export const verifyShop = async (id: string): Promise<Shop | null> => {
   try {
     const { data, error } = await supabase
@@ -221,37 +143,16 @@ export const verifyShop = async (id: string): Promise<Shop | null> => {
     
     if (error) throw error;
     
-    return {
-      id: data.id,
-      name: data.name,
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      description: data.description || '',
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      address: data.address || '',
-      phone: data.phone_number || '',
-      phone_number: data.phone_number || '',
-      website: data.website || '',
-      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: data.categories || [],
-      is_verified: data.is_verified || false,
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      product_count: data.product_count || 0,
-      created_at: data.created_at,
-      tags: data.tags || [],
-      status: data.status as string,
-      shop_id: data.shop_id || ''
-    } as Shop;
+    return adaptShopData({
+      ...data,
+      ...defaultShopValues
+    }) as Shop;
   } catch (error) {
     console.error('Error verifying shop:', error);
     return null;
   }
 };
 
-// Function to suspend a shop
 export const suspendShop = async (id: string): Promise<Shop | null> => {
   try {
     const { data, error } = await supabase
@@ -263,37 +164,16 @@ export const suspendShop = async (id: string): Promise<Shop | null> => {
     
     if (error) throw error;
     
-    return {
-      id: data.id,
-      name: data.name,
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      description: data.description || '',
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      address: data.address || '',
-      phone: data.phone_number || '',
-      phone_number: data.phone_number || '',
-      website: data.website || '',
-      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: data.categories || [],
-      is_verified: data.is_verified || false,
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      product_count: data.product_count || 0,
-      created_at: data.created_at,
-      tags: data.tags || [],
-      status: data.status as string,
-      shop_id: data.shop_id || ''
-    } as Shop;
+    return adaptShopData({
+      ...data,
+      ...defaultShopValues
+    }) as Shop;
   } catch (error) {
     console.error('Error suspending shop:', error);
     return null;
   }
 };
 
-// Function to activate a shop
 export const activateShop = async (id: string): Promise<Shop | null> => {
   try {
     const { data, error } = await supabase
@@ -305,37 +185,16 @@ export const activateShop = async (id: string): Promise<Shop | null> => {
     
     if (error) throw error;
     
-    return {
-      id: data.id,
-      name: data.name,
-      logo: data.logo || '',
-      cover_image: data.cover_image || '',
-      description: data.description || '',
-      owner_name: data.owner_name || '',
-      owner_email: data.owner_email || '',
-      address: data.address || '',
-      phone: data.phone_number || '',
-      phone_number: data.phone_number || '',
-      website: data.website || '',
-      social_media: data.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: data.categories || [],
-      is_verified: data.is_verified || false,
-      rating: data.rating || 0,
-      review_count: data.review_count || 0,
-      followers_count: data.followers_count || 0,
-      product_count: data.product_count || 0,
-      created_at: data.created_at,
-      tags: data.tags || [],
-      status: data.status as string,
-      shop_id: data.shop_id || ''
-    } as Shop;
+    return adaptShopData({
+      ...data,
+      ...defaultShopValues
+    }) as Shop;
   } catch (error) {
     console.error('Error activating shop:', error);
     return null;
   }
 };
 
-// Function to get verified shops
 export const getVerifiedShops = async (): Promise<Shop[]> => {
   try {
     const { data, error } = await supabase
@@ -346,29 +205,9 @@ export const getVerifiedShops = async (): Promise<Shop[]> => {
     
     if (error) throw error;
     
-    return (data || []).map(shop => ({
-      id: shop.id,
-      name: shop.name,
-      logo: shop.logo || '',
-      cover_image: shop.cover_image || '',
-      description: shop.description || '',
-      owner_name: shop.owner_name || '',
-      owner_email: shop.owner_email || '',
-      address: shop.address || '',
-      phone: shop.phone_number || '',
-      phone_number: shop.phone_number || '',
-      website: shop.website || '',
-      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: shop.categories || [],
-      is_verified: shop.is_verified || false,
-      rating: shop.rating || 0,
-      review_count: shop.review_count || 0,
-      followers_count: shop.followers_count || 0,
-      product_count: shop.product_count || 0,
-      created_at: shop.created_at,
-      tags: shop.tags || [],
-      status: shop.status as string,
-      shop_id: shop.shop_id || ''
+    return (data || []).map(shop => adaptShopData({
+      ...shop,
+      ...defaultShopValues
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching verified shops:', error);
@@ -376,7 +215,6 @@ export const getVerifiedShops = async (): Promise<Shop[]> => {
   }
 };
 
-// Function to get trending shops
 export const getTrendingShops = async (limit = 5): Promise<Shop[]> => {
   try {
     const { data, error } = await supabase
@@ -388,29 +226,9 @@ export const getTrendingShops = async (limit = 5): Promise<Shop[]> => {
     
     if (error) throw error;
     
-    return (data || []).map(shop => ({
-      id: shop.id,
-      name: shop.name,
-      logo: shop.logo || '',
-      cover_image: shop.cover_image || '',
-      description: shop.description || '',
-      owner_name: shop.owner_name || '',
-      owner_email: shop.owner_email || '',
-      address: shop.address || '',
-      phone: shop.phone_number || '',
-      phone_number: shop.phone_number || '',
-      website: shop.website || '',
-      social_media: shop.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
-      categories: shop.categories || [],
-      is_verified: shop.is_verified || false,
-      rating: shop.rating || 0,
-      review_count: shop.review_count || 0,
-      followers_count: shop.followers_count || 0,
-      product_count: shop.product_count || 0,
-      created_at: shop.created_at,
-      tags: shop.tags || [],
-      status: shop.status as string,
-      shop_id: shop.shop_id || ''
+    return (data || []).map(shop => adaptShopData({
+      ...shop,
+      ...defaultShopValues
     })) as Shop[];
   } catch (error) {
     console.error('Error fetching trending shops:', error);
@@ -418,7 +236,6 @@ export const getTrendingShops = async (limit = 5): Promise<Shop[]> => {
   }
 };
 
-// Function to check shop credentials (username/password)
 export const checkShopCredentials = async (shopName: string, password: string): Promise<string | null> => {
   try {
     const { data, error } = await supabase
@@ -437,7 +254,6 @@ export const checkShopCredentials = async (shopName: string, password: string): 
       return null;
     }
     
-    // Simple password check (in a real app, you'd use proper password hashing)
     if (data.password === password) {
       return data.id;
     }
@@ -449,5 +265,4 @@ export const checkShopCredentials = async (shopName: string, password: string): 
   }
 };
 
-// Export the ShopStatus enum to use in other files
 export { ShopStatus } from '@/lib/shops/types';

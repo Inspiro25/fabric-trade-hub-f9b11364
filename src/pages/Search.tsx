@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Helmet } from 'react-helmet-async';
-import { Pagination } from '@/components/ui/pagination';
+import { PaginationComponent } from '@/components/ui/pagination';
 
 const Search = () => {
   const navigate = useNavigate();
@@ -95,6 +94,10 @@ const Search = () => {
       clearFilters={clearFilters}
     />
   );
+
+  const checkDarkMode = (value: boolean | string): boolean => {
+    return value === true || value === 'true';
+  };
 
   return (
     <>
@@ -173,7 +176,6 @@ const Search = () => {
         isDarkMode ? "bg-gray-900 text-gray-100" : ""
       )}>
         <div className="flex flex-col lg:flex-row gap-8 relative">
-          {/* Mobile filters */}
           {isMobile ? (
             <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
               <SheetTrigger asChild>
@@ -295,7 +297,7 @@ const Search = () => {
                 
                 {totalResults > pageSize && (
                   <div className="mt-8 flex justify-center">
-                    <Pagination
+                    <PaginationComponent
                       currentPage={page}
                       totalItems={totalResults}
                       pageSize={pageSize}

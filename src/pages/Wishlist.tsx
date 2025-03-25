@@ -1,200 +1,169 @@
 
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Product } from '@/lib/types/product';
+import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Button } from "@/components/ui/button";
 import { useWishlist } from '@/contexts/WishlistContext';
-import ProductCard from '@/components/ui/ProductCard';
-import EmptyWishlist from '@/components/cart/EmptyWishlist';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/contexts/CartContext';
+import ProductCard from '@/components/product/ProductCard';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeading } from '@/components/ui/page-heading';
+import { ProductSkeleton } from '@/components/product/ProductSkeleton';
+import { ShoppingCart, Trash } from 'lucide-react';
+import { Container } from '@/components/ui/container';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-import AuthDialog from '@/components/search/AuthDialog';
+import { Product } from '@/lib/products/types';
 
-const Wishlist = () => {
-  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const { wishlist, isLoading } = useWishlist();
-  const { currentUser, loading: authLoading } = useAuth();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const isMobile = useIsMobile();
+const WishlistPage = () => {
+  const { wishlist, isLoading, removeFromWishlist } = useWishlist();
+  const { addToCart, isAddingToCart } = useCart();
   const { isDarkMode } = useTheme();
-
-  useEffect(() => {
-    if (!authLoading && !currentUser) {
-      setShowAuthDialog(true);
-    }
-  }, [authLoading, currentUser]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 300);
-
-    const fetchWishlistItems = async () => {
-      if (wishlist.length === 0) {
-        setWishlistItems([]);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', wishlist);
-        
-        if (error) {
-          console.error('Error fetching wishlist products:', error);
-          import('@/lib/products').then(({ mockProducts }) => {
-            const productsInWishlist = mockProducts.filter(product => 
-              wishlist.includes(product.id)
-            );
-            setWishlistItems(productsInWishlist as unknown as Product[]);
-          });
-          return;
-        }
-        
-        if (data && data.length > 0) {
-          const mappedProducts = data.map(item => ({
-            ...item,
-            category: item.category_id || '',
-            reviewCount: item.review_count || 0,
-            isNew: item.is_new || false,
-            isTrending: item.is_trending || false,
-            shopId: item.shop_id || null
-          }));
-          
-          setWishlistItems(mappedProducts as unknown as Product[]);
-        } else {
-          setWishlistItems([]);
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        import('@/lib/products').then(({ mockProducts }) => {
-          const productsInWishlist = mockProducts.filter(product => 
-            wishlist.includes(product.id)
-          );
-          setWishlistItems(productsInWishlist as unknown as Product[]);
-        });
-      }
-    };
-
-    fetchWishlistItems();
-    return () => clearTimeout(timer);
-  }, [wishlist]);
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
   
-  const handleLogin = () => {
-    window.location.href = '/auth';
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectedItemIds.length === wishlist.length) {
+      setSelectedItemIds([]);
+    } else {
+      setSelectedItemIds(wishlist.map(item => item.id));
+    }
   };
-
-  if (isLoading || authLoading) {
-    return (
-      <div className={cn(
-        "container mx-auto px-4 py-12 flex items-center justify-center",
-        isDarkMode 
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-          : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
-      )}>
-        <Loader2 className={cn(
-          "h-8 w-8 animate-spin",
-          isDarkMode ? "text-orange-500" : "text-primary"
-        )} />
-        <p className={cn(
-          "ml-2",
-          isDarkMode ? "text-gray-300" : "text-muted-foreground"
-        )}>Loading your wishlist...</p>
-      </div>
-    );
-  }
-
+  
+  // Handle select individual item
+  const handleSelectItem = (id: string) => {
+    if (selectedItemIds.includes(id)) {
+      setSelectedItemIds(selectedItemIds.filter(itemId => itemId !== id));
+    } else {
+      setSelectedItemIds([...selectedItemIds, id]);
+    }
+  };
+  
+  // Handle add selected items to cart
+  const handleAddSelectedToCart = () => {
+    selectedItemIds.forEach(id => {
+      const product = wishlist.find(item => item.id === id);
+      if (product) {
+        addToCart(product);
+      }
+    });
+    
+    // Clear selection after adding to cart
+    setSelectedItemIds([]);
+  };
+  
+  // Handle remove selected items from wishlist
+  const handleRemoveSelected = () => {
+    selectedItemIds.forEach(id => {
+      removeFromWishlist(id);
+    });
+    
+    // Clear selection after removing
+    setSelectedItemIds([]);
+  };
+  
   return (
-    <div className={cn(
-      "container mx-auto px-4 py-6 max-w-5xl min-h-screen",
-      isDarkMode 
-        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
-    )}>
-      <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          asChild 
-          className={cn(
-            "mr-2 h-8 w-8",
-            isDarkMode && "hover:bg-gray-800 text-gray-300"
-          )}
-        >
-          <Link to="/" aria-label="Back to shopping">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <h1 className={cn(
-          "text-xl font-semibold",
-          isDarkMode && "text-white"
-        )}>My Wishlist</h1>
-      </div>
-
-      {wishlistItems.length === 0 ? (
-        <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <EmptyWishlist />
-        </div>
-      ) : (
-        <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className={cn(
-            "rounded-xl shadow-sm overflow-hidden mb-6",
-            isDarkMode ? "bg-gray-800" : "bg-white"
-          )}>
-            <div className={cn(
-              "p-3",
-              isDarkMode ? "border-b border-gray-700" : "border-b border-gray-100"
-            )}>
-              <p className={cn(
-                "text-sm font-medium",
-                isDarkMode && "text-gray-200"
-              )}>
-                {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved
-              </p>
-            </div>
-            <div className={cn(
-              isMobile ? 'grid-cols-2 gap-3 p-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6',
-              "grid"
-            )}>
-              {wishlistItems.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  image={product.images[0]}
-                  category={product.category}
-                  isNew={product.isNew}
-                  isTrending={product.isTrending}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                  variant="compact"
-                  product={product}
-                />
+    <>
+      <Helmet>
+        <title>Your Wishlist | Kutuku</title>
+        <meta name="description" content="View and manage your saved items in your wishlist" />
+      </Helmet>
+      
+      <div className={cn(
+        "py-8 min-h-[80vh]",
+        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50"
+      )}>
+        <Container>
+          <PageHeading 
+            title="Your Wishlist" 
+            subtitle="Manage your saved items"
+          />
+          
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <ProductSkeleton key={index} />
               ))}
             </div>
-          </div>
-        </div>
-      )}
-      
-      {showAuthDialog && (
-        <AuthDialog
-          open={showAuthDialog}
-          onOpenChange={setShowAuthDialog}
-          onLogin={handleLogin}
-          title="Authentication Required"
-          message="You need to be logged in to view your wishlist."
-        />
-      )}
-    </div>
+          ) : wishlist.length === 0 ? (
+            <EmptyState 
+              title="Your wishlist is empty"
+              description="Items you save will appear here"
+              icon="heart"
+              actionText="Discover Products"
+              actionHref="/search"
+            />
+          ) : (
+            <>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="checkbox" 
+                    id="select-all"
+                    checked={selectedItemIds.length > 0 && selectedItemIds.length === wishlist.length}
+                    onChange={handleSelectAll}
+                    className="h-4 w-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
+                  />
+                  <label htmlFor="select-all" className="text-sm">
+                    {selectedItemIds.length === wishlist.length ? "Unselect All" : "Select All"}
+                  </label>
+                </div>
+                
+                {selectedItemIds.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleRemoveSelected}
+                      className={cn(
+                        "text-xs",
+                        isDarkMode ? "text-gray-300 border-gray-700" : ""
+                      )}
+                    >
+                      <Trash className="h-3 w-3 mr-1" />
+                      Remove Selected
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleAddSelectedToCart}
+                      className={cn(
+                        "text-xs",
+                        isDarkMode && "bg-orange-600 hover:bg-orange-700"
+                      )}
+                    >
+                      <ShoppingCart className="h-3 w-3 mr-1" />
+                      Add Selected to Cart
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {wishlist.map((product) => (
+                  <div key={product.id} className="relative">
+                    <div className="absolute top-2 left-2 z-10">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedItemIds.includes(product.id)}
+                        onChange={() => handleSelectItem(product.id)}
+                        className="h-4 w-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
+                      />
+                    </div>
+                    <ProductCard
+                      product={product}
+                      isAddingToCart={isAddingToCart === product.id}
+                      onRemoveFromWishlist={() => removeFromWishlist(product.id)}
+                      showWishlistButton={false}
+                      showRemoveButton={true}
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </Container>
+      </div>
+    </>
   );
 };
 
-export default Wishlist;
+export default WishlistPage;

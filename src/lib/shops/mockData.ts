@@ -1,61 +1,98 @@
 import { Shop } from './types';
-import { ShopStatus } from './types';
 
-const mockShops: Shop[] = [
+// Create mock shop data
+export const mockShops: Shop[] = [
   {
-    id: "shop-1",
-    name: "Organic Harvest",
-    description: "Fresh organic produce direct from local farms",
-    logo: "/images/shops/organic-harvest-logo.png",
-    cover_image: "/images/shops/organic-harvest-cover.jpg",
-    rating: 4.8,
-    review_count: 128,
-    followers_count: 1500,
-    product_count: 75,
-    owner_name: "Sarah Johnson",
-    owner_email: "sarah@organicharvest.com",
-    phone_number: "+1-555-123-4567",
-    address: "123 Green Lane, Farmville, CA 94123",
-    status: "active" as ShopStatus,
+    id: '1',
+    name: 'Fashion Forward',
+    description: 'Trendy and affordable fashion for all styles',
+    logo: 'https://images.unsplash.com/photo-1565915041439-edd18ef49b8f?q=80&w=200',
+    cover_image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1600',
+    rating: 4.7,
+    review_count: 248,
+    followers_count: 5624,
+    product_count: 432,
+    owner_name: 'Sophia Williams',
+    owner_email: 'sophia@fashionforward.com',
+    address: '123 Fashion St, New York, NY',
+    phone: '+1 (555) 123-4567',
+    website: 'www.fashionforward.com',
+    social_media: {
+      facebook: 'fashionforward',
+      instagram: 'fashion_forward',
+      twitter: 'fashionforward',
+      pinterest: 'fashionforwardstore'
+    },
+    categories: ['women', 'men', 'accessories'],
+    tags: ['trendy', 'affordable', 'fashion'],
     is_verified: true,
-    created_at: "2023-02-15T00:00:00Z"
+    status: 'active',
+    created_at: '2023-01-15T08:00:00.000Z'
   },
   {
-    id: "shop-2",
-    name: "Tech Universe",
-    description: "Latest gadgets and tech accessories at competitive prices",
-    logo: "/images/shops/tech-universe-logo.png",
-    cover_image: "/images/shops/tech-universe-cover.jpg",
-    rating: 4.5,
-    review_count: 320,
-    followers_count: 2200,
-    product_count: 150,
-    owner_name: "Michael Chen",
-    owner_email: "michael@techuniverse.com",
-    phone_number: "+1-555-987-6543",
-    address: "456 Innovation Drive, Silicon Valley, CA 95051",
-    status: "active" as ShopStatus,
+    id: '2',
+    name: 'Tech Solutions',
+    description: 'Innovative tech gadgets and solutions for modern living',
+    logo: 'https://images.unsplash.com/photo-1518770660439-464ef50ce906?q=80&w=200',
+    cover_image: 'https://images.unsplash.com/photo-1488590528227-984c35dad8c2?q=80&w=1600',
+    rating: 4.9,
+    review_count: 386,
+    followers_count: 8952,
+    product_count: 689,
+    owner_name: 'Ethan Johnson',
+    owner_email: 'ethan@techsolutions.com',
+    address: '456 Innovation Ave, San Francisco, CA',
+    phone: '+1 (555) 234-5678',
+    website: 'www.techsolutions.com',
+    social_media: {
+      facebook: 'techsolutions',
+      instagram: 'tech_solutions',
+      twitter: 'techsolutions',
+      pinterest: 'techsolutions'
+    },
+    categories: ['electronics', 'gadgets', 'home automation'],
+    tags: ['tech', 'innovative', 'gadgets'],
     is_verified: true,
-    created_at: "2023-03-21T00:00:00Z"
+    status: 'active',
+    created_at: '2023-02-20T10:30:00.000Z'
   },
   {
-    id: "shop-3",
-    name: "Fashion Forward",
-    description: "Trendy clothing and accessories for the style-conscious",
-    logo: "/images/shops/fashion-forward-logo.png",
-    cover_image: "/images/shops/fashion-forward-cover.jpg",
-    rating: 4.2,
-    review_count: 95,
-    followers_count: 980,
-    product_count: 120,
-    owner_name: "Emma Rodriguez",
-    owner_email: "emma@fashionforward.com",
-    phone_number: "+1-555-456-7890",
-    address: "789 Style Avenue, Los Angeles, CA 90028",
-    status: "active" as ShopStatus,
+    id: '3',
+    name: 'Gourmet Delights',
+    description: 'Exquisite gourmet foods and culinary experiences',
+    logo: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d?q=80&w=200',
+    cover_image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=1600',
+    rating: 4.6,
+    review_count: 195,
+    followers_count: 3218,
+    product_count: 276,
+    owner_name: 'Olivia Davis',
+    owner_email: 'olivia@gourmetdelights.com',
+    address: '789 Flavor Ln, Paris, France',
+    phone: '+33 1 23 45 67 89',
+    website: 'www.gourmetdelights.com',
+    social_media: {
+      facebook: 'gourmetdelights',
+      instagram: 'gourmet_delights',
+      twitter: 'gourmetdelights',
+      pinterest: 'gourmetdelights'
+    },
+    categories: ['food', 'gourmet', 'international'],
+    tags: ['food', 'gourmet', 'international'],
     is_verified: false,
-    created_at: "2023-04-10T00:00:00Z"
+    status: 'active',
+    created_at: '2023-03-10T14:15:00.000Z'
   }
 ];
 
-export default mockShops;
+export const getPopularShops = (): Shop[] => {
+  return mockShops.filter(shop => shop.followers_count > 2000);
+};
+
+export const getVerifiedShops = (): Shop[] => {
+  return mockShops.filter(shop => shop.is_verified);
+};
+
+export const getShopById = (id: string): Shop | undefined => {
+  return mockShops.find(shop => shop.id === id);
+};
