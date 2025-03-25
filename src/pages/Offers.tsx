@@ -1,292 +1,339 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Button } from '@/components/ui/button';
+import { getActiveOffers, Offer } from '@/lib/supabase/offers';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Search, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Search, Tag, Clock, Copy, Check, Filter } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/types/product';
-import ProductCard from '@/components/ui/ProductCard';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Offers = () => {
-  const { isDarkMode } = useTheme();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [offers, setOffers] = useState<(Offer & { shops: { name: string } | null })[]>([]);
+  const [filteredOffers, setFilteredOffers] = useState<(Offer & { shops: { name: string } | null })[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('relevance');
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  
-  const [activeOffers, setActiveOffers] = useState<any[]>([]);
-  const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
-  const [highlightedProducts, setHighlightedProducts] = useState<Product[]>([]);
-  
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const { isDarkMode } = useTheme();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchOffers = async () => {
       try {
-        const now = new Date();
-        const { data, error } = await supabase
-          .from('offers')
-          .select('*')
-          .eq('is_active', true)
-          .in('type', ['discount', 'sale'])
-          .gte('expiry', now.toISOString())
-          .order('expiry', { ascending: true });
-        
-        if (error) {
-          console.error('Error fetching active offers:', error);
-          setError('Failed to load offers');
-          return;
-        }
-        
-        if (data) {
-          setActiveOffers(data);
-          
-          // Select the first offer and highlight its products
-          if (data.length > 0) {
-            setSelectedOffer(data[0]);
-            highlightOfferProducts(data[0]);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch offers:', err);
-        setError('Failed to load offers');
+        setIsLoading(true);
+        const offersData = await getActiveOffers();
+        setOffers(offersData);
+        setFilteredOffers(offersData);
+      } catch (error) {
+        console.error('Error fetching offers:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load offers. Please try again later.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
-    
+
     fetchOffers();
   }, []);
 
-  const highlightOfferProducts = async (offer: any) => {
-    if (!offer || !offer.product_ids) {
-      setHighlightedProducts([]);
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .in('id', offer.product_ids);
-      
-      if (error) {
-        console.error('Error fetching products for offer:', error);
-        setError('Failed to load products for offer');
-        return;
-      }
-      
-      if (data) {
-        setHighlightedProducts(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch products for offer:', err);
-      setError('Failed to load products for offer');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        let query = supabase
-          .from('products')
-          .select('*');
-        
-        if (searchTerm) {
-          query = query.ilike('name', `%${searchTerm}%`);
-        }
-        
-        if (sortBy === 'price') {
-          query = query.order('price', { ascending: sortOrder === 'asc' });
-        } else if (sortBy === 'rating') {
-          query = query.order('rating', { ascending: sortOrder === 'desc' });
-        } else if (sortBy === 'newest') {
-          query = query.order('created_at', { ascending: false });
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-          console.error('Error fetching products:', error);
-          setError('Failed to load products');
-        } else {
-          setProducts(data || []);
-        }
-      } catch (err) {
-        console.error('Failed to fetch products:', err);
-        setError('Failed to load products');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (searchTerm.trim() === '') {
+      setFilteredOffers(offers);
+    } else {
+      const term = searchTerm.toLowerCase();
+      const filtered = offers.filter(
+        (offer) =>
+          offer.title.toLowerCase().includes(term) ||
+          offer.description?.toLowerCase().includes(term) ||
+          offer.code.toLowerCase().includes(term) ||
+          offer.shops?.name.toLowerCase().includes(term)
+      );
+      setFilteredOffers(filtered);
+    }
+  }, [searchTerm, offers]);
+
+  const copyToClipboard = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    toast({
+      title: 'Code Copied',
+      description: 'Discount code copied to clipboard',
+    });
     
-    fetchProducts();
-  }, [searchTerm, sortBy, sortOrder]);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    setTimeout(() => {
+      setCopiedCode(null);
+    }, 2000);
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value);
-  };
-  
-  const toggleSortOrder = () => {
-    setSortOrder(prevOrder => (prevOrder === 'asc' ? 'desc' : 'asc'));
+  const getOfferTypeText = (type: 'percentage' | 'shipping' | 'bogo') => {
+    switch (type) {
+      case 'percentage':
+        return 'Discount';
+      case 'shipping':
+        return 'Free Shipping';
+      case 'bogo':
+        return 'Buy One Get One';
+      default:
+        return 'Special Offer';
+    }
   };
 
-  const handleOfferClick = (offer: any) => {
-    setSelectedOffer(offer);
-    highlightOfferProducts(offer);
+  const getExpiryString = (date: string) => {
+    const expiryDate = new Date(date);
+    const now = new Date();
+    const diffTime = expiryDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) {
+      return 'Expired';
+    } else if (diffDays === 1) {
+      return 'Expires today';
+    } else if (diffDays <= 7) {
+      return `Expires in ${diffDays} days`;
+    } else {
+      return `Expires ${expiryDate.toLocaleDateString()}`;
+    }
   };
 
   return (
     <>
       <Helmet>
         <title>Offers & Discounts</title>
-        <meta name="description" content="Find the best deals and discounts on our products." />
       </Helmet>
-
-      <div className={cn("min-h-screen py-12", isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50")}>
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-6">
-            Exclusive Offers & Discounts
-          </h1>
-
-          <div className="flex flex-col md:flex-row items-center justify-between mb-6">
-            <div className="flex items-center w-full md:w-auto mb-3 md:mb-0">
-              <div className="relative w-full">
-                <Input
-                  type="search"
-                  placeholder="Search products..."
-                  className="pl-10 pr-3 py-2 rounded-md w-full"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center"
-                onClick={() => setFiltersOpen(!filtersOpen)}
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Filters
-              </Button>
-              
-              <div className="relative">
-                <select
-                  className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
-                  value={sortBy}
-                  onChange={handleSortChange}
-                >
-                  <option value="relevance">Relevance</option>
-                  <option value="price">Price</option>
-                  <option value="rating">Rating</option>
-                  <option value="newest">Newest</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  {sortOrder === 'asc' ? (
-                    <SortAsc className="h-4 w-4" onClick={toggleSortOrder} />
-                  ) : (
-                    <SortDesc className="h-4 w-4" onClick={toggleSortOrder} />
-                  )}
-                </div>
-              </div>
-            </div>
+      
+      <div className={cn(
+        "min-h-screen pb-20",
+        isDarkMode 
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+          : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
+      )}>
+        {/* Header section */}
+        <div className={cn(
+          "border-b",
+          isDarkMode 
+            ? "bg-gradient-to-r from-gray-800 to-gray-800/50 border-gray-700" 
+            : "bg-gradient-to-r from-orange-100 to-orange-100/50"
+        )}>
+          <div className="container mx-auto px-4 py-6">
+            <h1 className={cn(
+              "text-2xl font-bold mb-1",
+              isDarkMode ? "text-white" : "text-gray-800"
+            )}>Special Offers</h1>
+            <p className={cn(
+              "text-sm",
+              isDarkMode ? "text-gray-300" : "text-gray-600"
+            )}>Exclusive discounts and promotions from our partner shops</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Active Offers Section */}
-            <div className="md:col-span-1">
-              <Card className={cn(
-                "mb-6",
-                isDarkMode ? "bg-gray-800" : "bg-white"
-              )}>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-3">Active Offers</h3>
-                  <ul className="space-y-2">
-                    {activeOffers.map(offer => (
-                      <li
-                        key={offer.id}
-                        className={cn(
-                          "cursor-pointer p-2 rounded-md hover:bg-gray-100",
-                          isDarkMode ? "hover:bg-gray-700" : "",
-                          selectedOffer?.id === offer.id ? "bg-blue-500 text-white hover:bg-blue-600" : ""
-                        )}
-                        onClick={() => handleOfferClick(offer)}
-                      >
-                        {offer.title}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+        </div>
+        
+        {/* Search bar */}
+        <div className="container mx-auto px-4 py-4">
+          <Card className={cn(
+            "border-none shadow-sm",
+            isDarkMode && "bg-gray-800"
+          )}>
+            <CardContent className="p-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search offers by title, shop or code..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={cn(
+                    "pl-9 pr-4 py-2",
+                    isDarkMode && "bg-gray-700 border-gray-600 text-gray-200"
+                  )}
+                />
+                {!isMobile && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "absolute right-1 top-1/2 transform -translate-y-1/2 h-8",
+                      isDarkMode && "border-gray-600 hover:bg-gray-700 text-gray-200"
+                    )}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Offers list */}
+        <div className="container mx-auto px-4 py-4">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className={cn(
+                "animate-spin rounded-full h-12 w-12 border-b-2",
+                isDarkMode ? "border-orange-500" : "border-orange-400"
+              )}></div>
             </div>
-
-            {/* Highlighted Products Section */}
-            <div className="md:col-span-3">
-              <h2 className="text-xl font-semibold mb-4">
-                {selectedOffer ? selectedOffer.title : 'All Products'}
-              </h2>
-              
-              {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Card key={i} className="overflow-hidden">
-                      <Skeleton className="h-40 w-full" />
-                      <CardContent className="p-3">
-                        <Skeleton className="h-4 w-full mt-2" />
-                        <Skeleton className="h-4 w-20 mt-2" />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : error ? (
-                <div className="text-center p-8 border rounded-lg">
-                  <p className="text-red-500">{error}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {highlightedProducts.map(product => (
-                    <ProductCard
-                      key={product.id}
-                      id={product.id}
-                      name={product.name}
-                      price={product.price}
-                      salePrice={product.salePrice}
-                      image={product.images[0]}
-                      category={product.category}
-                      isNew={product.isNew}
-                      isTrending={product.isTrending}
-                      rating={product.rating}
-                      reviewCount={product.reviewCount}
-                      variant="compact"
-                      product={product}
-                    />
-                  ))}
-                </div>
+          ) : filteredOffers.length === 0 ? (
+            <div className={cn(
+              "text-center py-16 rounded-lg",
+              isDarkMode ? "bg-gray-800 text-gray-200" : "bg-white"
+            )}>
+              <Tag className={cn(
+                "h-12 w-12 mx-auto mb-3",
+                isDarkMode ? "text-gray-500" : "text-gray-300"
+              )} />
+              <h3 className={cn(
+                "text-lg font-medium mb-2",
+                isDarkMode && "text-gray-200"
+              )}>No offers found</h3>
+              <p className={cn(
+                "max-w-md mx-auto mb-6",
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              )}>
+                {searchTerm 
+                  ? "Try adjusting your search or filter criteria" 
+                  : "Check back later for new promotions and discounts"}
+              </p>
+              {searchTerm && (
+                <Button 
+                  onClick={() => setSearchTerm('')}
+                  className={cn(
+                    "rounded-full",
+                    isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""
+                  )}
+                >
+                  Clear Search
+                </Button>
               )}
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredOffers.map((offer) => (
+                <motion.div
+                  key={offer.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className={cn(
+                    "overflow-hidden h-full border",
+                    isDarkMode
+                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                      : "hover:border-orange-300"
+                  )}>
+                    <div className={cn(
+                      "h-2",
+                      offer.type === 'percentage' 
+                        ? "bg-purple-500" 
+                        : offer.type === 'shipping' 
+                          ? "bg-blue-500" 
+                          : "bg-amber-500"
+                    )}></div>
+                    
+                    <CardContent className="p-5">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className={cn(
+                            "text-xs px-2 py-0.5 rounded-full inline-block mb-2",
+                            offer.type === 'percentage'
+                              ? isDarkMode 
+                                ? "bg-purple-900/60 text-purple-200" 
+                                : "bg-purple-100 text-purple-700"
+                              : offer.type === 'shipping'
+                                ? isDarkMode 
+                                  ? "bg-blue-900/60 text-blue-200" 
+                                  : "bg-blue-100 text-blue-700"
+                                : isDarkMode 
+                                  ? "bg-amber-900/60 text-amber-200" 
+                                  : "bg-amber-100 text-amber-700"
+                          )}>
+                            {getOfferTypeText(offer.type)}
+                          </div>
+                          <h3 className={cn(
+                            "text-lg font-semibold mb-1 line-clamp-1",
+                            isDarkMode && "text-white"
+                          )}>
+                            {offer.title}
+                          </h3>
+                          {offer.shops?.name && (
+                            <div className={cn(
+                              "text-sm mb-2",
+                              isDarkMode ? "text-gray-300" : "text-gray-600"
+                            )}>
+                              {offer.shops.name}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {offer.discount && (
+                          <div className={cn(
+                            "text-xl font-bold",
+                            isDarkMode ? "text-orange-400" : "text-orange-600"
+                          )}>
+                            {offer.type === 'percentage' && `${offer.discount}%`}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <p className={cn(
+                        "text-sm my-3 line-clamp-2 min-h-[2.5rem]",
+                        isDarkMode ? "text-gray-300" : "text-gray-600"
+                      )}>
+                        {offer.description || `Save with this special ${getOfferTypeText(offer.type).toLowerCase()} offer.`}
+                      </p>
+                      
+                      <Separator className={isDarkMode ? "bg-gray-700" : "bg-gray-200"} />
+                      
+                      <div className="mt-3 flex justify-between items-center">
+                        <div className={cn(
+                          "flex items-center text-xs",
+                          isDarkMode ? "text-gray-400" : "text-gray-500"
+                        )}>
+                          <Clock className="h-3 w-3 mr-1" />
+                          {getExpiryString(offer.expiry)}
+                        </div>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(offer.code)}
+                          className={cn(
+                            "h-8 text-xs gap-1 transition-all",
+                            copiedCode === offer.code
+                              ? isDarkMode 
+                                ? "text-green-400" 
+                                : "text-green-600"
+                              : isDarkMode 
+                                ? "text-orange-400 hover:text-orange-300" 
+                                : "text-orange-600 hover:text-orange-700"
+                          )}
+                        >
+                          {copiedCode === offer.code ? (
+                            <>
+                              <Check className="h-3 w-3" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <span className="font-mono tracking-wider font-semibold">{offer.code}</span>
+                              <Copy className="h-3 w-3 ml-1" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -1,9 +1,8 @@
 
-// Update import path to reference the correct file
 import React, { useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // Changed from Input to input
+import { Input } from '@/components/ui/input'; // Correct import path
 import { useNavigate } from 'react-router-dom';
 import { useSearchHistory } from '@/hooks/use-search-history';
 import { cn } from '@/lib/utils';
