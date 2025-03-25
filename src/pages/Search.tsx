@@ -1,9 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Input } from '@/components/ui/Input';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
 import ProductCard from '@/components/search/product-card';
 import { useSearch } from '@/hooks/use-search';
 import { useCart } from '@/contexts/CartContext';

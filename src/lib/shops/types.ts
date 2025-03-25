@@ -58,3 +58,31 @@ export interface ShopStatsResponse {
   products_count: number;
   revenue: number;
 }
+
+// Helper function to adapt shop data from database
+export function adaptShopData(shopData: any): Shop {
+  return {
+    id: shopData.id || '',
+    name: shopData.name || '',
+    logo: shopData.logo || '',
+    cover_image: shopData.cover_image || '',
+    description: shopData.description || '',
+    owner_name: shopData.owner_name || '',
+    owner_email: shopData.owner_email || '',
+    address: shopData.address || '',
+    phone: shopData.phone_number || shopData.phone || '',
+    phone_number: shopData.phone_number || shopData.phone || '',
+    website: shopData.website || '',
+    social_media: shopData.social_media || { facebook: '', twitter: '', instagram: '', pinterest: '' },
+    categories: shopData.categories || [],
+    is_verified: shopData.is_verified || false,
+    rating: shopData.rating || 0,
+    review_count: shopData.review_count || 0,
+    followers_count: shopData.followers_count || 0,
+    product_count: shopData.product_count || 0,
+    created_at: shopData.created_at || new Date().toISOString(),
+    tags: shopData.tags || [],
+    status: shopData.status || 'pending',
+    shop_id: shopData.shop_id || ''
+  };
+}

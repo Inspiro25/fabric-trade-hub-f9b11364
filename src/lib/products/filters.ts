@@ -1,80 +1,104 @@
 
 import { Product } from '@/lib/types/product';
-import { fetchProducts, fetchRelatedProducts, fetchNewArrivals, fetchTrendingProducts, fetchProductsByCategory, fetchProductsByShop } from '@/hooks/use-product-fetching';
+import { 
+  fetchProducts, 
+  fetchRelatedProducts, 
+  fetchNewArrivals, 
+  fetchTrendingProducts, 
+  fetchProductsByCategory, 
+  fetchProductsByShop 
+} from '@/hooks/use-product-fetching';
+
+// Function to get all products
+export const getAllProducts = async (): Promise<Product[]> => {
+  return await fetchProducts(100); // Limit to 100 products 
+};
 
 // Function to get related products
-export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
-  return fetchRelatedProducts(currentProductId, category);
+export const getRelatedProducts = async (productId: string, limit = 4): Promise<Product[]> => {
+  return await fetchRelatedProducts(productId, limit);
 };
 
-// Utility functions to get filtered products
-export const getNewArrivals = async (): Promise<Product[]> => {
-  return fetchNewArrivals();
+// Function to get new arrivals
+export const getNewArrivals = async (limit = 8): Promise<Product[]> => {
+  return await fetchNewArrivals(limit);
 };
 
-export const getTrendingProducts = async (): Promise<Product[]> => {
-  return fetchTrendingProducts();
+// Function to get trending products
+export const getTrendingProducts = async (limit = 8): Promise<Product[]> => {
+  return await fetchTrendingProducts(limit);
 };
 
-export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  const result = await fetchProductsByCategory(category);
-  return result.products;
+// Function to get products by category
+export const getProductsByCategory = async (categoryId: string, limit = 8): Promise<Product[]> => {
+  return await fetchProductsByCategory(categoryId, limit);
 };
 
-export const getProductsByTags = async (tag: string): Promise<Product[]> => {
-  try {
-    const { products } = await fetchProducts({
-      tags: [tag],
-      limit: 8
-    });
-    
-    return products;
-  } catch (error) {
-    console.error(`Error fetching products with tag ${tag}:`, error);
-    return [];
+// Function to get products by tags
+export const getProductsByTags = async (tags: string[], limit = 8): Promise<Product[]> => {
+  const allProducts = await fetchProducts(50);
+  const filteredProducts = allProducts.filter((product) => {
+    return product.tags.some((tag) => tags.includes(tag));
+  });
+  
+  return filteredProducts.slice(0, limit);
+};
+
+// Function to filter products by various criteria
+export const filterProducts = (
+  products: Product[],
+  {
+    minPrice,
+    maxPrice,
+    categories,
+    onSale,
+    inStock,
+    search,
+  }: {
+    minPrice?: number;
+    maxPrice?: number;
+    categories?: string[];
+    onSale?: boolean;
+    inStock?: boolean;
+    search?: string;
   }
+): Product[] => {
+  return products.filter((product) => {
+    // Filter by price range
+    if (minPrice !== undefined && product.price < minPrice) return false;
+    if (maxPrice !== undefined && product.price > maxPrice) return false;
+    
+    // Filter by categories
+    if (categories && categories.length > 0) {
+      if (!categories.includes(product.category_id)) return false;
+    }
+    
+    // Filter by sale status
+    if (onSale !== undefined && onSale && !product.sale_price) return false;
+    
+    // Filter by stock status
+    if (inStock !== undefined && inStock && product.stock <= 0) return false;
+    
+    // Filter by search term
+    if (search) {
+      const searchLower = search.toLowerCase();
+      const nameMatch = product.name.toLowerCase().includes(searchLower);
+      const descMatch = product.description.toLowerCase().includes(searchLower);
+      const tagMatch = product.tags.some((tag) => tag.toLowerCase().includes(searchLower));
+      
+      if (!nameMatch && !descMatch && !tagMatch) return false;
+    }
+    
+    return true;
+  });
 };
 
-// Add additional filter functions as needed
-export const getTopRatedProducts = async (): Promise<Product[]> => {
-  try {
-    const { products } = await fetchProducts({
-      minRating: 4,
-      sortBy: 'rating',
-      limit: 8
-    });
-    
-    return products;
-  } catch (error) {
-    console.error('Error fetching top rated products:', error);
-    return [];
-  }
-};
-
-export const getDiscountedProducts = async (): Promise<Product[]> => {
-  try {
-    const { products } = await fetchProducts({
-      hasDiscount: true,
-      limit: 8
-    });
-    
-    return products;
-  } catch (error) {
-    console.error('Error fetching discounted products:', error);
-    return [];
-  }
-};
-
-export const getBestSellingProducts = async (): Promise<Product[]> => {
-  try {
-    const { products } = await fetchProducts({
-      sortBy: 'popularity',
-      limit: 8
-    });
-    
-    return products;
-  } catch (error) {
-    console.error('Error fetching best selling products:', error);
-    return [];
-  }
+export default {
+  getAllProducts,
+  getRelatedProducts,
+  getNewArrivals,
+  getTrendingProducts,
+  getProductsByCategory,
+  getProductsByTags,
+  filterProducts,
 };

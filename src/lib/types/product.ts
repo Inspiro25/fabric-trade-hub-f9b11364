@@ -51,7 +51,37 @@ export function adaptProduct(product: any): Product {
   };
 }
 
-// Create productStore export to fix imports
+// Create an enhanced product store with CRUD operations
 export const productStore = {
-  products: [] as Product[]
+  products: [] as Product[],
+  
+  // Add update methods for compatibility
+  updateProducts(products: Product[]) {
+    this.products = products;
+    return this.products;
+  },
+  
+  addProduct(product: Product) {
+    this.products.push(product);
+    return product;
+  },
+  
+  updateProduct(id: string, updatedProduct: Partial<Product>) {
+    const index = this.products.findIndex(product => product.id === id);
+    if (index !== -1) {
+      this.products[index] = { ...this.products[index], ...updatedProduct };
+      return this.products[index];
+    }
+    return null;
+  },
+  
+  removeProduct(id: string) {
+    const index = this.products.findIndex(product => product.id === id);
+    if (index !== -1) {
+      const removed = this.products[index];
+      this.products.splice(index, 1);
+      return removed;
+    }
+    return null;
+  }
 };
