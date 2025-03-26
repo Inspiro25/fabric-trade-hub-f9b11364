@@ -28,6 +28,13 @@ const IndexPage = () => {
     }
   }, [homeData.isLoading, isCategoriesLoading, isBestSellersLoading]);
 
+  // Ensure data arrays are handled safely
+  const newArrivals = homeData.newArrivals?.data || [];
+  const trendingProducts = homeData.trendingProducts?.data || [];
+  const discountedProducts = homeData.discountedProducts?.data || [];
+  const safeCategories = categories || [];
+  const safeBestSellers = bestSellers || [];
+
   return (
     <>
       <Helmet>
@@ -62,7 +69,7 @@ const IndexPage = () => {
               </a>
             </div>
             <HomeCategories 
-              categories={categories}
+              categories={safeCategories}
               isLoading={isCategoriesLoading}
             />
           </div>
@@ -91,7 +98,7 @@ const IndexPage = () => {
               </a>
             </div>
             <HomeNewArrivals 
-              products={homeData.newArrivals?.data || []}
+              products={newArrivals}
               isLoading={homeData.isLoading}
             />
           </div>
@@ -120,7 +127,7 @@ const IndexPage = () => {
               </a>
             </div>
             <HomeTrendingProducts 
-              products={homeData.trendingProducts?.data || []}
+              products={trendingProducts}
               isLoading={homeData.isLoading}
             />
           </div>
@@ -149,7 +156,7 @@ const IndexPage = () => {
               </a>
             </div>
             <HomeBestSellers 
-              products={bestSellers || []}
+              products={safeBestSellers}
               isLoading={isBestSellersLoading}
             />
           </div>
@@ -178,7 +185,7 @@ const IndexPage = () => {
               </a>
             </div>
             <HomeFlashSale 
-              products={homeData.discountedProducts?.data || []}
+              products={discountedProducts}
               isLoading={homeData.isLoading}
             />
           </div>

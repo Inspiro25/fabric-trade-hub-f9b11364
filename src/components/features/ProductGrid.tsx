@@ -186,7 +186,7 @@ const ProductGrid = ({
               name={product.name}
               price={product.price}
               salePrice={product.salePrice}
-              image={product.images[0]}
+              image={product.images?.[0] || ''}
               category={product.category}
               isNew={product.isNew}
               isTrending={product.isTrending}
@@ -200,7 +200,12 @@ const ProductGrid = ({
       
       {showPagination && totalPages > 1 && (
         <div className="mt-6">
-          <Pagination>
+          <Pagination 
+            currentPage={currentPage} 
+            totalItems={totalItems || products.length}
+            pageSize={itemsPerPage}
+            onPageChange={handlePageChange}
+          >
             <PaginationContent>
               {totalPages > 3 && (
                 <PaginationItem>

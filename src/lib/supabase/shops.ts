@@ -27,6 +27,88 @@ export const fetchShops = async (): Promise<Shop[]> => {
   }
 };
 
+// Get a shop by ID
+export const getShopById = async (shopId: string): Promise<Shop | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('id', shopId)
+      .single();
+    
+    if (error || !data) {
+      console.error('Error fetching shop:', error);
+      return null;
+    }
+    
+    return adaptShopData(data);
+  } catch (error) {
+    console.error('Error in getShopById:', error);
+    return null;
+  }
+};
+
+// Update shop details
+export const updateShop = async (shopId: string, shopData: Partial<Shop>): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('shops')
+      .update(shopData)
+      .eq('id', shopId);
+    
+    if (error) {
+      console.error('Error updating shop:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateShop:', error);
+    return false;
+  }
+};
+
+// Create a new shop
+export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('shops')
+      .insert([shopData])
+      .select()
+      .single();
+    
+    if (error || !data) {
+      console.error('Error creating shop:', error);
+      return null;
+    }
+    
+    return adaptShopData(data);
+  } catch (error) {
+    console.error('Error in createShop:', error);
+    return null;
+  }
+};
+
+// Delete a shop
+export const deleteShop = async (shopId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('shops')
+      .delete()
+      .eq('id', shopId);
+    
+    if (error) {
+      console.error('Error deleting shop:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteShop:', error);
+    return false;
+  }
+};
+
 // Check shop credentials for login
 export const checkShopCredentials = async (shopId: string, password: string): Promise<Shop | null> => {
   try {
@@ -48,5 +130,3 @@ export const checkShopCredentials = async (shopId: string, password: string): Pr
     return null;
   }
 };
-
-// Additional shop-related functions can be added here
