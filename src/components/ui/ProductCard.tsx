@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Product } from '@/lib/types/product';
+import { Product } from '@/lib/products/types';
 import { adaptProduct } from '@/lib/products/types';
 
 export interface ProductCardProps {
@@ -22,9 +22,12 @@ export interface ProductCardProps {
   variant?: string;
   product?: Product;
   layout?: string;
-  highlight?: string; // Add highlight property
-  onAddToCart?: (id: string) => void;
-  onAddToWishlist?: (id: string) => void;
+  highlight?: string;
+  showWishlistButton?: boolean;
+  showRemoveButton?: boolean;
+  onAddToCart?: () => void;
+  onAddToWishlist?: () => void;
+  onRemoveFromWishlist?: () => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -42,8 +45,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   product,
   layout,
   highlight,
+  showWishlistButton = true,
+  showRemoveButton = false,
   onAddToCart,
-  onAddToWishlist
+  onAddToWishlist,
+  onRemoveFromWishlist
 }) => {
   // If a full product object is passed, use it for all properties
   // Also handle both camelCase and snake_case property naming conventions
@@ -110,17 +116,32 @@ const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         
         {/* Quick actions - Only show for non-compact variant */}
-        {!isCompact && (
+        {!isCompact && showWishlistButton && onAddToWishlist && (
           <div className="absolute right-2 top-2">
             <button
               onClick={(e) => {
                 e.preventDefault();
-                onAddToWishlist?.(productId);
+                onAddToWishlist();
               }}
               className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all"
               aria-label="Add to wishlist"
             >
               <Heart className="h-4 w-4 text-red-500" />
+            </button>
+          </div>
+        )}
+        
+        {!isCompact && showRemoveButton && onRemoveFromWishlist && (
+          <div className="absolute right-2 top-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onRemoveFromWishlist();
+              }}
+              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all"
+              aria-label="Remove from wishlist"
+            >
+              <Heart className="h-4 w-4 text-red-500 fill-current" />
             </button>
           </div>
         )}
@@ -173,7 +194,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         
         {!isCompact && onAddToCart && (
           <button
-            onClick={() => onAddToCart(productId)}
+            onClick={() => onAddToCart()}
             className="mt-3 text-xs py-1.5 px-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
           >
             Add to Cart

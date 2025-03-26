@@ -116,7 +116,7 @@ export const isInWishlist = async (userId: string, productId: string): Promise<b
   }
 };
 
-// Get all wishlist items for a user - new function to match the import in WishlistContext
+// Get all wishlist items for a user - to match the import in WishlistContext
 export const getWishlistItems = async (): Promise<Product[]> => {
   try {
     // Get the current user
@@ -134,7 +134,7 @@ export const getWishlistItems = async (): Promise<Product[]> => {
   }
 };
 
-// Add item to wishlist - new function to match the import in WishlistContext
+// Add item to wishlist - to match the import in WishlistContext
 export const addWishlistItem = async (product: Product): Promise<void> => {
   try {
     // Get the current user
@@ -153,7 +153,7 @@ export const addWishlistItem = async (product: Product): Promise<void> => {
   }
 };
 
-// Remove item from wishlist - new function to match the import in WishlistContext
+// Remove item from wishlist - to match the import in WishlistContext
 export const removeWishlistItem = async (productId: string): Promise<void> => {
   try {
     // Get the current user

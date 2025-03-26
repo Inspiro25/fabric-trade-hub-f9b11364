@@ -12,7 +12,7 @@ interface HomeBestSellersProps {
   isLoading?: boolean;
 }
 
-const HomeBestSellers: React.FC<HomeBestSellersProps> = ({ products, isLoading = false }) => {
+const HomeBestSellers: React.FC<HomeBestSellersProps> = ({ products = [], isLoading = false }) => {
   const { isDarkMode } = useTheme();
   
   if (isLoading) {
@@ -31,7 +31,7 @@ const HomeBestSellers: React.FC<HomeBestSellersProps> = ({ products, isLoading =
     );
   }
   
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     return (
       <div className={cn(
         "text-center p-8 border rounded-lg",

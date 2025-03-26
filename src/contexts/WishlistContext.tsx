@@ -2,7 +2,11 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Product } from '@/lib/products/types';
 import { toast } from 'sonner';
-import { getWishlistItems, addWishlistItem, removeWishlistItem } from '@/services/wishlistService';
+import { 
+  getWishlistItems, 
+  addWishlistItem, 
+  removeWishlistItem 
+} from '@/services/wishlistService';
 
 export interface WishlistContextType {
   wishlist: Product[];
@@ -36,7 +40,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       try {
         setIsLoading(true);
         const items = await getWishlistItems();
-        setWishlist(items);
+        setWishlist(items || []);
       } catch (error) {
         console.error('Error loading wishlist:', error);
         toast.error('Failed to load wishlist');

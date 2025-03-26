@@ -88,7 +88,7 @@ const WishlistPage = () => {
             <EmptyState 
               title="Your wishlist is empty"
               description="Items you save will appear here"
-              icon="package"
+              icon="heart"
               actionText="Discover Products"
               actionHref="/search"
             />
@@ -159,10 +159,9 @@ const WishlistPage = () => {
                       isTrending={product.is_trending}
                       rating={product.rating}
                       reviewCount={product.review_count}
-                      isAddingToCart={isAddingToCart === product.id}
-                      onRemoveFromWishlist={() => removeFromWishlist(product.id)}
                       showWishlistButton={false}
                       showRemoveButton={true}
+                      onRemoveFromWishlist={() => removeFromWishlist(product.id)}
                       onAddToCart={() => addToCart(product, 1, '', '')}
                     />
                   </div>
