@@ -1,4 +1,5 @@
-import { supabase } from './client';
+
+import { supabase } from '@/integrations/supabase/client';
 import { Shop, adaptShopData } from '@/lib/shops/types';
 
 // Fetch all shops

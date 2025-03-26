@@ -257,7 +257,9 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           id: string
+          items: Json[] | null
           notes: string | null
+          order_number: string | null
           payment_method: string | null
           payment_status: string | null
           shipping_address: string | null
@@ -266,6 +268,7 @@ export type Database = {
           shop_id: string | null
           status: string
           total: number
+          total_amount: number | null
           tracking_number: string | null
           updated_at: string
           user_id: string | null
@@ -276,7 +279,9 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           id?: string
+          items?: Json[] | null
           notes?: string | null
+          order_number?: string | null
           payment_method?: string | null
           payment_status?: string | null
           shipping_address?: string | null
@@ -285,6 +290,7 @@ export type Database = {
           shop_id?: string | null
           status: string
           total: number
+          total_amount?: number | null
           tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
@@ -295,7 +301,9 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           id?: string
+          items?: Json[] | null
           notes?: string | null
+          order_number?: string | null
           payment_method?: string | null
           payment_status?: string | null
           shipping_address?: string | null
@@ -304,6 +312,7 @@ export type Database = {
           shop_id?: string | null
           status?: string
           total?: number
+          total_amount?: number | null
           tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
