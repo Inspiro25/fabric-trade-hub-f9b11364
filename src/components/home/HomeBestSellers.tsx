@@ -31,7 +31,10 @@ const HomeBestSellers: React.FC<HomeBestSellersProps> = ({ products = [], isLoad
     );
   }
   
-  if (!products || products.length === 0) {
+  // Ensure that products is always an array, even if it's undefined
+  const safeProducts = Array.isArray(products) ? products : [];
+  
+  if (safeProducts.length === 0) {
     return (
       <div className={cn(
         "text-center p-8 border rounded-lg",
@@ -44,14 +47,14 @@ const HomeBestSellers: React.FC<HomeBestSellersProps> = ({ products = [], isLoad
   
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {products.slice(0, 4).map(product => (
+      {safeProducts.slice(0, 4).map(product => (
         <ProductCard
           key={product.id}
           id={product.id}
           name={product.name}
           price={product.price}
           salePrice={product.sale_price}
-          image={product.images[0]}
+          image={product.images?.[0] || ''}
           category={product.category || product.category_id}
           isNew={product.is_new}
           isTrending={product.is_trending}

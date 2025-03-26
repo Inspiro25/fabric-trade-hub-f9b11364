@@ -6,7 +6,7 @@ import { Container } from '@/components/ui/container';
 import { PageHeading } from '@/components/ui/page-heading';
 import ProductGrid from '@/components/product/ProductGrid';
 import { ProductSkeleton } from '@/components/product/ProductSkeleton';
-import { fetchProductsByCategory } from '@/lib/products/filters';
+import { getProductsByCategory } from '@/lib/products/filters';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -27,8 +27,8 @@ const CategoryPage = () => {
       setLoading(true);
       setError(null);
       try {
-        // The API returns { products: Product[], total: number }
-        const result = await fetchProductsByCategory(categoryId);
+        // Use getProductsByCategory instead of fetchProductsByCategory
+        const result = await getProductsByCategory(categoryId);
         
         if (result && Array.isArray(result)) {
           // Handle case where it returns just an array

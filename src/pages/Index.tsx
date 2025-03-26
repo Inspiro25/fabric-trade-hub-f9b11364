@@ -149,7 +149,7 @@ const IndexPage = () => {
               </a>
             </div>
             <HomeBestSellers 
-              products={bestSellers}
+              products={bestSellers || []}
               isLoading={isBestSellersLoading}
             />
           </div>

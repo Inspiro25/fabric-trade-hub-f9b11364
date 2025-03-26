@@ -5,7 +5,7 @@ import {
   fetchRelatedProducts, 
   fetchNewArrivals, 
   fetchTrendingProducts, 
-  fetchProductsByCategory, 
+  fetchProductsByCategory as fetchProductsByCategoryApi, 
   fetchProductsByShop 
 } from '@/hooks/use-product-fetching';
 
@@ -31,14 +31,17 @@ export const getTrendingProducts = async (limit = 8): Promise<Product[]> => {
 
 // Function to get products by category
 export const getProductsByCategory = async (categoryId: string, limit = 8): Promise<Product[]> => {
-  return await fetchProductsByCategory(categoryId, limit);
+  return await fetchProductsByCategoryApi(categoryId, limit);
 };
+
+// Export fetchProductsByCategory as an alias to maintain compatibility with existing code
+export const fetchProductsByCategory = getProductsByCategory;
 
 // Function to get products by tags
 export const getProductsByTags = async (tags: string[], limit = 8): Promise<Product[]> => {
   const allProducts = await fetchProducts(50);
   const filteredProducts = allProducts.filter((product) => {
-    return product.tags.some((tag) => tags.includes(tag));
+    return product.tags && product.tags.some((tag) => tags.includes(tag));
   });
   
   return filteredProducts.slice(0, limit);
@@ -84,7 +87,7 @@ export const filterProducts = (
       const searchLower = search.toLowerCase();
       const nameMatch = product.name.toLowerCase().includes(searchLower);
       const descMatch = product.description.toLowerCase().includes(searchLower);
-      const tagMatch = product.tags.some((tag) => tag.toLowerCase().includes(searchLower));
+      const tagMatch = product.tags && product.tags.some((tag) => tag.toLowerCase().includes(searchLower));
       
       if (!nameMatch && !descMatch && !tagMatch) return false;
     }
@@ -101,4 +104,5 @@ export default {
   getProductsByCategory,
   getProductsByTags,
   filterProducts,
+  fetchProductsByCategory, // Add alias for backwards compatibility
 };
