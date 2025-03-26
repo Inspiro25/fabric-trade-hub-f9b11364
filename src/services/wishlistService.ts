@@ -1,7 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
+import { adaptProduct } from '@/lib/products/types';
 
 // Fetch user wishlist
 export const fetchUserWishlist = async (userId: string): Promise<Product[]> => {
@@ -19,24 +20,7 @@ export const fetchUserWishlist = async (userId: string): Promise<Product[]> => {
     // Transform to product format
     return data.map(item => {
       const product = item.product as any;
-      return {
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        salePrice: product.sale_price,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
-      };
+      return adaptProduct(product);
     });
   } catch (error) {
     console.error('Error fetching wishlist:', error);
@@ -129,5 +113,61 @@ export const isInWishlist = async (userId: string, productId: string): Promise<b
   } catch (error) {
     console.error('Error checking wishlist:', error);
     return false;
+  }
+};
+
+// Get all wishlist items for a user - new function to match the import in WishlistContext
+export const getWishlistItems = async (): Promise<Product[]> => {
+  try {
+    // Get the current user
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    
+    if (!userId) {
+      return [];
+    }
+    
+    return await fetchUserWishlist(userId);
+  } catch (error) {
+    console.error('Error getting wishlist items:', error);
+    return [];
+  }
+};
+
+// Add item to wishlist - new function to match the import in WishlistContext
+export const addWishlistItem = async (product: Product): Promise<void> => {
+  try {
+    // Get the current user
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    
+    if (!userId) {
+      toast.error('You need to be logged in to add items to your wishlist');
+      return;
+    }
+    
+    await addToWishlist(userId, product.id);
+  } catch (error) {
+    console.error('Error adding wishlist item:', error);
+    toast.error('Failed to add item to wishlist');
+  }
+};
+
+// Remove item from wishlist - new function to match the import in WishlistContext
+export const removeWishlistItem = async (productId: string): Promise<void> => {
+  try {
+    // Get the current user
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    
+    if (!userId) {
+      toast.error('You need to be logged in to remove items from your wishlist');
+      return;
+    }
+    
+    await removeFromWishlist(userId, productId);
+  } catch (error) {
+    console.error('Error removing wishlist item:', error);
+    toast.error('Failed to remove item from wishlist');
   }
 };
