@@ -22,7 +22,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Helmet } from 'react-helmet-async';
-import { PaginationComponent } from '@/components/ui/pagination';
+import SearchPagination from '@/components/search/SearchPagination';
 
 const Search = () => {
   const navigate = useNavigate();
@@ -297,10 +297,9 @@ const Search = () => {
                 
                 {totalResults > pageSize && (
                   <div className="mt-8 flex justify-center">
-                    <PaginationComponent
+                    <SearchPagination
                       currentPage={page}
-                      totalItems={totalResults}
-                      pageSize={pageSize}
+                      totalPages={Math.ceil(totalResults / pageSize)}
                       onPageChange={setPage}
                     />
                   </div>

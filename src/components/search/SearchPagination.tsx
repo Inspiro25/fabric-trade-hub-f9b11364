@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Pagination,
   PaginationContent,
@@ -82,7 +81,7 @@ const SearchPagination: React.FC<SearchPaginationProps> = ({
   };
 
   return (
-    <Pagination currentPage={currentPage} totalItems={totalPages * 10} pageSize={10} onPageChange={onPageChange}>
+    <Pagination>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious 

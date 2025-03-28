@@ -39,25 +39,25 @@ export interface SearchResultsProps {
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({ 
-  products, 
+  products = [], // Default to empty array to prevent undefined issues
   loading = false,
   isLoading = false,
   error = null,
-  totalProducts,
+  totalProducts = 0, // Default to 0 to prevent undefined issues
   isAddingToCart,
   isAddingToWishlist,
-  onAddToCart,
-  onAddToWishlist,
-  onShareProduct,
-  onProductClick,
-  onSelectProduct,
-  onRetry,
-  currentPage,
-  onPageChange,
-  itemsPerPage,
-  onItemsPerPageChange,
-  viewMode,
-  onViewModeChange
+  onAddToCart = () => {}, // Default handlers to prevent errors when undefined
+  onAddToWishlist = () => {},
+  onShareProduct = () => {},
+  onProductClick = () => {},
+  onSelectProduct = () => {},
+  onRetry = () => {},
+  currentPage = 1,
+  onPageChange = () => {},
+  itemsPerPage = 20,
+  onItemsPerPageChange = () => {},
+  viewMode = 'grid',
+  onViewModeChange = () => {}
 }) => {
   const navigate = useNavigate();
   const { setIsDialogOpen, setIsShareDialogOpen, setShareableLink } = useSearchDialogs();
@@ -68,6 +68,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
   // Use either loading or isLoading
   const isLoadingState = loading || isLoading;
+
+  // Ensure products is always an array to prevent "length of undefined" errors
+  const safeProducts = Array.isArray(products) ? products : [];
 
   const handleProductClick = (product: SearchPageProduct) => {
     if (onProductClick) {
@@ -195,7 +198,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
           : "flex flex-col gap-4"
       )}>
-        {products.map(product => (
+        {safeProducts.map(product => (
           <ProductCard
             key={product.id}
             product={product}
@@ -210,6 +213,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           />
         ))}
       </div>
+      
+      {/* Show pagination only if we have more than 1 page */}
+      {totalProducts > itemsPerPage && (
+        <div className="mt-8 flex justify-center">
+          <SearchPagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(totalProducts / itemsPerPage)}
+            onPageChange={onPageChange}
+          />
+        </div>
+      )}
     </div>
   );
 };

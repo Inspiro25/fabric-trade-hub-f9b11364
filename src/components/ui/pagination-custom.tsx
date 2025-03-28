@@ -26,8 +26,17 @@ export function PaginationComponent({
   onPageChange,
   siblingCount = 1,
 }: PaginationComponentProps) {
-  const totalPages = Math.ceil(totalItems / pageSize);
+  // Ensure all values are valid to prevent undefined errors
+  const safeCurrentPage = Math.max(1, currentPage || 1);
+  const safeTotalItems = Math.max(0, totalItems || 0);
+  const safePageSize = Math.max(1, pageSize || 10);
+  const totalPages = Math.ceil(safeTotalItems / safePageSize);
   const { isDarkMode } = useTheme();
+  
+  // Safety check - if we don't have any items, don't render pagination
+  if (safeTotalItems <= 0 || totalPages <= 1) {
+    return null;
+  }
   
   // Generate page numbers
   const generatePagination = () => {
@@ -37,8 +46,8 @@ export function PaginationComponent({
     }
     
     // Calculate range based on current page and siblings
-    const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
-    const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+    const leftSiblingIndex = Math.max(safeCurrentPage - siblingCount, 1);
+    const rightSiblingIndex = Math.min(safeCurrentPage + siblingCount, totalPages);
     
     const showLeftDots = leftSiblingIndex > 2;
     const showRightDots = rightSiblingIndex < totalPages - 1;
@@ -85,7 +94,7 @@ export function PaginationComponent({
 
   return (
     <nav className="flex justify-center items-center space-x-1">
-      {currentPage > 1 && (
+      {safeCurrentPage > 1 && (
         <Button
           variant="outline"
           size="icon"
@@ -100,7 +109,7 @@ export function PaginationComponent({
         </Button>
       )}
       
-      {currentPage > 1 && (
+      {safeCurrentPage > 1 && (
         <Button
           variant="outline"
           size="icon"
@@ -108,7 +117,7 @@ export function PaginationComponent({
             "h-8 w-8",
             isDarkMode ? "border-gray-700 text-gray-300" : ""
           )}
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => onPageChange(safeCurrentPage - 1)}
           aria-label="Go to previous page"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -133,24 +142,24 @@ export function PaginationComponent({
         return (
           <Button
             key={page}
-            variant={currentPage === page ? "default" : "outline"}
+            variant={safeCurrentPage === page ? "default" : "outline"}
             size="icon"
             className={cn(
               "h-8 w-8",
-              currentPage === page 
+              safeCurrentPage === page 
                 ? (isDarkMode ? "bg-orange-600 text-white hover:bg-orange-700" : "") 
                 : (isDarkMode ? "border-gray-700 text-gray-300" : "")
             )}
             onClick={() => onPageChange(page as number)}
             aria-label={`Go to page ${page}`}
-            aria-current={currentPage === page ? "page" : undefined}
+            aria-current={safeCurrentPage === page ? "page" : undefined}
           >
             {page}
           </Button>
         );
       })}
       
-      {currentPage < totalPages && (
+      {safeCurrentPage < totalPages && (
         <Button
           variant="outline"
           size="icon"
@@ -158,14 +167,14 @@ export function PaginationComponent({
             "h-8 w-8",
             isDarkMode ? "border-gray-700 text-gray-300" : ""
           )}
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => onPageChange(safeCurrentPage + 1)}
           aria-label="Go to next page"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
       )}
       
-      {currentPage < totalPages && (
+      {safeCurrentPage < totalPages && (
         <Button
           variant="outline"
           size="icon"
