@@ -289,7 +289,7 @@ const Search = () => {
                       product={product}
                       viewMode="grid"
                       isAddingToCart={isAddingToCart === product.id}
-                      isAddingToWishlist={isAddingToWishlist === product.id}
+                      isAddingToWishlist={isAddingToWishlist === product.id.toString()}
                       buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
                     />
                   ))}

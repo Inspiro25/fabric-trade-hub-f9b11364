@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/products';
+import { Product, adaptProduct } from '@/lib/products/types';
 
 // Record product view
 export const recordProductView = async (userId: string | undefined, productId: string): Promise<void> => {
@@ -103,24 +103,7 @@ export const getPersonalizedRecommendations = async (userId: string, limit = 10)
     }
     
     // Transform to Product format
-    return recommendedProducts.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      salePrice: product.sale_price,
-      images: product.images || [],
-      category: product.category_id || '',
-      colors: product.colors || [],
-      sizes: product.sizes || [],
-      isNew: product.is_new || false,
-      isTrending: product.is_trending || false,
-      rating: product.rating || 0,
-      reviewCount: product.review_count || 0,
-      stock: product.stock || 0,
-      tags: product.tags || [],
-      shopId: product.shop_id || '',
-    }));
+    return (recommendedProducts || []).map(product => adaptProduct(product));
   } catch (error) {
     console.error('Error getting personalized recommendations:', error);
     return [];
@@ -157,24 +140,7 @@ export const getSimilarProducts = async (productId: string, limit = 6): Promise<
     }
     
     // Transform to Product format
-    return similarProducts.map(p => ({
-      id: p.id,
-      name: p.name,
-      description: p.description || '',
-      price: p.price,
-      salePrice: p.sale_price,
-      images: p.images || [],
-      category: p.category_id || '',
-      colors: p.colors || [],
-      sizes: p.sizes || [],
-      isNew: p.is_new || false,
-      isTrending: p.is_trending || false,
-      rating: p.rating || 0,
-      reviewCount: p.review_count || 0,
-      stock: p.stock || 0,
-      tags: p.tags || [],
-      shopId: p.shop_id || '',
-    }));
+    return (similarProducts || []).map(p => adaptProduct(p));
   } catch (error) {
     console.error('Error getting similar products:', error);
     return [];

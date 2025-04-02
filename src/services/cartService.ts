@@ -1,54 +1,46 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { CartItem } from '@/contexts/CartContext';
-import { Product } from '@/lib/products';
+import { Product, adaptProduct } from '@/lib/products/types';
 import { toast } from 'sonner';
 
-// Fetch cart items from Supabase
-export const fetchUserCart = async (userId: string): Promise<CartItem[]> => {
+export interface CartItem {
+  id: string;
+  product: Product;
+  quantity: number;
+  color?: string;
+  size?: string;
+}
+
+// Fetch cart items for a user
+export const fetchCartItems = async (userId: string): Promise<CartItem[]> => {
   try {
-    // Get cart items for user
-    const { data: cartItems, error } = await supabase
+    const { data, error } = await supabase
       .from('user_cart_items')
-      .select('*, product:products(*)')
+      .select(`
+        id,
+        product_id,
+        quantity,
+        color,
+        size,
+        products:product_id (*)
+      `)
       .eq('user_id', userId)
       .eq('saved_for_later', false);
     
     if (error) {
-      console.error('Error fetching cart:', error);
+      console.error('Error fetching cart items:', error);
       return [];
     }
     
-    // Transform data to CartItem format
-    return cartItems.map(item => {
-      const product = item.product as any;
-      return {
-        id: item.product_id,
-        product: {
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: product.price,
-          salePrice: product.sale_price,
-          images: product.images || [],
-          category: product.category_id || '',
-          colors: product.colors || [],
-          sizes: product.sizes || [],
-          isNew: product.is_new || false,
-          isTrending: product.is_trending || false,
-          rating: product.rating || 0,
-          reviewCount: product.review_count || 0,
-          stock: product.stock || 0,
-          tags: product.tags || [],
-          shopId: product.shop_id || '',
-        },
-        quantity: item.quantity,
-        color: item.color || '',
-        size: item.size || '',
-      };
-    });
+    // Map to CartItem format
+    return data.map(item => ({
+      id: item.id,
+      product: adaptProduct(item.products),
+      quantity: item.quantity,
+      color: item.color || '',
+      size: item.size || '',
+    }));
   } catch (error) {
-    console.error('Error fetching cart:', error);
+    console.error('Error in fetchCartItems:', error);
     return [];
   }
 };
@@ -308,6 +300,25 @@ export const fetchSavedForLater = async (userId: string): Promise<CartItem[]> =>
     });
   } catch (error) {
     console.error('Error fetching saved items:', error);
+    return [];
+  }
+};
+
+// Example for other functions like fetchCartItemsForApp()
+export const fetchCartItemsForApp = async (): Promise<CartItem[]> => {
+  try {
+    // Get the current user
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id;
+    
+    if (!userId) {
+      return [];
+    }
+    
+    // Call the main fetchCartItems function
+    return await fetchCartItems(userId);
+  } catch (error) {
+    console.error('Error in fetchCartItemsForApp:', error);
     return [];
   }
 };

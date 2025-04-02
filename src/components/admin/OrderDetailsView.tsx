@@ -69,7 +69,12 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [updatedOrder, setUpdatedOrder] = useState<Partial<OrderDetails>>({});
+  const [updatedOrder, setUpdatedOrder] = useState<{
+    status?: string;
+    payment_status?: string;
+    tracking_number?: string;
+    notes?: string;
+  }>({});
   
   useEffect(() => {
     fetchOrderDetails();
@@ -140,7 +145,12 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
     try {
       const { error } = await supabase
         .from('orders')
-        .update(updatedOrder)
+        .update({
+          status: updatedOrder.status,
+          payment_status: updatedOrder.payment_status,
+          tracking_number: updatedOrder.tracking_number,
+          notes: updatedOrder.notes
+        })
         .eq('id', orderId)
         .eq('shop_id', shopId);
       

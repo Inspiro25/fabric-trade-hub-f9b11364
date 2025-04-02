@@ -24,6 +24,7 @@ export interface Product {
   tags: string[];
 }
 
+// Helper function to adapt product data from any source to our consistent Product interface
 export function adaptProduct(product: any): Product {
   return {
     id: product.id || '',

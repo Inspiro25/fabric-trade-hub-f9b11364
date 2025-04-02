@@ -51,9 +51,17 @@ export const getShopById = async (shopId: string): Promise<Shop | null> => {
 // Update shop details
 export const updateShop = async (shopId: string, shopData: Partial<Shop>): Promise<boolean> => {
   try {
+    // Filter out any undefined values
+    const filteredData: Record<string, any> = {};
+    Object.entries(shopData).forEach(([key, value]) => {
+      if (value !== undefined) {
+        filteredData[key] = value;
+      }
+    });
+    
     const { error } = await supabase
       .from('shops')
-      .update(shopData)
+      .update(filteredData)
       .eq('id', shopId);
     
     if (error) {
@@ -71,6 +79,11 @@ export const updateShop = async (shopId: string, shopData: Partial<Shop>): Promi
 // Create a new shop
 export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> => {
   try {
+    // Ensure name field is present
+    if (!shopData.name) {
+      throw new Error("Shop name is required");
+    }
+    
     const { data, error } = await supabase
       .from('shops')
       .insert([shopData])
@@ -110,11 +123,11 @@ export const deleteShop = async (shopId: string): Promise<boolean> => {
 };
 
 // Check shop credentials for login
-export const checkShopCredentials = async (shopId: string, password: string): Promise<Shop | null> => {
+export const checkShopCredentials = async (shopId: string, password: string): Promise<string | null> => {
   try {
     const { data, error } = await supabase
       .from('shops')
-      .select('*')
+      .select('id')
       .eq('shop_id', shopId)
       .eq('password', password)
       .single();
@@ -124,7 +137,7 @@ export const checkShopCredentials = async (shopId: string, password: string): Pr
       return null;
     }
     
-    return adaptShopData(data);
+    return data.id;
   } catch (error) {
     console.error('Error checking shop credentials:', error);
     return null;
