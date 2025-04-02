@@ -1,3 +1,4 @@
+
 // Define the core Product type that will be used throughout the application
 export interface Product {
   id: string;
@@ -29,7 +30,7 @@ export interface Product {
   updated_at?: string;
 }
 
-// Define the SearchPageProduct type with required fields
+// Define the SearchPageProduct type with optional fields
 export interface SearchPageProduct {
   id: string;
   name: string;
@@ -55,4 +56,37 @@ export interface SearchPageProduct {
   shop_id?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+// Helper function to normalize Supabase product data to our Product type
+export function normalizeProductData(data: any): Product {
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description || '',
+    price: data.price,
+    salePrice: data.salePrice || data.sale_price,
+    sale_price: data.sale_price || data.salePrice,
+    images: data.images || [],
+    category: data.category || (data.category_id ? String(data.category_id) : ''),
+    category_id: data.category_id,
+    colors: data.colors || [],
+    sizes: data.sizes || [],
+    isNew: Boolean(data.isNew || data.is_new),
+    is_new: Boolean(data.is_new || data.isNew),
+    isTrending: Boolean(data.isTrending || data.is_trending),
+    is_trending: Boolean(data.is_trending || data.isTrending),
+    rating: data.rating || 0,
+    reviewCount: data.reviewCount || data.review_count || 0,
+    review_count: data.review_count || data.reviewCount || 0,
+    stock: data.stock || 0,
+    tags: data.tags || [],
+    shopId: data.shopId || data.shop_id || '',
+    shop_id: data.shop_id || data.shopId || '',
+    brand: data.brand,
+    shopName: data.shopName,
+    categoryId: data.categoryId,
+    created_at: data.created_at,
+    updated_at: data.updated_at
+  };
 }

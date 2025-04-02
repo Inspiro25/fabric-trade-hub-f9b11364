@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/products/types';
+import { Product, normalizeProductData } from '@/lib/products/types';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 interface UseProductFetchingProps {
@@ -54,9 +54,10 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
 
         if (error) throw error;
 
-        // Convert to Product[] type safely
+        // Convert to Product[] type safely using our normalizeProductData function
         if (data) {
-          setProducts(data as unknown as Product[]);
+          const normalizedProducts = data.map(item => normalizeProductData(item));
+          setProducts(normalizedProducts);
         } else {
           setProducts([]);
         }
@@ -94,9 +95,10 @@ export const useNewArrivals = (limit = 10) => {
 
         if (error) throw error;
         
-        // Convert to Product[] type safely
+        // Convert to Product[] type safely using our normalizeProductData function
         if (data) {
-          setProducts(data as unknown as Product[]);
+          const normalizedProducts = data.map(item => normalizeProductData(item));
+          setProducts(normalizedProducts);
         } else {
           setProducts([]);
         }
@@ -134,9 +136,10 @@ export const useDiscountedProducts = (limit = 10) => {
 
         if (error) throw error;
         
-        // Convert to Product[] type safely
+        // Convert to Product[] type safely using our normalizeProductData function
         if (data) {
-          setProducts(data as unknown as Product[]);
+          const normalizedProducts = data.map(item => normalizeProductData(item));
+          setProducts(normalizedProducts);
         } else {
           setProducts([]);
         }
@@ -236,7 +239,13 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        if (data) {
+          const normalizedProducts = data.map(item => normalizeProductData(item));
+          setProducts(normalizedProducts);
+        } else {
+          setProducts([]);
+        }
         setTotalCount(count || 0);
       } catch (err) {
         console.error('Error fetching products by category:', err);

@@ -118,7 +118,7 @@ const OrderItem = ({ order }: { order: typeof orders[0] }) => {
 };
 
 const Orders = () => {
-  const { orders, loading: isLoading } = useOrders();
+  const { orders, loading } = useOrders();
   const { currentUser } = useAuth();
 
   if (!currentUser) {
@@ -129,7 +129,7 @@ const Orders = () => {
     );
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse">

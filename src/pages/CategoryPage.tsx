@@ -76,11 +76,10 @@ const CategoryPage = () => {
     fetchCategory();
   }, [categorySlug]);
   
-  const { products, loading: isLoading, error } = useProductsByCategory(
+  const { products, loading: isLoading, error, totalCount } = useProductsByCategory(
     category?.id || '',
-    page,
     12,
-    sortBy
+    page
   );
   
   const totalProducts = products?.length || 0;
