@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Dialog, 
@@ -8,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Shop } from '@/types/shop';
-import ShopForm, { ShopFormValues } from './ShopForm';
+import { ShopForm, ShopFormValues } from './ShopForm';
 
 interface ShopDialogsProps {
   open: {
