@@ -123,7 +123,7 @@ export const fetchOrderDetails = async (orderId: string, shopId: string): Promis
 export const updateOrder = async (
   orderId: string, 
   shopId: string, 
-  updateData: Partial<AdminOrderDetails>
+  updateData: Partial<Omit<AdminOrderDetails, 'items'>>
 ): Promise<boolean> => {
   try {
     const { error } = await supabase

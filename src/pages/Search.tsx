@@ -1,315 +1,254 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { Product, adaptProduct } from '@/lib/products/types';
+import { Shop } from '@/lib/shops/types';
+import { fetchProducts } from '@/lib/supabase/products';
+import { fetchShops } from '@/lib/supabase/shops';
+import ProductCard from '@/components/products/ProductCard';
+import ShopCard from '@/components/shops/ShopCard';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { SlidersHorizontal, X } from 'lucide-react';
-import ProductCard from '@/components/search/product-card';
-import { useSearch } from '@/hooks/use-search';
-import { useCart } from '@/contexts/CartContext';
-import { useWishlist } from '@/contexts/WishlistContext';
-import { SearchFilters } from '@/components/search/SearchFilters';
-import { useCategories } from '@/hooks/use-categories';
-import { useSearchHistory } from '@/hooks/use-search-history';
-import { useDebounce } from '@/hooks/use-debounce';
-import { DEFAULT_PAGE_SIZE } from '@/lib/utils';
-import SearchSort from '@/components/search/SearchSort';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Helmet } from 'react-helmet-async';
-import SearchPagination from '@/components/search/SearchPagination';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Search as SearchIcon, Filter, Grid, List } from 'lucide-react';
 
-const Search = () => {
+const Search: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+	const location = useLocation();
   const navigate = useNavigate();
-  const location = useLocation();
   const { isDarkMode } = useTheme();
-  const isMobile = useIsMobile();
-  const [searchQuery, setSearchQuery] = useState(new URLSearchParams(location.search).get('q') || '');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [activeCategories, setActiveCategories] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [sortOption, setSortOption] = useState('relevance');
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const { categories, isLoading: isCategoriesLoading } = useCategories();
-  const searchHistory = useSearchHistory();
-  const { isAddingToCart } = useCart();
-  const { isAddingToWishlist } = useWishlist();
-  
-  const { searchResults, isLoading, error, totalResults } = useSearch(
-    debouncedSearchQuery,
-    page,
-    pageSize,
-    activeFilters
-  );
+  const [isGrid, setIsGrid] = useState(true);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
+  const [categoryFilters, setCategoryFilters] = useState<string[]>([]);
+  const [ratingFilters, setRatingFilters] = useState<number[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableRatings, setAvailableRatings] = useState<number[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleToggleFilter = () => {
+    setIsFilterOpen(!isFilterOpen);
+  };
+
+  const handleGridToggle = () => {
+    setIsGrid(!isGrid);
+  };
+
+  const handlePriceChange = (value: number[]) => {
+    setPriceRange(value);
+  };
+
+  const handleCategoryFilterChange = (category: string) => {
+    setCategoryFilters(prevFilters =>
+      prevFilters.includes(category)
+        ? prevFilters.filter(filter => filter !== category)
+        : [...prevFilters, category]
+    );
+  };
+
+  const handleRatingFilterChange = (rating: number) => {
+    setRatingFilters(prevFilters =>
+      prevFilters.includes(rating)
+        ? prevFilters.filter(filter => filter !== rating)
+        : [...prevFilters, rating]
+    );
+  };
+
+  const fetchSearchResults = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const query = searchParams.get('q') || '';
+      setSearchQuery(query);
+
+      const fetchedProducts = await fetchProducts({ query });
+      const fetchedShops = await fetchShops();
+
+      // Apply filters
+      const filteredProducts = fetchedProducts.filter(product => {
+        const price = product.salePrice !== null && product.salePrice !== undefined ? product.salePrice : product.price;
+        const isWithinPriceRange = price >= priceRange[0] && price <= priceRange[1];
+        const isCategoryMatch = categoryFilters.length === 0 || categoryFilters.includes(product.category_id);
+        const isRatingMatch = ratingFilters.length === 0 || ratingFilters.some(rating => product.rating >= rating);
+
+        return isWithinPriceRange && isCategoryMatch && isRatingMatch;
+      });
+
+      setProducts(filteredProducts);
+      setShops(fetchedShops.filter(shop => shop.name.toLowerCase().includes(query.toLowerCase())));
+
+      // Extract available categories and ratings from the fetched products
+      const categories = [...new Set(fetchedProducts.map(product => product.category_id))];
+      const ratings = [...new Set(fetchedProducts.map(product => Math.floor(product.rating)))];
+
+      setAvailableCategories(categories);
+      setAvailableRatings(ratings.map(Number).sort((a, b) => b - a)); // Sort ratings in descending order
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchParams, priceRange, categoryFilters, ratingFilters]);
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (debouncedSearchQuery) {
-      params.set('q', debouncedSearchQuery);
+    fetchSearchResults();
+  }, [fetchSearchResults]);
+
+  useEffect(() => {
+    const isGridParam = searchParams.get('grid');
+    setIsGrid(isGridParam === null || isGridParam === 'true');
+  }, [searchParams]);
+
+  const handleSearch = (newQuery: string) => {
+    setSearchQuery(newQuery);
+    const newParams = new URLSearchParams(searchParams);
+    if (newQuery) {
+      newParams.set('q', newQuery);
     } else {
-      params.delete('q');
+      newParams.delete('q');
     }
-    navigate(`?${params.toString()}`, { replace: true });
-  }, [debouncedSearchQuery, navigate, location]);
-
-  const clearSearchHistory = searchHistory.clearAllSearchHistory;
-  const removeSearchTerm = searchHistory.clearSearchHistoryItem;
-
-  const applyFilters = () => {
-    const filters = [];
-    activeCategories.forEach((category) => {
-      filters.push(`category:${category}`);
-    });
-    filters.push(`price:${priceRange[0]}-${priceRange[1]}`);
-    setActiveFilters(filters);
-    setPage(1);
-    if (isMobile) {
-      setIsFiltersOpen(false);
-    }
+    setSearchParams(newParams);
   };
 
   const clearFilters = () => {
-    setActiveFilters([]);
-    setActiveCategories([]);
     setPriceRange([0, 1000]);
-  };
-
-  const FiltersComponent = () => (
-    <SearchFilters
-      categories={categories}
-      activeCategories={activeCategories}
-      setActiveCategories={setActiveCategories}
-      priceRange={priceRange}
-      setPriceRange={setPriceRange}
-      applyFilters={applyFilters}
-      clearFilters={clearFilters}
-    />
-  );
-
-  const checkDarkMode = (value: boolean | string): boolean => {
-    return value === true || value === 'true';
+    setCategoryFilters([]);
+    setRatingFilters([]);
   };
 
   return (
-    <>
-      <Helmet>
-        <title>Search Products</title>
-        <meta name="description" content="Search for products" />
-      </Helmet>
-      
-      <div className={cn(
-        "py-6",
-        isDarkMode ? "bg-gray-900 text-gray-100" : "bg-gray-100"
-      )}>
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h1 className={cn(
-              "text-xl md:text-2xl font-bold",
-              isDarkMode ? "text-white" : ""
-            )}>Search</h1>
-            
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <Input
-                type="search"
-                placeholder="Search for products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={cn(
-                  "w-full sm:w-64",
-                  isDarkMode && "bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
-                )}
-              />
-              {searchHistory.searchHistory.length > 0 && (
-                <Button 
-                  onClick={clearSearchHistory}
-                  variant={isDarkMode ? "outline" : "secondary"}
-                  className={cn(
-                    "text-sm",
-                    isDarkMode ? "border-gray-700 text-gray-300" : ""
-                  )}
-                >
-                  Clear History
-                </Button>
-              )}
-            </div>
+    <div className="container mx-auto py-8">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+        <div className="w-full md:w-1/2 mb-4 md:mb-0">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search for products and shops..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-12"
+            />
+            <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-          
-          <div className="mt-4">
-            {searchHistory.searchHistory.length > 0 && (
-              <Card className={isDarkMode ? "bg-gray-800 border-gray-700" : ""}>
-                <CardContent className="p-4">
-                  <h3 className={cn(
-                    "text-sm font-semibold mb-2",
-                    isDarkMode ? "text-gray-200" : ""
-                  )}>Recent Searches</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {searchHistory.searchHistory.map((item) => (
-                      <Button
-                        key={item.id}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSearchQuery(item.query)}
-                        className={isDarkMode ? "bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600" : ""}
-                      >
-                        {item.query}
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="icon" onClick={handleToggleFilter}>
+            <Filter className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleGridToggle}>
+            {isGrid ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
-      <div className={cn(
-        "container mx-auto px-4 pb-12",
-        isDarkMode ? "bg-gray-900 text-gray-100" : ""
-      )}>
-        <div className="flex flex-col lg:flex-row gap-8 relative">
-          {isMobile ? (
-            <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-              <SheetTrigger asChild>
-                <Button 
-                  variant="outline"
-                  className={cn(
-                    "mb-4 w-full",
-                    isDarkMode && "bg-gray-800 border-gray-700 text-white"
-                  )}
-                >
-                  <SlidersHorizontal className="mr-2 h-4 w-4" />
-                  Filter Products
-                </Button>
-              </SheetTrigger>
-              <SheetContent 
-                side="left" 
-                className={cn(
-                  "w-[85vw] sm:w-[385px] pt-6",
-                  isDarkMode && "bg-gray-800 border-gray-700 text-white"
-                )}
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold">Filters</h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsFiltersOpen(false)}
-                    className={isDarkMode ? "text-gray-300 hover:bg-gray-700" : ""}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+      <div className="flex">
+       {isFilterOpen && (
+          <Card className="w-full md:w-1/4 mr-4">
+            <CardHeader>
+              <CardTitle>Filter Options</CardTitle>
+              <CardDescription>Customize your search results</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-sm font-bold mb-2">Price Range</h4>
+                <div className="flex items-center space-x-2">
+                  <span>${priceRange[0]}</span>
+                  <Slider
+                    defaultValue={priceRange}
+                    max={1000}
+                    step={10}
+                    onValueChange={handlePriceChange}
+                  />
+                  <span>${priceRange[1]}</span>
                 </div>
-                <FiltersComponent />
-              </SheetContent>
-            </Sheet>
-          ) : (
-            <div className="hidden lg:block w-full lg:w-1/4 sticky top-4">
-              <div className={cn(
-                "p-4 rounded-lg border",
-                isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
-              )}>
-                <h2 className={cn(
-                  "text-lg font-semibold mb-4",
-                  isDarkMode && "text-white"
-                )}>
-                  Filters
-                </h2>
-                <FiltersComponent />
               </div>
-            </div>
-          )}
-          
-          <div className="w-full lg:w-3/4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h2 className={cn(
-                "text-xl font-bold",
-                isDarkMode ? "text-white" : ""
-              )}>
-                {searchQuery ? (
-                  <>
-                    Results for "{searchQuery}"
-                    <span className={cn(
-                      "text-sm font-normal ml-2",
-                      isDarkMode ? "text-gray-400" : "text-gray-500"
-                    )}>
-                      ({totalResults} products)
-                    </span>
-                  </>
-                ) : 'All Products'}
-              </h2>
-              
-              <SearchSort 
-                value={sortOption} 
-                onChange={setSortOption} 
-              />
-            </div>
-            
-            {isLoading ? (
-              <div className="flex justify-center py-12">
-                <div className={cn(
-                  "animate-spin rounded-full h-10 w-10 border-b-2",
-                  isDarkMode ? "border-orange-500" : "border-orange-400"
-                )}></div>
-              </div>
-            ) : error ? (
-              <div className={cn(
-                "p-4 rounded-lg",
-                isDarkMode ? "bg-red-900/30 text-red-300 border border-red-800" : "bg-red-50 text-red-600"
-              )}>
-                {error}
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div className={cn(
-                "text-center py-12 rounded-lg",
-                isDarkMode ? "bg-gray-800 text-gray-200" : "bg-white"
-              )}>
-                <p className="mb-4">No products found matching your search criteria.</p>
-                <Button 
-                  onClick={clearFilters}
-                  className={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {searchResults.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      viewMode="grid"
-                      isAddingToCart={isAddingToCart === product.id}
-                      isAddingToWishlist={isAddingToWishlist === product.id.toString()}
-                      buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
-                    />
+
+              <div>
+                <h4 className="text-sm font-bold mb-2">Categories</h4>
+                <div className="flex flex-col space-y-2">
+                  {availableCategories.map(category => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`category-${category}`}
+                        checked={categoryFilters.includes(category)}
+                        onCheckedChange={() => handleCategoryFilterChange(category)}
+                      />
+                      <Label htmlFor={`category-${category}`} className="text-sm">
+                        {category}
+                      </Label>
+                    </div>
                   ))}
                 </div>
-                
-                {totalResults > pageSize && (
-                  <div className="mt-8 flex justify-center">
-                    <SearchPagination
-                      currentPage={page}
-                      totalPages={Math.ceil(totalResults / pageSize)}
-                      onPageChange={setPage}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold mb-2">Customer Ratings</h4>
+                <div className="flex flex-col space-y-2">
+                  {availableRatings.map(rating => (
+                    <div key={rating} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`rating-${rating}`}
+                        checked={ratingFilters.includes(rating)}
+                        onCheckedChange={() => handleRatingFilterChange(rating)}
+                      />
+                      <Label htmlFor={`rating-${rating}`} className="text-sm">
+                        {rating} stars & up
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button variant="secondary" onClick={clearFilters}>Clear Filters</Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="w-full md:w-3/4">
+          <Tabs defaultValue="products" className="w-full">
+            <TabsList>
+              <TabsTrigger value="products">Products <Badge className="ml-2">{products.length}</Badge></TabsTrigger>
+              <TabsTrigger value="shops">Shops <Badge className="ml-2">{shops.length}</Badge></TabsTrigger>
+            </TabsList>
+            <TabsContent value="products" className="pt-4">
+              {isLoading ? (
+                <div className="text-center">Loading products...</div>
+              ) : products.length > 0 ? (
+                <div className={cn("grid gap-4", isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1")}>
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} isGrid={isGrid} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center">No products found matching your search criteria.</div>
+              )}
+            </TabsContent>
+            <TabsContent value="shops" className="pt-4">
+              {isLoading ? (
+                <div className="text-center">Loading shops...</div>
+              ) : shops.length > 0 ? (
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                  {shops.map((shop) => (
+                    <ShopCard key={shop.id} shop={shop} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center">No shops found matching your search criteria.</div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

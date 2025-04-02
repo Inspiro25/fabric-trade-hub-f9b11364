@@ -77,7 +77,7 @@ export const updateShop = async (shopId: string, shopData: Partial<Shop>): Promi
 };
 
 // Create a new shop
-export const createShop = async (shopData: Partial<Shop>): Promise<Shop | null> => {
+export const createShop = async (shopData: Partial<Shop> & { name: string }): Promise<Shop | null> => {
   try {
     // Ensure name field is present
     if (!shopData.name) {

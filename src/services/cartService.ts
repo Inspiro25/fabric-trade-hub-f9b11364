@@ -31,6 +31,10 @@ export const fetchCartItems = async (userId: string): Promise<CartItem[]> => {
       return [];
     }
     
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
     // Map to CartItem format
     return data.map(item => ({
       id: item.id,
@@ -270,29 +274,16 @@ export const fetchSavedForLater = async (userId: string): Promise<CartItem[]> =>
       return [];
     }
     
+    if (!savedItems || savedItems.length === 0) {
+      return [];
+    }
+    
     // Transform data to CartItem format
     return savedItems.map(item => {
       const product = item.product as any;
       return {
         id: item.product_id,
-        product: {
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: product.price,
-          salePrice: product.sale_price,
-          images: product.images || [],
-          category: product.category_id || '',
-          colors: product.colors || [],
-          sizes: product.sizes || [],
-          isNew: product.is_new || false,
-          isTrending: product.is_trending || false,
-          rating: product.rating || 0,
-          reviewCount: product.review_count || 0,
-          stock: product.stock || 0,
-          tags: product.tags || [],
-          shopId: product.shop_id || '',
-        },
+        product: adaptProduct(product),
         quantity: item.quantity,
         color: item.color || '',
         size: item.size || '',
