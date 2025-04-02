@@ -1,10 +1,10 @@
+
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
-import { Product } from '@/lib/types/product';
-import AuthDialog from '@/components/search/AuthDialog';
+import AuthDialog from '@/components/ui/auth-dialog';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 interface WishlistContextType {

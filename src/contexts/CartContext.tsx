@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/products';
@@ -6,7 +5,7 @@ import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
-import AuthDialog from '@/components/search/AuthDialog';
+import AuthDialog from '@/components/ui/auth-dialog';
 
 export interface CartItem {
   id: string;
@@ -37,18 +36,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [hasPendingMigration, setHasPendingMigration] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   
-  // Use the cart storage hook to manage cart data
   const { cartItems, setCartItems, isLoading } = useCartStorage(currentUser);
   
-  // Use the cart operations hook to handle cart actions
   const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
 
-  // Mark initialization complete after first load
   useEffect(() => {
     if (!isLoading && !isInitialized) {
       setIsInitialized(true);
       
-      // Check if there's a guest cart to migrate
       if (currentUser) {
         const guestCart = localStorage.getItem('guest_cart');
         if (guestCart) {
@@ -58,7 +53,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setHasPendingMigration(true);
             }
           } catch (e) {
-            // Invalid cart data, clear it
             localStorage.removeItem('guest_cart');
           }
         }
@@ -66,7 +60,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isLoading, isInitialized, currentUser]);
 
-  // Migrate guest cart to user cart when user logs in
   useEffect(() => {
     const migrateCart = async () => {
       if (currentUser && isInitialized && !isLoading && hasPendingMigration) {
@@ -76,7 +69,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast.success('Your cart has been saved to your account');
         } catch (error) {
           console.error('Failed to migrate cart:', error);
-          // Silent fail - don't show error to user
           setHasPendingMigration(false);
         }
       }
@@ -85,12 +77,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     migrateCart();
   }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
-  // Allow cart operations for guests, but show auth dialog to prompt login
   const addToCart = useCallback((product: Product, quantity: number, color: string, size: string) => {
-    // Allow adding to cart for all users
     addToCartOp(product, quantity, color, size);
     
-    // Show auth dialog for guest users to encourage login
     if (!currentUser) {
       setShowAuthDialog(true);
     }
@@ -99,7 +88,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeFromCart = useCallback((itemId: string) => {
     removeFromCartOp(itemId);
     
-    // Show auth dialog for guest users to encourage login
     if (!currentUser) {
       setShowAuthDialog(true);
     }
@@ -107,14 +95,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateQuantity = useCallback((itemId: string, quantity: number) => {
     updateQuantityOp(itemId, quantity);
-    
-    // Don't show auth dialog for quantity updates (less intrusive)
   }, [updateQuantityOp]);
 
   const clearCart = useCallback(() => {
     clearCartOp();
     
-    // Show auth dialog for guest users to encourage login
     if (!currentUser) {
       setShowAuthDialog(true);
     }
@@ -124,7 +109,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     window.location.href = '/auth';
   }, []);
 
-  // Memoize wrapper functions to prevent unnecessary re-renders
   const getCartTotalWrapper = useCallback(() => getCartTotal(cartItems), [cartItems]);
   const getCartCountWrapper = useCallback(() => getCartCount(cartItems), [cartItems]);
   const isInCartWrapper = useCallback(
@@ -132,7 +116,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [cartItems]
   );
 
-  // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     cartItems,
     addToCart,

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MobileSearch from './components/mobile/MobileSearch';
@@ -9,9 +8,9 @@ import { WishlistProvider } from '@/contexts/WishlistContext';
 import { OrderProvider } from '@/contexts/OrderContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Wishlist from '@/pages/Wishlist';
-import Notifications from './components/Notifications'; // Add this import
-import Help from '@/pages/Help'; // Add this import
-import Partner from '@/pages/Partner'; // Add this import
+import Notifications from '@/pages/Notifications'; 
+import Help from '@/pages/Help'; 
+import Partner from '@/pages/Partner';
 
 // Layout components
 import MainLayout from '@/components/layout/MainLayout';

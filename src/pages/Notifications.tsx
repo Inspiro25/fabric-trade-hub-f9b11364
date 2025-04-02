@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Trash2, Check, CheckCheck, Bell, MailOpen, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { NotificationType } from '@/hooks/use-notifications-status';
@@ -60,8 +60,8 @@ const Notifications = () => {
     notifications, 
     markAsRead, 
     markAllAsRead, 
-    deleteUserNotification, 
-    clearNotifications 
+    deleteNotification,
+    clearAllNotifications 
   } = useNotifications();
   const { isDarkMode } = useTheme();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -69,28 +69,21 @@ const Notifications = () => {
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead();
+      toast.success("All notifications marked as read");
     } catch (error) {
       console.error('Error marking all as read:', error);
-      toast({
-        title: "Failed to mark notifications as read",
-        variant: "destructive"
-      });
+      toast.error("Failed to mark notifications as read");
     }
   };
   
   const handleClearAll = async () => {
     try {
       setIsDeleting(true);
-      await clearNotifications();
-      toast({
-        title: "All notifications cleared",
-      });
+      await clearAllNotifications();
+      toast.success("All notifications cleared");
     } catch (error) {
       console.error('Error clearing notifications:', error);
-      toast({
-        title: "Failed to clear notifications",
-        variant: "destructive"
-      });
+      toast.error("Failed to clear notifications");
     } finally {
       setIsDeleting(false);
     }
@@ -218,7 +211,7 @@ const Notifications = () => {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => deleteUserNotification(notification.id)}
+                      onClick={() => deleteNotification(notification.id)}
                       className={cn(
                         "h-8 px-2 text-xs",
                         isDarkMode 
