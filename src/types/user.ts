@@ -7,6 +7,9 @@ export interface User {
   updated_at?: string;
   user_metadata?: Record<string, any>;
   app_metadata?: Record<string, any>;
+  uid?: string; // Added for compatibility with auth systems
+  displayName?: string; // Added for compatibility with Firebase
+  photoURL?: string; // Added for Firebase compatibility
 }
 
 export interface UserProfile {
@@ -19,6 +22,8 @@ export interface UserProfile {
   created_at?: string;
   updated_at?: string;
   preferences?: Record<string, any>;
+  displayName?: string; // For compatibility
+  avatarUrl?: string; // For compatibility
 }
 
 export interface AuthContextType {
@@ -30,9 +35,12 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (data: Partial<UserProfile>) => Promise<void>; // Alias for updateProfile
   deleteAccount: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
+  loginWithGoogleProvider?: () => Promise<any>; // Optional methods for different auth providers
+  loginWithFacebookProvider?: () => Promise<any>;
 }
 
 export interface NotificationContextType {
@@ -43,7 +51,7 @@ export interface NotificationContextType {
   addNotification: (notification: Notification) => void;
   clearNotifications: () => void;
   isLoading: boolean;
-  markNotificationAsRead: (id: string) => void;
+  markNotificationAsRead: (id: string) => void; // Alias for markAsRead
 }
 
 export interface Notification {
@@ -54,5 +62,5 @@ export interface Notification {
   read: boolean;
   link?: string;
   created_at: string;
-  createdAt: string;
+  createdAt: string; // Include both versions for compatibility
 }

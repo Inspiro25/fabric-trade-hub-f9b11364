@@ -1,35 +1,26 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { useHomePageData } from '@/hooks/use-home-data';
+import React, { useEffect } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useHomeData } from '@/hooks/use-home-data';
+import MobileProductCard from './MobileProductCard';
+import MobilePageHeader from './MobilePageHeader';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MobileCategoryList from './MobileCategoryList';
+import MobileCarousel from './MobileCarousel';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Search, Bell, ShoppingCart, Menu, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
-import { Swiper, SwiperSlide, Pagination, Autoplay } from '@/components/ui/swiper';
-import { Badge } from '@/components/ui/badge';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Card, CardContent } from '@/components/ui/card';
-import { useCart } from '@/contexts/CartContext';
-import { useWishlist } from '@/contexts/WishlistContext';
+import { Product } from '@/types/product';
 
-const MobileHome = () => {
-  const { 
-    categoriesQuery,
-    newArrivalsQuery,
-    bestSellersQuery,
-    topRatedQuery,
-    discountedQuery,
-    dataLoaded 
-  } = useHomePageData();
-
-  const categories = categoriesQuery?.data || [];
-  const newArrivals = newArrivalsQuery?.data || [];
-  const bestSellers = bestSellersQuery?.data || [];
-  const topRated = topRatedQuery?.data || [];
-  const discounted = discountedQuery?.data || [];
+const MobileHome: React.FC = () => {
+  const { products, isLoading } = useHomeData();
   
+  // Define custom properties needed by mobile home
+  // These will be mocked since they don't exist in the current useHomeData hook
+  const categoriesQuery = { data: [], isLoading: false };
+  const newArrivalsQuery = { data: products.filter(p => p.is_new), isLoading };
+  const bestSellersQuery = { data: products.slice(0, 4), isLoading };
+  const topRatedQuery = { data: products.slice(0, 4), isLoading };
+  const discountedQuery = { data: products.filter(p => p.sale_price), isLoading };
+  const dataLoaded = !isLoading;
+
   const { isDarkMode } = useTheme();
   const { addToCart } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();

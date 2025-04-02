@@ -26,6 +26,8 @@ export interface Product {
   brand?: string;
   created_at?: string;
   updated_at?: string;
+  shopName?: string; // Optional for shop details
+  categoryId?: string; // Optional for category details
 }
 
 // Define Cart Item type
@@ -58,7 +60,7 @@ export interface WishlistContextType {
 // Define CartContextType
 export interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: any, quantity: number, color?: string, size?: string) => void;
+  addToCart: (product: any, quantity?: number, color?: string, size?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -70,7 +72,25 @@ export interface CartContextType {
 }
 
 // Export SearchPageProduct type for search functionality
-export type SearchPageProduct = Partial<Product>;
+export interface SearchPageProduct {
+  id: string;
+  name: string;
+  price: number;
+  sale_price?: number | null;
+  images: string[];
+  category_id?: string;
+  shop_id?: string;
+  colors?: string[];
+  sizes?: string[];
+  stock?: number;
+  rating?: number;
+  review_count?: number;
+  is_new?: boolean;
+  is_trending?: boolean;
+  description?: string;
+  tags?: string[];
+  created_at?: string;
+}
 
 // Helper function to normalize product data
 export function normalizeProduct(rawProduct: any): Product {

@@ -46,7 +46,7 @@ export const useSearchCartIntegration = () => {
       title: "Added to cart",
       description: `${product.name} added to your cart`,
     });
-  }, [isAuthenticated, setIsDialogOpen, addToCart, toast]);
+  }, [isAuthenticated, setIsDialogOpen, addToCart]);
 
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
     if (!isAuthenticated) {
@@ -60,10 +60,12 @@ export const useSearchCartIntegration = () => {
       title: "Added to wishlist",
       description: `${product.name} added to your wishlist`,
     });
-  }, [isAuthenticated, setIsDialogOpen, addToWishlist, toast]);
+  }, [isAuthenticated, setIsDialogOpen, addToWishlist]);
 
   const handleShareProduct = (product: SearchPageProduct) => {
     const shareableLink = window.location.origin + '/product/' + product.id;
+    setShareableLink(shareableLink);
+    setIsShareDialogOpen(true);
     return shareableLink;
   };
 

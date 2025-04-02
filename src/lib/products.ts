@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { Json } from './types/json';
-import { Product } from './types/product';
+import { Product } from '@/types/product';
 
 export async function addProduct(productData: any) {
   try {
@@ -50,8 +50,6 @@ export async function fetchProductById(id: string) {
       .eq('id', id)
       .single();
 
-    console.log('Product query result:', product, productError);
-
     if (productError) throw productError;
     if (!product) return null;
 
@@ -62,8 +60,6 @@ export async function fetchProductById(id: string) {
         .select('*')
         .eq('id', product.category_id)
         .single();
-
-      console.log('Category query result:', category, categoryError);
 
       if (!categoryError && category) {
         return { ...product, category };
@@ -149,4 +145,19 @@ export async function deleteProduct(id: string) {
 
 export async function getProductById(id: string) {
   return fetchProductById(id); // Use the existing fetchProductById function
+}
+
+export async function fetchProducts(options?: any) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .limit(options?.limit || 10);
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
 }

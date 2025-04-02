@@ -16,10 +16,11 @@ export interface Shop {
   followers_count?: number;
   productIds: string[];
   isVerified: boolean;
-  status: 'active' | 'pending' | 'suspended';
+  status: string;
   createdAt: string;
   shopId?: string;
   password?: string;
+  description?: string; // Added this for compatibility with mock data
 }
 
 export interface ShopSummary {

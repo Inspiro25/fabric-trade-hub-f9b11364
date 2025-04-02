@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -11,38 +11,26 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Shop } from '@/types/shop';
 
-// Define ShopFormValues type
-export interface ShopFormValues {
-  name: string;
-  description: string;
-  logo: string;
-  coverImage: string;
-  address: string;
-  isVerified: boolean;
-  shopId: string;
-  ownerName: string;
-  ownerEmail: string;
-  status: string;
-  password: string;
-  phoneNumber: string;
-}
-
-const shopSchema = yup.object({
-  name: yup.string().required('Shop name is required'),
-  description: yup.string().required('Description is required'),
-  logo: yup.string().required('Logo URL is required'),
-  coverImage: yup.string().required('Cover image URL is required'),
-  address: yup.string().required('Address is required'),
-  isVerified: yup.boolean().required(),
-  shopId: yup.string().required('Shop ID is required'),
-  ownerName: yup.string().required('Owner name is required'),
-  ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
-  status: yup.string().required('Status is required'),
-  password: yup.string().required('Password is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
+// Define schema for the form
+export const shopSchema = z.object({
+  name: z.string().min(1, "Shop name is required"),
+  description: z.string().min(1, "Description is required"),
+  logo: z.string().min(1, "Logo URL is required"),
+  coverImage: z.string().min(1, "Cover image URL is required"),
+  address: z.string().min(1, "Address is required"),
+  isVerified: z.boolean().default(false),
+  shopId: z.string().min(1, "Shop ID is required"),
+  ownerName: z.string().min(1, "Owner name is required"),
+  ownerEmail: z.string().email("Invalid email format").min(1, "Owner email is required"),
+  status: z.string().min(1, "Status is required"),
+  password: z.string().min(1, "Password is required"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
 });
 
-interface ShopFormProps {
+// Export the ShopFormValues type so it can be used elsewhere
+export type ShopFormValues = z.infer<typeof shopSchema>;
+
+export interface ShopFormProps {
   shop?: Shop;
   onSubmit: (data: ShopFormValues) => Promise<void>;
   onCancel: () => void;
@@ -50,14 +38,12 @@ interface ShopFormProps {
 }
 
 export const ShopForm: React.FC<ShopFormProps> = ({ shop, onSubmit, onCancel, isMobile = false }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting }
   } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema),
+    resolver: zodResolver(shopSchema),
     defaultValues: {
       name: shop?.name || '',
       description: shop?.description || '',
@@ -74,19 +60,8 @@ export const ShopForm: React.FC<ShopFormProps> = ({ shop, onSubmit, onCancel, is
     },
   });
 
-  const submitForm = async (data: ShopFormValues) => {
-    try {
-      setIsSubmitting(true);
-      await onSubmit(data);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit(submitForm)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Shop Name</Label>
@@ -247,11 +222,10 @@ export const ShopForm: React.FC<ShopFormProps> = ({ shop, onSubmit, onCancel, is
           )}
         />
         <Label htmlFor="isVerified">Is Verified</Label>
-        {errors.isVerified && <p className="text-red-500 text-sm">{errors.isVerified.message}</p>}
       </div>
       
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>

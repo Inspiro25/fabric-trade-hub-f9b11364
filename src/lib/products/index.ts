@@ -35,15 +35,15 @@ export * from './base';
 
 // Re-export create/update/delete functions from products module
 export { 
-  addProduct, 
   updateProduct, 
   deleteProduct,
-  getAllProducts,
-  getAllCategories,
   fetchProductById,
   getProductById,
   createProduct 
-} from '@/lib/supabase/products';
+} from '@/lib/products';
+
+// Add missing product functions
+export { addProduct, getAllProducts, getAllCategories } from '@/lib/products';
 
 // Export fetchDealProducts function
 export const fetchDealProducts = async (limit = 8): Promise<Product[]> => {

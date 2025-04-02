@@ -11,29 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Shop } from '@/lib/shops/types';
+import { Shop } from '@/types/shop';
 import { createShop, updateShop, getShopById } from '@/lib/supabase/shops';
 import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ShopFormValues } from '@/components/management/ShopForm';
-
-// Define the schema to match exactly with ShopFormValues
-const shopSchema = yup.object({
-  name: yup.string().required('Shop name is required'),
-  description: yup.string().required('Description is required'),
-  logo: yup.string().required('Logo URL is required'),
-  coverImage: yup.string().required('Cover image URL is required'),
-  address: yup.string().required('Address is required'),
-  isVerified: yup.boolean().required(),
-  shopId: yup.string().required('Shop ID is required'),
-  ownerName: yup.string().required('Owner name is required'),
-  ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
-  status: yup.string().oneOf(['active', 'pending', 'suspended']).required('Status is required'),
-  password: yup.string().required('Password is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
-});
-
-type ShopSchemaType = yup.InferType<typeof shopSchema>;
+import { ShopFormValues, shopSchema } from '@/components/management/ShopForm';
 
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +30,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver<ShopSchemaType>(shopSchema),
+    resolver: yupResolver(shopSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -106,7 +88,7 @@ const ShopManagement: React.FC = () => {
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
         phoneNumber: data.phoneNumber, 
-        status: data.status as 'active' | 'pending' | 'suspended',
+        status: data.status,
         isVerified: data.isVerified || false,
         rating: 0,
         reviewCount: 0,

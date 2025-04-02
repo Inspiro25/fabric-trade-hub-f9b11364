@@ -1,115 +1,109 @@
-import { ReactNode, createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useAuth } from './AuthContext';
-import { Json } from '@/types/json';
 
-interface Order {
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User } from '@/types/user';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
+import { toast } from 'sonner'; // Import toast from Sonner
+
+export interface Order {
   id: string;
   order_number: string;
   status: string;
   total_amount: number;
   items: any[];
+  payment_status?: string;
+  shipping_address?: any;
   created_at: string;
-  payment_status: string;
-  shipping_address: any;
+  user_id: string;
 }
 
 interface OrderContextType {
   orders: Order[];
-  isLoading: boolean;
-  createOrder: (orderData: any) => Promise<string | null>;
+  loading: boolean;
+  error: string | null;
   fetchOrders: () => Promise<void>;
-  updateOrderStatus: (orderId: string, status: string) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
   const fetchOrders = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
 
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase
+      setLoading(true);
+      setError(null);
+      
+      const { data, error: fetchError } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_id', currentUser.uid)
+        .eq('user_id', currentUser.id || currentUser.uid)
         .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setOrders(data || []);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
+        
+      if (fetchError) {
+        throw fetchError;
+      }
+      
+      setOrders(data as Order[]);
+      
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch orders');
       toast.error('Failed to fetch orders');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const createOrder = async (orderData: any): Promise<string | null> => {
-    if (!currentUser) {
-      toast.error('Please login to place an order');
-      return null;
-    }
-
+  const deleteOrder = async (id: string) => {
     try {
-      const orderWithTotal = { 
-        ...orderData, 
-        total: orderData.total_amount || 0
-      };
-
-      const { data, error } = await supabase
+      const { error: deleteError } = await supabase
         .from('orders')
-        .insert([orderWithTotal])
-        .select('id')
-        .single();
-
-      if (error) throw error;
-      setOrders(prev => [data, ...prev]);
-      toast.success('Order placed successfully');
-      return data.id;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      return null;
-    }
-  };
-
-  const updateOrderStatus = async (orderId: string, status: string) => {
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ status })
-        .eq('id', orderId);
-
-      if (error) throw error;
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, status } : order
-      ));
-      toast.success('Order status updated');
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      toast.error('Failed to update order status');
+        .delete()
+        .eq('id', id);
+        
+      if (deleteError) {
+        throw deleteError;
+      }
+      
+      // Update local state
+      setOrders((prev) => prev.filter(order => order.id !== id));
+      toast.success('Order deleted successfully');
+      
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete order');
+      toast.error('Failed to delete order');
     }
   };
 
   useEffect(() => {
     if (currentUser) {
       fetchOrders();
+    } else {
+      setOrders([]);
+      setLoading(false);
     }
   }, [currentUser]);
 
   return (
-    <OrderContext.Provider value={{
-      orders,
-      isLoading,
-      createOrder,
-      fetchOrders,
-      updateOrderStatus
-    }}>
+    <OrderContext.Provider
+      value={{
+        orders,
+        loading,
+        error,
+        fetchOrders,
+        deleteOrder
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );
