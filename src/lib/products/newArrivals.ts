@@ -36,3 +36,6 @@ export const fetchNewArrivalsForCategory = async (categoryId: string, limit = 8)
     return [];
   }
 };
+
+// Alias for backwards compatibility
+export const getNewArrivals = fetchNewArrivals;

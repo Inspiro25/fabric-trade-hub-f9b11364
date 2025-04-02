@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getNewArrivals } from '@/lib/products/newArrivals';
+import { fetchNewArrivals } from '@/lib/products/newArrivals';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -15,7 +16,7 @@ const NewArrivals = () => {
   
   const { data: products, isLoading } = useQuery({
     queryKey: ['newArrivals'],
-    queryFn: getNewArrivals
+    queryFn: fetchNewArrivals
   });
 
   return (

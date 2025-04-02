@@ -29,6 +29,5 @@ export * from './deal';
 export * from './filters';
 export * from './categories';
 export * from './collections';
-export * from './trending';
 export * from './newArrivals';
 export * from './base';
