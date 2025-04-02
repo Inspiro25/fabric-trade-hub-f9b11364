@@ -4,14 +4,14 @@ import { toast } from 'sonner';
 import { SearchPageProduct } from '@/lib/products/types';
 import { useCart } from '@/hooks/use-cart';
 import { useWishlist } from '@/hooks/use-wishlist';
-import useAuthDialog from './use-auth-dialog';
+import useAuthDialog from '@/hooks/search/use-auth-dialog';
 
 export function useSearchCartIntegration() {
   const [isAddingToCart, setIsAddingToCart] = useState<string | boolean>(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | boolean>(false);
   const { addToCart, isInCart } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
-  const { openAuthDialog } = useAuthDialog();
+  const { openLoginDialog } = useAuthDialog();
   
   const handleAddToCart = (product: SearchPageProduct) => {
     if (!product.id) return;

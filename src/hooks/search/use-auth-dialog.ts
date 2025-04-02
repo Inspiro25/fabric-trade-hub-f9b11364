@@ -6,6 +6,7 @@ export const useAuthDialog = () => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
 
+  const openAuthDialog = () => setIsDialogOpen(true);
   const openLoginDialog = () => setIsDialogOpen(true);
   const closeLoginDialog = () => setIsDialogOpen(false);
   
@@ -19,6 +20,7 @@ export const useAuthDialog = () => {
   return {
     isDialogOpen,
     setIsDialogOpen,
+    openAuthDialog,
     openLoginDialog,
     closeLoginDialog,
     isShareDialogOpen,

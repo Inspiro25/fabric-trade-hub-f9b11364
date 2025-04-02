@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Product } from '@/lib/types/product';
+import { Product, normalizeProduct } from '@/lib/products/types';
 import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/ui/ProductCard';
 import EmptyWishlist from '@/components/cart/EmptyWishlist';
@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import AuthDialog from '@/components/search/AuthDialog';
+import AuthDialog from '@/components/ui/auth-dialog';
 
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
@@ -52,11 +52,7 @@ const Wishlist = () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select(`
-            *,
-            shop:shops(id, name),
-            category:categories(id, name)
-          `)
+          .select('*')
           .in('id', wishlist);
         
         if (error) throw error;
@@ -65,17 +61,28 @@ const Wishlist = () => {
           const mappedProducts = data.map(item => ({
             id: item.id,
             name: item.name,
-            description: item.description,
+            description: item.description || '',
             price: item.price,
             salePrice: item.sale_price,
+            sale_price: item.sale_price,
             images: item.images || [],
-            category: item.category?.name || '',
-            categoryId: item.category?.id || '',
-            reviewCount: item.review_count || 0,
+            category: item.category_id || '',
+            category_id: item.category_id,
+            colors: item.colors || [],
+            sizes: item.sizes || [],
             isNew: item.is_new || false,
+            is_new: item.is_new || false,
             isTrending: item.is_trending || false,
-            shopId: item.shop?.id || null,
-            shopName: item.shop?.name || ''
+            is_trending: item.is_trending || false,
+            rating: item.rating || 0,
+            reviewCount: item.review_count || 0,
+            review_count: item.review_count || 0,
+            stock: item.stock || 0,
+            tags: item.tags || [],
+            shopId: item.shop_id,
+            shop_id: item.shop_id,
+            created_at: item.created_at,
+            updated_at: item.updated_at
           }));
           
           setWishlistItems(mappedProducts);
@@ -171,7 +178,20 @@ const Wishlist = () => {
               "grid"
             )}>
               {wishlistItems.map((product) => (
-                <ProductCard key={product.id} product={product} variant="compact" />
+                <ProductCard 
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  salePrice={product.salePrice}
+                  image={product.images?.[0] || '/placeholder.svg'}
+                  category={product.category}
+                  isNew={product.isNew}
+                  isTrending={product.isTrending}
+                  rating={product.rating}
+                  reviewCount={product.reviewCount}
+                  isDarkMode={isDarkMode}
+                />
               ))}
             </div>
           </div>

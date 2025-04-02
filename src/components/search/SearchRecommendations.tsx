@@ -1,11 +1,10 @@
 
-// Update the image property to use images
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/lib/products';
 import { SearchPageProduct } from '@/hooks/search/types';
 import { useSearchCartIntegration } from '@/hooks/search/use-search-cart-integration';
 import { GridProductCard } from '@/components/search/product-card/GridProductCard';
-import { useAuthDialog } from '@/hooks/search/use-auth-dialog';
+import useAuthDialog from '@/hooks/search/use-auth-dialog';
 
 interface SimilarProductProps {
   productId: string;
@@ -29,7 +28,7 @@ export function SearchRecommendations({
   const [products, setProducts] = useState<SearchPageProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { handleAddToCart, handleAddToWishlist, handleShareProduct } = useSearchCartIntegration();
-  const { openAuthDialog } = useAuthDialog();
+  const { openLoginDialog } = useAuthDialog();
   
   useEffect(() => {
     const fetchSimilarProducts = async () => {
@@ -149,6 +148,10 @@ function generateMockProducts(excludeId: string, limit: number): SearchPageProdu
       is_new: Math.random() > 0.7,
       is_trending: Math.random() > 0.8,
       category_id: ["Electronics", "Home & Kitchen", "Fashion", "Sports"][Math.floor(Math.random() * 4)],
+      stock: Math.floor(Math.random() * 50) + 5,
+      colors: ["red", "blue", "black"],
+      sizes: ["S", "M", "L"],
+      tags: ["trending", "popular"],
     };
   }).filter(product => product.id !== excludeId);
 }
@@ -175,6 +178,10 @@ export async function getRecommendedProductsForCategory(categoryId: string, limi
         is_new: Math.random() > 0.7,
         is_trending: Math.random() > 0.8,
         category_id: categoryId,
+        stock: Math.floor(Math.random() * 50) + 5,
+        colors: ["red", "blue", "black"],
+        sizes: ["S", "M", "L"],
+        tags: ["trending", "popular"],
       };
     });
     
@@ -207,6 +214,10 @@ export async function getTrendingProducts(limit = 8): Promise<SearchPageProduct[
         is_new: Math.random() > 0.5,
         is_trending: true,
         category_id: ["Electronics", "Home & Kitchen", "Fashion", "Sports"][Math.floor(Math.random() * 4)],
+        stock: Math.floor(Math.random() * 50) + 5,
+        colors: ["red", "blue", "black"],
+        sizes: ["S", "M", "L"],
+        tags: ["trending", "popular"],
       };
     });
     
