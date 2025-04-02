@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, Suspense } from 'react';
 import { useHomePageData } from '@/hooks/use-home-data';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileHome from '@/components/mobile/MobileHome';
@@ -20,9 +21,8 @@ import HomeCategoryGrid from '@/components/home/HomeCategoryGrid';
 import HomeProductShowcase from '@/components/home/HomeProductShowcase';
 import HomePromoBanner from '@/components/home/HomePromoBanner';
 import FlashSaleTimer from '@/components/home/FlashSaleTimer';
-import { ElectronicsShowcase } from '@/components/home/ElectronicsShowcase';
+import ElectronicsShowcase from '@/components/home/ElectronicsShowcase'; // Use default import instead of named import
 import ShopsSpotlight from '@/components/home/ShopsSpotlight';
-import { Suspense } from 'react';
 
 const LazyHomeProductShowcase = React.lazy(() => import('@/components/home/HomeProductShowcase'));
 

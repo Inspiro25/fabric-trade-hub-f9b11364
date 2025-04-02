@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Laptop, Smartphone, ArrowRight } from 'lucide-react';
@@ -149,5 +148,4 @@ export const ElectronicsShowcase = () => {
   );
 };
 
-// Also add a default export for backward compatibility
 export default ElectronicsShowcase;
