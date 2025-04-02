@@ -8,39 +8,29 @@ import { ArrowRight, TrendingUp, Star, Clock, Percent } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { ProductSection } from '@/components/features/ProductSection';
-import { CategorySection } from '@/components/features/CategorySection';
-import { PaymentButton } from '@/components/features/PaymentButton';
-import { HomeCategories } from '@/components/features/HomeCategories';
-import { DealOfTheDay } from '@/components/features/DealOfTheDay';
-import { HeroBanner } from '@/components/features/HeroBanner';
-import { Hero } from '@/components/features/Hero';
-import { HomeHero } from '@/components/home/HomeHero';
-import { HomeCategoryGrid } from '@/components/home/HomeCategoryGrid';
-import { HomeProductShowcase } from '@/components/home/HomeProductShowcase';
-import { HomePromoBanner } from '@/components/home/HomePromoBanner';
-import { FlashSaleTimer } from '@/components/home/FlashSaleTimer';
+import ProductSection from '@/components/features/ProductSection';
+import CategorySection from '@/components/features/CategorySection';
+import PaymentButton from '@/components/features/PaymentButton';
+import HomeCategories from '@/components/features/HomeCategories';
+import DealOfTheDay from '@/components/features/DealOfTheDay';
+import HeroBanner from '@/components/features/HeroBanner';
+import Hero from '@/components/features/Hero';
+import HomeHero from '@/components/home/HomeHero';
+import HomeCategoryGrid from '@/components/home/HomeCategoryGrid';
+import HomeProductShowcase from '@/components/home/HomeProductShowcase';
+import HomePromoBanner from '@/components/home/HomePromoBanner';
+import FlashSaleTimer from '@/components/home/FlashSaleTimer';
 import { ElectronicsShowcase } from '@/components/home/ElectronicsShowcase';
-import { ShopsSpotlight } from '@/components/home/ShopsSpotlight';
+import ShopsSpotlight from '@/components/home/ShopsSpotlight';
 import { Suspense } from 'react';
 
-// Import desktop home component when created
-// import DesktopHome from '@/components/desktop/DesktopHome';
-
-// Use Lazy Loading for larger components
 const LazyHomeProductShowcase = React.lazy(() => import('@/components/home/HomeProductShowcase'));
 
 const Home = () => {
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
   
-  // Fetch data using the custom hook
   const { products, isLoading } = useHomePageData();
-
-  // For desktop view when created
-  // if (!isMobile) {
-  //  return <DesktopHome />;
-  // }
 
   if (isMobile) {
     return <MobileHome />;

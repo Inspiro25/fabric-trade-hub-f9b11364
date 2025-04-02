@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-const ElectronicsShowcase = () => {
+export const ElectronicsShowcase = () => {
   const { isDarkMode } = useTheme();
   
   const categories = [
@@ -149,4 +149,5 @@ const ElectronicsShowcase = () => {
   );
 };
 
+// Also add a default export for backward compatibility
 export default ElectronicsShowcase;
