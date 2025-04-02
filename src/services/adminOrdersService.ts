@@ -1,6 +1,12 @@
-import { supabase } from '@/integrations/supabase/client';
-import { Json, OrderItem, AdminOrderSummary, AdminOrderDetails, itemsToJsonArray } from '@/lib/types/json';
+import { supabase } from '@/lib/supabase';
 import { toast } from "sonner";
+import { 
+  AdminOrderSummary,
+  AdminOrderDetails, 
+  OrderItem, 
+  Json, 
+  itemsToJsonArray 
+} from '@/types/json';
 
 interface OrderItem {
   id: string;

@@ -1,5 +1,5 @@
 
-// Re-export types from types/product
+// Re-export types from types directory
 import {
   Product,
   CartItem,
@@ -8,7 +8,7 @@ import {
   normalizeProduct,
   productStore,
   SearchPageProduct
-} from '../types/product';
+} from '@/types/product';
 
 export type {
   Product,
@@ -33,7 +33,7 @@ export * from './categories';
 export * from './collections';
 export * from './base';
 
-// Re-export create/update/delete functions from products.ts
+// Re-export create/update/delete functions from products module
 export { 
   addProduct, 
   updateProduct, 
@@ -43,9 +43,9 @@ export {
   fetchProductById,
   getProductById,
   createProduct 
-} from '../lib/products';
+} from '@/lib/supabase/products';
 
-// If fetchDealProducts doesn't exist yet, let's create a simple implementation
+// Export fetchDealProducts function
 export const fetchDealProducts = async (limit = 8): Promise<Product[]> => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');

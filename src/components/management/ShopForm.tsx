@@ -1,31 +1,17 @@
-import React from 'react';
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Shop } from '@/lib/shops/types';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import FileUpload from '@/components/ui/file-upload';
 
-// Schema for form validation
+import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Shop } from '@/types/shop';
+
+// Define ShopFormValues type
 export interface ShopFormValues {
   name: string;
   description: string;
@@ -36,24 +22,24 @@ export interface ShopFormValues {
   shopId: string;
   ownerName: string;
   ownerEmail: string;
-  status: 'active' | 'pending' | 'suspended';
+  status: string;
   password: string;
   phoneNumber: string;
 }
 
-export const shopFormSchema = z.object({
-  name: z.string().min(3, { message: 'Shop name must be at least 3 characters' }),
-  description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
-  logo: z.string().optional(),
-  coverImage: z.string().optional(),
-  address: z.string().min(5, { message: 'Address must be at least 5 characters' }),
-  isVerified: z.boolean().optional(),
-  shopId: z.string().optional(),
-  ownerName: z.string().min(3, { message: 'Owner name must be at least 3 characters' }),
-  ownerEmail: z.string().email({ message: 'Must be a valid email address' }),
-  status: z.enum(['active', 'pending', 'suspended']).optional(),
-  password: z.string().min(8, { message: 'Password must be at least 8 characters' }).optional(),
-  phoneNumber: z.string().min(10, { message: 'Phone number must be at least 10 characters' }),
+const shopSchema = yup.object({
+  name: yup.string().required('Shop name is required'),
+  description: yup.string().required('Description is required'),
+  logo: yup.string().required('Logo URL is required'),
+  coverImage: yup.string().required('Cover image URL is required'),
+  address: yup.string().required('Address is required'),
+  isVerified: yup.boolean().required(),
+  shopId: yup.string().required('Shop ID is required'),
+  ownerName: yup.string().required('Owner name is required'),
+  ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
+  status: yup.string().required('Status is required'),
+  password: yup.string().required('Password is required'),
+  phoneNumber: yup.string().required('Phone number is required'),
 });
 
 interface ShopFormProps {
@@ -63,235 +49,215 @@ interface ShopFormProps {
   isMobile?: boolean;
 }
 
-export const ShopForm: React.FC<ShopFormProps> = ({ 
-  shop, 
-  onSubmit, 
-  onCancel,
-  isMobile = false
-}) => {
-  const [logo, setLogo] = React.useState<string>(shop?.logo || '');
-  const [coverImage, setCoverImage] = React.useState<string>(shop?.coverImage || '');
+export const ShopForm: React.FC<ShopFormProps> = ({ shop, onSubmit, onCancel, isMobile = false }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<ShopFormValues>({
-    resolver: zodResolver(shopFormSchema),
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ShopFormValues>({
+    resolver: yupResolver(shopSchema),
     defaultValues: {
       name: shop?.name || '',
       description: shop?.description || '',
+      logo: shop?.logo || '',
+      coverImage: shop?.coverImage || '',
       address: shop?.address || '',
       isVerified: shop?.isVerified || false,
       shopId: shop?.shopId || '',
       ownerName: shop?.ownerName || '',
       ownerEmail: shop?.ownerEmail || '',
       status: shop?.status || 'pending',
-      password: '',  // Don't pre-fill password
+      password: shop?.password || '',
       phoneNumber: shop?.phoneNumber || '',
     },
   });
 
-  const isSubmitting = form.formState.isSubmitting;
-
-  const handleFormSubmit = async (data: ShopFormValues) => {
-    // Add the logo and coverImage to the form data
-    const formData = {
-      ...data,
-      logo,
-      coverImage,
-    };
-    
-    await onSubmit(formData);
+  const submitForm = async (data: ShopFormValues) => {
+    try {
+      setIsSubmitting(true);
+      await onSubmit(data);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
-          <FormField
-            control={form.control}
+    <form onSubmit={handleSubmit(submitForm)} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="name">Shop Name</Label>
+          <Controller
             name="name"
+            control={control}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Shop Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter shop name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <Input id="name" {...field} type="text" placeholder="Enter shop name" />
             )}
           />
-
-          <FormField
-            control={form.control}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+        </div>
+        
+        <div>
+          <Label htmlFor="shopId">Shop ID</Label>
+          <Controller
             name="shopId"
+            control={control}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Shop ID (for login)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter unique shop ID" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <Input id="shopId" {...field} type="text" placeholder="Enter shop ID" />
             )}
           />
+          {errors.shopId && <p className="text-red-500 text-sm">{errors.shopId.message}</p>}
         </div>
-
-        <FormField
-          control={form.control}
+      </div>
+      
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Controller
           name="description"
+          control={control}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Enter shop description" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            <Textarea id="description" {...field} placeholder="Enter shop description" />
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Address</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter shop address" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
-          <FormField
-            control={form.control}
+        {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="logo">Logo URL</Label>
+          <Controller
+            name="logo"
+            control={control}
+            render={({ field }) => (
+              <Input id="logo" {...field} type="url" placeholder="Enter logo URL" />
+            )}
+          />
+          {errors.logo && <p className="text-red-500 text-sm">{errors.logo.message}</p>}
+        </div>
+        
+        <div>
+          <Label htmlFor="coverImage">Cover Image URL</Label>
+          <Controller
+            name="coverImage"
+            control={control}
+            render={({ field }) => (
+              <Input id="coverImage" {...field} type="url" placeholder="Enter cover image URL" />
+            )}
+          />
+          {errors.coverImage && <p className="text-red-500 text-sm">{errors.coverImage.message}</p>}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="ownerName">Owner Name</Label>
+          <Controller
             name="ownerName"
+            control={control}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Owner Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter owner name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <Input id="ownerName" {...field} type="text" placeholder="Enter owner name" />
             )}
           />
-
-          <FormField
-            control={form.control}
+          {errors.ownerName && <p className="text-red-500 text-sm">{errors.ownerName.message}</p>}
+        </div>
+        
+        <div>
+          <Label htmlFor="ownerEmail">Owner Email</Label>
+          <Controller
             name="ownerEmail"
+            control={control}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Owner Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter owner email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <Input id="ownerEmail" {...field} type="email" placeholder="Enter owner email" />
             )}
           />
+          {errors.ownerEmail && <p className="text-red-500 text-sm">{errors.ownerEmail.message}</p>}
         </div>
-
-        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
-          <div>
-            <FormLabel>Shop Logo</FormLabel>
-            <FileUpload
-              initialImage={logo}
-              onUploadComplete={setLogo}
-              bucketName="shops"
-              folderPath="logos"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Upload a square logo image for your shop (recommended: 400x400px)
-            </p>
-          </div>
-
-          <div>
-            <FormLabel>Cover Image</FormLabel>
-            <FileUpload
-              initialImage={coverImage}
-              onUploadComplete={setCoverImage}
-              bucketName="shops"
-              folderPath="covers"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Upload a banner image for your shop (recommended: 1200x400px)
-            </p>
-          </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Controller
+            name="phoneNumber"
+            control={control}
+            render={({ field }) => (
+              <Input id="phoneNumber" {...field} type="tel" placeholder="Enter phone number" />
+            )}
+          />
+          {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>}
         </div>
-
-        <div className={`grid grid-cols-1 ${!isMobile ? 'md:grid-cols-2' : ''} gap-4`}>
-          <FormField
-            control={form.control}
+        
+        <div>
+          <Label htmlFor="address">Address</Label>
+          <Controller
+            name="address"
+            control={control}
+            render={({ field }) => (
+              <Input id="address" {...field} type="text" placeholder="Enter address" />
+            )}
+          />
+          {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <Controller
             name="password"
+            control={control}
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>{shop ? 'New Password (leave empty to keep current)' : 'Password'}</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder={shop ? "Enter new password (optional)" : "Enter password"} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+              <Input id="password" {...field} type="password" placeholder="Enter password" />
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
         </div>
-
-        <FormField
-          control={form.control}
+        
+        <div>
+          <Label htmlFor="status">Status</Label>
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
+        </div>
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Controller
           name="isVerified"
+          control={control}
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>Verified Shop</FormLabel>
-                <p className="text-sm text-muted-foreground">
-                  Mark this shop as verified by the platform
-                </p>
-              </div>
-            </FormItem>
+            <Switch id="isVerified" checked={field.value} onCheckedChange={field.onChange} />
           )}
         />
-
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : shop ? 'Update Shop' : 'Create Shop'}
-          </Button>
-        </div>
-      </form>
-    </Form>
+        <Label htmlFor="isVerified">Is Verified</Label>
+        {errors.isVerified && <p className="text-red-500 text-sm">{errors.isVerified.message}</p>}
+      </div>
+      
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Submitting...' : shop ? 'Update Shop' : 'Create Shop'}
+        </Button>
+      </div>
+    </form>
   );
 };

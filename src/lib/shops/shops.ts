@@ -3,17 +3,9 @@ import { Shop } from '@/types/shop';
 
 export const fetchShops = async () => {
   try {
-    // First, verify the tables exist
-    const { data: tables } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public');
-    
-    console.log('Available tables:', tables);
-
-    // Then fetch shops with modified query
+    // Fetch shops directly from the shops table
     const { data: shops, error } = await supabase
-      .from('store')  // Try 'store' instead of 'shops' if that's your table name
+      .from('shops')
       .select(`
         id,
         name,
@@ -29,8 +21,7 @@ export const fetchShops = async () => {
         followers_count,
         is_verified,
         status,
-        created_at,
-        product:product(count)  // Try 'product' instead of 'products' if that's your table name
+        created_at
       `)
       .order('created_at', { ascending: false });
 
@@ -62,12 +53,12 @@ export const fetchShops = async () => {
       reviewCount: shop.review_count || 0,
       followers: shop.followers_count || 0,
       isVerified: shop.is_verified || false,
-      productsCount: shop.product?.[0]?.count || 0,
-      status: shop.status || 'pending'
+      status: shop.status || 'pending',
+      createdAt: shop.created_at
     }));
 
   } catch (error) {
     console.error('Error in fetchShops:', error);
-    throw error;
+    return [];
   }
 };

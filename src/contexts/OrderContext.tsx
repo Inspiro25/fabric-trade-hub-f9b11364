@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { ReactNode, createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
-import { toast } from 'sonner';
+import { Json } from '@/types/json';
 
 interface Order {
   id: string;
@@ -17,14 +17,14 @@ interface Order {
 interface OrderContextType {
   orders: Order[];
   isLoading: boolean;
-  createOrder: (orderData: Partial<Order>) => Promise<void>;
+  createOrder: (orderData: any) => Promise<string | null>;
   fetchOrders: () => Promise<void>;
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser } = useAuth();
@@ -50,31 +50,31 @@ export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const createOrder = async (orderData: Partial<Order>) => {
+  const createOrder = async (orderData: any): Promise<string | null> => {
     if (!currentUser) {
       toast.error('Please login to place an order');
-      return;
+      return null;
     }
 
     try {
+      const orderWithTotal = { 
+        ...orderData, 
+        total: orderData.total_amount || 0
+      };
+
       const { data, error } = await supabase
         .from('orders')
-        .insert([{
-          ...orderData,
-          user_id: currentUser.uid,
-          order_number: `ORD-${Date.now()}`,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        }])
-        .select()
+        .insert([orderWithTotal])
+        .select('id')
         .single();
 
       if (error) throw error;
       setOrders(prev => [data, ...prev]);
       toast.success('Order placed successfully');
+      return data.id;
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Failed to place order');
+      return null;
     }
   };
 

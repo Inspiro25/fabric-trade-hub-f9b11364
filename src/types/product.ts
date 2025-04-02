@@ -9,37 +9,44 @@ export interface Product {
   salePrice?: number | null; // For compatibility with API responses
   images: string[];
   category?: string;
-  category_id?: string; // For compatibility with API responses
+  category_id?: string;
   colors: string[];
   sizes: string[];
   is_new?: boolean;
-  isNew?: boolean; // For compatibility with API responses 
+  isNew?: boolean;
   is_trending?: boolean;
-  isTrending?: boolean; // For compatibility with API responses
+  isTrending?: boolean;
   rating: number;
   review_count?: number;
-  reviewCount?: number; // For compatibility with API responses
+  reviewCount?: number;
   stock: number;
   tags: string[];
   shop_id?: string;
-  shopId?: string; // For compatibility with API responses
-  created_at?: string; // For sorting products
-  updated_at?: string; // For tracking updates
+  shopId?: string;
+  brand?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-// Export SearchPageProduct type for search functionality
-export type SearchPageProduct = Partial<Product>;
-
-// Cart Item type
+// Define Cart Item type
 export interface CartItem {
   id: string;
-  product: Product;
+  name: string;
+  price: number;
+  image: string;
   quantity: number;
   color: string;
   size: string;
+  category_id?: string;
+  description: string;
+  rating: number;
+  review_count?: number;
+  shop_id?: string;
+  is_new?: boolean;
+  is_trending?: boolean;
 }
 
-// WishlistContextType for wishlist functionality
+// Define WishlistContextType
 export interface WishlistContextType {
   wishlist: string[];
   addToWishlist: (product: Product | string) => void;
@@ -48,10 +55,10 @@ export interface WishlistContextType {
   isLoading: boolean;
 }
 
-// CartContextType for cart functionality
+// Define CartContextType
 export interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity: number, color: string, size: string) => void;
+  addToCart: (product: any, quantity: number, color?: string, size?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -62,10 +69,13 @@ export interface CartContextType {
   migrateCartToUser: () => Promise<void>;
 }
 
-// Helper function to normalize product data between API response formats
+// Export SearchPageProduct type for search functionality
+export type SearchPageProduct = Partial<Product>;
+
+// Helper function to normalize product data
 export function normalizeProduct(rawProduct: any): Product {
   return {
-    id: rawProduct.id,
+    id: rawProduct.id || '',
     name: rawProduct.name || '',
     description: rawProduct.description || '',
     price: rawProduct.price || 0,
@@ -73,7 +83,7 @@ export function normalizeProduct(rawProduct: any): Product {
     sale_price: rawProduct.sale_price || rawProduct.salePrice,
     images: rawProduct.images || [],
     category: rawProduct.category || (rawProduct.category_id ? String(rawProduct.category_id) : undefined),
-    category_id: rawProduct.category_id,
+    category_id: rawProduct.category_id || rawProduct.categoryId,
     colors: rawProduct.colors || [],
     sizes: rawProduct.sizes || [],
     isNew: Boolean(rawProduct.isNew || rawProduct.is_new),
@@ -87,6 +97,7 @@ export function normalizeProduct(rawProduct: any): Product {
     tags: rawProduct.tags || [],
     shopId: rawProduct.shopId || rawProduct.shop_id,
     shop_id: rawProduct.shop_id || rawProduct.shopId,
+    brand: rawProduct.brand,
     created_at: rawProduct.created_at,
     updated_at: rawProduct.updated_at
   };

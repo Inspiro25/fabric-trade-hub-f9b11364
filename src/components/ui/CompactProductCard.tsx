@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from "sonner";
-import { Product } from '@/lib/products';
+import { Product } from '@/types/product';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface CompactProductCardProps {

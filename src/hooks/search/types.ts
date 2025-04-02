@@ -1,26 +1,38 @@
 
-// Define search-related types
-import { Json } from '@/lib/types/json';
+import { Product } from '@/types/product';
 
-export interface SearchPageProduct {
+export type { SearchPageProduct } from '@/types/product';
+
+export interface Category {
   id: string;
   name: string;
   description?: string;
-  price: number;
-  sale_price?: number | null;
-  images: string[];
-  category_id?: string;
-  colors?: string[];
-  sizes?: string[];
-  stock?: number;
+  image?: string;
+  productCount?: number;
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  logo: string;
+  coverImage: string;
   rating?: number;
-  review_count?: number;
-  shop_id?: string;
-  is_new?: boolean;
-  is_trending?: boolean;
-  tags?: string[];
-  created_at?: string;
-  updated_at?: string;
+  followers?: number;
+  isVerified?: boolean;
+  productCount?: number;
+}
+
+export interface ProductCardBaseProps {
+  product: Product;
+  isAddingToCart?: boolean | string;
+  isAddingToWishlist?: boolean | string;
+  onAddToCart?: (product: Product) => void;
+  onAddToWishlist?: (product: Product) => void;
+  onShare?: (product: Product) => void;
+  onClick?: (product: Product) => void;
+  buttonColor?: string;
+  viewMode?: 'grid' | 'list';
+  isCompact?: boolean;
 }
 
 export interface SearchFilters {
@@ -37,7 +49,7 @@ export interface SearchFilters {
 export interface SearchState {
   query: string;
   filters: SearchFilters;
-  results: SearchPageProduct[];
+  results: Product[];
   loading: boolean;
   error: string | null;
   totalResults: number;
@@ -45,5 +57,3 @@ export interface SearchState {
   pageSize: number;
   viewMode: 'grid' | 'list';
 }
-
-// Add other search-related types as needed
