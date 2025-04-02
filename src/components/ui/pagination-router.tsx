@@ -1,10 +1,10 @@
 
 import * as React from "react"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { Link } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
-import Link from "next/link"
 
 const Pagination = React.forwardRef<
   HTMLDivElement,

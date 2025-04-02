@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import { useHomeData } from '@/hooks/use-home-data';
+import { useHomePageData } from '@/hooks/use-home-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Search, Bell, ShoppingCart, Menu, ChevronRight } from 'lucide-react';
@@ -7,11 +7,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/autoplay';
+import { Swiper, SwiperSlide, Pagination, Autoplay } from '@/components/ui/swiper';
 import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,7 +22,7 @@ const MobileHome = () => {
     topRatedQuery,
     discountedQuery,
     dataLoaded 
-  } = useHomeData();
+  } = useHomePageData();
 
   const categories = categoriesQuery?.data || [];
   const newArrivals = newArrivalsQuery?.data || [];
@@ -53,8 +49,9 @@ const MobileHome = () => {
     { title: "Fashion Week", subtitle: "Exclusive designs", cta: "Discover" },
     { title: "New Season", subtitle: "Fresh arrivals daily", cta: "View All" }
   ];
-// Category icons for Flipkart-style category row
-const categoryIcons = [
+
+  // Category icons for Flipkart-style category row
+  const categoryIcons = [
     { name: "Fashion", icon: "👕", color: "bg-blue-100" },
     { name: "Electronics", icon: "📱", color: "bg-green-100" },
     { name: "Home", icon: "🏠", color: "bg-yellow-100" },
@@ -66,6 +63,7 @@ const categoryIcons = [
     { name: "Appliances", icon: "🔌", color: "bg-teal-100" },
     { name: "Furniture", icon: "🪑", color: "bg-amber-100" }
   ];
+
   return (
     <div className={cn(
       "pb-16",
@@ -76,7 +74,7 @@ const categoryIcons = [
         <Swiper
           modules={[Pagination, Autoplay]}
           pagination={{ clickable: true }}
-          autoplay={{ delay: 3000 }}
+          autoplay={{ delay: 3000, disableOnInteraction: false }}
           loop={true}
           className="w-full"
         >
@@ -387,7 +385,7 @@ const categoryIcons = [
         </div>
       </div>
 
-      {/* Remove the jsx attribute from the style tag */}
+      {/* CSS styling */}
       <style>
         {`
           .hide-scrollbar {
