@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
@@ -5,8 +6,7 @@ import { Product, adaptProduct } from '@/lib/products/types';
 import { Shop } from '@/lib/shops/types';
 import { fetchProducts } from '@/lib/supabase/products';
 import { fetchShops } from '@/lib/supabase/shops';
-import ProductCard from '@/components/products/ProductCard';
-import ShopCard from '@/components/shops/ShopCard';
+import ProductCard from '@/components/product/ProductCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +25,7 @@ const Search: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
-	const location = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
   const [isGrid, setIsGrid] = useState(true);
@@ -70,25 +70,47 @@ const Search: React.FC = () => {
       const query = searchParams.get('q') || '';
       setSearchQuery(query);
 
-      const fetchedProducts = await fetchProducts({ query });
+      // Note: fetchProducts doesn't take arguments in its implementation
+      const fetchedProducts = await fetchProducts();
       const fetchedShops = await fetchShops();
 
       // Apply filters
       const filteredProducts = fetchedProducts.filter(product => {
-        const price = product.salePrice !== null && product.salePrice !== undefined ? product.salePrice : product.price;
+        const price = product.sale_price !== null && product.sale_price !== undefined 
+          ? product.sale_price 
+          : product.price;
+          
         const isWithinPriceRange = price >= priceRange[0] && price <= priceRange[1];
-        const isCategoryMatch = categoryFilters.length === 0 || categoryFilters.includes(product.category_id);
-        const isRatingMatch = ratingFilters.length === 0 || ratingFilters.some(rating => product.rating >= rating);
+        const isCategoryMatch = categoryFilters.length === 0 || 
+          (product.category_id && categoryFilters.includes(product.category_id));
+        const isRatingMatch = ratingFilters.length === 0 || 
+          (product.rating && ratingFilters.some(rating => product.rating >= rating));
 
         return isWithinPriceRange && isCategoryMatch && isRatingMatch;
       });
 
-      setProducts(filteredProducts);
-      setShops(fetchedShops.filter(shop => shop.name.toLowerCase().includes(query.toLowerCase())));
+      // Filter products by search query
+      const searchFilteredProducts = query 
+        ? filteredProducts.filter(product => 
+            product.name.toLowerCase().includes(query.toLowerCase()) ||
+            (product.description && product.description.toLowerCase().includes(query.toLowerCase()))
+          )
+        : filteredProducts;
+
+      setProducts(searchFilteredProducts);
+      setShops(fetchedShops.filter(shop => 
+        shop.name.toLowerCase().includes(query.toLowerCase()) ||
+        (shop.description && shop.description.toLowerCase().includes(query.toLowerCase()))
+      ));
 
       // Extract available categories and ratings from the fetched products
-      const categories = [...new Set(fetchedProducts.map(product => product.category_id))];
-      const ratings = [...new Set(fetchedProducts.map(product => Math.floor(product.rating)))];
+      const categories = [...new Set(fetchedProducts
+        .filter(product => product.category_id)
+        .map(product => product.category_id))];
+        
+      const ratings = [...new Set(fetchedProducts
+        .filter(product => product.rating)
+        .map(product => Math.floor(product.rating)))];
 
       setAvailableCategories(categories);
       setAvailableRatings(ratings.map(Number).sort((a, b) => b - a)); // Sort ratings in descending order
@@ -105,7 +127,8 @@ const Search: React.FC = () => {
 
   useEffect(() => {
     const isGridParam = searchParams.get('grid');
-    setIsGrid(isGridParam === null || isGridParam === 'true');
+    // Fix type comparison: convert string to boolean properly
+    setIsGrid(isGridParam !== 'false');
   }, [searchParams]);
 
   const handleSearch = (newQuery: string) => {
@@ -151,7 +174,7 @@ const Search: React.FC = () => {
       </div>
 
       <div className="flex">
-       {isFilterOpen && (
+        {isFilterOpen && (
           <Card className="w-full md:w-1/4 mr-4">
             <CardHeader>
               <CardTitle>Filter Options</CardTitle>
@@ -213,7 +236,7 @@ const Search: React.FC = () => {
           </Card>
         )}
 
-        <div className="w-full md:w-3/4">
+        <div className={cn("w-full", isFilterOpen ? "md:w-3/4" : "")}>
           <Tabs defaultValue="products" className="w-full">
             <TabsList>
               <TabsTrigger value="products">Products <Badge className="ml-2">{products.length}</Badge></TabsTrigger>
@@ -223,9 +246,25 @@ const Search: React.FC = () => {
               {isLoading ? (
                 <div className="text-center">Loading products...</div>
               ) : products.length > 0 ? (
-                <div className={cn("grid gap-4", isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1")}>
+                <div className={cn(
+                  "grid gap-4", 
+                  isGrid ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3" : "grid-cols-1"
+                )}>
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} isGrid={isGrid} />
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      salePrice={product.sale_price}
+                      image={product.images?.[0] || '/placeholder.svg'}
+                      category={product.category_id}
+                      isNew={product.is_new}
+                      isTrending={product.is_trending}
+                      rating={product.rating || 0}
+                      reviewCount={product.review_count || 0}
+                      product={product}
+                    />
                   ))}
                 </div>
               ) : (
@@ -238,7 +277,51 @@ const Search: React.FC = () => {
               ) : shops.length > 0 ? (
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                   {shops.map((shop) => (
-                    <ShopCard key={shop.id} shop={shop} />
+                    <Card key={shop.id} className="overflow-hidden">
+                      <div className="h-24 bg-gradient-to-r from-gray-200 to-gray-100">
+                        {shop.cover_image && (
+                          <img
+                            src={shop.cover_image}
+                            alt={shop.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                      <CardContent className="p-4">
+                        <div className="flex items-start">
+                          <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                            {shop.logo && (
+                              <img
+                                src={shop.logo}
+                                alt={shop.name}
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{shop.name}</h3>
+                            {shop.rating && (
+                              <div className="text-xs text-gray-500">
+                                Rating: {shop.rating.toFixed(1)} ({shop.review_count || 0} reviews)
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {shop.description && (
+                          <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                            {shop.description}
+                          </p>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-3"
+                          onClick={() => navigate(`/shop/${shop.id}`)}
+                        >
+                          View Shop
+                        </Button>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               ) : (
