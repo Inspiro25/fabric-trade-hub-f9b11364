@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/ProductCard';
@@ -29,7 +30,7 @@ export default function Search() {
   const filteredProducts = products
     .filter(product => 
       selectedCategories.length === 0 || 
-      selectedCategories.includes(product.category_id)
+      selectedCategories.includes(product.category_id || '')
     )
     .sort((a, b) => {
       switch (sortBy) {
@@ -40,7 +41,10 @@ export default function Search() {
         case 'name':
           return a.name.localeCompare(b.name);
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          // Handle created_at safely since it's optional
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
       }
     });
 
@@ -124,7 +128,13 @@ export default function Search() {
                   filteredProducts.map((product) => (
                     <ProductCard
                       key={product.id}
-                      product={product}
+                      product={{
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        stock: product.stock || 0, // Ensure stock is provided with default
+                        images: product.images
+                      }}
                       className="h-full"
                     />
                   ))

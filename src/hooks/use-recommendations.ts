@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { SearchPageProduct } from '@/components/search/SearchProductCard';
+import { SearchPageProduct } from '@/lib/products/types';
 
 export const useRecommendations = (userId: string | null) => {
   const [recommendations, setRecommendations] = useState<SearchPageProduct[]>([]);
@@ -92,7 +92,8 @@ export const useRecommendations = (userId: string | null) => {
           colors: product.colors || [],
           sizes: product.sizes || [],
           rating: product.rating || 0,
-          review_count: product.review_count || 0
+          review_count: product.review_count || 0,
+          stock: product.stock || 0 // Added stock with a default of 0
         }));
         
         setRecommendations(formattedRecommendations);
@@ -147,7 +148,8 @@ export const useRecommendations = (userId: string | null) => {
             colors: product.colors || [],
             sizes: product.sizes || [],
             rating: product.rating || 0,
-            review_count: product.review_count || 0
+            review_count: product.review_count || 0,
+            stock: product.stock || 0 // Added stock with a default of 0
           }));
           
           // Sort to match the order from view history

@@ -30,7 +30,7 @@ export interface Product {
   updated_at?: string;
 }
 
-// Define the SearchPageProduct type with optional fields
+// Define the SearchPageProduct type with optional fields, but ensure stock is included
 export interface SearchPageProduct {
   id: string;
   name: string;
@@ -50,7 +50,7 @@ export interface SearchPageProduct {
   rating?: number;
   reviewCount?: number;
   review_count?: number;
-  stock?: number;
+  stock: number; // Making this required to match usage
   tags?: string[];
   shopId?: string;
   shop_id?: string;

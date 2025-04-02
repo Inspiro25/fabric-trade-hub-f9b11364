@@ -14,7 +14,7 @@ export interface SearchPageProduct {
   shopId?: string;
   colors?: string[];
   sizes?: string[];
-  stock?: number;
+  stock: number; // Making this required to match usage
   rating?: number;
   review_count?: number;
   reviewCount?: number;
@@ -26,7 +26,6 @@ export interface SearchPageProduct {
   tags?: string[];
   created_at?: string;
   updated_at?: string;
-  brand?: string;
 }
 
 export interface Category {

@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product, normalizeProductData } from '@/lib/products/types';
 import { productStore } from '@/lib/types/product';
 
-export interface DealProduct extends Product {
+export interface DealProduct extends Omit<Product, 'category'> {
+  category?: string;
   discountPercentage: number;
   endTime: Date;
 }
@@ -44,7 +45,7 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
         discountPercentage,
         endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
       };
-    });
+    }) as DealProduct[];
     
     // Sort by discount percentage (highest first)
     productsWithDiscounts.sort((a, b) => b.discountPercentage - a.discountPercentage);
