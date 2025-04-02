@@ -1,31 +1,33 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export function useAuthDialog() {
-  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
-  const [authDialogMode, setAuthDialogMode] = useState<'login' | 'register'>('login');
-  const [redirectAfterAuth, setRedirectAfterAuth] = useState<string | null>(null);
-  
-  const openAuthDialog = (mode: 'login' | 'register' = 'login', redirectPath: string | null = null) => {
-    setAuthDialogMode(mode);
-    setIsAuthDialogOpen(true);
-    if (redirectPath) {
-      setRedirectAfterAuth(redirectPath);
+export default function useAuthDialog() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { currentUser } = useAuth();
+
+  const openAuthDialog = () => {
+    if (!currentUser) {
+      setIsDialogOpen(true);
+      return true;
     }
+    return false;
   };
-  
+
   const closeAuthDialog = () => {
-    setIsAuthDialogOpen(false);
+    setIsDialogOpen(false);
   };
-  
+
+  const handleLogin = () => {
+    window.location.href = '/auth';
+  };
+
   return {
-    isAuthDialogOpen,
-    authDialogMode,
-    redirectAfterAuth,
+    isDialogOpen,
+    setIsDialogOpen,
     openAuthDialog,
     closeAuthDialog,
-    setAuthDialogMode,
+    handleLogin,
+    isAuthenticated: !!currentUser
   };
 }
-
-export default useAuthDialog;

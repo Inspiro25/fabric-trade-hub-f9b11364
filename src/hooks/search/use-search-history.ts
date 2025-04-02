@@ -1,31 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export interface SearchHistoryItem {
-  id: string;
-  query: string;
-  timestamp: Date;
-}
+export function useSearchHistory() {
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([
+    "Shoes", "T-shirts", "Dresses", "Jeans", "Jackets", "Watches", "Bags"
+  ]);
+  const { currentUser } = useAuth();
 
-export const useSearchHistory = (userId?: string | null) => {
-  const [searchHistory, setSearchHistory] = useState<Array<SearchHistoryItem>>([]);
-  const [popularSearches, setPopularSearches] = useState<string[]>(['Shoes', 'Electronics', 'Fashion', 'Home']);
-  
-  const saveSearchHistory = (searchQuery: string) => {
-    const newHistoryItem = {
-      id: Date.now().toString(),
-      query: searchQuery,
-      timestamp: new Date()
+  useEffect(() => {
+    const loadSearchHistory = () => {
+      try {
+        const savedHistory = localStorage.getItem('searchHistory');
+        if (savedHistory) {
+          setSearchHistory(JSON.parse(savedHistory));
+        }
+      } catch (err) {
+        console.error('Error loading search history:', err);
+        // Reset if corrupt
+        localStorage.removeItem('searchHistory');
+      }
     };
-    
-    setSearchHistory(prev => [newHistoryItem, ...prev.slice(0, 9)]);
+
+    loadSearchHistory();
+  }, [currentUser?.id]);
+
+  const saveSearchHistory = (query: string) => {
+    if (!query.trim()) return;
+
+    try {
+      // Add to the beginning, remove duplicates, and keep max 10 items
+      const updatedHistory = [
+        query, 
+        ...searchHistory.filter(item => item.toLowerCase() !== query.toLowerCase())
+      ].slice(0, 10);
+      
+      setSearchHistory(updatedHistory);
+      localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+    } catch (err) {
+      console.error('Error saving search history:', err);
+    }
   };
-  
-  const clearSearchHistoryItem = (id: string) => {
-    setSearchHistory(prev => prev.filter(item => item.id !== id));
+
+  const clearSearchHistoryItem = (query: string) => {
+    const updatedHistory = searchHistory.filter(
+      item => item.toLowerCase() !== query.toLowerCase()
+    );
+    setSearchHistory(updatedHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
   };
-  
+
   const clearAllSearchHistory = () => {
     setSearchHistory([]);
+    localStorage.removeItem('searchHistory');
   };
 
   return {
@@ -35,4 +62,4 @@ export const useSearchHistory = (userId?: string | null) => {
     clearSearchHistoryItem,
     clearAllSearchHistory
   };
-};
+}

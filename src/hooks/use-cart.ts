@@ -1,6 +1,6 @@
 
 import { useContext } from 'react';
-import { CartContext } from '@/contexts/CartContext';
+import { CartContext, CartContextType } from '@/contexts/CartContext';
 import { Product } from '@/lib/products/types';
 import { toast } from 'sonner';
 

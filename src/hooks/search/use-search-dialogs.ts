@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export const useSearchDialogs = () => {
+export function useSearchDialogs() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
+  const { currentUser } = useAuth();
 
   const handleLogin = () => {
-    setIsDialogOpen(false);
+    window.location.href = '/auth';
   };
 
   return {
@@ -17,6 +19,7 @@ export const useSearchDialogs = () => {
     setIsShareDialogOpen,
     shareableLink,
     setShareableLink,
+    isAuthenticated: !!currentUser,
     handleLogin
   };
-};
+}

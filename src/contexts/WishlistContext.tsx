@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
 
-const WishlistContext = createContext<WishlistContextType>({
+export const WishlistContext = createContext<WishlistContextType>({
   wishlist: [],
   addToWishlist: () => {},
   removeFromWishlist: () => {},

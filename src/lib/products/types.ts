@@ -55,5 +55,6 @@ export interface SearchPageProduct {
   description?: string;
   tags?: string[];
   created_at?: string;
+  updated_at?: string;
   brand?: string;
 }

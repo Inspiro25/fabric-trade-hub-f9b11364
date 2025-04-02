@@ -15,7 +15,7 @@ export interface CartItem {
   size: string;
 }
 
-interface CartContextType {
+export interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product, quantity: number, color: string, size: string) => void;
   removeFromCart: (itemId: string) => void;
@@ -28,7 +28,7 @@ interface CartContextType {
   migrateCartToUser: () => Promise<void>;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();

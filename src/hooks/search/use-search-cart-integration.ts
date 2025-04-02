@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { SearchPageProduct } from '@/hooks/search/types';
+import { SearchPageProduct } from '@/lib/products/types';
 import { useCart } from '@/hooks/use-cart';
 import { useWishlist } from '@/hooks/use-wishlist';
 import useAuthDialog from './use-auth-dialog';
@@ -22,10 +22,6 @@ export function useSearchCartIntegration() {
       if (isInCart(product.id)) {
         toast("Already in cart", {
           description: "This product is already in your cart",
-          action: {
-            label: "View Cart",
-            onClick: () => window.location.href = "/cart"
-          },
         });
         return;
       }
@@ -40,9 +36,6 @@ export function useSearchCartIntegration() {
         tags: product.tags || []
       } as any, 1);
       
-      toast("Added to cart", {
-        description: `${product.name} has been added to your cart.`,
-      });
     } catch (error) {
       console.error('Error adding to cart:', error);
       toast("Error", {
@@ -62,19 +55,12 @@ export function useSearchCartIntegration() {
       if (isInWishlist(product.id)) {
         toast("Already in wishlist", {
           description: "This product is already in your wishlist",
-          action: {
-            label: "View Wishlist",
-            onClick: () => window.location.href = "/wishlist"
-          },
         });
         return;
       }
       
       addToWishlist(product.id);
       
-      toast("Added to wishlist", {
-        description: `${product.name} has been added to your wishlist.`,
-      });
     } catch (error) {
       console.error('Error adding to wishlist:', error);
       toast("Error", {
@@ -93,6 +79,9 @@ export function useSearchCartIntegration() {
     toast("Link copied", {
       description: "Product link copied to clipboard",
     });
+    
+    // Return the URL for other components that might need it
+    return `${window.location.origin}/product/${product.id}`;
   };
   
   return {

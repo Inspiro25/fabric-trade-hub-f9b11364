@@ -72,13 +72,13 @@ const useSearch = () => {
     products,
     categories,
     shops,
-    error = '',
-    totalProducts = 0,
-    initialLoad = true,
-    recommendations = [],
-    recentlyViewed = [],
-    fetchData = () => {},
-    handleRetry = () => {}
+    error,
+    totalProducts,
+    initialLoad,
+    recommendations,
+    recentlyViewed,
+    fetchData,
+    handleRetry
   } = useSearchMockData(query, category, page, itemsPerPage);
 
   const {
@@ -109,8 +109,11 @@ const useSearch = () => {
   // Create a wrapper for handleShareProduct
   const onShareProduct = (product: SearchPageProduct) => {
     const link = handleShareProduct(product);
-    setShareableLink(link);
-    setIsShareDialogOpen(true);
+    if (link) {
+      setShareableLink(link);
+      setIsShareDialogOpen(true);
+    }
+    return link;
   };
 
   // Return combined state and handlers from all hooks
@@ -171,7 +174,8 @@ const useSearch = () => {
     fetchData,
     clearSearchHistoryItem,
     clearAllSearchHistory,
-    saveSearchHistory
+    saveSearchHistory,
+    navigate
   };
 };
 

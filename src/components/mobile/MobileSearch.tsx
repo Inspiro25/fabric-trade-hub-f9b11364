@@ -117,6 +117,10 @@ const MobileSearch = () => {
           description: `This is a product matching "${debouncedQuery}"`,
           category: i % 2 === 0 ? "clothing" : "accessories",
           rating: 3.5 + (i % 5) * 0.3,
+          colors: ['red', 'blue', 'black'],
+          sizes: ['S', 'M', 'L'],
+          stock: 100,
+          tags: ['search', 'result'],
           brand: featuredBrands[i % featuredBrands.length].name
         }));
         setSearchResults(mockResults);

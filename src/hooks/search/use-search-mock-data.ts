@@ -1,108 +1,124 @@
 
-// Update the shop mock data to use coverImage instead of cover_image
 import { useState, useEffect } from 'react';
 import { SearchPageProduct, Category, Shop } from './types';
 
-export const useSearchMockData = () => {
+export function useSearchMockData(query: string, categoryId: string | null, page: number, itemsPerPage: number) {
+  const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<SearchPageProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const simulateFetch = async () => {
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
+  const [error, setError] = useState<string>('');
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [recommendations, setRecommendations] = useState<SearchPageProduct[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<SearchPageProduct[]>([]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Generate mock products
-      const mockProducts = generateMockProducts(50);
+      // Mock products data
+      const mockProducts: SearchPageProduct[] = Array.from({ length: 24 }, (_, i) => ({
+        id: `product-${i + 1}`,
+        name: `${query || 'Product'} ${i + 1}`,
+        description: `Description for ${query || 'Product'} ${i + 1}`,
+        price: 19.99 + i * 10,
+        salePrice: i % 3 === 0 ? 14.99 + i * 8 : null,
+        images: [`https://placehold.co/600x400?text=Product+${i + 1}`],
+        category: categoryId || `category-${Math.floor(i / 4) + 1}`,
+        colors: ['red', 'blue', 'black'],
+        sizes: ['S', 'M', 'L'],
+        isNew: i < 4,
+        isTrending: i >= 4 && i < 8,
+        rating: 3.5 + (i % 3) * 0.5,
+        reviewCount: 10 + i * 5,
+        stock: 50 - i,
+        tags: ['trending', 'new arrival'],
+        shopId: `shop-${Math.floor(i / 4) + 1}`,
+        brand: `Brand ${Math.floor(i / 3) + 1}`,
+        created_at: new Date().toISOString(),
+      }));
       
-      // Generate mock categories
-      const mockCategories = generateMockCategories();
+      // Filter by category if provided
+      let filteredProducts = [...mockProducts];
+      if (categoryId) {
+        filteredProducts = mockProducts.filter(p => p.category === categoryId);
+      }
       
-      // Generate mock shops
-      const mockShops = generateMockShops();
+      // Filter by search query if provided
+      if (query) {
+        const searchTerm = query.toLowerCase();
+        filteredProducts = filteredProducts.filter(
+          p => p.name.toLowerCase().includes(searchTerm) || 
+               (p.description && p.description.toLowerCase().includes(searchTerm)) ||
+               (p.brand && p.brand.toLowerCase().includes(searchTerm))
+        );
+      }
       
-      setProducts(mockProducts);
+      // Pagination
+      const start = (page - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const paginatedProducts = filteredProducts.slice(start, end);
+      
+      // Mock categories
+      const mockCategories: Category[] = Array.from({ length: 8 }, (_, i) => ({
+        id: `category-${i + 1}`,
+        name: `Category ${i + 1}`,
+        productCount: Math.floor(Math.random() * 100) + 10,
+      }));
+      
+      // Mock shops
+      const mockShops: Shop[] = Array.from({ length: 5 }, (_, i) => ({
+        id: `shop-${i + 1}`,
+        name: `Shop ${i + 1}`,
+        productCount: Math.floor(Math.random() * 100) + 5,
+        rating: 3.5 + Math.random() * 1.5,
+      }));
+      
+      // Mock recommendations
+      const mockRecommendations = mockProducts.slice(0, 8).map(p => ({...p, id: `rec-${p.id}`}));
+      
+      // Mock recently viewed
+      const mockRecentlyViewed = mockProducts.slice(8, 12).map(p => ({...p, id: `recent-${p.id}`}));
+      
+      setProducts(paginatedProducts);
       setCategories(mockCategories);
       setShops(mockShops);
+      setTotalProducts(filteredProducts.length);
+      setRecommendations(mockRecommendations);
+      setRecentlyViewed(mockRecentlyViewed);
+      setInitialLoad(false);
+    } catch (err) {
+      console.error("Error fetching search data:", err);
+      setError('Failed to load search results. Please try again.');
+    } finally {
       setLoading(false);
-    };
-    
-    simulateFetch();
-  }, []);
-  
-  return { products, categories, shops, loading };
-};
-
-// Helper function to generate mock products
-const generateMockProducts = (count: number): SearchPageProduct[] => {
-  return Array.from({ length: count }).map((_, index) => ({
-    id: `product-${index + 1}`,
-    name: `Product ${index + 1}`,
-    price: Math.floor(Math.random() * 100) + 10,
-    sale_price: Math.random() > 0.7 ? Math.floor(Math.random() * 50) + 5 : undefined,
-    images: [`https://source.unsplash.com/random/300x300/?product=${index}`],
-    category_id: `category-${Math.floor(Math.random() * 5) + 1}`,
-    shop_id: `shop-${Math.floor(Math.random() * 3) + 1}`,
-    rating: Math.random() * 5,
-    review_count: Math.floor(Math.random() * 100),
-    is_new: Math.random() > 0.8,
-    is_trending: Math.random() > 0.9,
-    description: `This is a description for Product ${index + 1}.`,
-    created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-  }));
-};
-
-// Helper function to generate mock categories
-const generateMockCategories = (): Category[] => {
-  const categoryNames = ['Electronics', 'Clothing', 'Home & Kitchen', 'Books', 'Toys'];
-  
-  return categoryNames.map((name, index) => ({
-    id: `category-${index + 1}`,
-    name,
-    description: `Category for ${name}`,
-    image: `https://source.unsplash.com/random/300x300/?${name.toLowerCase()}`,
-    productCount: Math.floor(Math.random() * 100) + 20
-  }));
-};
-
-// Helper function to generate mock shops
-const generateMockShops = (): Shop[] => {
-  const shops = [
-    {
-      id: 'shop-1',
-      name: 'TechWorld',
-      logo: 'https://source.unsplash.com/random/100x100/?tech',
-      coverImage: 'https://source.unsplash.com/random/1200x400/?technology',
-      description: 'Your one-stop shop for all tech needs.',
-      rating: 4.7,
-      followers: 1250,
-      isVerified: true,
-      productCount: 120
-    },
-    {
-      id: 'shop-2',
-      name: 'Fashion Hub',
-      logo: 'https://source.unsplash.com/random/100x100/?fashion',
-      coverImage: 'https://source.unsplash.com/random/1200x400/?fashion',
-      description: 'Latest fashion trends and styles.',
-      rating: 4.2,
-      followers: 950,
-      isVerified: true,
-      productCount: 78
-    },
-    {
-      id: 'shop-3',
-      name: 'Home Essentials',
-      logo: 'https://source.unsplash.com/random/100x100/?home',
-      coverImage: 'https://source.unsplash.com/random/1200x400/?interior',
-      description: 'Everything you need for your home.',
-      rating: 4.5,
-      followers: 820,
-      isVerified: false,
-      productCount: 95
     }
-  ];
+  };
   
-  return shops;
-};
+  const handleRetry = () => {
+    fetchData();
+  };
+  
+  useEffect(() => {
+    fetchData();
+  }, [query, categoryId, page, itemsPerPage]);
+  
+  return {
+    loading,
+    products,
+    categories,
+    shops,
+    error,
+    totalProducts,
+    initialLoad,
+    recommendations,
+    recentlyViewed,
+    fetchData,
+    handleRetry
+  };
+}
