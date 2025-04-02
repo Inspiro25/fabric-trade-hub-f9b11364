@@ -257,7 +257,9 @@ export type Database = {
           customer_name: string | null
           customer_phone: string | null
           id: string
+          items: Json[] | null
           notes: string | null
+          order_number: string | null
           payment_method: string | null
           payment_status: string | null
           shipping_address: string | null
@@ -266,6 +268,7 @@ export type Database = {
           shop_id: string | null
           status: string
           total: number
+          total_amount: number | null
           tracking_number: string | null
           updated_at: string
           user_id: string | null
@@ -276,7 +279,9 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           id?: string
+          items?: Json[] | null
           notes?: string | null
+          order_number?: string | null
           payment_method?: string | null
           payment_status?: string | null
           shipping_address?: string | null
@@ -285,6 +290,7 @@ export type Database = {
           shop_id?: string | null
           status: string
           total: number
+          total_amount?: number | null
           tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
@@ -295,7 +301,9 @@ export type Database = {
           customer_name?: string | null
           customer_phone?: string | null
           id?: string
+          items?: Json[] | null
           notes?: string | null
+          order_number?: string | null
           payment_method?: string | null
           payment_status?: string | null
           shipping_address?: string | null
@@ -304,6 +312,7 @@ export type Database = {
           shop_id?: string | null
           status?: string
           total?: number
+          total_amount?: number | null
           tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
@@ -340,6 +349,7 @@ export type Database = {
           email: string
           id: string
           mobile_number: string
+          new_column_name: string | null
           status: string
         }
         Insert: {
@@ -349,6 +359,7 @@ export type Database = {
           email: string
           id?: string
           mobile_number: string
+          new_column_name?: string | null
           status?: string
         }
         Update: {
@@ -358,6 +369,7 @@ export type Database = {
           email?: string
           id?: string
           mobile_number?: string
+          new_column_name?: string | null
           status?: string
         }
         Relationships: []
@@ -571,6 +583,7 @@ export type Database = {
         Row: {
           category_id: string | null
           colors: string[] | null
+          created_at: string
           description: string | null
           id: string
           images: string[] | null
@@ -589,6 +602,7 @@ export type Database = {
         Insert: {
           category_id?: string | null
           colors?: string[] | null
+          created_at?: string
           description?: string | null
           id?: string
           images?: string[] | null
@@ -607,6 +621,7 @@ export type Database = {
         Update: {
           category_id?: string | null
           colors?: string[] | null
+          created_at?: string
           description?: string | null
           id?: string
           images?: string[] | null
