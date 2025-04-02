@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { LogIn, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthDialogProps {
   open: boolean;
@@ -23,12 +23,16 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = React.useState(false);
+  const auth = useAuth();
 
   const handleLogin = async () => {
     try {
       setIsLoading(true);
-      // Call the login function passed from the parent
-      onLogin();
+      if (auth.loginWithGoogleProvider) {
+        await auth.loginWithGoogleProvider();
+      } else {
+        onLogin();
+      }
     } catch (error: any) {
       console.error("Login failed:", error);
     } finally {

@@ -1,80 +1,101 @@
 
-import { Product } from '@/lib/types/product';
-import { fetchProducts, fetchRelatedProducts, fetchNewArrivals, fetchTrendingProducts, fetchProductsByCategory, fetchProductsByShop } from '@/hooks/use-product-fetching';
+import { supabase } from '@/lib/supabase';
+import { Product, normalizeProduct } from '../types/product';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
-// Function to get related products
-export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
-  return fetchRelatedProducts(currentProductId, category);
+// Updated filter for product search - now uses proper types
+export const useProductSearch = (searchQuery: string, filters: any = {}) => {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useInfiniteQuery({
+    queryKey: ['product-search', searchQuery, filters],
+    queryFn: async ({ pageParam = 0 }) => {
+      try {
+        let query = supabase.from('products').select('*');
+        
+        if (searchQuery) {
+          query = query.ilike('name', `%${searchQuery}%`);
+        }
+        
+        if (filters.minPrice) {
+          query = query.gte('price', filters.minPrice);
+        }
+        
+        if (filters.maxPrice) {
+          query = query.lte('price', filters.maxPrice);
+        }
+        
+        if (filters.category) {
+          query = query.eq('category_id', filters.category);
+        }
+        
+        const { data, error } = await query
+          .range(pageParam * 10, (pageParam * 10) + 9)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data?.map(normalizeProduct) || [];
+      } catch (error) {
+        console.error('Error searching products:', error);
+        return [];
+      }
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === 10 ? allPages.length : undefined;
+    }
+  });
+  
+  const products = data?.pages.flat() || [];
+  
+  return {
+    products,
+    loadMore: fetchNextPage,
+    hasMore: hasNextPage,
+    isLoading,
+    isFetchingMore: isFetchingNextPage
+  };
 };
 
-// Utility functions to get filtered products
-export const getNewArrivals = async (): Promise<Product[]> => {
-  return fetchNewArrivals();
-};
-
-export const getTrendingProducts = async (): Promise<Product[]> => {
-  return fetchTrendingProducts();
-};
-
-export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  const result = await fetchProductsByCategory(category);
-  return result.products;
-};
-
-export const getProductsByTags = async (tag: string): Promise<Product[]> => {
+export const fetchProducts = async ({ query = '', category = '' } = {}) => {
   try {
-    const { products } = await fetchProducts({
-      tags: [tag],
-      limit: 8
-    });
+    let queryBuilder = supabase.from('products').select('*');
     
-    return products;
+    if (query) {
+      queryBuilder = queryBuilder.ilike('name', `%${query}%`);
+    }
+    
+    if (category) {
+      queryBuilder = queryBuilder.eq('category_id', category);
+    }
+    
+    const { data, error } = await queryBuilder.order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data?.map(normalizeProduct) || [];
   } catch (error) {
-    console.error(`Error fetching products with tag ${tag}:`, error);
+    console.error('Error fetching products:', error);
     return [];
   }
 };
 
-// Add additional filter functions as needed
-export const getTopRatedProducts = async (): Promise<Product[]> => {
+export const fetchRelatedProducts = async (productId: string, categoryId: string) => {
   try {
-    const { products } = await fetchProducts({
-      minRating: 4,
-      sortBy: 'rating',
-      limit: 8
-    });
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('category_id', categoryId)
+      .neq('id', productId)
+      .limit(8);
     
-    return products;
+    if (error) throw error;
+    return data?.map(normalizeProduct) || [];
   } catch (error) {
-    console.error('Error fetching top rated products:', error);
-    return [];
-  }
-};
-
-export const getDiscountedProducts = async (): Promise<Product[]> => {
-  try {
-    const { products } = await fetchProducts({
-      hasDiscount: true,
-      limit: 8
-    });
-    
-    return products;
-  } catch (error) {
-    console.error('Error fetching discounted products:', error);
-    return [];
-  }
-};
-
-export const getBestSellingProducts = async (): Promise<Product[]> => {
-  try {
-    const { products } = await fetchProducts({
-      sortBy: 'popularity',
-      limit: 8
-    });
-    
-    return products;
-  } catch (error) {
-    console.error('Error fetching best selling products:', error);
+    console.error('Error fetching related products:', error);
     return [];
   }
 };

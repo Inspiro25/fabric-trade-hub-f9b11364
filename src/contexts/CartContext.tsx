@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/types/product';
 import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';

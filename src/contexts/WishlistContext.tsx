@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
 import AuthDialog from '@/components/ui/auth-dialog';
 import { firebaseUIDToUUID } from '@/utils/format';
+import { Product } from '@/lib/types/product';
 
 interface WishlistContextType {
   wishlist: string[];
@@ -22,8 +22,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { currentUser } = useAuth();
-  const navigate = useNavigate(); // Initialize useNavigate hook
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchWishlist = async () => {
       setIsLoading(true);
@@ -100,7 +100,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setShowAuthDialog(true);
       return;
     }
-
+    
     try {
       const productId = typeof product === 'string' ? product : product.id;
       
@@ -109,28 +109,32 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return;
       }
       
-      // Update local state first for better UX
-      setWishlist(prev => [...prev, productId]);
+      setWishlist((prev) => [...prev, productId]);
       
-      const { error } = await supabase.from('user_wishlists').insert({
-        user_id: currentUser.uid,
-        product_id: productId
-      });
+      const { error } = await supabase
+        .from('user_wishlists')
+        .insert({
+          user_id: currentUser.uid,
+          product_id: productId
+        });
       
       if (error) {
         console.error('Error adding to wishlist:', error);
-        // Revert local state if server update fails
-        setWishlist(prev => prev.filter(id => id !== productId));
+        setWishlist((prev) => prev.filter((id) => id !== productId));
         toast.error('Failed to add to wishlist');
         return;
       }
       
       toast.success('Added to wishlist');
-      
     } catch (error) {
       console.error('Error adding to wishlist:', error);
-      // Revert local state on error
-      setWishlist(prev => prev.filter(id => id !== productId));
+      setWishlist((prev) => prev.filter((id) => {
+        if (typeof product === 'string') {
+          return id !== product;
+        } else {
+          return id !== product.id;
+        }
+      }));
       toast.error('Failed to add to wishlist');
     }
   }, [wishlist, currentUser]);
@@ -142,7 +146,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     try {
-      // Update local state first for better UX
       setWishlist(prev => prev.filter(id => id !== productId));
       
       const { error } = await supabase
@@ -153,7 +156,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       if (error) {
         console.error('Error removing from wishlist:', error);
-        // Revert local state if server update fails
         setWishlist(prev => [...prev, productId]);
         toast.error('Failed to remove from wishlist');
         return;
@@ -162,7 +164,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       toast.success('Removed from wishlist');
     } catch (error) {
       console.error('Error removing from wishlist:', error);
-      // Revert local state on error
       setWishlist(prev => [...prev, productId]);
       toast.error('Failed to remove from wishlist');
     }
@@ -173,12 +174,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [wishlist]);
 
   return (
-    <WishlistContext.Provider value={{ 
-      wishlist, 
-      addToWishlist, 
-      removeFromWishlist, 
-      isInWishlist, 
-      isLoading 
+    <WishlistContext.Provider value={{
+      wishlist,
+      addToWishlist,
+      removeFromWishlist,
+      isInWishlist,
+      isLoading
     }}>
       {children}
       {showAuthDialog && (

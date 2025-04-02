@@ -1,195 +1,226 @@
-import { useState, useEffect } from 'react';
-import { User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { UserProfile } from '@/types/auth';
-import { 
-  fetchUserProfile, 
-  updateUserProfile,
-  addAddress,
-  updateAddress,
-  removeAddress,
-  setDefaultAddress, 
-  loginWithEmailPassword, 
-  registerWithEmailPassword, 
-  loginWithGoogleAuth, 
-  loginWithFacebookAuth, 
-  logout, 
-  forgotPassword 
-} from '@/services/authService';
-import { toast } from 'sonner';
 
-export const useAuthProvider = () => {
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { User, UserProfile } from '@/contexts/AuthContext';
+
+export function useAuthProvider() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Setting up auth state change listener");
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      console.log("Auth state changed:", user ? "Logged in" : "Logged out");
-      setCurrentUser(user);
-      
-      if (user) {
-        try {
-          const profile = await fetchUserProfile(user.uid, user);
-          setUserProfile(profile);
-          console.log("User profile fetched:", profile);
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          toast.error("Failed to load user profile");
-        }
-      } else {
-        setUserProfile(null);
-      }
-      
-      setLoading(false);
-    });
+    // Initial session check
+    checkAuthStatus();
 
-    return unsubscribe;
+    // Set up auth state listener
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setLoading(true);
+        if (session?.user) {
+          // Convert Supabase user to our User type
+          const user: User = {
+            uid: session.user.id,
+            email: session.user.email,
+            displayName: session.user.user_metadata?.name || null,
+            photoURL: session.user.user_metadata?.avatar_url || null,
+            phoneNumber: session.user.phone || null,
+          };
+          
+          setCurrentUser(user);
+          await fetchUserProfile(user.uid);
+        } else {
+          setCurrentUser(null);
+          setUserProfile(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setLoading(true);
+  const checkAuthStatus = async () => {
     try {
-      console.log("Attempting email login");
-      const user = await loginWithEmailPassword(email, password);
-      toast.success("Login successful!");
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Fetch user profile after login
-      if (user) {
-        const profile = await fetchUserProfile(user.uid, user);
-        setUserProfile(profile);
+      if (session?.user) {
+        // Convert Supabase user to our User type
+        const user: User = {
+          uid: session.user.id,
+          email: session.user.email,
+          displayName: session.user.user_metadata?.name || null,
+          photoURL: session.user.user_metadata?.avatar_url || null,
+          phoneNumber: session.user.phone || null,
+        };
+        
+        setCurrentUser(user);
+        await fetchUserProfile(user.uid);
       }
-      return user;
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error("Login failed: " + (error instanceof Error ? error.message : "Unknown error"));
-      throw error;
+      console.error('Error checking auth status:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return;
+      }
+
+      if (data) {
+        setUserProfile({
+          id: data.id,
+          userId: data.user_id,
+          displayName: data.display_name,
+          bio: data.bio,
+          avatarUrl: data.avatar_url,
+          location: data.location,
+          website: data.website,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error signing in:', error);
+      throw error;
     }
   };
 
   const register = async (email: string, password: string) => {
-    setLoading(true);
     try {
-      console.log("Attempting registration");
-      const { profile } = await registerWithEmailPassword(email, password);
-      setUserProfile(profile);
-      toast.success("Registration successful!");
-      return profile;
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error("Registration error:", error);
-      toast.error("Registration failed: " + (error instanceof Error ? error.message : "Unknown error"));
+      console.error('Error signing up:', error);
       throw error;
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      throw error;
+    }
+  };
+
+  const updatePassword = async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating password:', error);
+      throw error;
+    }
+  };
+
+  const updateEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ email });
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating email:', error);
+      throw error;
+    }
+  };
+
+  const updateUserProfile = async (data: Partial<UserProfile>) => {
+    if (!currentUser) throw new Error('No authenticated user');
+    
+    try {
+      // Update user metadata in supabase auth
+      if (data.displayName) {
+        await supabase.auth.updateUser({
+          data: { name: data.displayName }
+        });
+      }
+
+      // Update profile in database
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: currentUser.uid,
+          display_name: data.displayName,
+          bio: data.bio,
+          avatar_url: data.avatarUrl,
+          location: data.location,
+          website: data.website,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+      
+      // Update local state
+      if (userProfile) {
+        setUserProfile({
+          ...userProfile,
+          ...data,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
     }
   };
 
   const loginWithGoogleProvider = async () => {
-    setLoading(true);
     try {
-      console.log("Attempting Google login");
-      const { profile } = await loginWithGoogleAuth();
-      setUserProfile(profile);
-      return profile;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error("Google login error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loginWithFacebookProvider = async () => {
-    setLoading(true);
-    try {
-      console.log("Attempting Facebook login");
-      const { profile } = await loginWithFacebookAuth();
-      setUserProfile(profile);
-      return profile;
-    } catch (error) {
-      console.error("Facebook login error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setUserProfile(null);
-      toast.success("Logged out successfully");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error("Logout failed: " + (error instanceof Error ? error.message : "Unknown error"));
+      console.error('Error signing in with Google:', error);
       throw error;
     }
   };
 
-  const handleForgotPassword = async (email: string) => {
-    try {
-      await forgotPassword(email);
-    } catch (error) {
-      console.error("Forgot password error:", error);
-      throw error;
-    }
+  const verifyEmail = async () => {
+    // This is a placeholder for verifyEmail functionality
+    console.log('Email verification functionality not implemented');
   };
 
-  const handleUpdateUserProfile = async (data: Partial<UserProfile>) => {
-    try {
-      const updatedProfile = await updateUserProfile(currentUser, userProfile, data);
-      setUserProfile(updatedProfile);
-      return updatedProfile;
-    } catch (error) {
-      console.error("Update profile error:", error);
-      throw error;
-    }
-  };
-
-  const handleAddAddress = async (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => {
-    const addressId = await addAddress(currentUser, address);
-    
-    // Refresh user profile to get updated addresses
-    if (currentUser) {
-      const profile = await fetchUserProfile(currentUser.uid, currentUser);
-      setUserProfile(profile);
-    }
-    
-    return addressId;
-  };
-
-  const handleUpdateAddress = async (address: UserProfile['savedAddresses'][0]) => {
-    await updateAddress(currentUser, address);
-    
-    // Refresh user profile to get updated addresses
-    if (currentUser) {
-      const profile = await fetchUserProfile(currentUser.uid, currentUser);
-      setUserProfile(profile);
-    }
-  };
-
-  const handleRemoveAddress = async (addressId: string) => {
-    await removeAddress(currentUser, addressId);
-    
-    // Refresh user profile to get updated addresses
-    if (currentUser) {
-      const profile = await fetchUserProfile(currentUser.uid, currentUser);
-      setUserProfile(profile);
-    }
-  };
-
-  const handleSetDefaultAddress = async (addressId: string) => {
-    await setDefaultAddress(currentUser, addressId);
-    
-    // Refresh user profile to get updated addresses
-    if (currentUser) {
-      const profile = await fetchUserProfile(currentUser.uid, currentUser);
-      setUserProfile(profile);
-    }
-  };
+  // For compatibility with legacy code
+  const signIn = login;
+  const signUp = register;
+  const signOut = logout;
+  const user = currentUser;
 
   return {
     currentUser,
@@ -197,14 +228,17 @@ export const useAuthProvider = () => {
     loading,
     login,
     register,
+    logout,
+    resetPassword,
+    updatePassword,
+    updateEmail,
+    updateUserProfile,
+    verifyEmail,
     loginWithGoogleProvider,
-    loginWithFacebookProvider,
-    logout: handleLogout,
-    forgotPassword: handleForgotPassword,
-    updateUserProfile: handleUpdateUserProfile,
-    addAddress: handleAddAddress,
-    updateAddress: handleUpdateAddress,
-    removeAddress: handleRemoveAddress,
-    setDefaultAddress: handleSetDefaultAddress,
+    // Legacy properties
+    user,
+    signIn,
+    signUp,
+    signOut,
   };
-};
+}
