@@ -48,12 +48,11 @@ import {
 } from "@/components/ui/sheet"
 import { getPersonalizedRecommendations, getSimilarProducts } from '@/services/recommendationService';
 import { toast } from '@/hooks/use-toast';
-import { Product } from '@/lib/types/product';
+import { Product, normalizeProductData } from '@/lib/products/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Textarea } from "@/components/ui/textarea";
 import { createReview } from '@/lib/supabase/reviews';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { normalizeProductData } from '@/lib/products/types';
 
 const MinimalReviewForm = ({ productId }: { productId: string }) => {
   const [rating, setRating] = React.useState(0);
@@ -226,7 +225,8 @@ const ProductDetail = () => {
             try {
               const recommendations = await getPersonalizedRecommendations(userId);
               if (recommendations) {
-                setRecommendedProducts(recommendations);
+                const normalized = recommendations.map(p => normalizeProductData(p));
+                setRecommendedProducts(normalized);
               }
             } catch (error) {
               console.error('Error loading recommendations:', error);
@@ -243,7 +243,8 @@ const ProductDetail = () => {
         try {
           const similar = await getSimilarProducts(id);
           if (similar) {
-            setSimilarProducts(similar);
+            const normalized = similar.map(p => normalizeProductData(p));
+            setSimilarProducts(normalized);
           }
         } catch (error) {
           console.error('Error loading similar products:', error);
