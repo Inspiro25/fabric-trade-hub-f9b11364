@@ -1,7 +1,5 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { mockProducts } from '@/lib/products';
 import { Product } from '@/lib/products/types';
 import { firebaseUIDToUUID } from '@/utils/format';
 
@@ -66,6 +64,7 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
       } catch (err) {
         console.error('Error fetching products:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch products');
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -104,6 +103,7 @@ export const useNewArrivals = (limit = 10) => {
       } catch (err) {
         console.error('Error fetching new arrivals:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch new arrivals');
+        setProducts([]);
       } finally {
         setLoading(false);
       }

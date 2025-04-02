@@ -2,11 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart, Share2 } from 'lucide-react';
 import { Product } from '@/types/product';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { formatCurrency } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Export the type so it can be used in other files

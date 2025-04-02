@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface CartToCheckoutProps {
   total: number;
@@ -45,7 +45,7 @@ const CartToCheckout = ({ total, itemCount, className = '' }: CartToCheckoutProp
             <p className={cn(
               "text-sm font-bold leading-tight",
               isDarkMode ? "text-orange-400" : "text-kutuku-primary"
-            )}>₹{total.toFixed(2)}</p>
+            )}>{formatCurrency(total)}</p>
           </div>
         </div>
         

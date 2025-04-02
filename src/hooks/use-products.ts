@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 import { Product } from '@/lib/products/types';
 import { supabase } from '@/lib/supabase';
-import { mockProducts } from '@/lib/products/index';
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchProducts = async () => {
@@ -44,10 +44,11 @@ export const useProducts = () => {
         }));
         
         setProducts(transformedProducts);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        // Use mock data as fallback
-        setProducts(mockProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch products');
+        setProducts([]);
       } finally {
         setIsLoading(false);
       }
@@ -56,5 +57,5 @@ export const useProducts = () => {
     fetchProducts();
   }, []);
   
-  return { products, isLoading };
+  return { products, isLoading, error };
 };

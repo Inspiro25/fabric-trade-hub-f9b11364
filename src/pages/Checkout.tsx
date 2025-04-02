@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { RazorpayResponse } from '@/lib/razorpay';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -282,7 +283,7 @@ const Checkout = () => {
                         className="w-full h-10 text-sm bg-kutuku-primary hover:bg-kutuku-secondary rounded-full"
                         onClick={initiateRazorpayPayment}
                       >
-                        Pay ₹{cart.total.toFixed(2)}
+                        Pay {formatCurrency(cart.total)}
                       </Button>
                     </div>
                   </div>
@@ -296,7 +297,7 @@ const Checkout = () => {
                   {cart.items.map(item => (
                     <div key={item.id} className="flex justify-between text-sm mb-2">
                       <span className="text-gray-700 truncate flex-1">{item.name} (x{item.quantity})</span>
-                      <span className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="font-medium">{formatCurrency(item.price * item.quantity)}</span>
                     </div>
                   ))}
                 </Card>
@@ -304,24 +305,24 @@ const Checkout = () => {
                 <div className="space-y-2 text-sm bg-white p-3 rounded-xl shadow-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>₹{cart.subtotal.toFixed(2)}</span>
+                    <span>{formatCurrency(cart.subtotal)}</span>
                   </div>
                   
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span>₹{cart.shipping.toFixed(2)}</span>
+                    <span>{formatCurrency(cart.shipping)}</span>
                   </div>
                   
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
-                    <span>₹{cart.tax.toFixed(2)}</span>
+                    <span>{formatCurrency(cart.tax)}</span>
                   </div>
                   
                   <Separator className="my-2 bg-orange-100" />
                   
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span className="text-kutuku-primary">₹{cart.total.toFixed(2)}</span>
+                    <span className="text-kutuku-primary">{formatCurrency(cart.total)}</span>
                   </div>
                   
                   {!paymentStep && (

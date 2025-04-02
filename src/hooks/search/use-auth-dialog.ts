@@ -1,33 +1,33 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 
-export default function useAuthDialog() {
+export const useAuthDialog = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { currentUser } = useAuth();
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [shareableLink, setShareableLink] = useState('');
 
-  const openAuthDialog = () => {
-    if (!currentUser) {
-      setIsDialogOpen(true);
-      return true;
-    }
-    return false;
+  const openLoginDialog = () => setIsDialogOpen(true);
+  const closeLoginDialog = () => setIsDialogOpen(false);
+  
+  const openShareDialog = (link?: string) => {
+    if (link) setShareableLink(link);
+    setIsShareDialogOpen(true);
   };
-
-  const closeAuthDialog = () => {
-    setIsDialogOpen(false);
-  };
-
-  const handleLogin = () => {
-    window.location.href = '/auth';
-  };
+  
+  const closeShareDialog = () => setIsShareDialogOpen(false);
 
   return {
     isDialogOpen,
     setIsDialogOpen,
-    openAuthDialog,
-    closeAuthDialog,
-    handleLogin,
-    isAuthenticated: !!currentUser
+    openLoginDialog,
+    closeLoginDialog,
+    isShareDialogOpen,
+    setIsShareDialogOpen,
+    openShareDialog,
+    closeShareDialog,
+    shareableLink,
+    setShareableLink
   };
-}
+};
+
+export default useAuthDialog;

@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 interface ProductCardProps {
   id: string;
@@ -87,10 +87,10 @@ const ProductCard = ({
                     "text-base font-bold",
                     isDarkMode ? "text-white" : "text-gray-900"  
                   )}>
-                    ${typeof salePrice === 'number' ? salePrice.toFixed(2) : '0.00'}
+                    {typeof salePrice === 'number' ? formatCurrency(salePrice) : formatCurrency(0)}
                   </p>
                   <p className="text-xs line-through text-gray-400">
-                    ${typeof price === 'number' ? price.toFixed(2) : '0.00'}
+                    {typeof price === 'number' ? formatCurrency(price) : formatCurrency(0)}
                   </p>
                 </div>
               ) : (
@@ -98,7 +98,7 @@ const ProductCard = ({
                   "text-base font-bold",
                   isDarkMode ? "text-white" : "text-gray-900"  
                 )}>
-                  ${typeof price === 'number' ? price.toFixed(2) : '0.00'}
+                  {typeof price === 'number' ? formatCurrency(price) : formatCurrency(0)}
                 </p>
               )}
             </div>

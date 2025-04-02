@@ -1,11 +1,10 @@
 
-// Update to use review_count and category_id
+// Update to use formatCurrency
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart, Share2, Truck, Package } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
+import { ShoppingCart, Heart, Share2 } from 'lucide-react';
 import { ProductCardBaseProps } from '@/components/search/product-card/types';
 
 export function ListProductCard({
@@ -104,7 +103,7 @@ export function ListProductCard({
           {rating !== undefined && review_count !== undefined && (
             <div className="flex items-center text-sm text-amber-500">
               <span className="mr-1">★</span>
-              <span>{rating.toFixed(1)}</span>
+              <span>{typeof rating === 'number' ? rating.toFixed(1) : '0.0'}</span>
               <span className="ml-1 text-muted-foreground">({review_count})</span>
             </div>
           )}
@@ -120,11 +119,11 @@ export function ListProductCard({
               "text-lg font-semibold",
               hasDiscount ? "text-red-600" : "text-card-foreground"
             )}>
-              {formatCurrency(discountedPrice)}
+              {typeof discountedPrice === 'number' ? formatCurrency(discountedPrice) : formatCurrency(0)}
             </span>
             {hasDiscount && (
               <span className="text-xs text-muted-foreground line-through">
-                {formatCurrency(price)}
+                {typeof price === 'number' ? formatCurrency(price) : formatCurrency(0)}
               </span>
             )}
           </div>

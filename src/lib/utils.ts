@@ -1,4 +1,3 @@
-
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -8,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatCurrency = (
   value: number,
-  locale = 'en-IN', // Change locale to Indian
-  currency = 'INR' // Change currency to INR
+  locale = 'en-IN', // Indian locale
+  currency = 'INR' // Indian Rupee
 ): string => {
   // Handle undefined, null or NaN
   if (value === undefined || value === null || isNaN(value)) {
