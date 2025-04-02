@@ -96,3 +96,30 @@ export interface CartContextType {
   isLoading: boolean;
   migrateCartToUser: () => Promise<void>;
 }
+
+// Add the missing productStore with sample products for fallback
+export const productStore = {
+  products: Array.from({ length: 12 }, (_, i) => ({
+    id: `product-${i + 1}`,
+    name: `Product ${i + 1}`,
+    description: `This is a sample product ${i + 1}`,
+    price: 19.99 + i * 10,
+    salePrice: i % 3 === 0 ? 14.99 + i * 8 : null,
+    images: [`https://placehold.co/600x400?text=Product+${i + 1}`],
+    category: 'category-' + Math.floor(i / 2 + 1),
+    colors: ['red', 'blue', 'black'],
+    sizes: ['S', 'M', 'L'],
+    isNew: i < 4,
+    isTrending: i >= 4 && i < 8,
+    rating: 3.5 + (i % 3) * 0.5,
+    reviewCount: 10 + i * 5,
+    stock: 50 - i,
+    tags: ['trending', 'new arrival'],
+    shopId: `shop-${Math.floor(i / 4) + 1}`,
+    brand: `Brand ${Math.floor(i / 3) + 1}`,
+    shopName: `Shop ${Math.floor(i / 4) + 1}`,
+    categoryId: `category-${Math.floor(i / 2) + 1}`,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }))
+};

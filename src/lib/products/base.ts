@@ -1,109 +1,85 @@
 
-import { Product } from '@/lib/types/product';
-import { 
-  fetchProducts as supabaseFetchProducts,
-  getProductById as supabaseGetProductById,
-  createProduct as supabaseCreateProduct,
-  updateProduct as supabaseUpdateProduct,
-  deleteProduct as supabaseDeleteProduct
-} from '@/lib/supabase/products';
-import { productStore } from '@/lib/types/product';
+import { supabase } from '@/lib/supabase';
+import { Product, normalizeProduct, productStore } from '@/lib/types/product';
 
-// Function to fetch all products
-export const fetchProducts = async (): Promise<Product[]> => {
+// Base function to fetch products with filters
+export const fetchProducts = async (
+  options: {
+    limit?: number;
+    page?: number;
+    category?: string;
+    search?: string;
+    sort?: string;
+    filters?: Record<string, any>;
+  } = {}
+): Promise<Product[]> => {
+  const { limit = 10, page = 1, category, search, sort, filters = {} } = options;
+  const offset = (page - 1) * limit;
+
   try {
-    const products = await supabaseFetchProducts();
-    if (products && products.length > 0) {
-      // Update the product store
-      productStore.updateProducts(products);
-      return products;
+    let query = supabase.from('products').select('*');
+
+    // Apply category filter
+    if (category) {
+      query = query.eq('category_id', category);
     }
-    return productStore.products; // Fallback to local cache
+
+    // Apply search
+    if (search) {
+      query = query.ilike('name', `%${search}%`);
+    }
+
+    // Apply additional filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        query = query.eq(key, value);
+      }
+    });
+
+    // Apply sorting
+    if (sort) {
+      const [field, order] = sort.split(':');
+      query = query.order(field, { ascending: order === 'asc' });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    // Apply pagination
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching products:', error);
+      return productStore.products.slice(0, limit);
+    }
+
+    return data?.map(normalizeProduct) || productStore.products.slice(0, limit);
   } catch (error) {
-    console.error('Error fetching products:', error);
-    return productStore.products; // Fallback to local cache
+    console.error('Error in fetchProducts:', error);
+    return productStore.products.slice(0, limit);
   }
 };
 
-// Initialize products from database
-(async () => {
+// Get a single product by ID
+export const getProduct = async (id: string): Promise<Product | null> => {
   try {
-    await fetchProducts();
-  } catch (error) {
-    console.error('Failed to initialize products from database:', error);
-  }
-})();
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-// Get product by ID
-export const getProductById = async (id: string): Promise<Product | undefined> => {
-  try {
-    const product = await supabaseGetProductById(id);
-    if (product) {
-      return product;
+    if (error) {
+      console.error('Error fetching product:', error);
+      const fallbackProduct = productStore.products.find(p => p.id === id);
+      return fallbackProduct || null;
     }
-    // Try to find in local cache if not in database
-    return productStore.products.find(product => product.id === id);
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    return productStore.products.find(product => product.id === id);
-  }
-};
 
-// Create a new product
-export const createProduct = async (productData: Omit<Product, 'id'>): Promise<string | null> => {
-  try {
-    const productId = await supabaseCreateProduct(productData);
-    
-    if (productId) {
-      const newProduct = {
-        id: productId,
-        ...productData,
-      };
-      
-      // Update local cache
-      productStore.addProduct(newProduct);
-      return productId;
-    }
-    
-    return null;
+    return normalizeProduct(data);
   } catch (error) {
-    console.error('Error creating product:', error);
-    return null;
-  }
-};
-
-// Update a product
-export const updateProduct = async (id: string, productData: Partial<Product>): Promise<boolean> => {
-  try {
-    const success = await supabaseUpdateProduct(id, productData);
-    
-    if (success) {
-      // Update local cache
-      productStore.updateProduct(id, productData);
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error updating product:', error);
-    return false;
-  }
-};
-
-// Delete a product
-export const deleteProduct = async (id: string): Promise<boolean> => {
-  try {
-    const success = await supabaseDeleteProduct(id);
-    
-    if (success) {
-      // Update local cache
-      productStore.removeProduct(id);
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    return false;
+    console.error('Error in getProduct:', error);
+    const fallbackProduct = productStore.products.find(p => p.id === id);
+    return fallbackProduct || null;
   }
 };

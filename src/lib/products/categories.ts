@@ -22,13 +22,13 @@ export const getAllCategories = async (): Promise<string[]> => {
     
     // Fallback to local data if no categories found
     const localCategories = new Set(productStore.products.map(product => product.category));
-    return Array.from(localCategories);
+    return Array.from(localCategories) as string[];
   } catch (error) {
     console.error('Error fetching categories:', error);
     
     // Fallback to local data on error
     const categories = new Set(productStore.products.map(product => product.category));
-    return Array.from(categories);
+    return Array.from(categories) as string[];
   }
 };
 
