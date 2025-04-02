@@ -3,8 +3,8 @@ import { SearchPageProduct } from '@/lib/products/types';
 
 export interface ProductCardBaseProps {
   product: SearchPageProduct;
-  isAddingToCart?: string | boolean;
-  isAddingToWishlist?: string | boolean;
+  isAddingToCart?: string;
+  isAddingToWishlist?: string;
   onAddToCart?: (product: SearchPageProduct) => void;
   onAddToWishlist?: (product: SearchPageProduct) => void;
   onShare?: (product: SearchPageProduct) => void;

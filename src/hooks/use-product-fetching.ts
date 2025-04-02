@@ -9,7 +9,6 @@ interface UseProductFetchingProps {
   page?: number;
 }
 
-// Define the base query with all necessary fields that exist in the database
 const baseProductQuery = `
   id,
   name,

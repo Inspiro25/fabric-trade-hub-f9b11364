@@ -24,8 +24,9 @@ export interface SearchPageProduct {
   description?: string;
   colors?: string[];
   sizes?: string[];
-  stock?: number;
+  stock: number; // Made required to match expected usage
   tags?: string[];
+  created_at?: string; // Added to match usage
 }
 
 export interface ProductCardProps {
@@ -60,6 +61,7 @@ export const SearchProductCard: React.FC<ProductCardProps> = ({
     review_count,
     is_new,
     is_trending,
+    stock
   } = product;
 
   const hasDiscount = sale_price !== undefined && sale_price !== null;

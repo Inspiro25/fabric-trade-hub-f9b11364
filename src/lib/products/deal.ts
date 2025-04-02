@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/types/product';
+import { Product, normalizeProductData } from '@/lib/products/types';
 import { productStore } from '@/lib/types/product';
 
 export interface DealProduct extends Product {
@@ -34,27 +34,13 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
     
     // Calculate discount percentage for each product and find the best deal
     const productsWithDiscounts = products.map(product => {
-      const price = product.price || 0;
-      const salePrice = product.sale_price || 0;
+      const normalizedProduct = normalizeProductData(product);
+      const price = normalizedProduct.price || 0;
+      const salePrice = normalizedProduct.salePrice || 0;
       const discountPercentage = price > 0 ? Math.round(((price - salePrice) / price) * 100) : 0;
       
       return {
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: price,
-        salePrice: salePrice,
-        images: product.images || [],
-        category: product.category_id || '',
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        isNew: product.is_new || false,
-        isTrending: product.is_trending || false,
-        rating: product.rating || 0,
-        reviewCount: product.review_count || 0,
-        stock: product.stock || 0,
-        tags: product.tags || [],
-        shopId: product.shop_id || '',
+        ...normalizedProduct,
         discountPercentage,
         endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
       };
@@ -83,9 +69,10 @@ const getFallbackDeal = (): DealProduct | null => {
   
   // Calculate discount and find best deal
   const productsWithDiscounts = productsWithDiscount.map(product => {
+    const normalizedProduct = normalizeProductData(product);
     const discountPercentage = Math.round(((product.price - (product.salePrice || 0)) / product.price) * 100);
     return {
-      ...product,
+      ...normalizedProduct,
       discountPercentage,
       endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
     };

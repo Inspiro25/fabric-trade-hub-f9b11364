@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from "sonner";
-import { Product } from '@/types/product';
+import { normalizeProductData, Product } from '@/lib/products/types';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface CompactProductCardProps {
@@ -44,7 +44,8 @@ const CompactProductCard: React.FC<CompactProductCardProps> = ({
     if (onAddToCart) {
       onAddToCart();
     } else {
-      addToCart(product, 1, product.colors[0] || '', product.sizes[0] || '');
+      const normalizedProduct = normalizeProductData(product);
+      addToCart(normalizedProduct, 1, product.colors[0] || '', product.sizes[0] || '');
       toast.success(`Added ${product.name} to cart`);
     }
   };

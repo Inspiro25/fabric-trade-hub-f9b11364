@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
-import { Product } from '@/lib/products/types';
+import { Product, normalizeProductData } from '@/lib/products/types';
 import { useCartStorage } from '@/hooks/use-cart-storage';
 import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
@@ -79,7 +78,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentUser, isInitialized, isLoading, hasPendingMigration, migrateGuestCartToUser]);
 
   const addToCart = useCallback((product: Product, quantity: number, color: string, size: string) => {
-    addToCartOp(product, quantity, color, size);
+    const normalizedProduct = normalizeProductData(product);
+    addToCartOp(normalizedProduct, quantity, color, size);
     
     if (!currentUser) {
       setShowAuthDialog(true);
