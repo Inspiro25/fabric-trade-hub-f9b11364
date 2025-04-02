@@ -97,7 +97,7 @@ export interface CartContextType {
   migrateCartToUser: () => Promise<void>;
 }
 
-// Add the missing productStore with sample products for fallback
+// Add the productStore with sample products for fallback
 export const productStore = {
   products: Array.from({ length: 12 }, (_, i) => ({
     id: `product-${i + 1}`,

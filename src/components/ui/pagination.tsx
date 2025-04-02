@@ -1,21 +1,19 @@
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, MoreHorizontal, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
-import Link from "next/link"
+import Link from "@/components/ui/link"
 
-const Pagination = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex w-full flex-col items-center gap-6 md:flex-row md:gap-8", className)}
+const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
+  <nav
+    role="navigation"
+    aria-label="pagination"
+    className={cn("mx-auto flex w-full justify-center", className)}
     {...props}
   />
-))
+)
 Pagination.displayName = "Pagination"
 
 const PaginationContent = React.forwardRef<
@@ -134,7 +132,8 @@ const PaginationEllipsis = ({
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <span className="h-4 w-4">...</span>
+    <MoreHorizontal className="h-4 w-4" />
+    <span className="sr-only">More pages</span>
   </span>
 )
 PaginationEllipsis.displayName = "PaginationEllipsis"
@@ -142,11 +141,11 @@ PaginationEllipsis.displayName = "PaginationEllipsis"
 export {
   Pagination,
   PaginationContent,
-  PaginationLink,
+  PaginationEllipsis,
   PaginationItem,
-  PaginationPrevious,
+  PaginationLink,
   PaginationNext,
+  PaginationPrevious,
   PaginationFirst,
   PaginationLast,
-  PaginationEllipsis,
 }

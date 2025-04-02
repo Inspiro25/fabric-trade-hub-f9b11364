@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/types/product';
 import ProductCard from '@/components/ui/ProductCard';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';

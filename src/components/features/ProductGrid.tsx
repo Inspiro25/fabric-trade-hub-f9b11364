@@ -1,12 +1,24 @@
 
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/types/product';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Grid, List, SlidersHorizontal, Sparkles, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProductCard from '@/components/ui/ProductCard';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationFirst,
+  PaginationLast,
+} from "@/components/ui/pagination";
 
 interface ProductGridProps {
   products: Product[];

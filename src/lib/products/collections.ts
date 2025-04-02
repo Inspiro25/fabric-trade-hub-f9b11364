@@ -1,69 +1,49 @@
 
-import { db, collection, getDocs } from '@/lib/firebase';
-import { Product, productStore } from '@/lib/types/product';
+import { supabase } from '@/lib/supabase';
+import { Product } from '@/lib/types/product';
 
-export const getTopRatedProducts = async (): Promise<Product[]> => {
+export const fetchCollections = async () => {
   try {
-    const productsSnapshot = await getDocs(collection(db, 'products'));
-    
-    if (!productsSnapshot.empty) {
-      return productsSnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Product))
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 8);
-    }
-    
-    // Fallback to local data
-    return [...productStore.products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+    const { data, error } = await supabase
+      .from('collections')
+      .select('*')
+      .order('name');
+
+    if (error) throw error;
+    return data || [];
   } catch (error) {
-    console.error('Error fetching top rated products:', error);
-    return [...productStore.products].sort((a, b) => b.rating - a.rating).slice(0, 8);
+    console.error('Error fetching collections:', error);
+    return [];
   }
 };
 
-export const getDiscountedProducts = async (): Promise<Product[]> => {
+export const fetchCollectionProducts = async (collectionId: string, limit = 8): Promise<Product[]> => {
   try {
-    const productsSnapshot = await getDocs(collection(db, 'products'));
-    
-    if (!productsSnapshot.empty) {
-      return productsSnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Product))
-        .filter(product => product.salePrice !== undefined)
-        .slice(0, 8);
-    }
-    
-    // Fallback to local data
-    return productStore.products.filter(product => product.salePrice !== undefined).slice(0, 8);
-  } catch (error) {
-    console.error('Error fetching discounted products:', error);
-    return productStore.products.filter(product => product.salePrice !== undefined).slice(0, 8);
-  }
-};
+    // First get the collection's products
+    const { data: collectionProducts, error: collectionError } = await supabase
+      .from('collection_products')
+      .select('product_id')
+      .eq('collection_id', collectionId)
+      .limit(limit);
 
-export const getBestSellingProducts = async (): Promise<Product[]> => {
-  try {
-    const productsSnapshot = await getDocs(collection(db, 'products'));
+    if (collectionError) throw collectionError;
     
-    if (!productsSnapshot.empty) {
-      return productsSnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Product))
-        .sort((a, b) => b.reviewCount - a.reviewCount) // Sort by review count as a proxy for popularity
-        .slice(0, 8);
+    if (!collectionProducts || collectionProducts.length === 0) {
+      return [];
     }
     
-    // Fallback to local data
-    return [...productStore.products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+    // Then fetch the actual products
+    const productIds = collectionProducts.map(cp => cp.product_id);
+    
+    const { data: products, error: productsError } = await supabase
+      .from('products')
+      .select('*')
+      .in('id', productIds);
+      
+    if (productsError) throw productsError;
+    return products || [];
   } catch (error) {
-    console.error('Error fetching best selling products:', error);
-    return [...productStore.products].sort((a, b) => b.reviewCount - a.reviewCount).slice(0, 8);
+    console.error(`Error fetching products for collection ${collectionId}:`, error);
+    return [];
   }
 };

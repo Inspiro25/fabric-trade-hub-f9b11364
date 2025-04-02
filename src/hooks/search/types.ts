@@ -17,6 +17,7 @@ export interface SearchPageProduct {
   sizes?: string[];
   stock?: number;
   tags?: string[];
+  created_at?: string;
 }
 
 export interface Category {
@@ -32,6 +33,7 @@ export interface Shop {
   name: string;
   logo?: string;
   description?: string;
+  coverImage?: string;
   rating?: number;
   productsCount?: number;
 }
@@ -46,4 +48,13 @@ export interface ProductCardBaseProps {
   reviewCount?: number;
   isNew?: boolean;
   isTrending?: boolean;
+  product?: any;
+  isAddingToCart?: boolean;
+  isAddingToWishlist?: boolean;
+  onAddToCart?: () => void;
+  onAddToWishlist?: () => void;
+  onShare?: () => void;
+  onClick?: () => void;
+  buttonColor?: string;
+  viewMode?: 'grid' | 'list';
 }
