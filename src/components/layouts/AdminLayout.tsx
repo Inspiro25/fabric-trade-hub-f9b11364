@@ -1,0 +1,13 @@
+// ... existing imports ...
+
+const navigation = [
+  // ... other navigation items ...
+  {
+    name: 'Products',
+    href: '/admin/products',
+    icon: Package // Import this from lucide-react
+  },
+  // ... other navigation items ...
+];
+
+// ... rest of the layout component ...
