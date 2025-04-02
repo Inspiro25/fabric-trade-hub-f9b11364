@@ -1,17 +1,16 @@
 
-import { SearchPageProduct } from '@/hooks/search/types';
-
-export type { SearchPageProduct };
+import { SearchPageProduct } from '@/lib/products/types';
 
 export interface ProductCardBaseProps {
   product: SearchPageProduct;
-  isAddingToCart?: boolean | string;
-  isAddingToWishlist?: boolean | string;
+  isAddingToCart?: string;
+  isAddingToWishlist?: string;
   onAddToCart?: (product: SearchPageProduct) => void;
   onAddToWishlist?: (product: SearchPageProduct) => void;
   onShare?: (product: SearchPageProduct) => void;
   onClick?: (product: SearchPageProduct) => void;
+  viewMode?: 'grid' | 'list' | 'compact';
   buttonColor?: string;
-  viewMode?: 'grid' | 'list';
-  isCompact?: boolean;
 }
+
+export { type SearchPageProduct };

@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +35,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </h3>
           <div className="space-y-2">
             <p className="text-base font-bold text-gray-900 dark:text-white">
-              ${product.price.toFixed(2)}
+              ${typeof product.price === 'number' ? product.price.toFixed(2) : '0.00'}
             </p>
             <div className="flex items-center gap-2">
               <span className={cn(

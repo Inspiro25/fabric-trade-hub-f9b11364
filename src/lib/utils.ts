@@ -11,6 +11,11 @@ export const formatCurrency = (
   locale = 'en-IN', // Change locale to Indian
   currency = 'INR' // Change currency to INR
 ): string => {
+  // Handle undefined, null or NaN
+  if (value === undefined || value === null || isNaN(value)) {
+    value = 0;
+  }
+  
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,

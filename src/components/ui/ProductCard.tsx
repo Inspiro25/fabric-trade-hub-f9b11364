@@ -87,10 +87,10 @@ const ProductCard = ({
                     "text-base font-bold",
                     isDarkMode ? "text-white" : "text-gray-900"  
                   )}>
-                    ${salePrice.toFixed(2)}
+                    ${typeof salePrice === 'number' ? salePrice.toFixed(2) : '0.00'}
                   </p>
                   <p className="text-xs line-through text-gray-400">
-                    ${price.toFixed(2)}
+                    ${typeof price === 'number' ? price.toFixed(2) : '0.00'}
                   </p>
                 </div>
               ) : (
@@ -98,7 +98,7 @@ const ProductCard = ({
                   "text-base font-bold",
                   isDarkMode ? "text-white" : "text-gray-900"  
                 )}>
-                  ${price.toFixed(2)}
+                  ${typeof price === 'number' ? price.toFixed(2) : '0.00'}
                 </p>
               )}
             </div>
