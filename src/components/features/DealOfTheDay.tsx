@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -82,10 +81,11 @@ const DealOfTheDay = () => {
     const colorToUse = selectedColor || deal.colors[0] || 'default';
     const sizeToUse = selectedSize || deal.sizes[0] || 'default';
     
-    // Fix this call by adding a required category property
     const productWithRequiredFields = {
       ...deal,
-      category: deal.category || '', // Ensure category is provided
+      category: deal.category || '',
+      isNew: deal.isNew || false,
+      isTrending: deal.isTrending || false,
     };
     
     addToCart(

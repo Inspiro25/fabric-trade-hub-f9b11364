@@ -1,4 +1,3 @@
-
 import { Product } from '@/lib/products/types';
 
 export interface SearchPageProduct {
@@ -26,6 +25,7 @@ export interface SearchPageProduct {
   tags?: string[];
   created_at?: string;
   updated_at?: string;
+  brand?: string; // Adding brand field to fix use-search-mock-data.ts
 }
 
 export interface Category {
