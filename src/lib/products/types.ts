@@ -36,6 +36,7 @@ export interface SearchPageProduct {
   name: string;
   price: number;
   sale_price?: number | null;
+  salePrice?: number | null;
   images: string[];
   category?: string;
   category_id?: string;
@@ -51,7 +52,6 @@ export interface SearchPageProduct {
   tags?: string[];
   created_at?: string;
   reviewCount?: number;
-  salePrice?: number;
   shopId?: string;
   isNew?: boolean;
   isTrending?: boolean;

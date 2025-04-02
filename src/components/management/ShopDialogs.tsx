@@ -1,101 +1,134 @@
-
 import React from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription 
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Shop } from '@/types/shop';
 import ShopForm, { ShopFormValues } from './ShopForm';
 
 interface ShopDialogsProps {
-  isAddDialogOpen: boolean;
-  setIsAddDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isEditDialogOpen: boolean;
-  setIsEditDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  showDeleteDialog: boolean;
-  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  shopToEdit: Shop | null;
-  handleAddShop: (data: ShopFormValues) => Promise<void>;
-  handleEditShop: (data: ShopFormValues) => Promise<void>;
-  handleDeleteShop: () => Promise<void>;
-  isMobile?: boolean;
+  open: {
+    edit: boolean;
+    create: boolean;
+    delete: boolean;
+  };
+  setOpen: (open: { edit: boolean; create: boolean; delete: boolean }) => void;
+  onSubmit: (data: ShopFormValues) => Promise<void>;
+  onDelete: () => Promise<void>;
+  selectedShop: Shop | null;
+  isSubmitting: boolean;
 }
 
-const ShopDialogs: React.FC<ShopDialogsProps> = ({
-  isAddDialogOpen,
-  setIsAddDialogOpen,
-  isEditDialogOpen,
-  setIsEditDialogOpen,
-  showDeleteDialog,
-  setShowDeleteDialog,
-  shopToEdit,
-  handleAddShop,
-  handleEditShop,
-  handleDeleteShop,
-  isMobile = false
-}) => {
+export function ShopDialogs({
+  open,
+  setOpen,
+  onSubmit,
+  onDelete,
+  selectedShop,
+  isSubmitting,
+}: ShopDialogsProps) {
+  
+
   return (
     <>
-      {/* Add Shop Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className={isMobile ? "w-[95vw] max-w-md p-4 max-h-[85vh] overflow-y-auto" : ""}>
-          <DialogHeader>
-            <DialogTitle>Add New Shop</DialogTitle>
-          </DialogHeader>
-          <ShopForm
-            onSubmit={handleAddShop}
-            onCancel={() => setIsAddDialogOpen(false)}
-            isMobile={isMobile}
-          />
-        </DialogContent>
-      </Dialog>
-
       {/* Edit Shop Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className={isMobile ? "w-[95vw] max-w-md p-4 max-h-[85vh] overflow-y-auto" : ""}>
+      <Dialog
+        open={open.edit}
+        onOpenChange={(isOpen) =>
+          setOpen({ ...open, edit: isOpen })
+        }
+      >
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Shop</DialogTitle>
+            <DialogDescription>
+              Update the shop details below.
+            </DialogDescription>
           </DialogHeader>
-          {shopToEdit && (
+          {selectedShop && (
             <ShopForm
-              shop={shopToEdit}
-              onSubmit={handleEditShop}
-              onCancel={() => setIsEditDialogOpen(false)}
-              isMobile={isMobile}
+              initialValues={{
+                name: selectedShop.name,
+                description: selectedShop.description,
+                status: selectedShop.status as 'active' | 'pending' | 'suspended',
+                address: selectedShop.address,
+                logo: selectedShop.logo,
+                coverImage: selectedShop.coverImage || selectedShop.cover_image,
+                isVerified: selectedShop.isVerified,
+                shopId: selectedShop.id,
+                ownerName: selectedShop.ownerName,
+                ownerEmail: selectedShop.ownerEmail,
+                phoneNumber: selectedShop.phoneNumber,
+              }}
+              onSubmit={onSubmit}
+              isLoading={isSubmitting}
+              submitLabel="Update Shop"
             />
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className={isMobile ? "w-[95vw] max-w-md p-4" : ""}>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-            <AlertDialogDescription>
+      {/* Create Shop Dialog */}
+      <Dialog
+        open={open.create}
+        onOpenChange={(isOpen) =>
+          setOpen({ ...open, create: isOpen })
+        }
+      >
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Shop</DialogTitle>
+            <DialogDescription>
+              Fill in the shop details below.
+            </DialogDescription>
+          </DialogHeader>
+          <ShopForm
+            onSubmit={onSubmit}
+            isLoading={isSubmitting}
+            submitLabel="Create Shop"
+            initialValues={{
+              status: 'pending',
+              isVerified: false,
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Shop Dialog */}
+      <Dialog
+        open={open.delete}
+        onOpenChange={(isOpen) =>
+          setOpen({ ...open, delete: isOpen })
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
               Are you sure you want to delete this shop? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteShop}
-              className="bg-red-600 hover:bg-red-700"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setOpen({ ...open, delete: false })}
             >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onDelete}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
-};
-
-export default ShopDialogs;
+}
