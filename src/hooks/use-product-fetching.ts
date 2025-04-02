@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/types/product';
+import { Product } from '@/lib/products';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 interface UseProductFetchingProps {
@@ -10,22 +9,25 @@ interface UseProductFetchingProps {
   page?: number;
 }
 
-// Define the base query with all necessary fields
+// Define the base query with all necessary fields that exist in the database
 const baseProductQuery = `
   id,
   name,
   description,
   price,
-  discount_price,
+  sale_price,
   rating,
-  views,
+  review_count,
   created_at,
   category_id,
-  categories!category_id (
-    id,
-    name,
-    description
-  )
+  shop_id,
+  stock,
+  images,
+  colors,
+  sizes,
+  is_new,
+  is_trending,
+  tags
 `;
 
 export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProductFetchingProps = {}) => {
@@ -52,7 +54,12 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
 
         if (error) throw error;
 
-        setProducts(data || []);
+        // Convert to Product[] type safely
+        if (data) {
+          setProducts(data as unknown as Product[]);
+        } else {
+          setProducts([]);
+        }
         setTotalCount(count || 0);
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -80,11 +87,18 @@ export const useNewArrivals = (limit = 10) => {
         const { data, error } = await supabase
           .from('products')
           .select(baseProductQuery)
+          .eq('is_new', true)
           .order('created_at', { ascending: false })
           .limit(limit);
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        // Convert to Product[] type safely
+        if (data) {
+          setProducts(data as unknown as Product[]);
+        } else {
+          setProducts([]);
+        }
       } catch (err) {
         console.error('Error fetching new arrivals:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch new arrivals');
@@ -111,13 +125,19 @@ export const useDiscountedProducts = (limit = 10) => {
         const { data, error } = await supabase
           .from('products')
           .select(baseProductQuery)
-          .not('discount_price', 'is', null)
-          .gt('discount_price', 0)
-          .order('discount_price', { ascending: true })
+          .not('sale_price', 'is', null)
+          .gt('sale_price', 0)
+          .order('sale_price', { ascending: true })
           .limit(limit);
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        // Convert to Product[] type safely
+        if (data) {
+          setProducts(data as unknown as Product[]);
+        } else {
+          setProducts([]);
+        }
       } catch (err) {
         console.error('Error fetching discounted products:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch discounted products');
@@ -196,7 +216,6 @@ export const useTrendingProducts = (limit = 10) => {
   return { products, loading, error };
 };
 
-
 export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -233,8 +252,6 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
   return { products, loading, error, totalCount };
 };
 
-
-// Remove the firebaseUIDToUUID function definition since it's imported
 const fetchUserData = async (userId: string) => {
   try {
     const supabaseUUID = firebaseUIDToUUID(userId);

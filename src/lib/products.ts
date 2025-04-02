@@ -1,4 +1,7 @@
+
 import { supabase } from '@/lib/supabase';
+import { Json } from './types/json';
+import { Product } from './types/product';
 
 export async function addProduct(productData: any) {
   try {
@@ -6,8 +9,7 @@ export async function addProduct(productData: any) {
       .from('products')
       .insert([{
         ...productData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       }])
       .select()
       .single();
@@ -18,6 +20,10 @@ export async function addProduct(productData: any) {
     console.error('Error adding product:', error);
     throw error;
   }
+}
+
+export async function createProduct(productData: any): Promise<string> {
+  return addProduct(productData);
 }
 
 export async function getAllCategories() {
@@ -94,12 +100,26 @@ export async function getAllProducts() {
 
 export async function updateProduct(id: string, productData: any) {
   try {
+    // Convert camelCase to snake_case for Supabase
+    const formattedData = {
+      name: productData.name,
+      description: productData.description,
+      price: productData.price,
+      sale_price: productData.salePrice,
+      category_id: productData.category,
+      images: productData.images,
+      colors: productData.colors,
+      sizes: productData.sizes,
+      tags: productData.tags,
+      stock: productData.stock,
+      is_new: productData.isNew,
+      is_trending: productData.isTrending,
+      updated_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from('products')
-      .update({
-        ...productData,
-        updated_at: new Date().toISOString()
-      })
+      .update(formattedData)
       .eq('id', id)
       .select()
       .single();

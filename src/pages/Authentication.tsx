@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -461,12 +461,10 @@ const Authentication = () => {
                         Remember me
                       </label>
                     </div>
-                    // Update the forgot password link
                     <Link to="/auth/forgot-password" className="text-sm text-orange-500 hover:underline">
                       Forgot password?
                     </Link>
                     
-                    // Update the terms and privacy links
                     <Link to="/help/terms" className="text-orange-500 hover:underline">Terms of Service</Link>
                     <Link to="/help/privacy" className="text-orange-500 hover:underline">Privacy Policy</Link>
                   </div>
