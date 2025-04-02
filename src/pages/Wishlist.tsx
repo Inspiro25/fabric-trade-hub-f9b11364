@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Product, normalizeProduct } from '@/lib/products/types';
+import { Product } from '@/lib/products/types';
 import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/ui/ProductCard';
 import EmptyWishlist from '@/components/cart/EmptyWishlist';
@@ -82,8 +81,8 @@ const Wishlist = () => {
             shopId: item.shop_id,
             shop_id: item.shop_id,
             created_at: item.created_at,
-            updated_at: item.updated_at
-          }));
+            updated_at: item.created_at
+          })) as Product[];
           
           setWishlistItems(mappedProducts);
         } else {
@@ -91,12 +90,7 @@ const Wishlist = () => {
         }
       } catch (error) {
         console.error('Error fetching products:', error);
-        // Fallback to mock data if needed
-        const { mockProducts } = await import('@/lib/products');
-        const productsInWishlist = mockProducts.filter(product => 
-          wishlist.includes(product.id)
-        );
-        setWishlistItems(productsInWishlist);
+        setWishlistItems([]);
       } finally {
         setIsLoaded(true);
       }

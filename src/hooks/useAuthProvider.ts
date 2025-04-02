@@ -1,7 +1,26 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { User, UserProfile } from '@/contexts/AuthContext';
+
+export interface User {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  phoneNumber: string | null;
+}
+
+export interface UserProfile {
+  id: string;
+  userId: string;
+  displayName?: string | null;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  location?: string | null;
+  website?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export function useAuthProvider() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -236,9 +255,9 @@ export function useAuthProvider() {
     verifyEmail,
     loginWithGoogleProvider,
     // Legacy properties
-    user,
-    signIn,
-    signUp,
-    signOut,
+    user: currentUser,
+    signIn: login,
+    signUp: register,
+    signOut: logout,
   };
 }

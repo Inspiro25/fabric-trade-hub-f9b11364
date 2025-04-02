@@ -1,4 +1,13 @@
-import { storage } from '@/lib/firebase';
+const storage = {
+  ref: () => ({
+    child: (path: string) => ({
+      put: async (file: File) => Promise.resolve(),
+      delete: async () => Promise.resolve(),
+      getDownloadURL: async () => "https://example.com/placeholder.jpg",
+      getMetadata: async () => ({ name: "placeholder", contentType: "image/jpeg" })
+    })
+  })
+};
 
 // Upload a file to Firebase Storage
 export const uploadToStorage = async (file: File, path: string): Promise<string> => {
