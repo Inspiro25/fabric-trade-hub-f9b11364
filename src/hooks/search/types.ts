@@ -6,31 +6,33 @@ export interface SearchPageProduct {
   name: string;
   price: number;
   sale_price?: number | null;
+  salePrice?: number | null;
   images: string[];
   category?: string;
   category_id?: string;
   shop_id?: string;
+  shopId?: string;
   colors?: string[];
   sizes?: string[];
   stock?: number;
   rating?: number;
   review_count?: number;
+  reviewCount?: number;
   is_new?: boolean;
+  isNew?: boolean;
   is_trending?: boolean;
+  isTrending?: boolean;
   description?: string;
   tags?: string[];
   created_at?: string;
-  // Add compatibility properties
-  reviewCount?: number;
-  salePrice?: number;
-  shopId?: string;
-  isNew?: boolean;
-  isTrending?: boolean;
+  updated_at?: string;
+  brand?: string;
 }
 
 export interface Category {
   id: string;
   name: string;
+  slug?: string;
   description?: string;
   image?: string;
   productCount?: number;
@@ -39,13 +41,12 @@ export interface Category {
 export interface Shop {
   id: string;
   name: string;
-  logo: string;
-  coverImage: string;
   description?: string;
+  logo?: string;
+  coverImage?: string;
   rating?: number;
-  followers?: number;
-  isVerified?: boolean;
   productCount?: number;
+  isVerified?: boolean;
 }
 
 export interface ProductCardBaseProps {
@@ -59,27 +60,4 @@ export interface ProductCardBaseProps {
   buttonColor?: string;
   viewMode?: 'grid' | 'list';
   isCompact?: boolean;
-}
-
-export interface SearchFilters {
-  priceRange: [number, number];
-  categories: string[];
-  brands: string[];
-  rating: number | null;
-  sortBy: string;
-  inStock: boolean;
-  newArrivals: boolean;
-  onSale: boolean;
-}
-
-export interface SearchState {
-  query: string;
-  filters: SearchFilters;
-  results: SearchPageProduct[];
-  loading: boolean;
-  error: string | null;
-  totalResults: number;
-  page: number;
-  pageSize: number;
-  viewMode: 'grid' | 'list';
 }

@@ -41,26 +41,7 @@ export {
   createProduct 
 } from '@/lib/supabase/products';
 
-// Export fetchDealProducts function
-export const fetchDealProducts = async (limit = 8): Promise<Product[]> => {
-  try {
-    const { supabase } = await import('@/integrations/supabase/client');
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .not('sale_price', 'is', null)
-      .order('sale_price', { ascending: true })
-      .limit(limit);
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching deal products:', error);
-    return [];
-  }
-};
-
-// Add mock products for testing
+// Export mockProducts
 export const mockProducts: Product[] = Array.from({ length: 12 }, (_, i) => ({
   id: `product-${i + 1}`,
   name: `Product ${i + 1}`,

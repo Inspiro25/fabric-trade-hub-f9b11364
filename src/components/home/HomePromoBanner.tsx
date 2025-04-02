@@ -1,69 +1,73 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '@/hooks/use-theme';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
+import { ChevronRight } from 'lucide-react';
 
-const HomePromoBanner = () => {
+export interface HomePromoBannerProps {
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+  image: string;
+  direction?: 'left' | 'right';
+}
+
+export default function HomePromoBanner({
+  title,
+  description,
+  buttonText,
+  buttonLink,
+  image,
+  direction = 'right'
+}: HomePromoBannerProps) {
   const { isDarkMode } = useTheme();
-
+  
   return (
-    <div className="px-4 py-6">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative overflow-hidden rounded-lg bg-primary text-primary-foreground"
+    <div className="mt-12">
+      <div 
+        className={cn(
+          "rounded-xl overflow-hidden relative bg-gradient-to-r",
+          isDarkMode 
+            ? "from-gray-800 to-gray-900 border border-gray-700" 
+            : "from-gray-100 to-gray-200 border border-gray-100"
+        )}
       >
-        <div className="relative z-10 px-6 py-12 md:px-12 md:py-16">
-          <motion.h2 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-3xl md:text-4xl font-bold mb-4"
-          >
-            Spring Collection 2024
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-lg mb-6 max-w-md"
-          >
-            Discover our latest arrivals featuring fresh styles and vibrant colors for the new season.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Button
-              asChild
-              variant="secondary"
-              size="lg"
-              className="font-semibold"
-            >
-              <Link to="/products">
-                Shop Now
-              </Link>
-            </Button>
-          </motion.div>
+        <div className={cn(
+          "grid grid-cols-1 md:grid-cols-2 items-center",
+          direction === 'left' ? "md:flex-row-reverse" : "md:flex-row"
+        )}>
+          <div className="p-6 md:p-8 lg:p-10">
+            <h3 className={cn(
+              "text-xl md:text-2xl font-bold mb-2", 
+              isDarkMode ? "text-white" : "text-gray-800"
+            )}>
+              {title}
+            </h3>
+            <p className={cn(
+              "mb-4 text-sm md:text-base",
+              isDarkMode ? "text-gray-300" : "text-gray-600"
+            )}>
+              {description}
+            </p>
+            <Link to={buttonLink}>
+              <Button variant={isDarkMode ? "outline" : "default"} size="sm">
+                {buttonText}
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+          <div className="h-48 md:h-full w-full relative">
+            <img 
+              src={image} 
+              alt={title}
+              className="h-full w-full object-cover" 
+            />
+          </div>
         </div>
-
-        {/* Decorative elements */}
-        <div className={cn(
-          "absolute -left-12 -top-12 w-40 h-40 rounded-full opacity-50",
-          isDarkMode ? "bg-primary-foreground/10" : "bg-primary-foreground/20"
-        )} />
-        <div className={cn(
-          "absolute -right-12 -bottom-12 w-40 h-40 rounded-full opacity-50",
-          isDarkMode ? "bg-primary-foreground/10" : "bg-primary-foreground/20"
-        )} />
-      </motion.div>
+      </div>
     </div>
   );
-};
-
-export default HomePromoBanner;
+}

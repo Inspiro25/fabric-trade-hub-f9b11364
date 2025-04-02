@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/lib/products';
@@ -13,32 +12,38 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/contexts/ThemeContext';
 
-interface ProductShowcaseProps {
-  title: string;
+export interface ProductShowcaseProps {
+  title?: string;
   subtitle?: string;
   products: Product[];
   linkTo?: string;
-  isLoaded: boolean;
+  isLoaded?: boolean;
   layout?: 'grid' | 'carousel';
   highlight?: boolean;
   tag?: 'new' | 'sale' | 'trending';
   showViewAll?: boolean;
+  isLoading?: boolean;
+  showDiscount?: boolean;
 }
 
 export default function HomeProductShowcase({ 
-  title, 
+  title = "Products", 
   subtitle,
   products, 
   linkTo,
-  isLoaded,
+  isLoaded = true,
+  isLoading = false,
   layout = 'grid',
   highlight = false,
   tag,
-  showViewAll = true
+  showViewAll = true,
+  showDiscount = false
 }: ProductShowcaseProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
   const { isDarkMode } = useTheme();
+  
+  const actualIsLoaded = !isLoading && isLoaded;
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -77,7 +82,7 @@ export default function HomeProductShowcase({
     }
   }
 
-  if (!isLoaded) {
+  if (!actualIsLoaded) {
     return (
       <div className="px-4 py-6">
         <div className="flex flex-col mb-6">
@@ -106,7 +111,6 @@ export default function HomeProductShowcase({
     return null;
   }
   
-  // Render carousel layout
   if (layout === 'carousel') {
     return (
       <section ref={ref} className={cn(
@@ -227,7 +231,6 @@ export default function HomeProductShowcase({
           </div>
         </Carousel>
 
-        {/* Decorative elements */}
         {highlight && (
           <>
             <div className={cn(
@@ -244,7 +247,6 @@ export default function HomeProductShowcase({
     );
   }
 
-  // Default grid layout with enhanced animations
   return (
     <section 
       ref={ref}
@@ -322,7 +324,6 @@ export default function HomeProductShowcase({
         ))}
       </motion.div>
 
-      {/* Decorative elements */}
       {highlight && (
         <>
           <div className={cn(

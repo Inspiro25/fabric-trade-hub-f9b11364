@@ -14,7 +14,7 @@ export const fetchProducts = async () => {
           logo
         )
       `)
-      .eq('stock', '>', 0)
+      .gt('stock', 0)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -31,9 +31,9 @@ export const fetchProducts = async () => {
       images: product.images || [],
       category: product.category_id,
       shop: {
-        id: product.shop.id,
-        name: product.shop.name,
-        logo: product.shop.logo
+        id: product.shop?.id,
+        name: product.shop?.name,
+        logo: product.shop?.logo
       },
       colors: product.colors || [],
       sizes: product.sizes || [],

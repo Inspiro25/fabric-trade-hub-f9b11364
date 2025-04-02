@@ -1,33 +1,13 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
-// Define the shop form schema
-export const shopSchema = z.object({
-  name: z.string().min(2, { message: 'Shop name must be at least 2 characters' }),
-  description: z.string().min(10, { message: 'Description must be at least 10 characters' }).optional(),
-  status: z.enum(['active', 'pending', 'suspended']),
-  address: z.string().min(5, { message: 'Address must be at least 5 characters' }).optional(),
-  logo: z.string().optional(),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters' }).optional(),
-  coverImage: z.string().optional(),
-  isVerified: z.boolean().default(false),
-  shopId: z.string().optional(),
-  ownerName: z.string().min(2, { message: 'Owner name must be at least 2 characters' }).optional(),
-  ownerEmail: z.string().email({ message: 'Invalid email address' }).optional(),
-  phoneNumber: z.string().optional(),
-});
-
-// Define the form values type based on the schema
-export type ShopFormValues = z.infer<typeof shopSchema>;
+import { shopSchema, ShopFormValues } from './ShopForm';
 
 interface ShopFormProps {
   initialValues?: Partial<ShopFormValues>;

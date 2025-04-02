@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useSearchUrlParams } from './search/use-search-params';
 import { useSearchFilters } from './search/use-search-filters';
@@ -68,16 +69,16 @@ const useSearch = () => {
 
   const {
     loading,
-    error,
     products,
-    totalProducts,
     categories,
     shops,
-    initialLoad,
-    recommendations,
-    recentlyViewed,
-    fetchData,
-    handleRetry
+    error = '',
+    totalProducts = 0,
+    initialLoad = true,
+    recommendations = [],
+    recentlyViewed = [],
+    fetchData = () => {},
+    handleRetry = () => {}
   } = useSearchMockData(query, category, page, itemsPerPage);
 
   const {

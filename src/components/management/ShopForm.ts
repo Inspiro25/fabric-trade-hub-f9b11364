@@ -19,3 +19,6 @@ export const shopSchema = z.object({
 
 // Define the form values type based on the schema
 export type ShopFormValues = z.infer<typeof shopSchema>;
+
+// Export the ShopForm component from ShopForm.tsx
+export { ShopForm } from './ShopForm.tsx';
