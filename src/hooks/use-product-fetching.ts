@@ -53,7 +53,6 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
 
         if (error) throw error;
 
-        // Convert to Product[] type safely using our normalizeProductData function
         if (data) {
           const normalizedProducts = data.map(item => normalizeProductData(item));
           setProducts(normalizedProducts);
@@ -94,7 +93,6 @@ export const useNewArrivals = (limit = 10) => {
 
         if (error) throw error;
         
-        // Convert to Product[] type safely using our normalizeProductData function
         if (data) {
           const normalizedProducts = data.map(item => normalizeProductData(item));
           setProducts(normalizedProducts);
@@ -135,7 +133,6 @@ export const useDiscountedProducts = (limit = 10) => {
 
         if (error) throw error;
         
-        // Convert to Product[] type safely using our normalizeProductData function
         if (data) {
           const normalizedProducts = data.map(item => normalizeProductData(item));
           setProducts(normalizedProducts);

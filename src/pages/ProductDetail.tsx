@@ -53,6 +53,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Textarea } from "@/components/ui/textarea";
 import { createReview } from '@/lib/supabase/reviews';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { normalizeProductData } from '@/lib/products/types';
 
 const MinimalReviewForm = ({ productId }: { productId: string }) => {
   const [rating, setRating] = React.useState(0);

@@ -82,8 +82,14 @@ const DealOfTheDay = () => {
     const colorToUse = selectedColor || deal.colors[0] || 'default';
     const sizeToUse = selectedSize || deal.sizes[0] || 'default';
     
+    // Fix this call by adding a required category property
+    const productWithRequiredFields = {
+      ...deal,
+      category: deal.category || '', // Ensure category is provided
+    };
+    
     addToCart(
-      deal, 
+      productWithRequiredFields, 
       1, 
       colorToUse, 
       sizeToUse

@@ -8,7 +8,7 @@ export interface Product {
   salePrice?: number;
   sale_price?: number;
   images: string[];
-  category: string;
+  category?: string; // Made optional to match actual usage
   category_id?: string;
   colors: string[];
   sizes: string[];
@@ -54,6 +54,7 @@ export interface SearchPageProduct {
   tags?: string[];
   shopId?: string;
   shop_id?: string;
+  brand?: string; // Adding brand to fix search-mock-data.ts errors
   created_at?: string;
   updated_at?: string;
 }

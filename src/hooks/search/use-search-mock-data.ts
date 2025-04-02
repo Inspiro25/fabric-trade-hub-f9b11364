@@ -36,10 +36,10 @@ export function useSearchMockData(query: string, categoryId: string | null, page
         isTrending: i >= 4 && i < 8,
         rating: 3.5 + (i % 3) * 0.5,
         reviewCount: 10 + i * 5,
-        stock: 50 - i,
+        stock: 50 - i, // Ensure stock is provided
         tags: ['trending', 'new arrival'],
         shopId: `shop-${Math.floor(i / 4) + 1}`,
-        brand: `Brand ${Math.floor(i / 3) + 1}`,
+        brand: `Brand ${Math.floor(i / 3) + 1}`, // Keep brand property
         created_at: new Date().toISOString(),
       }));
       

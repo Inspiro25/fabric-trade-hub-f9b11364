@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, Suspense } from 'react';
 import { useHomePageData } from '@/hooks/use-home-data';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,8 +20,9 @@ import HomeCategoryGrid from '@/components/home/HomeCategoryGrid';
 import HomeProductShowcase from '@/components/home/HomeProductShowcase';
 import HomePromoBanner from '@/components/home/HomePromoBanner';
 import FlashSaleTimer from '@/components/home/FlashSaleTimer';
-import ElectronicsShowcase from '@/components/home/ElectronicsShowcase'; // Use default import instead of named import
+import ElectronicsShowcase from '@/components/home/ElectronicsShowcase';
 import ShopsSpotlight from '@/components/home/ShopsSpotlight';
+import { normalizeProductData } from '@/lib/products/types';
 
 const LazyHomeProductShowcase = React.lazy(() => import('@/components/home/HomeProductShowcase'));
 
@@ -30,7 +30,9 @@ const Home = () => {
   const isMobile = useIsMobile();
   const { isDarkMode } = useTheme();
   
-  const { products, isLoading } = useHomePageData();
+  const { products: rawProducts, isLoading } = useHomePageData();
+  
+  const products = rawProducts?.map(product => normalizeProductData(product)) || [];
 
   if (isMobile) {
     return <MobileHome />;
@@ -75,7 +77,7 @@ const Home = () => {
             ))}
           </div>}>
             <LazyHomeProductShowcase 
-              products={products?.slice(0, 4) || []}
+              products={products.slice(0, 4) || []}
               isLoading={isLoading}
               showDiscount={true}
             />
@@ -143,7 +145,7 @@ const Home = () => {
             ))}
           </div>}>
             <HomeProductShowcase 
-              products={products?.slice(4, 8) || []}
+              products={products.slice(4, 8) || []}
               isLoading={isLoading}
             />
           </Suspense>
@@ -183,7 +185,7 @@ const Home = () => {
             ))}
           </div>}>
             <HomeProductShowcase 
-              products={products?.slice(8, 12) || []}
+              products={products.slice(8, 12) || []}
               isLoading={isLoading}
             />
           </Suspense>
@@ -223,7 +225,7 @@ const Home = () => {
             ))}
           </div>}>
             <HomeProductShowcase 
-              products={products?.slice(12, 16) || []}
+              products={products.slice(12, 16) || []}
               isLoading={isLoading}
             />
           </Suspense>
