@@ -9,6 +9,8 @@ import { ProductCardBaseProps, SearchPageProduct } from './types';
 const ProductCard = ({ viewMode = 'grid', ...props }: ProductCardBaseProps) => {
   if (viewMode === 'list') {
     return <ListProductCard {...props} />;
+  } else if (viewMode === 'compact') {
+    return <CompactProductCard {...props} />;
   } else {
     return <GridProductCard {...props} />;
   }

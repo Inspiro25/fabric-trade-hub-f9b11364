@@ -1,4 +1,3 @@
-
 // Define the core Product type
 export interface Product {
   id: string;
@@ -12,22 +11,22 @@ export interface Product {
   category_id?: string;
   colors: string[];
   sizes: string[];
-  is_new?: boolean;
   isNew?: boolean;
-  is_trending?: boolean;
+  is_new?: boolean; // For compatibility with API responses
   isTrending?: boolean;
+  is_trending?: boolean; // For compatibility with API responses
   rating: number;
-  review_count?: number;
   reviewCount?: number;
+  review_count?: number; // For compatibility with API responses
   stock: number;
   tags: string[];
-  shop_id?: string;
   shopId?: string;
-  brand?: string;
-  created_at?: string;
-  updated_at?: string;
+  shop_id?: string; // For compatibility with API responses
+  brand?: string; // For mobile search
   shopName?: string; // Optional for shop details
   categoryId?: string; // Optional for category details
+  created_at?: string; // For sorting products
+  updated_at?: string; // For tracking updates
 }
 
 // Define Cart Item type

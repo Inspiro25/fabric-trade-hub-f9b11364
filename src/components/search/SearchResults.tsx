@@ -32,8 +32,8 @@ export interface SearchResultsProps {
   onPageChange: (page: number) => void;
   itemsPerPage: number;
   onItemsPerPageChange: (count: number) => void;
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
+  viewMode: 'grid' | 'list' | 'compact';
+  onViewModeChange: (mode: 'grid' | 'list' | 'compact') => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({ 

@@ -12,16 +12,16 @@ export interface Product {
   category_id?: string;
   colors: string[];
   sizes: string[];
-  isNew: boolean;
+  isNew?: boolean;
   is_new?: boolean;
-  isTrending: boolean;
+  isTrending?: boolean;
   is_trending?: boolean;
   rating: number;
-  reviewCount: number;
+  reviewCount?: number;
   review_count?: number;
   stock: number;
   tags: string[];
-  shopId: string;
+  shopId?: string;
   shop_id?: string;
   brand?: string;
   shopName?: string;
@@ -50,11 +50,11 @@ export interface SearchPageProduct {
   rating?: number;
   reviewCount?: number;
   review_count?: number;
-  stock: number; // Making this required to match usage
+  stock: number; 
   tags?: string[];
   shopId?: string;
   shop_id?: string;
-  brand?: string; // Adding brand to fix search-mock-data.ts errors
+  brand?: string; 
   created_at?: string;
   updated_at?: string;
 }

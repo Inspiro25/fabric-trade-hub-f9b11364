@@ -1,3 +1,4 @@
+
 import { Product } from '@/lib/products/types';
 
 export interface SearchPageProduct {
@@ -57,6 +58,6 @@ export interface ProductCardBaseProps {
   onShare?: (product: SearchPageProduct) => void;
   onClick?: (product: SearchPageProduct) => void;
   buttonColor?: string;
-  viewMode?: 'grid' | 'list';
+  viewMode?: 'grid' | 'list' | 'compact';
   isCompact?: boolean;
 }
