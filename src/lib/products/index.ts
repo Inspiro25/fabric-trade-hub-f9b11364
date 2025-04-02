@@ -1,13 +1,12 @@
 
 // Re-export types from types directory
+import { Product, SearchPageProduct } from './types';
 import {
-  Product,
   CartItem,
   CartContextType,
   WishlistContextType,
   normalizeProduct,
   productStore,
-  SearchPageProduct
 } from '@/types/product';
 
 export type {
@@ -33,17 +32,17 @@ export * from './categories';
 export * from './collections';
 export * from './base';
 
-// Re-export create/update/delete functions from products module
+// Re-export create/update/delete functions
 export { 
   updateProduct, 
   deleteProduct,
   fetchProductById,
   getProductById,
   createProduct 
-} from '@/lib/products';
+} from '@/lib/supabase/products';
 
-// Add missing product functions
-export { addProduct, getAllProducts, getAllCategories } from '@/lib/products';
+// Add product functions
+export { addProduct, getAllProducts, getAllCategories } from '@/lib/supabase/products';
 
 // Export fetchDealProducts function
 export const fetchDealProducts = async (limit = 8): Promise<Product[]> => {

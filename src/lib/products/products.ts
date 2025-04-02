@@ -1,5 +1,6 @@
+
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/types/product';
+import { Product } from './types';
 
 export const fetchProducts = async () => {
   try {
@@ -7,7 +8,7 @@ export const fetchProducts = async () => {
       .from('products')
       .select(`
         *,
-        shop:shops!inner(
+        shop:shops(
           id,
           name,
           logo

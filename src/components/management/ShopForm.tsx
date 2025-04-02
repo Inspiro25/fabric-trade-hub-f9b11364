@@ -235,3 +235,5 @@ export const ShopForm: React.FC<ShopFormProps> = ({ shop, onSubmit, onCancel, is
     </form>
   );
 };
+
+export default ShopForm;

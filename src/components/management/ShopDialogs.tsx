@@ -11,8 +11,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Shop } from '@/lib/shops/types';
-import { ShopForm, ShopFormValues } from './ShopForm';
+import { Shop } from '@/types/shop';
+import ShopForm, { ShopFormValues } from './ShopForm';
 
 interface ShopDialogsProps {
   isAddDialogOpen: boolean;

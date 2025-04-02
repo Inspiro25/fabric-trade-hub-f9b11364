@@ -13,5 +13,5 @@ export interface ProductCardBaseProps {
   onClick?: (product: SearchPageProduct) => void;
   buttonColor?: string;
   viewMode?: 'grid' | 'list';
-  isCompact?: boolean; // Add the isCompact property
+  isCompact?: boolean;
 }

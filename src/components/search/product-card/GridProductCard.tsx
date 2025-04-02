@@ -1,15 +1,14 @@
 
+// Update to use review_count and category_id
 import React from 'react';
-import { Heart, ShoppingCart, Share2, Star, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
-import { ProductCardBaseProps } from '@/hooks/search/types';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart, Heart, Share2 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+import { ProductCardBaseProps } from '@/components/search/product-card/types';
 
-export const GridProductCard: React.FC<ProductCardBaseProps> = ({
+export function GridProductCard({
   product,
   isAddingToCart,
   isAddingToWishlist,
@@ -17,145 +16,155 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
   onAddToWishlist,
   onShare,
   onClick,
-  buttonColor
-}) => {
-  const isAddingThisToCart = isAddingToCart === true || isAddingToCart === product.id;
-  const isAddingThisToWishlist = isAddingToWishlist === true || isAddingToWishlist === product.id;
-  const discountPercent = product.sale_price 
-    ? Math.round((1 - product.sale_price / product.price) * 100) 
-    : 0;
-  const { isDarkMode } = useTheme();
-    
-  const handleProductClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (onClick) onClick(product);
+  buttonColor,
+}: ProductCardBaseProps) {
+  const {
+    id,
+    name,
+    price,
+    sale_price,
+    images,
+    category_id,
+    rating,
+    review_count,
+    is_new,
+    is_trending,
+  } = product;
+
+  const hasDiscount = sale_price !== undefined && sale_price !== null && sale_price > 0;
+  const discountedPrice = hasDiscount ? sale_price : price;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(product);
+    }
   };
 
-  const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onAddToCart) onAddToCart(product);
+    if (onAddToWishlist) {
+      onAddToWishlist(product);
+    }
   };
 
-  const handleAddToWishlistClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onAddToWishlist) onAddToWishlist(product);
+    if (onShare) {
+      onShare(product);
+    }
+  };
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick(product);
+    }
   };
 
-  const handleShareClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (onShare) onShare(product);
-  };
-    
   return (
-    <motion.div 
-      className={cn(
-        "group relative rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-all cursor-pointer border h-full",
-        isDarkMode 
-          ? "bg-gray-800 border-gray-700" 
-          : "bg-white border-gray-100"
-      )}
-      whileHover={{ y: -5 }}
-      onClick={handleProductClick}
+    <div
+      className="group relative flex flex-col overflow-hidden rounded-md border border-border h-full transition-all cursor-pointer hover:shadow-md"
+      onClick={handleClick}
     >
-      <div className="relative">
-        <AspectRatio ratio={1}>
-          <img 
-            src={product.images[0] || '/placeholder.svg'}
-            alt={product.name}
-            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+      <div className="relative aspect-square w-full overflow-hidden bg-background">
+        {images && images[0] ? (
+          <img
+            src={images[0]}
+            alt={name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.png';
+            }}
           />
-          
-          {/* Product badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.is_new && (
-              <Badge className="text-xs bg-green-500 border-none">New</Badge>
-            )}
-            {product.is_trending && (
-              <Badge className="text-xs bg-purple-500 border-none">Trending</Badge>
-            )}
-            {product.sale_price && discountPercent > 0 && (
-              <Badge className="text-xs bg-red-500 border-none">{discountPercent}% OFF</Badge>
-            )}
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-gray-100">
+            <span className="text-sm text-gray-400">No image</span>
           </div>
-        </AspectRatio>
+        )}
+        
+        {is_new && (
+          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">New</Badge>
+        )}
+        
+        {is_trending && (
+          <Badge className="absolute top-2 right-2 bg-orange-500 text-white">Trending</Badge>
+        )}
       </div>
       
-      <div className="p-3 flex flex-col h-[calc(100%-100%*(1/1))]">
-        <div className="flex-grow">
-          <div className="text-xs text-muted-foreground mb-1">
-            {product.category}
-          </div>
-          
-          <h3 className={cn(
-            "font-medium text-sm line-clamp-2 mb-1 min-h-[2.5rem]",
-            isDarkMode && "text-white"
-          )}>
-            {product.name}
-          </h3>
-          
-          <div className="flex items-center gap-1 mb-2">
-            {product.rating > 0 && (
-              <>
-                <div className="bg-green-600 text-white text-xs px-1 py-0.5 rounded flex items-center">
-                  {product.rating.toFixed(1)} <Star className="h-3 w-3 ml-0.5 fill-white" />
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  ({product.review_count || product.reviewCount || 0})
-                </span>
-              </>
-            )}
-          </div>
-          
-          <div className="flex items-center mb-3">
-            {product.sale_price ? (
-              <>
-                <span className={cn(
-                  "font-semibold",
-                  isDarkMode ? "text-orange-400" : "text-gray-900"
-                )}>
-                  ₹{product.sale_price.toFixed(2)}
-                </span>
-                <span className="ml-2 text-xs line-through text-muted-foreground">
-                  ₹{product.price.toFixed(2)}
-                </span>
-              </>
-            ) : (
-              <span className={cn(
-                "font-semibold",
-                isDarkMode ? "text-white" : "text-gray-900"
-              )}>
-                ₹{product.price.toFixed(2)}
+      <div className="flex flex-1 flex-col p-3 gap-1">
+        <h3 className="line-clamp-2 text-sm font-medium text-card-foreground transition-colors">{name}</h3>
+        
+        {category_id && (
+          <span className="text-xs text-muted-foreground">{category_id}</span>
+        )}
+        
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex flex-col">
+            <span className={cn(
+              "font-semibold",
+              hasDiscount ? "text-red-600" : "text-card-foreground"
+            )}>
+              {formatCurrency(discountedPrice)}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatCurrency(price)}
               </span>
             )}
           </div>
+          
+          {rating !== undefined && review_count !== undefined && (
+            <div className="flex items-center text-xs text-amber-500">
+              <span className="mr-1">★</span>
+              <span>{rating.toFixed(1)}</span>
+              <span className="ml-1 text-muted-foreground">({review_count})</span>
+            </div>
+          )}
         </div>
         
-        <div className="mt-auto flex gap-2">
-          <Button 
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <Button
+            onClick={handleAddToCart}
             className={cn(
-              "flex-grow text-xs h-8",
-              buttonColor || (isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "")
+              "flex-1 h-9 text-xs font-medium",
+              buttonColor
             )}
-            onClick={handleAddToCartClick}
-            disabled={isAddingThisToCart}
+            disabled={isAddingToCart === id}
           >
-            {isAddingThisToCart ? 'Adding...' : 'Add to Cart'}
-            <ShoppingCart className="ml-1 h-3 w-3" />
+            {isAddingToCart === id ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <>
+                <ShoppingCart className="mr-1 h-4 w-4" />
+                Add
+              </>
+            )}
           </Button>
           
           <Button
             variant="outline"
             size="icon"
-            className="h-8 w-8"
-            onClick={handleAddToWishlistClick}
-            disabled={isAddingThisToWishlist}
+            className="h-9 w-9"
+            onClick={handleAddToWishlist}
+            disabled={isAddingToWishlist === id}
           >
-            <Heart className={cn(
-              "h-3 w-3",
-              isAddingThisToWishlist && "text-red-500"
-            )} />
+            {isAddingToWishlist === id ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <Heart className="h-4 w-4" />
+            )}
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            onClick={handleShare}
+          >
+            <Share2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
-};
+}

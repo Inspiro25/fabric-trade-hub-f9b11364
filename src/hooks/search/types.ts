@@ -1,5 +1,5 @@
 
-import { Product } from '@/types/product';
+import { Product } from '@/lib/products/types';
 
 export interface SearchPageProduct {
   id: string;
@@ -7,6 +7,7 @@ export interface SearchPageProduct {
   price: number;
   sale_price?: number | null;
   images: string[];
+  category?: string;
   category_id?: string;
   shop_id?: string;
   colors?: string[];
@@ -19,6 +20,12 @@ export interface SearchPageProduct {
   description?: string;
   tags?: string[];
   created_at?: string;
+  // Add compatibility properties
+  reviewCount?: number;
+  salePrice?: number;
+  shopId?: string;
+  isNew?: boolean;
+  isTrending?: boolean;
 }
 
 export interface Category {

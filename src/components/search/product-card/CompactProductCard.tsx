@@ -1,119 +1,109 @@
 
+// Update the reviewCount references to use review_count
 import React from 'react';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ProductCardBaseProps } from '@/hooks/search/types';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/lib/utils';
+import { SearchPageProduct } from '@/hooks/search/types';
+import { ProductCardBaseProps } from '@/components/search/product-card/types';
 
-export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
+export interface CompactProductCardProps extends ProductCardBaseProps {
+  isCompact?: boolean;
+}
+
+export function CompactProductCard({
   product,
-  isAddingToCart,
-  isAddingToWishlist,
-  onAddToCart,
-  onAddToWishlist,
   onClick,
-  buttonColor
-}) => {
-  const isAddingThisToCart = isAddingToCart === true || isAddingToCart === product.id;
-  const isAddingThisToWishlist = isAddingToWishlist === true || isAddingToWishlist === product.id;
-  const { isDarkMode } = useTheme();
+  viewMode,
+  isCompact = true,
+}: CompactProductCardProps) {
+  const {
+    id,
+    name,
+    price,
+    sale_price,
+    images,
+    rating,
+    review_count,
+    is_new,
+    is_trending,
+  } = product;
+
+  const hasDiscount = sale_price !== undefined && sale_price !== null && sale_price > 0;
+  const discountedPrice = hasDiscount ? sale_price : price;
   
-  const handleProductClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (onClick) onClick(product);
+  const handleClick = () => {
+    if (onClick) {
+      onClick(product);
+    }
   };
 
-  const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (onAddToCart) onAddToCart(product);
-  };
-
-  const handleAddToWishlistClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (onAddToWishlist) onAddToWishlist(product);
-  };
-  
   return (
-    <div 
+    <div
       className={cn(
-        "group relative rounded-lg shadow-sm overflow-hidden cursor-pointer border flex",
-        isDarkMode 
-          ? "bg-gray-800 border-gray-700" 
-          : "bg-white border-gray-100"
+        "group relative flex flex-col overflow-hidden rounded-md border border-border h-full transition-all cursor-pointer hover:shadow-md",
+        viewMode === 'list' ? "flex-row items-center" : ""
       )}
-      onClick={handleProductClick}
+      onClick={handleClick}
     >
-      <div className="w-24 h-24 flex-shrink-0">
-        <img 
-          src={product.images[0] || '/placeholder.svg'}
-          alt={product.name}
-          className="object-cover w-full h-full"
-        />
+      <div className={cn(
+        "relative w-full overflow-hidden bg-background",
+        viewMode === 'list' ? "w-1/3" : "aspect-square",
+      )}>
+        {images && images[0] ? (
+          <img
+            src={images[0]}
+            alt={name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.png';
+            }}
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-gray-100">
+            <span className="text-sm text-gray-400">No image</span>
+          </div>
+        )}
+        
+        {is_new && (
+          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">New</Badge>
+        )}
+        
+        {is_trending && (
+          <Badge className="absolute top-2 right-2 bg-orange-500 text-white">Trending</Badge>
+        )}
       </div>
       
-      <div className="p-2 flex flex-col flex-grow">
-        <h3 className={cn(
-          "text-xs font-medium line-clamp-1 mb-0.5",
-          isDarkMode && "text-white"
-        )}>
-          {product.name}
-        </h3>
+      <div className={cn(
+        "flex flex-1 flex-col p-3 gap-1",
+        viewMode === 'list' ? "w-2/3" : ""
+      )}>
+        <h3 className="line-clamp-2 text-sm font-medium text-card-foreground transition-colors">{name}</h3>
         
-        <div className="flex items-center mb-1">
-          {product.rating > 0 && (
-            <>
-              <span className="text-green-600 text-xs font-medium flex items-center">
-                {product.rating.toFixed(1)} <Star className="h-2.5 w-2.5 ml-0.5 text-yellow-500" />
-              </span>
-              <span className="text-[10px] text-muted-foreground ml-1">
-                ({product.review_count || product.reviewCount || 0})
-              </span>
-            </>
-          )}
-        </div>
-        
-        <div className="flex items-center mb-1">
-          <span className={cn(
-            "text-xs font-semibold",
-            isDarkMode ? "text-orange-400" : "text-gray-900"
-          )}>
-            ₹{(product.sale_price || product.price).toFixed(2)}
-          </span>
-          {product.sale_price && (
-            <span className="ml-1 text-[10px] line-through text-muted-foreground">
-              ₹{product.price.toFixed(2)}
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex flex-col">
+            <span className={cn(
+              "font-semibold",
+              hasDiscount ? "text-red-600" : "text-card-foreground"
+            )}>
+              {formatCurrency(discountedPrice)}
             </span>
-          )}
-        </div>
-        
-        <div className="flex gap-1 mt-auto">
-          <Button 
-            size="sm"
-            className={cn(
-              "flex-grow h-6 text-[10px] px-1",
-              buttonColor || (isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "")
+            {hasDiscount && (
+              <span className="text-xs text-muted-foreground line-through">
+                {formatCurrency(price)}
+              </span>
             )}
-            onClick={handleAddToCartClick}
-            disabled={isAddingThisToCart}
-          >
-            {isAddingThisToCart ? 'Adding...' : 'Add to Cart'}
-            <ShoppingCart className="ml-1 h-2.5 w-2.5" />
-          </Button>
+          </div>
           
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-6 w-6 p-0"
-            onClick={handleAddToWishlistClick}
-            disabled={isAddingThisToWishlist}
-          >
-            <Heart className={cn(
-              "h-2.5 w-2.5",
-              isAddingThisToWishlist && "text-red-500"
-            )} />
-          </Button>
+          {rating !== undefined && review_count !== undefined && (
+            <div className="flex items-center text-xs text-amber-500">
+              <span className="mr-1">★</span>
+              <span>{rating.toFixed(1)}</span>
+              <span className="ml-1 text-muted-foreground">({review_count})</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
-};
+}

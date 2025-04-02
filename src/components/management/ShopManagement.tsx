@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,7 +29,7 @@ const ShopManagement: React.FC = () => {
     setValue,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema),
+    resolver: zodResolver(shopSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -54,7 +53,7 @@ const ShopManagement: React.FC = () => {
         if (shop) {
           setShopData(shop);
           setValue('name', shop.name);
-          setValue('description', shop.description);
+          setValue('description', shop.description || '');
           setValue('logo', shop.logo);
           setValue('coverImage', shop.coverImage);
           setValue('address', shop.address);
@@ -79,7 +78,7 @@ const ShopManagement: React.FC = () => {
     try {
       setIsSubmitting(true);
     
-      const shopData: Omit<Shop, 'id'> = {
+      const shopData = {
         name: data.name,
         description: data.description,
         logo: data.logo,
@@ -88,7 +87,7 @@ const ShopManagement: React.FC = () => {
         ownerName: data.ownerName,
         ownerEmail: data.ownerEmail,
         phoneNumber: data.phoneNumber, 
-        status: data.status,
+        status: data.status as "pending" | "active" | "suspended", // Type assertion to match expected types
         isVerified: data.isVerified || false,
         rating: 0,
         reviewCount: 0,
