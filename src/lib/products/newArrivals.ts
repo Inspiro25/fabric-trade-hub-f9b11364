@@ -1,6 +1,6 @@
 
-import { Product } from '@/lib/types/product';
-import { supabase } from '@/lib/supabase';
+import { Product } from '../types/product';
+import { supabase } from '@/integrations/supabase/client';
 
 export const fetchNewArrivals = async (limit = 8): Promise<Product[]> => {
   try {
@@ -37,5 +37,5 @@ export const fetchNewArrivalsForCategory = async (categoryId: string, limit = 8)
   }
 };
 
-// Alias for backwards compatibility
+// Alias for backwards compatibility - ensure this is exported
 export const getNewArrivals = fetchNewArrivals;

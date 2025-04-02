@@ -16,7 +16,7 @@ const NewArrivals = () => {
   
   const { data: products, isLoading } = useQuery({
     queryKey: ['newArrivals'],
-    queryFn: fetchNewArrivals
+    queryFn: async () => await fetchNewArrivals(8)
   });
 
   return (

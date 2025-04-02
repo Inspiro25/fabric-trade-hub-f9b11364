@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -25,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { Json } from '@/lib/types/json';
 
 interface OrderItem {
   id: string;
@@ -138,9 +138,17 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
   const saveOrderChanges = async () => {
     setIsSaving(true);
     try {
+      // Create a safe copy of the updated order that matches Supabase's expected structure
+      const orderUpdate = {
+        status: updatedOrder.status,
+        payment_status: updatedOrder.payment_status,
+        tracking_number: updatedOrder.tracking_number,
+        notes: updatedOrder.notes,
+      };
+      
       const { error } = await supabase
         .from('orders')
-        .update(updatedOrder)
+        .update(orderUpdate)
         .eq('id', orderId)
         .eq('shop_id', shopId);
       

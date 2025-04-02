@@ -1,18 +1,17 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { Json } from '@/lib/types/json';
 
-export interface AdminOrderSummary {
+interface OrderItem {
   id: string;
-  created_at: string;
-  status: string;
-  total: number;
-  customer_name: string;
-  customer_email: string;
-  payment_status: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  price: number;
+  color?: string;
+  size?: string;
 }
 
-export interface AdminOrderDetails {
+interface AdminOrderDetails {
   id: string;
   created_at: string;
   updated_at: string;
@@ -27,21 +26,109 @@ export interface AdminOrderDetails {
   customer_phone?: string;
   shipping_address?: string;
   shipping_method?: string;
-  items: OrderItem[];
+  items?: OrderItem[];
+  shop_id?: string;
+  user_id?: string;
 }
 
-export interface OrderItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  price: number;
-  size?: string;
-  color?: string;
-  productName?: string;
-  productImage?: string;
-}
+const itemsToJsonArray = (items: OrderItem[]): Json[] => {
+  return items.map(item => ({
+    id: item.id,
+    order_id: item.order_id,
+    product_id: item.product_id,
+    quantity: item.quantity,
+    price: item.price,
+    color: item.color,
+    size: item.size
+  }));
+};
 
-// Fetch orders for a specific shop
+export const getShopOrders = async (shopId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('shop_id', shopId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching shop orders:', error);
+    return [];
+  }
+};
+
+export const getOrderDetails = async (orderId: string) => {
+  try {
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .single();
+    
+    if (orderError) throw orderError;
+    
+    const { data: items, error: itemsError } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', orderId);
+    
+    if (itemsError) throw itemsError;
+    
+    return {
+      ...order,
+      items: items || []
+    };
+  } catch (error) {
+    console.error('Error fetching order details:', error);
+    return null;
+  }
+};
+
+export const updateOrderStatus = async (orderId: string, status: string) => {
+  try {
+    const { error } = await supabase
+      .from('orders')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', orderId);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    return false;
+  }
+};
+
+export const updateOrderDetails = async (orderId: string, orderData: Partial<AdminOrderDetails>) => {
+  try {
+    const updateData = {
+      status: orderData.status,
+      payment_status: orderData.payment_status,
+      tracking_number: orderData.tracking_number,
+      notes: orderData.notes,
+      customer_name: orderData.customer_name,
+      customer_email: orderData.customer_email,
+      customer_phone: orderData.customer_phone,
+      shipping_address: orderData.shipping_address,
+      shipping_method: orderData.shipping_method,
+      updated_at: new Date().toISOString()
+    };
+    
+    const { error } = await supabase
+      .from('orders')
+      .update(updateData)
+      .eq('id', orderId);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error updating order details:', error);
+    return false;
+  }
+};
+
 export const fetchShopOrders = async (shopId: string): Promise<AdminOrderSummary[]> => {
   try {
     const { data, error } = await supabase
@@ -64,10 +151,8 @@ export const fetchShopOrders = async (shopId: string): Promise<AdminOrderSummary
   }
 };
 
-// Fetch detailed information for a single order
 export const fetchOrderDetails = async (orderId: string, shopId: string): Promise<AdminOrderDetails | null> => {
   try {
-    // Fetch order data
     const { data: orderData, error: orderError } = await supabase
       .from('orders')
       .select('*')
@@ -81,7 +166,6 @@ export const fetchOrderDetails = async (orderId: string, shopId: string): Promis
       return null;
     }
     
-    // Fetch order items
     const { data: itemsData, error: itemsError } = await supabase
       .from('order_items')
       .select('*')
@@ -93,7 +177,6 @@ export const fetchOrderDetails = async (orderId: string, shopId: string): Promis
       return null;
     }
     
-    // Fetch product details for each item
     const itemsWithProducts = await Promise.all(itemsData.map(async (item) => {
       const { data: product } = await supabase
         .from('products')
@@ -119,7 +202,6 @@ export const fetchOrderDetails = async (orderId: string, shopId: string): Promis
   }
 };
 
-// Update order details
 export const updateOrder = async (
   orderId: string, 
   shopId: string, 
@@ -147,7 +229,6 @@ export const updateOrder = async (
   }
 };
 
-// Get shop sales analytics
 export const getShopSalesAnalytics = async (shopId: string) => {
   try {
     const { data, error } = await supabase
@@ -162,7 +243,6 @@ export const getShopSalesAnalytics = async (shopId: string) => {
       return [];
     }
     
-    // Format the data for display
     return data.map(item => ({
       month: new Date(item.month).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
       order_count: item.order_count,
@@ -175,7 +255,6 @@ export const getShopSalesAnalytics = async (shopId: string) => {
   }
 };
 
-// Check if a user is an admin for a specific shop
 export const isShopAdmin = async (userId: string, shopId: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase
