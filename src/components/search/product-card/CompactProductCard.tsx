@@ -1,107 +1,35 @@
 
 import React from 'react';
-import { cn, formatCurrency } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { SearchPageProduct } from '@/lib/products/types';
-import { ProductCardBaseProps } from '@/components/search/product-card/types';
+import { ProductCardBaseProps } from './types';
 
-export interface CompactProductCardProps extends ProductCardBaseProps {
-  isCompact?: boolean;
-}
-
-export function CompactProductCard({
-  product,
-  onClick,
-  viewMode,
-  isCompact = true,
-}: CompactProductCardProps) {
-  const {
-    id,
-    name,
-    price,
-    sale_price,
-    images,
-    rating,
-    review_count,
-    is_new,
-    is_trending,
-  } = product;
-
-  const hasDiscount = sale_price !== undefined && sale_price !== null && sale_price > 0;
-  const discountedPrice = hasDiscount ? sale_price : price;
-  
-  const handleClick = () => {
-    if (onClick) {
-      onClick(product);
-    }
-  };
-
+export const CompactProductCard: React.FC<ProductCardBaseProps> = ({ product, onClick }) => {
   return (
-    <div
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-md border border-border h-full transition-all cursor-pointer hover:shadow-md",
-        viewMode === 'list' ? "flex-row items-center" : ""
-      )}
-      onClick={handleClick}
+    <div 
+      className="p-2 border rounded cursor-pointer hover:bg-gray-50"
+      onClick={() => onClick?.(product)}
     >
-      <div className={cn(
-        "relative w-full overflow-hidden bg-background",
-        viewMode === 'list' ? "w-1/3" : "aspect-square",
-      )}>
-        {images && images[0] ? (
-          <img
-            src={images[0]}
-            alt={name}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.png';
-            }}
-          />
-        ) : (
-          <div className="h-full w-full flex items-center justify-center bg-gray-100">
-            <span className="text-sm text-gray-400">No image</span>
-          </div>
-        )}
-        
-        {is_new && (
-          <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">New</Badge>
-        )}
-        
-        {is_trending && (
-          <Badge className="absolute top-2 right-2 bg-orange-500 text-white">Trending</Badge>
-        )}
-      </div>
-      
-      <div className={cn(
-        "flex flex-1 flex-col p-3 gap-1",
-        viewMode === 'list' ? "w-2/3" : ""
-      )}>
-        <h3 className="line-clamp-2 text-sm font-medium text-card-foreground transition-colors">{name}</h3>
-        
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex flex-col">
-            <span className={cn(
-              "font-semibold",
-              hasDiscount ? "text-red-600" : "text-card-foreground"
-            )}>
-              {typeof discountedPrice === 'number' ? formatCurrency(discountedPrice) : formatCurrency(0)}
-            </span>
-            {hasDiscount && (
-              <span className="text-xs text-muted-foreground line-through">
-                {typeof price === 'number' ? formatCurrency(price) : formatCurrency(0)}
+      <div className="flex items-center space-x-2">
+        <div className="h-10 w-10 bg-gray-200 rounded overflow-hidden">
+          {product.images?.[0] && (
+            <img 
+              src={product.images[0]} 
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
+          )}
+        </div>
+        <div>
+          <p className="text-sm font-medium line-clamp-1">{product.name}</p>
+          <p className="text-xs text-gray-500">
+            ₹{product.price.toFixed(2)}
+            {product.salePrice && (
+              <span className="ml-2 line-through text-gray-400">
+                ₹{product.salePrice.toFixed(2)}
               </span>
             )}
-          </div>
-          
-          {rating !== undefined && review_count !== undefined && (
-            <div className="flex items-center text-xs text-amber-500">
-              <span className="mr-1">★</span>
-              <span>{typeof rating === 'number' ? rating.toFixed(1) : '0.0'}</span>
-              <span className="ml-1 text-muted-foreground">({review_count})</span>
-            </div>
-          )}
+          </p>
         </div>
       </div>
     </div>
   );
-}
+};

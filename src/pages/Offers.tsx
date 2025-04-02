@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Percent, Tag, Clock, ArrowRight, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import ProductCard from '@/components/ui/ProductCard';
+import ProductCard from '@/components/search/product-card';
 import { Offer, getActiveOffers } from '@/lib/supabase/offers';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts } from '@/lib/products/base';
@@ -33,12 +32,10 @@ const Offers = () => {
     queryFn: getActiveOffers,
   });
 
-  // Fetch products when component mounts
   useEffect(() => {
     const loadProducts = async () => {
       try {
         const products = await fetchProducts();
-        // Filter products with sale price for the featured deals section
         const discounted = products.filter(product => product.salePrice).slice(0, 8);
         setDiscountedProducts(discounted);
       } catch (error) {
@@ -143,7 +140,7 @@ const Offers = () => {
                   {discountedProducts.length > 0 ? (
                     <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
                       {discountedProducts.slice(0, isMobile ? 2 : 4).map((product) => (
-                        <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
+                        <ProductCard key={product.id} product={product} viewMode={isMobile ? "compact" : "grid"} />
                       ))}
                     </div>
                   ) : (
@@ -337,7 +334,7 @@ const Offers = () => {
                 {discountedProducts.length > 0 ? (
                   <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
                     {discountedProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
+                      <ProductCard key={product.id} product={product} viewMode={isMobile ? "compact" : "grid"} />
                     ))}
                   </div>
                 ) : (

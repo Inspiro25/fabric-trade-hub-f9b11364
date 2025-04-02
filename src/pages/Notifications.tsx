@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Bell, Trash2, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,7 +10,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
 const Notifications = () => {
-  const { notifications, markNotificationAsRead, markAllAsRead } = useNotifications();
+  const { notifications, markAsRead, markAllAsRead } = useNotifications();
   const { isDarkMode } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -34,10 +33,9 @@ const Notifications = () => {
     );
   }
 
-  // Group notifications by date (today, yesterday, older)
   const groupedNotifications = {
     today: notifications.filter((n) => {
-      const date = new Date(n.createdAt);
+      const date = new Date(n.timestamp);
       const today = new Date();
       return (
         date.getDate() === today.getDate() &&
@@ -46,7 +44,7 @@ const Notifications = () => {
       );
     }),
     yesterday: notifications.filter((n) => {
-      const date = new Date(n.createdAt);
+      const date = new Date(n.timestamp);
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       return (
@@ -56,7 +54,7 @@ const Notifications = () => {
       );
     }),
     older: notifications.filter((n) => {
-      const date = new Date(n.createdAt);
+      const date = new Date(n.timestamp);
       const twoDaysAgo = new Date();
       twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
       return date < twoDaysAgo;
@@ -64,8 +62,7 @@ const Notifications = () => {
   };
 
   const handleDeleteNotification = (id) => {
-    // For this implementation, we'll just mark it as read since delete isn't implemented in context
-    markNotificationAsRead(id);
+    markAsRead(id);
     toast.success('Notification deleted');
   };
 
@@ -124,7 +121,6 @@ const Notifications = () => {
           </Card>
         ) : (
           <>
-            {/* Today's notifications */}
             {groupedNotifications.today.length > 0 && (
               <div>
                 <h2 className={cn(
@@ -136,7 +132,7 @@ const Notifications = () => {
                     <NotificationItem
                       key={notification.id}
                       notification={notification}
-                      onMarkAsRead={markNotificationAsRead}
+                      onMarkAsRead={markAsRead}
                       onDelete={handleDeleteNotification}
                       isDarkMode={isDarkMode}
                     />
@@ -145,7 +141,6 @@ const Notifications = () => {
               </div>
             )}
             
-            {/* Yesterday's notifications */}
             {groupedNotifications.yesterday.length > 0 && (
               <div>
                 <h2 className={cn(
@@ -157,7 +152,7 @@ const Notifications = () => {
                     <NotificationItem
                       key={notification.id}
                       notification={notification}
-                      onMarkAsRead={markNotificationAsRead}
+                      onMarkAsRead={markAsRead}
                       onDelete={handleDeleteNotification}
                       isDarkMode={isDarkMode}
                     />
@@ -166,7 +161,6 @@ const Notifications = () => {
               </div>
             )}
             
-            {/* Older notifications */}
             {groupedNotifications.older.length > 0 && (
               <div>
                 <h2 className={cn(
@@ -178,7 +172,7 @@ const Notifications = () => {
                     <NotificationItem
                       key={notification.id}
                       notification={notification}
-                      onMarkAsRead={markNotificationAsRead}
+                      onMarkAsRead={markAsRead}
                       onDelete={handleDeleteNotification}
                       isDarkMode={isDarkMode}
                     />
@@ -194,7 +188,7 @@ const Notifications = () => {
 };
 
 const NotificationItem = ({ notification, onMarkAsRead, onDelete, isDarkMode }) => {
-  const timeAgo = formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true });
+  const timeAgo = formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true });
   
   const getNotificationIcon = (type) => {
     switch (type) {

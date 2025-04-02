@@ -118,7 +118,7 @@ const OrderItem = ({ order }: { order: typeof orders[0] }) => {
 };
 
 const Orders = () => {
-  const { orders, isLoading } = useOrders();
+  const { orders, loading: isLoading } = useOrders();
   const { currentUser } = useAuth();
 
   if (!currentUser) {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Filter } from 'lucide-react';
@@ -21,7 +20,6 @@ const CategoryPage = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
-  // Remove the duplicate useEffect and keep only this one
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
@@ -40,7 +38,6 @@ const CategoryPage = () => {
     fetchAllCategories();
   }, []);
 
-  // Update the category fetch effect
   useEffect(() => {
     const fetchCategory = async () => {
       if (!categorySlug) return;
@@ -70,7 +67,6 @@ const CategoryPage = () => {
         
         if (categoryData) {
           setCategory(categoryData);
-          // Products will be available in categoryData.products
         }
       } catch (error) {
         console.error('Error fetching category data:', error);
@@ -80,24 +76,20 @@ const CategoryPage = () => {
     fetchCategory();
   }, [categorySlug]);
   
-  // Use our new hook to fetch products by category
-  const { data, isLoading, error } = useProductsByCategory(
+  const { products, loading: isLoading, error } = useProductsByCategory(
     category?.id || '',
     page,
     12,
     sortBy
   );
   
-  const products = data?.products || [];
-  const totalProducts = data?.total || 0;
+  const totalProducts = products?.length || 0;
   
-  // Handle page change
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     window.scrollTo(0, 0);
   };
   
-  // Handle sort change
   const handleSortChange = (newSortBy: 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity') => {
     setSortBy(newSortBy);
     setPage(1);
@@ -134,7 +126,6 @@ const CategoryPage = () => {
     );
   }
   
-  // Add this useEffect for fetching categories
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
@@ -153,7 +144,6 @@ const CategoryPage = () => {
       "min-h-screen pb-16",
       isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
     )}>
-      {/* Header with back button */}
       <div className={cn(
         "sticky top-0 z-10 p-4 border-b",
         isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
@@ -172,7 +162,6 @@ const CategoryPage = () => {
           </h1>
         </div>
 
-        {/* Add this new categories scroll area */}
         <ScrollArea className="w-full whitespace-nowrap">
           <div className="flex space-x-2 pb-2">
             {categories.map((cat) => (
@@ -190,7 +179,7 @@ const CategoryPage = () => {
                       ? "border-gray-700 hover:border-orange-500/50 hover:text-orange-400"
                       : "border-gray-200 hover:border-orange-500/50 hover:text-orange-500"
                 )}
-                onClick={() => navigate(`/category/${categoryToSlug(cat.name)}`)}
+                onClick={() => navigate(`/category/${slugToCategory(cat.name)}`)}
               >
                 {cat.name}
               </Button>
@@ -200,7 +189,6 @@ const CategoryPage = () => {
         </ScrollArea>
       </div>
       
-      {/* Category banner */}
       {category?.image && (
         <div className="relative h-40 w-full mb-4">
           <img 
@@ -227,7 +215,6 @@ const CategoryPage = () => {
         </div>
       )}
       
-      {/* Products grid */}
       <div className="p-4">
         {isLoading ? (
           <div className="grid grid-cols-2 gap-4">
