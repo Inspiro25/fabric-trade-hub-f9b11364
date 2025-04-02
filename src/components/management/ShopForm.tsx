@@ -1,8 +1,8 @@
 
 import React from 'react';
-import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,29 +29,34 @@ export const shopSchema = z.object({
 // Define the form values type based on the schema
 export type ShopFormValues = z.infer<typeof shopSchema>;
 
-export interface ShopFormProps {
+interface ShopFormProps {
   initialValues?: Partial<ShopFormValues>;
-  onSubmit: (data: ShopFormValues) => void;
+  onSubmit: (data: ShopFormValues) => Promise<void>;
   isLoading?: boolean;
   submitLabel?: string;
 }
 
-export function ShopForm({ initialValues, onSubmit, isLoading, submitLabel = 'Save' }: ShopFormProps) {
+export function ShopForm({
+  initialValues,
+  onSubmit,
+  isLoading = false,
+  submitLabel = "Submit"
+}: ShopFormProps) {
   const form = useForm<ShopFormValues>({
     resolver: zodResolver(shopSchema),
     defaultValues: {
-      name: initialValues?.name || '',
-      description: initialValues?.description || '',
-      status: initialValues?.status || 'pending',
-      address: initialValues?.address || '',
-      logo: initialValues?.logo || '',
-      password: initialValues?.password || '',
-      coverImage: initialValues?.coverImage || '',
-      isVerified: initialValues?.isVerified || false,
-      shopId: initialValues?.shopId || '',
-      ownerName: initialValues?.ownerName || '',
-      ownerEmail: initialValues?.ownerEmail || '',
-      phoneNumber: initialValues?.phoneNumber || '',
+      name: '',
+      description: '',
+      status: 'pending' as const,
+      address: '',
+      logo: '',
+      password: '',
+      coverImage: '',
+      isVerified: false,
+      ownerName: '',
+      ownerEmail: '',
+      phoneNumber: '',
+      ...initialValues
     },
   });
 
@@ -71,7 +76,7 @@ export function ShopForm({ initialValues, onSubmit, isLoading, submitLabel = 'Sa
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="description"
@@ -85,30 +90,58 @@ export function ShopForm({ initialValues, onSubmit, isLoading, submitLabel = 'Sa
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="isVerified"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">
+                    Verified Shop
+                  </FormLabel>
+                  <FormDescription>
+                    Mark this shop as verified
+                  </FormDescription>
+                </div>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select shop status" />
-                  </SelectTrigger>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+              </FormItem>
+            )}
+          />
+        </div>
+        
         <FormField
           control={form.control}
           name="address"
@@ -116,111 +149,109 @@ export function ShopForm({ initialValues, onSubmit, isLoading, submitLabel = 'Sa
             <FormItem>
               <FormLabel>Address</FormLabel>
               <FormControl>
-                <Input placeholder="Shop address" {...field} />
+                <Input placeholder="Enter shop address" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="logo"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Logo URL</FormLabel>
-              <FormControl>
-                <Input placeholder="Logo image URL" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="coverImage"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cover Image URL</FormLabel>
-              <FormControl>
-                <Input placeholder="Cover image URL" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="ownerName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Owner Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Owner's name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="ownerEmail"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Owner Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="Owner's email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="phoneNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="Phone number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="isVerified"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center space-x-2">
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="ownerName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Owner Name</FormLabel>
                 <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Input placeholder="Enter owner name" {...field} />
                 </FormControl>
-                <FormLabel>Verified Shop</FormLabel>
-              </div>
-              <FormDescription>
-                Mark this shop as verified
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Saving...' : submitLabel}
-        </Button>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="ownerEmail"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Owner Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Enter email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter phone number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Set shop password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="logo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Logo URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter logo URL" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="coverImage"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cover Image URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter cover image URL" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "Processing..." : submitLabel}
+          </Button>
+        </div>
       </form>
     </Form>
   );
 }
-
-export default ShopForm;

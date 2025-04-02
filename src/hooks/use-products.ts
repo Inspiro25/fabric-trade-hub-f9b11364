@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Product } from '@/lib/products/types';
 import { supabase } from '@/lib/supabase';
-import { mockProducts } from '@/lib/products';
+import { mockProducts } from '@/lib/products/index';
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
