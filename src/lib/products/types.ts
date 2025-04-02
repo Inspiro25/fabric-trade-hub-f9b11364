@@ -41,18 +41,19 @@ export interface SearchPageProduct {
   category?: string;
   category_id?: string;
   shop_id?: string;
+  shopId?: string;
   colors?: string[];
   sizes?: string[];
   stock?: number;
   rating?: number;
   review_count?: number;
+  reviewCount?: number;
   is_new?: boolean;
+  isNew?: boolean;
   is_trending?: boolean;
+  isTrending?: boolean;
   description?: string;
   tags?: string[];
   created_at?: string;
-  reviewCount?: number;
-  shopId?: string;
-  isNew?: boolean;
-  isTrending?: boolean;
+  brand?: string;
 }

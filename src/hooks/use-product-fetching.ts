@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/products';
+import { mockProducts } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 interface UseProductFetchingProps {

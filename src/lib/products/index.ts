@@ -9,6 +9,7 @@ import {
   productStore,
 } from '@/types/product';
 
+// Export Product type
 export type {
   Product,
   CartItem,

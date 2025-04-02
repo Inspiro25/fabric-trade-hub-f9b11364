@@ -1,84 +1,105 @@
 
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast'; 
-import { SearchPageProduct } from './types';
+import { toast } from 'sonner';
+import { SearchPageProduct } from '@/hooks/search/types';
 import { useCart } from '@/hooks/use-cart';
 import { useWishlist } from '@/hooks/use-wishlist';
+import useAuthDialog from './use-auth-dialog';
 
 export function useSearchCartIntegration() {
-  const [isAddingToCart, setIsAddingToCart] = useState<boolean | string>(false);
-  const [isAddingToWishlist, setIsAddingToWishlist] = useState<boolean | string>(false);
-  const { toast } = useToast();
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
+  const [isAddingToCart, setIsAddingToCart] = useState<string | boolean>(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | boolean>(false);
+  const { addToCart, isInCart } = useCart();
+  const { addToWishlist, isInWishlist } = useWishlist();
+  const { openAuthDialog } = useAuthDialog();
   
   const handleAddToCart = (product: SearchPageProduct) => {
-    setIsAddingToCart(product.id);
+    if (!product.id) return;
     
     try {
-      // Make sure we provide default values for required fields
-      addToCart(product, 1, product.colors?.[0] || '', product.sizes?.[0] || '');
+      setIsAddingToCart(product.id);
       
-      toast({
-        title: "Added to cart",
-        description: `${product.name} has been added to your cart`,
-        variant: "success",
+      if (isInCart(product.id)) {
+        toast("Already in cart", {
+          description: "This product is already in your cart",
+          action: {
+            label: "View Cart",
+            onClick: () => window.location.href = "/cart"
+          },
+        });
+        return;
+      }
+      
+      // Add to cart with default color/size if product has them
+      addToCart({
+        ...product,
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        rating: product.rating || 0,
+        stock: product.stock || 0,
+        tags: product.tags || []
+      } as any, 1);
+      
+      toast("Added to cart", {
+        description: `${product.name} has been added to your cart.`,
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not add product to cart",
-        variant: "destructive",
+      console.error('Error adding to cart:', error);
+      toast("Error", {
+        description: "Could not add to cart. Please try again.",
       });
-      console.error(error);
     } finally {
       setIsAddingToCart(false);
     }
   };
   
   const handleAddToWishlist = (product: SearchPageProduct) => {
-    setIsAddingToWishlist(product.id);
+    if (!product.id) return;
     
     try {
-      addToWishlist(product);
-      toast({
-        title: "Added to wishlist",
-        description: `${product.name} has been added to your wishlist`,
-        variant: "success",
+      setIsAddingToWishlist(product.id);
+      
+      if (isInWishlist(product.id)) {
+        toast("Already in wishlist", {
+          description: "This product is already in your wishlist",
+          action: {
+            label: "View Wishlist",
+            onClick: () => window.location.href = "/wishlist"
+          },
+        });
+        return;
+      }
+      
+      addToWishlist(product.id);
+      
+      toast("Added to wishlist", {
+        description: `${product.name} has been added to your wishlist.`,
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not add product to wishlist",
-        variant: "destructive",
+      console.error('Error adding to wishlist:', error);
+      toast("Error", {
+        description: "Could not add to wishlist. Please try again.",
       });
-      console.error(error);
     } finally {
       setIsAddingToWishlist(false);
     }
   };
   
   const handleShareProduct = (product: SearchPageProduct) => {
-    const url = `${window.location.origin}/product/${product.id}`;
+    if (!product.id) return;
     
-    if (navigator.share) {
-      navigator
-        .share({
-          title: product.name,
-          text: product.description?.substring(0, 100) || `Check out this ${product.name}`,
-          url,
-        })
-        .catch((error) => console.log('Error sharing:', error));
-    }
+    navigator.clipboard.writeText(`${window.location.origin}/product/${product.id}`);
     
-    return url;
+    toast("Link copied", {
+      description: "Product link copied to clipboard",
+    });
   };
   
   return {
-    isAddingToCart,
-    isAddingToWishlist,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,
+    isAddingToCart,
+    isAddingToWishlist
   };
 }
