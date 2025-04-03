@@ -32,32 +32,34 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
         className={cn(
           "h-8 w-8 p-0 border-r",
           isDarkMode 
-            ? "border-gray-600 data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
-            : "border-gray-200 data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+            ? "border-gray-600 data-[state=on]:bg-purple-600 data-[state=on]:text-white hover:bg-gray-700" 
+            : "border-gray-200 data-[state=on]:bg-purple-100 data-[state=on]:text-purple-700"
         )}
       >
         <LayoutGrid className="h-4 w-4" />
         <span className="sr-only">Grid View</span>
       </ToggleGroupItem>
+      
       <ToggleGroupItem 
         value="list" 
         className={cn(
           "h-8 w-8 p-0 border-r",
           isDarkMode 
-            ? "data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
-            : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+            ? "data-[state=on]:bg-purple-600 data-[state=on]:text-white hover:bg-gray-700" 
+            : "data-[state=on]:bg-purple-100 data-[state=on]:text-purple-700"
         )}
       >
         <List className="h-4 w-4" />
         <span className="sr-only">List View</span>
       </ToggleGroupItem>
+      
       <ToggleGroupItem 
         value="compact" 
         className={cn(
           "h-8 w-8 p-0",
           isDarkMode 
-            ? "data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
-            : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+            ? "data-[state=on]:bg-purple-600 data-[state=on]:text-white hover:bg-gray-700" 
+            : "data-[state=on]:bg-purple-100 data-[state=on]:text-purple-700"
         )}
       >
         <ChevronsDown className="h-4 w-4" />

@@ -39,7 +39,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
       "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg shadow-sm mb-3 gap-2 border-b",
       isDarkMode 
         ? "bg-gray-800/90 backdrop-blur-sm border-gray-700" 
-        : "bg-white border-orange-100"
+        : "bg-white border-purple-100"
     )}>
       <div className={cn(
         "text-sm flex flex-wrap items-center",
@@ -48,8 +48,8 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         <Badge variant="outline" className={cn(
           "mr-2",
           isDarkMode 
-            ? "bg-orange-900/50 text-orange-300 border-orange-700" 
-            : "bg-orange-50 text-vyoma-primary border-orange-200"
+            ? "bg-purple-900/50 text-purple-300 border-purple-700" 
+            : "bg-purple-50 text-purple-700 border-purple-200"
         )}>
           <CheckCircle className="h-3 w-3 mr-1" />
           <span className="flex items-center">
@@ -69,7 +69,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className={cn(
             "h-4 w-4",
-            isDarkMode ? "text-orange-300" : "text-vyoma-primary"
+            isDarkMode ? "text-purple-300" : "text-purple-700"
           )} />
           <Select
             value={itemsPerPage.toString()}
@@ -78,8 +78,8 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
             <SelectTrigger className={cn(
               `${isMobile ? 'w-[90px] h-8 text-xs' : 'w-[120px] text-sm'}`,
               isDarkMode 
-                ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-orange-500" 
-                : "border-gray-200 focus:ring-vyoma-primary"
+                ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-purple-500" 
+                : "border-gray-200 focus:ring-purple-500"
             )}>
               <SelectValue placeholder="20 per page" />
             </SelectTrigger>

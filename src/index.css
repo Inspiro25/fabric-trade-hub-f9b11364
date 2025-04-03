@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 30 100% 50%; /* Changed to Orange */
+    --primary: 270 95% 60%; /* Changed to Meesho Purple */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 4.8% 95.9%;
@@ -25,26 +25,26 @@
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 30 100% 96%; /* Light Orange */
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 270 95% 97%; /* Light Purple */
+    --accent-foreground: 270 95% 60%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --ring: 270 95% 60%; /* Changed to Meesho Purple */
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 30 100% 50%; /* Changed to Orange */
+    --sidebar-primary: 270 95% 60%; /* Changed to Meesho Purple */
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 30 100% 50%; /* Changed to Orange */
+    --sidebar-ring: 270 95% 60%; /* Changed to Meesho Purple */
   }
 
   .dark {
@@ -57,7 +57,7 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 30 100% 50%; /* Changed to Orange */
+    --primary: 270 95% 60%; /* Changed to Meesho Purple */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 3.7% 15.9%;
@@ -66,7 +66,7 @@
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 30 100% 15%; /* Dark Orange */
+    --accent: 270 80% 20%; /* Dark Purple */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -78,12 +78,12 @@
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 30 100% 50%; /* Changed to Orange */
+    --sidebar-primary: 270 95% 60%; /* Changed to Meesho Purple */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 30 100% 50%; /* Changed to Orange */
+    --sidebar-ring: 270 95% 60%; /* Changed to Meesho Purple */
   }
 }
 
@@ -130,6 +130,18 @@
   
   .dark-glass {
     @apply bg-gray-900/80 backdrop-blur-sm border border-gray-800;
+  }
+  
+  .meesho-gradient {
+    @apply bg-gradient-to-r from-purple-500 to-pink-500;
+  }
+  
+  .meesho-text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600;
+  }
+  
+  .meesho-shadow {
+    @apply shadow-[0_4px_12px_rgba(136,61,209,0.2)];
   }
 }
 
@@ -250,6 +262,26 @@
     @apply absolute right-1 top-1/2 transform -translate-y-1/2 h-8 rounded-full flex items-center justify-center;
   }
   
+  .meesho-button {
+    @apply bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors;
+  }
+
+  .meesho-card {
+    @apply rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-subtle;
+  }
+
+  .meesho-input {
+    @apply rounded-full border border-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 px-4 py-2 focus:border-purple-400 focus:ring-1 focus:ring-purple-400;
+  }
+
+  .meesho-badge {
+    @apply bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium px-2 py-1 rounded-full;
+  }
+
+  .meesho-searchbar {
+    @apply bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 text-sm w-full focus:outline-none dark:text-gray-200;
+  }
+
   /* Dark theme specific classes */
   .dark-card {
     @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg shadow-sm;
