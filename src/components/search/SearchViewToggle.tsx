@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, ChevronsDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 interface SearchViewToggleProps {
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
+  viewMode: 'grid' | 'list' | 'compact';
+  onViewModeChange: (mode: 'grid' | 'list' | 'compact') => void;
 }
 
 const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
@@ -21,7 +21,7 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
     <ToggleGroup 
       type="single" 
       value={viewMode} 
-      onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list')}
+      onValueChange={(value) => value && onViewModeChange(value as 'grid' | 'list' | 'compact')}
       className={cn(
         "border rounded-md overflow-hidden",
         isDarkMode ? "border-gray-600 bg-gray-800/50" : "border-gray-200"
@@ -42,7 +42,7 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
       <ToggleGroupItem 
         value="list" 
         className={cn(
-          "h-8 w-8 p-0",
+          "h-8 w-8 p-0 border-r",
           isDarkMode 
             ? "data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
             : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
@@ -50,6 +50,18 @@ const SearchViewToggle: React.FC<SearchViewToggleProps> = ({
       >
         <List className="h-4 w-4" />
         <span className="sr-only">List View</span>
+      </ToggleGroupItem>
+      <ToggleGroupItem 
+        value="compact" 
+        className={cn(
+          "h-8 w-8 p-0",
+          isDarkMode 
+            ? "data-[state=on]:bg-orange-600 data-[state=on]:text-white hover:bg-gray-700" 
+            : "data-[state=on]:bg-orange-100 data-[state=on]:text-kutuku-primary"
+        )}
+      >
+        <ChevronsDown className="h-4 w-4" />
+        <span className="sr-only">Compact View</span>
       </ToggleGroupItem>
     </ToggleGroup>
   );

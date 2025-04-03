@@ -68,6 +68,31 @@ export const SearchProductCard: React.FC<ProductCardProps> = ({
   const hasDiscount = sale_price !== undefined && sale_price !== null;
   const discountedPrice = hasDiscount ? sale_price : price;
 
+  // For compact view, render a simplified card
+  if (viewMode === 'compact') {
+    return (
+      <Card
+        className="border-none shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full"
+        onClick={onClick}
+      >
+        <div className="relative h-24">
+          <img
+            src={images[0]}
+            alt={name}
+            className="w-full h-full object-cover rounded-t-md"
+          />
+          {is_new && (
+            <Badge className="absolute top-1 left-1 text-xs px-1 py-0">New</Badge>
+          )}
+        </div>
+        <CardContent className="p-2 space-y-0.5">
+          <h3 className="text-xs font-medium truncate">{name}</h3>
+          <p className="text-xs font-bold">{formatCurrency(discountedPrice)}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card
       className={cn(
@@ -159,7 +184,22 @@ export const SearchProductCard: React.FC<ProductCardProps> = ({
   );
 };
 
-export const SearchProductCardSkeleton: React.FC<{ viewMode: 'grid' | 'list' }> = ({ viewMode }) => {
+export const SearchProductCardSkeleton: React.FC<{ viewMode: 'grid' | 'list' | 'compact' }> = ({ viewMode }) => {
+  // For compact view, render a simplified skeleton
+  if (viewMode === 'compact') {
+    return (
+      <Card className="border-none shadow-sm h-full">
+        <div className="relative h-24">
+          <Skeleton className="w-full h-full rounded-t-md" />
+        </div>
+        <CardContent className="p-2 space-y-0.5">
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-1/2" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className={cn(
       "border-none shadow-sm",

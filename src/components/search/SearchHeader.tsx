@@ -19,8 +19,8 @@ interface SearchHeaderProps {
   itemsPerPage: number;
   totalItems: number;
   onItemsPerPageChange: (items: number) => void;
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
+  viewMode: 'grid' | 'list' | 'compact';
+  onViewModeChange: (mode: 'grid' | 'list' | 'compact') => void;
 }
 
 const SearchHeader: React.FC<SearchHeaderProps> = ({

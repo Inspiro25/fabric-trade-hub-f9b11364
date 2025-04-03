@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import { SearchProductCard, SearchProductCardSkeleton } from './SearchProductCard';
 import { SearchPageProduct } from '@/hooks/search/types';
@@ -5,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
-import { Grid, ListFilter, LayoutGrid, LayoutList } from 'lucide-react';
+import { Grid, ListFilter, LayoutGrid, LayoutList, ChevronsDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -139,6 +140,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               >
                 <LayoutList className="h-4 w-4" />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "h-8 w-8 rounded-none",
+                  viewMode === 'compact' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+                )}
+                onClick={() => onViewModeChange('compact')}
+              >
+                <ChevronsDown className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -146,10 +158,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         <div className={cn(
           viewMode === 'grid'
             ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-            : "flex flex-col gap-4"
+            : viewMode === 'list'
+            ? "flex flex-col gap-4"
+            : "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2" // Compact view
         )}>
           {Array.from({ length: 8 }).map((_, index) => (
-            <SearchProductCardSkeleton key={index} viewMode={viewMode} />
+            <SearchProductCardSkeleton key={index} viewMode={viewMode === 'compact' ? 'grid' : viewMode} />
           ))}
         </div>
       </div>
@@ -184,6 +198,17 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             >
               <LayoutList className="h-4 w-4" />
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-8 w-8 rounded-none",
+                viewMode === 'compact' && (isDarkMode ? "bg-gray-700" : "bg-gray-100")
+              )}
+              onClick={() => onViewModeChange('compact')}
+            >
+              <ChevronsDown className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
@@ -191,7 +216,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       <div className={cn(
         viewMode === 'grid'
           ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-          : "flex flex-col gap-4"
+          : viewMode === 'list'
+          ? "flex flex-col gap-4"
+          : "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2" // Compact view
       )}>
         {products.map(product => (
           <SearchProductCard
@@ -203,7 +230,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             onClick={() => handleProductClick(product)}
             viewMode={viewMode}
             buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
-            isCompact={false}
+            isCompact={viewMode === 'compact'}
           />
         ))}
       </div>
