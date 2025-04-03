@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Heart, Share2 } from 'lucide-react';
@@ -35,7 +36,7 @@ export interface ProductCardProps {
   onAddToWishlist?: () => void;
   onShare?: () => void;
   onClick?: () => void;
-  viewMode: 'grid' | 'list';
+  viewMode: 'grid' | 'list' | 'compact';
   buttonColor?: string;
   isCompact?: boolean;
 }

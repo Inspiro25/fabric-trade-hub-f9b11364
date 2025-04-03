@@ -1,15 +1,22 @@
+import { useState, useEffect } from 'react';
 
-import { useState } from 'react';
-
-export function useSearchViewMode(defaultMode: 'grid' | 'list' = 'grid') {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(defaultMode);
+export const useSearchViewMode = () => {
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'compact'>('grid');
   
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
+  const handleViewModeChange = (mode: 'grid' | 'list' | 'compact') => {
     setViewMode(mode);
+    localStorage.setItem('search-view-mode', mode);
   };
   
+  useEffect(() => {
+    const savedMode = localStorage.getItem('search-view-mode') as 'grid' | 'list' | 'compact' | null;
+    if (savedMode && (savedMode === 'grid' || savedMode === 'list' || savedMode === 'compact')) {
+      setViewMode(savedMode);
+    }
+  }, []);
+  
   return { viewMode, setViewMode, handleViewModeChange };
-}
+};
 
 export function useSearchFilters(initialCategory: string | null) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);

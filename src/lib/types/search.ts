@@ -25,8 +25,8 @@ export interface SearchFilterReturn {
   setRatings: (rating: number | null) => void;
   sortOption: SortOption;
   setSortOption: (option: SortOption) => void;
-  viewMode: 'grid' | 'list';
-  setViewMode: (mode: 'grid' | 'list') => void;
+  viewMode: 'grid' | 'list' | 'compact';
+  setViewMode: (mode: 'grid' | 'list' | 'compact') => void;
   resetFilters: () => void;
   // Filter options from useSearchFilters
   selectedCategory: string | null;
@@ -48,7 +48,7 @@ export interface SearchFilterReturn {
   handlePriceRangeChange: (value: number[]) => void;
   handleRatingChange: (value: number | null) => void;
   handleSortChange: (value: string) => void;
-  handleViewModeChange: (mode: 'grid' | 'list') => void;
+  handleViewModeChange: (mode: 'grid' | 'list' | 'compact') => void;
   toggleBrandFilter: (brand: string) => void;
   toggleDiscountFilter: (discount: string) => void;
   handleAvailabilityFilterChange: (key: string) => void;
@@ -85,8 +85,8 @@ export interface SearchReturn {
   setRatings: (rating: number | null) => void;
   sortOption: SortOption;
   setSortOption: (option: SortOption) => void;
-  viewMode: 'grid' | 'list';
-  setViewMode: (mode: 'grid' | 'list') => void;
+  viewMode: 'grid' | 'list' | 'compact';
+  setViewMode: (mode: 'grid' | 'list' | 'compact') => void;
   
   // Results state
   products: SearchPageProduct[];
@@ -131,7 +131,7 @@ export interface SearchReturn {
   handlePriceRangeChange: (value: number[]) => void;
   handleRatingChange: (value: number | null) => void;
   handleSortChange: (value: string) => void;
-  handleViewModeChange: (mode: 'grid' | 'list') => void;
+  handleViewModeChange: (mode: 'grid' | 'list' | 'compact') => void;
   clearFilters: () => void;
   
   // Additional features

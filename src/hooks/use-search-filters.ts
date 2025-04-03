@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { SortOption } from '@/lib/types/search';
 
@@ -8,7 +7,7 @@ export const useSearchFilters = () => {
   const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
   const [rating, setRating] = useState<number | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('relevance');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'compact'>('grid');
   
   const [brandFilters, setBrandFilters] = useState<string[]>([]);
   const [discountFilters, setDiscountFilters] = useState<string[]>([]);
@@ -21,14 +20,13 @@ export const useSearchFilters = () => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
   
-  // Additional state for search form
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<string | null>(null);
   const [ratings, setRatings] = useState<number | null>(null);
   
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);
-    setCategory(category); // Also update the search form state
+    setCategory(category);
   };
 
   const handleShopChange = (shop: string | null) => {
@@ -41,14 +39,14 @@ export const useSearchFilters = () => {
 
   const handleRatingChange = (value: number | null) => {
     setRating(value);
-    setRatings(value); // Also update the search form state
+    setRatings(value);
   };
 
   const handleSortChange = (value: string) => {
     setSortOption(value as SortOption);
   };
   
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
+  const handleViewModeChange = (mode: 'grid' | 'list' | 'compact') => {
     setViewMode(mode);
   };
 
@@ -92,8 +90,8 @@ export const useSearchFilters = () => {
     setQuery('');
   };
   
-  const resetFilters = clearFilters; // Alias for backward compatibility
-  
+  const resetFilters = clearFilters;
+
   const filterProducts = (products: any[]) => {
     return products.filter(product => {
       if (selectedCategory && product.category_id !== selectedCategory) {
@@ -133,7 +131,7 @@ export const useSearchFilters = () => {
     return [...products].sort((a, b) => {
       switch (sortOption) {
         case 'newest':
-          return 0; // Would normally sort by created_at
+          return 0;
         case 'price-asc':
           return (a.sale_price || a.price) - (b.sale_price || b.price);
         case 'price-desc':
@@ -150,7 +148,6 @@ export const useSearchFilters = () => {
   };
 
   return {
-    // Original properties
     selectedCategory,
     selectedShop,
     priceRange,
@@ -177,7 +174,6 @@ export const useSearchFilters = () => {
     filterProducts,
     sortProducts,
     
-    // Added properties for search form compatibility
     query,
     setQuery,
     category,
