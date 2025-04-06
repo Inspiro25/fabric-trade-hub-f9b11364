@@ -1,17 +1,14 @@
-import { User, UserCredential } from 'firebase/auth';
-import { db, doc, setDoc, getDoc, loginWithEmail, loginWithGoogle, loginWithFacebook, registerWithEmail, logoutUser, resetPassword } from '@/lib/firebase';
+import { UserCredential } from 'firebase/auth';
+import { db, doc, setDoc, getDoc, loginWithEmail, loginWithGoogle, loginWithFacebook, registerWithEmail, logoutUser, resetPassword, auth } from '@/lib/firebase';
 import { UserProfile } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatPreferences } from '@/utils/dataHelpers';
-import { User } from '@/types/user';
-import { UserProfile } from '@/types/profile';
-import { AuthError } from '@supabase/supabase-js';
 import { PhoneAuthProvider, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 // Fetch user profile from Supabase
-export const fetchUserProfile = async (uid: string, currentUser: User | null): Promise<UserProfile | null> => {
+export const fetchUserProfile = async (uid: string, currentUser: any | null): Promise<UserProfile | null> => {
   try {
     if (!uid) return null;
     
@@ -641,7 +638,6 @@ export const forgotPassword = async (email: string): Promise<void> => {
   }
 };
 
-
 export const initializePhoneAuth = () => {
   try {
     const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
@@ -657,6 +653,8 @@ export const initializePhoneAuth = () => {
 export const signInWithPhone = async (phoneNumber: string, recaptchaVerifier: RecaptchaVerifier) => {
   try {
     const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
+    // Store the confirmationResult in the window object for global access
+    (window as any).confirmationResult = confirmationResult;
     return confirmationResult;
   } catch (error) {
     console.error('Error signing in with phone:', error);
@@ -666,7 +664,10 @@ export const signInWithPhone = async (phoneNumber: string, recaptchaVerifier: Re
 
 export const verifyPhoneCode = async (code: string) => {
   try {
-    const result = await window.confirmationResult.confirm(code);
+    if (!(window as any).confirmationResult) {
+      throw new Error('No confirmation result found. Please try signing in again.');
+    }
+    const result = await (window as any).confirmationResult.confirm(code);
     return result.user;
   } catch (error) {
     console.error('Code verification error:', error);

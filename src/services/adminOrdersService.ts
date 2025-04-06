@@ -1,14 +1,10 @@
+
 import { supabase } from '@/lib/supabase';
 import { toast } from "sonner";
-import { 
-  AdminOrderSummary,
-  AdminOrderDetails, 
-  OrderItem, 
-  Json, 
-  itemsToJsonArray 
-} from '@/types/json';
+import { AdminOrderSummary, AdminOrderDetails, OrderItem, Json } from '@/types/json';
 
-interface OrderItem {
+// Define the interface for order items within the service
+interface LocalOrderItem {
   id: string;
   order_id: string;
   product_id: string;
@@ -16,9 +12,12 @@ interface OrderItem {
   price: number;
   color?: string;
   size?: string;
+  productName?: string;
+  productImage?: string;
 }
 
-interface AdminOrderDetails {
+// Define local interface for order details
+interface LocalOrderDetails {
   id: string;
   created_at: string;
   updated_at: string;
@@ -33,12 +32,13 @@ interface AdminOrderDetails {
   customer_phone?: string;
   shipping_address?: string;
   shipping_method?: string;
-  items?: OrderItem[];
+  items?: LocalOrderItem[];
   shop_id?: string;
   user_id?: string;
 }
 
-const itemsToJsonArray = (items: OrderItem[]): Json[] => {
+// Utility function to convert order items to JSON array
+const convertItemsToJsonArray = (items: LocalOrderItem[]): Json[] => {
   return items.map(item => ({
     id: item.id,
     order_id: item.order_id,
