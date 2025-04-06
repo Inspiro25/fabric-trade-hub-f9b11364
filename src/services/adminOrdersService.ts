@@ -1,7 +1,7 @@
 
 import { supabase } from '@/lib/supabase';
 import { toast } from "sonner";
-import { AdminOrderSummary, AdminOrderDetails, OrderItem, Json } from '@/types/json';
+import type { AdminOrderSummary, AdminOrderDetails, OrderItem as OrderItemType, Json } from '@/types/json';
 
 // Define the interface for order items within the service
 interface LocalOrderItem {

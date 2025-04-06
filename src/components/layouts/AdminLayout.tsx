@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet } from 'react-router-dom';
 import { 
@@ -8,56 +9,25 @@ import {
   Store, 
   Users, 
   Settings, 
-  PieChart, 
-  AlertTriangle, 
   ChevronLeft,
   Tag,
   Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { toast } from '@/hooks/use-toast';
 
 const navigation = [
-  {
-    name: 'Dashboard',
-    href: '/management/dashboard',
-    icon: Home
-  },
-  {
-    name: 'Analytics',
-    href: '/management/analytics',
-    icon: BarChart3
-  },
-  {
-    name: 'Shops',
-    href: '/management/shops',
-    icon: Store
-  },
-  {
-    name: 'Offers',
-    href: '/management/offers',
-    icon: Tag
-  },
-  {
-    name: 'Products',
-    href: '/admin/products',
-    icon: Package
-  },
-  {
-    name: 'Users',
-    href: '/management/users',
-    icon: Users
-  },
-  {
-    name: 'Settings',
-    href: '/management/settings',
-    icon: Settings
-  }
+  { name: 'Dashboard', href: '/management/dashboard', icon: Home },
+  { name: 'Analytics', href: '/management/analytics', icon: BarChart3 },
+  { name: 'Shops', href: '/management/shops', icon: Store },
+  { name: 'Offers', href: '/management/offers', icon: Tag },
+  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Users', href: '/management/users', icon: Users },
+  { name: 'Settings', href: '/management/settings', icon: Settings }
 ];
 
-const DashboardLayout = () => {
+const AdminLayout = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string>('');
   const [adminRole, setAdminRole] = useState<string>('');
@@ -69,8 +39,10 @@ const DashboardLayout = () => {
     const storedRole = sessionStorage.getItem('adminRole');
     
     if (!storedUsername || !storedRole || storedRole !== 'main') {
-      toast.error("Access denied", {
-        description: "You must be logged in as an administrator"
+      toast({
+        title: "Access denied",
+        description: "You must be logged in as an administrator",
+        variant: "destructive"
       });
       navigate('/management/login');
       return;
@@ -87,7 +59,8 @@ const DashboardLayout = () => {
     sessionStorage.removeItem('adminUsername');
     sessionStorage.removeItem('adminRole');
     
-    toast.success("Logged out", {
+    toast({
+      title: "Logged out",
       description: "You have been logged out successfully"
     });
     
@@ -131,12 +104,14 @@ const DashboardLayout = () => {
           <div className="flex-1 overflow-auto py-2">
             <nav className="grid items-start px-4 text-sm font-medium">
               <ul className="space-y-1">
-                <NavItem path="/management/dashboard" icon={Home} label="Dashboard" />
-                <NavItem path="/management/analytics" icon={BarChart3} label="Analytics" />
-                <NavItem path="/management/shops" icon={Store} label="Shops" />
-                <NavItem path="/management/offers" icon={Tag} label="Offers" />
-                <NavItem path="/management/users" icon={Users} label="Users" />
-                <NavItem path="/management/settings" icon={Settings} label="Settings" />
+                {navigation.map((item) => (
+                  <NavItem 
+                    key={item.name}
+                    path={item.href} 
+                    icon={item.icon} 
+                    label={item.name} 
+                  />
+                ))}
               </ul>
             </nav>
           </div>
@@ -181,4 +156,4 @@ const DashboardLayout = () => {
   );
 };
 
-export default DashboardLayout;
+export default AdminLayout;
