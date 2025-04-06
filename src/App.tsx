@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MobileSearch from './components/mobile/MobileSearch';
@@ -14,7 +15,7 @@ import Partner from '@/pages/Partner';
 
 // Layout components
 import MainLayout from '@/components/layout/MainLayout';
-import DashboardLayout from '@/components/management/DashboardLayout';
+import AdminLayout from '@/components/layouts/AdminLayout';
 
 // Main pages
 import Home from '@/pages/Index';
@@ -88,7 +89,7 @@ function App() {
         <Route path="settings" element={<AccountSettings />} />
       </Route>
 
-      <Route path="/management" element={<DashboardLayout />}>
+      <Route path="/management" element={<AdminLayout />}>
         <Route path="login" element={<ManagementLogin />} />
         <Route index element={<ManagementDashboard />} />
         <Route path="shops" element={<ManagementShops />} />
