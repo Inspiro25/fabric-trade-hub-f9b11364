@@ -1,14 +1,15 @@
+
 import { UserCredential } from 'firebase/auth';
 import { db, doc, setDoc, getDoc, loginWithEmail, loginWithGoogle, loginWithFacebook, registerWithEmail, logoutUser, resetPassword, auth } from '@/lib/firebase';
 import { UserProfile } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatPreferences } from '@/utils/dataHelpers';
-import { PhoneAuthProvider, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
+import { PhoneAuthProvider, signInWithPhoneNumber, RecaptchaVerifier, Auth, User } from 'firebase/auth';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 // Fetch user profile from Supabase
-export const fetchUserProfile = async (uid: string, currentUser: any | null): Promise<UserProfile | null> => {
+export const fetchUserProfile = async (uid: string, currentUser: User | null): Promise<UserProfile | null> => {
   try {
     if (!uid) return null;
     
@@ -640,7 +641,7 @@ export const forgotPassword = async (email: string): Promise<void> => {
 
 export const initializePhoneAuth = () => {
   try {
-    const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
+    const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
       size: 'invisible',
     });
     return recaptchaVerifier;
