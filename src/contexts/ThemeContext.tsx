@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -78,20 +77,20 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // For dark mode, we'll use slightly brighter orange colors to improve contrast
-  const primaryColor = isDarkMode ? '#FF8A3D' : '#FF6B00';
-  const secondaryColor = isDarkMode ? '#FFA264' : '#FF8A3D';
-  const accentColor = isDarkMode ? '#433127' : '#FFF0EA';
-  const tertiaryColor = isDarkMode ? '#5D4A3F' : '#FFD1BD';
-  const textColor = isDarkMode ? '#FFFFFF' : '#1A1A1A';
-  const mutedTextColor = isDarkMode ? '#ABABAB' : '#757575';
-  const cardBgColor = isDarkMode ? '#2A2A2A' : '#FFFFFF';
-  const cardBorderColor = isDarkMode ? '#3D3D3D' : '#E5E5E5';
-  const sectionBgColor = isDarkMode ? '#242424' : '#F8F8F8';
+  // Update color values for the orange theme
+  const primaryColor = isDarkMode ? '#F97316' : '#EA580C';
+  const secondaryColor = isDarkMode ? '#FB923C' : '#F97316';
+  const accentColor = isDarkMode ? '#431407' : '#FFF7ED';
+  const tertiaryColor = isDarkMode ? '#9A3412' : '#FFEDD5';
+  const textColor = isDarkMode ? '#FFFFFF' : '#1F2937';
+  const mutedTextColor = isDarkMode ? '#9CA3AF' : '#6B7280';
+  const cardBgColor = isDarkMode ? '#1F2937' : '#FFFFFF';
+  const cardBorderColor = isDarkMode ? '#374151' : '#E5E7EB';
+  const sectionBgColor = isDarkMode ? '#111827' : '#F9FAFB';
   
   const orangeGradient = isDarkMode 
-    ? 'linear-gradient(to right, #FF8A3D, #FFA264)' 
-    : 'linear-gradient(to right, #FF6B00, #FF8A3D)';
+    ? 'linear-gradient(to right, #EA580C, #F97316)' 
+    : 'linear-gradient(to right, #F97316, #FB923C)';
 
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => {
