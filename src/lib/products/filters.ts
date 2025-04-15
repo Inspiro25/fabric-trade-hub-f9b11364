@@ -50,3 +50,19 @@ export async function getFilteredProducts(type: 'trending' | 'new' | 'deals' | '
     return [];
   }
 }
+
+export async function getProductsByCategory(categoryId: string, limit = 12): Promise<Product[]> {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('category_id', categoryId)
+      .limit(limit);
+
+    if (error) throw error;
+    return data?.map(normalizeProductData) || [];
+  } catch (error) {
+    console.error(`Error fetching products for category ${categoryId}:`, error);
+    return [];
+  }
+}

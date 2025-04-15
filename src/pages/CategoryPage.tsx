@@ -6,7 +6,7 @@ import ProductGrid from '@/components/features/ProductGrid';
 import { formatCategoryName, slugToCategory } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { useProductsByCategory } from '@/hooks/use-product-fetching';
+import { useCategoryProducts } from '@/hooks/use-category-products';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getCategoriesWithDetails } from '@/lib/products/categories';
@@ -47,19 +47,7 @@ const CategoryPage = () => {
         
         const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
-          .select(`
-            *,
-            products (
-              id,
-              name,
-              description,
-              price,
-              images,
-              rating,
-              stock,
-              created_at
-            )
-          `)
+          .select('*')
           .ilike('name', categoryName)
           .single();
         
@@ -76,10 +64,9 @@ const CategoryPage = () => {
     fetchCategory();
   }, [categorySlug]);
   
-  const { products, loading: isLoading, error, totalCount } = useProductsByCategory(
+  const { data: products, isLoading, error } = useCategoryProducts(
     category?.id || '',
-    12,
-    page
+    12
   );
   
   const totalProducts = products?.length || 0;
@@ -147,7 +134,7 @@ const CategoryPage = () => {
                       ? "border-gray-700 hover:border-orange-500/50 hover:text-orange-400"
                       : "border-gray-200 hover:border-orange-500/50 hover:text-orange-500"
                 )}
-                onClick={() => navigate(`/category/${slugToCategory(cat.name)}`)}
+                onClick={() => navigate(`/categories/${cat.name.toLowerCase()}`)}
               >
                 {cat.name}
               </Button>
@@ -209,7 +196,7 @@ const CategoryPage = () => {
               Retry
             </Button>
           </div>
-        ) : products.length > 0 ? (
+        ) : products && products.length > 0 ? (
           <ProductGrid 
             products={products}
             columns={2}
