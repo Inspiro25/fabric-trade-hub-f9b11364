@@ -53,6 +53,8 @@ import ManagementOffers from '@/pages/ManagementOffers';
 import AdminLogin from '@/pages/AdminLogin';
 import ShopDashboard from '@/pages/ShopDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
+import AdminProducts from '@/pages/admin/products';
+import SeedData from '@/pages/admin/SeedData';
 
 function App() {
   return (
@@ -103,6 +105,8 @@ function App() {
         <Route path="login" element={<AdminLogin />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="shop-dashboard" element={<ShopDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="seed-data" element={<SeedData />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
