@@ -93,38 +93,7 @@ const CategoryPage = () => {
     setSortBy(newSortBy);
     setPage(1);
   };
-  
-  if (isLoading && !category) {
-    return (
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className={cn(
-            "h-8 w-32 rounded animate-pulse",
-            isDarkMode ? "bg-gray-700" : "bg-gray-200"
-          )}></div>
-          <div className={cn(
-            "h-8 w-8 rounded animate-pulse",
-            isDarkMode ? "bg-gray-700" : "bg-gray-200"
-          )}></div>
-        </div>
-        
-        <div className={cn(
-          "h-40 w-full rounded-lg mb-6 animate-pulse",
-          isDarkMode ? "bg-gray-700" : "bg-gray-200"
-        )}></div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={cn(
-              "h-60 rounded animate-pulse",
-              isDarkMode ? "bg-gray-700" : "bg-gray-200"
-            )}></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  
+
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
@@ -242,8 +211,8 @@ const CategoryPage = () => {
           </div>
         ) : products.length > 0 ? (
           <ProductGrid 
-            products={products} 
-            columns={2} 
+            products={products}
+            columns={2}
             showPagination={totalProducts > 12}
             itemsPerPage={12}
             totalItems={totalProducts}

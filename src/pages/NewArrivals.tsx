@@ -5,7 +5,7 @@ import { fetchNewArrivals } from '@/lib/products/newArrivals';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ProductGrid } from '@/components/features/ProductGrid';
+import ProductGrid from '@/components/features/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -55,7 +55,6 @@ const NewArrivals = () => {
         <ProductGrid 
           products={products || []} 
           isLoading={isLoading}
-          isDarkMode={isDarkMode}
         />
       </div>
     </div>
