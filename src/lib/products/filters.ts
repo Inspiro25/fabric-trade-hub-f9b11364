@@ -1,101 +1,52 @@
 
-import { supabase } from '@/lib/supabase';
-import { Product, normalizeProduct } from '../types/product';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from './types';
+import { normalizeProductData } from '@/lib/products/types';
 
-// Updated filter for product search - now uses proper types
-export const useProductSearch = (searchQuery: string, filters: any = {}) => {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading
-  } = useInfiniteQuery({
-    queryKey: ['product-search', searchQuery, filters],
-    queryFn: async ({ pageParam = 0 }) => {
-      try {
-        let query = supabase.from('products').select('*');
-        
-        if (searchQuery) {
-          query = query.ilike('name', `%${searchQuery}%`);
-        }
-        
-        if (filters.minPrice) {
-          query = query.gte('price', filters.minPrice);
-        }
-        
-        if (filters.maxPrice) {
-          query = query.lte('price', filters.maxPrice);
-        }
-        
-        if (filters.category) {
-          query = query.eq('category_id', filters.category);
-        }
-        
-        const { data, error } = await query
-          .range(pageParam * 10, (pageParam * 10) + 9)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        return data?.map(normalizeProduct) || [];
-      } catch (error) {
-        console.error('Error searching products:', error);
-        return [];
-      }
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === 10 ? allPages.length : undefined;
-    }
-  });
-  
-  const products = data?.pages.flat() || [];
-  
-  return {
-    products,
-    loadMore: fetchNextPage,
-    hasMore: hasNextPage,
-    isLoading,
-    isFetchingMore: isFetchingNextPage
-  };
-};
-
-export const fetchProducts = async ({ query = '', category = '' } = {}) => {
+export async function getFilteredProducts(type: 'trending' | 'new' | 'deals' | 'featured', limit = 8): Promise<Product[]> {
   try {
-    let queryBuilder = supabase.from('products').select('*');
-    
-    if (query) {
-      queryBuilder = queryBuilder.ilike('name', `%${query}%`);
+    let query = supabase.from('products').select('*');
+
+    switch (type) {
+      case 'trending':
+        // Get products marked as trending or with high review counts
+        query = query
+          .eq('is_trending', true)
+          .order('review_count', { ascending: false })
+          .limit(limit);
+        break;
+
+      case 'new':
+        // Get products marked as new, ordered by creation date
+        query = query
+          .eq('is_new', true)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        break;
+
+      case 'deals':
+        // Get products with sale prices, ordered by discount percentage
+        query = query
+          .not('sale_price', 'is', null)
+          .order('sale_price', { ascending: true })
+          .limit(limit);
+        break;
+
+      case 'featured':
+        // Get products with high ratings
+        query = query
+          .gt('rating', 4)
+          .order('rating', { ascending: false })
+          .limit(limit);
+        break;
     }
-    
-    if (category) {
-      queryBuilder = queryBuilder.eq('category_id', category);
-    }
-    
-    const { data, error } = await queryBuilder.order('created_at', { ascending: false });
-    
+
+    const { data, error } = await query;
+
     if (error) throw error;
-    return data?.map(normalizeProduct) || [];
+    return data?.map(normalizeProductData) || [];
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error(`Error fetching ${type} products:`, error);
     return [];
   }
-};
-
-export const fetchRelatedProducts = async (productId: string, categoryId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('category_id', categoryId)
-      .neq('id', productId)
-      .limit(8);
-    
-    if (error) throw error;
-    return data?.map(normalizeProduct) || [];
-  } catch (error) {
-    console.error('Error fetching related products:', error);
-    return [];
-  }
-};
+}

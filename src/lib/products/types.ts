@@ -1,4 +1,3 @@
-
 // Define the core Product type that will be used throughout the application
 export interface Product {
   id: string;
@@ -90,4 +89,12 @@ export function normalizeProductData(data: any): Product {
     created_at: data.created_at,
     updated_at: data.updated_at
   };
+}
+
+export type ProductQueryType = 'trending' | 'new' | 'deals' | 'featured';
+
+export interface ProductQueryOptions {
+  type?: ProductQueryType;
+  limit?: number;
+  categoryId?: string;
 }

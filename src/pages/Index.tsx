@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -146,16 +145,16 @@ const Home = () => {
             </TabsList>
 
             <TabsContent value="trending">
-              <ProductGrid query={{ type: 'trending' }} />
+              <ProductGrid query={{ type: 'trending', limit: 8 }} />
             </TabsContent>
             <TabsContent value="new">
-              <ProductGrid query={{ type: 'new' }} />
+              <ProductGrid query={{ type: 'new', limit: 8 }} />
             </TabsContent>
             <TabsContent value="deals">
-              <ProductGrid query={{ type: 'deals' }} />
+              <ProductGrid query={{ type: 'deals', limit: 8 }} />
             </TabsContent>
             <TabsContent value="featured">
-              <ProductGrid query={{ type: 'featured' }} />
+              <ProductGrid query={{ type: 'featured', limit: 8 }} />
             </TabsContent>
           </Tabs>
         </div>

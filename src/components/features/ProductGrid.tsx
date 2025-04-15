@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -6,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Star, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProductsData } from '@/hooks/use-products-data';
+import { useFilteredProducts } from '@/hooks/use-filtered-products';
 import { Product } from '@/lib/products/types';
 
 export interface ProductGridProps {
@@ -14,7 +13,6 @@ export interface ProductGridProps {
     type?: 'trending' | 'new' | 'deals' | 'featured';
     limit?: number;
   };
-  // Add optional props for direct product passing
   products?: Product[];
   isLoading?: boolean;
   error?: any;
@@ -31,12 +29,10 @@ export interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ 
-  query = {}, 
+  query,
   products: propProducts, 
   isLoading: propIsLoading,
   error: propError,
-  title,
-  subtitle,
   columns = 4,
   showPagination = false,
   itemsPerPage = 8,
@@ -48,17 +44,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   
-  // Use provided products or fetch from API based on query
   const { 
-    products: fetchedProducts, 
-    isLoading: fetchIsLoading, 
-    error: fetchError 
-  } = useProductsData(propProducts ? undefined : { ...query, limit: query.limit || 8 });
+    data: fetchedProducts, 
+    isLoading: queryIsLoading, 
+    error: queryError 
+  } = useFilteredProducts(
+    query?.type || 'trending',
+    query?.limit || 8
+  );
 
-  // Use provided props if available, otherwise use fetched data
   const products = propProducts || fetchedProducts;
-  const isLoading = propIsLoading !== undefined ? propIsLoading : fetchIsLoading;
-  const error = propError || fetchError;
+  const isLoading = propIsLoading !== undefined ? propIsLoading : queryIsLoading;
+  const error = propError || queryError;
 
   if (isLoading) {
     return (
@@ -90,7 +87,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <div className={`grid grid-cols-2 md:grid-cols-${columns} gap-6`}>
       {products?.map((product) => {
-        // Calculate discount percentage if sale price exists
         const discountPercentage = product.salePrice && product.price 
           ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
           : 0;
