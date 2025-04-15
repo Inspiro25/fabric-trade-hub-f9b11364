@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from './types';
 import { normalizeProductData } from '@/lib/products/types';
+import { mockProducts } from './index';
 
 export async function getFilteredProducts(type: 'trending' | 'new' | 'deals' | 'featured', limit = 8): Promise<Product[]> {
   try {
@@ -79,9 +80,6 @@ export async function getProductsByCategory(categoryId: string, limit = 12): Pro
 
 // Mock data functions as fallback
 function getMockProductsByType(type: 'trending' | 'new' | 'deals' | 'featured', limit: number): Product[] {
-  // Import mock data from products types
-  import { mockProducts } from './index';
-  
   let filteredProducts: Product[] = [];
   
   switch (type) {
@@ -103,7 +101,5 @@ function getMockProductsByType(type: 'trending' | 'new' | 'deals' | 'featured', 
 }
 
 function getMockProductsByCategory(limit: number): Product[] {
-  // Import mock data
-  import { mockProducts } from './index';
   return mockProducts.slice(0, limit);
 }

@@ -9,8 +9,10 @@ export function useFilteredProducts(type: ProductQueryType, limit = 8) {
     queryFn: () => getFilteredProducts(type, limit),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
-    onError: (error) => {
-      console.error(`Error fetching ${type} products:`, error);
+    meta: {
+      onError: (error: any) => {
+        console.error(`Error fetching ${type} products:`, error);
+      }
     }
   });
 }
