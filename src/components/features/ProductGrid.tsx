@@ -54,7 +54,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     query?.limit || 8
   );
 
-  const products = propProducts || fetchedProducts;
+  const products = propProducts || fetchedProducts || [];
   const isLoading = propIsLoading !== undefined ? propIsLoading : queryIsLoading;
   const error = propError || queryError;
 
@@ -85,9 +85,22 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     );
   }
 
+  if (!products || products.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className={cn(
+          "text-lg",
+          isDarkMode ? "text-gray-400" : "text-gray-600"
+        )}>
+          No products found. Please check back later.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={`grid grid-cols-2 md:grid-cols-${columns} gap-6`}>
-      {products?.map((product) => {
+      {products.map((product) => {
         const discountPercentage = product.salePrice && product.price 
           ? Math.round(((product.price - product.salePrice) / product.price) * 100) 
           : 0;

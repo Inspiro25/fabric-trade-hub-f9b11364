@@ -7,5 +7,10 @@ export function useFilteredProducts(type: ProductQueryType, limit = 8) {
   return useQuery({
     queryKey: ['products', type, limit],
     queryFn: () => getFilteredProducts(type, limit),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    onError: (error) => {
+      console.error(`Error fetching ${type} products:`, error);
+    }
   });
 }
