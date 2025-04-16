@@ -75,7 +75,7 @@ export function useShopProducts(shopId: string) {
           toast({
             title: "No products found",
             description: "Using sample products for this shop",
-            variant: "warning"
+            variant: "default"
           });
         }
       } catch (err: any) {

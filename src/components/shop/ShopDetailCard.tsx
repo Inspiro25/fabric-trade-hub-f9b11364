@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { MapPin, Star, CheckCircle, Calendar, ShoppingBag, Users } from 'lucide-react';
@@ -26,7 +25,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
     <Card className={`overflow-hidden border-none shadow-md ${isDarkMode ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-white'}`}>
       <div className="h-28 relative">
         <img 
-          src={shop.coverImage || shop.cover_image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8'} 
+          src={shop.coverImage || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8'} 
           alt={shop.name}
           className={`w-full h-full object-cover ${isDarkMode ? 'opacity-70' : 'opacity-80'}`}
           onError={(e) => {
