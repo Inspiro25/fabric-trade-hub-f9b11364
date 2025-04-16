@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, MapPin, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useShopProducts } from '@/hooks/use-shop-products';
 
 interface ShopCardProps {
   shop: any;
@@ -16,6 +16,7 @@ interface ShopCardProps {
 const ShopCard: React.FC<ShopCardProps> = ({ shop, className }) => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
+  const { products } = useShopProducts(shop.id);
   
   return (
     <Card 
@@ -103,7 +104,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, className }) => {
         {/* Products count */}
         <div className="mt-3 flex items-center text-xs text-gray-500 dark:text-gray-400">
           <ShoppingBag className="w-3 h-3 mr-1" />
-          <span>{shop.product_count || '0'} products</span>
+          <span>{products.length || '0'} products</span>
         </div>
       </CardContent>
       
