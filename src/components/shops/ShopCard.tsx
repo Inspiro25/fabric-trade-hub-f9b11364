@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,11 @@ interface ShopCardProps {
 const ShopCard: React.FC<ShopCardProps> = ({ shop, className }) => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
-  const { products } = useShopProducts(shop.id);
+  const { products, isLoading } = useShopProducts(shop.id);
+  
+  useEffect(() => {
+    console.log(`Shop ${shop.name} (${shop.id}) has ${products.length} products:`, products);
+  }, [shop.id, shop.name, products]);
   
   return (
     <Card 
@@ -36,7 +41,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, className }) => {
             className="w-full h-full object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).onerror = null;
-              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/500x180?text=Shop+Cover';
+              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8';
             }}
           />
         ) : (
@@ -104,7 +109,11 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, className }) => {
         {/* Products count */}
         <div className="mt-3 flex items-center text-xs text-gray-500 dark:text-gray-400">
           <ShoppingBag className="w-3 h-3 mr-1" />
-          <span>{products.length || '0'} products</span>
+          {isLoading ? (
+            <span>Loading products...</span>
+          ) : (
+            <span>{products.length} products</span>
+          )}
         </div>
       </CardContent>
       

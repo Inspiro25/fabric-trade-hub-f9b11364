@@ -26,9 +26,12 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
     <Card className={`overflow-hidden border-none shadow-md ${isDarkMode ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-white'}`}>
       <div className="h-28 relative">
         <img 
-          src={shop.coverImage} 
+          src={shop.coverImage || shop.cover_image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8'} 
           alt={shop.name}
           className={`w-full h-full object-cover ${isDarkMode ? 'opacity-70' : 'opacity-80'}`}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8';
+          }}
         />
       </div>
       
@@ -36,9 +39,12 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
         <div className="flex items-center">
           <div className={`h-12 w-12 rounded-full overflow-hidden border-2 ${isDarkMode ? 'border-gray-700' : 'border-white'} bg-white shadow-sm flex-shrink-0`}>
             <img 
-              src={shop.logo} 
+              src={shop.logo || 'https://via.placeholder.com/150?text=Logo'} 
               alt={`${shop.name} logo`}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Logo';
+              }}
             />
           </div>
           

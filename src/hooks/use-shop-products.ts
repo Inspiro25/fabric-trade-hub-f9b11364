@@ -29,10 +29,11 @@ export function useShopProducts(shopId: string) {
           .eq('shop_id', shopId);
         
         if (error) {
+          console.error('Supabase error:', error);
           throw error;
         }
         
-        console.log(`Found ${data?.length || 0} products for shop ${shopId}`);
+        console.log(`Found ${data?.length || 0} products for shop ${shopId}:`, data);
         
         if (data && data.length > 0) {
           // Map the data to match the Product type
@@ -60,19 +61,29 @@ export function useShopProducts(shopId: string) {
             categoryId: item.category_id || '',
           }));
           
+          console.log('Formatted products:', formattedProducts);
           setProducts(formattedProducts);
         } else {
-          // Use mock products if no products are found
-          console.log('No products found for shop, using mock data');
-          const mockShopProducts = mockProducts.map(p => ({...p, shopId: shopId})).slice(0, 5);
+          // No products found in database
+          console.log('No products found in database for shop', shopId);
+          
+          // Fallback to mock data for development
+          const mockShopProducts = mockProducts.map(p => ({...p, shopId})).slice(0, 5);
+          console.log('Using mock products:', mockShopProducts);
           setProducts(mockShopProducts);
+          
+          toast({
+            title: "No products found",
+            description: "Using sample products for this shop",
+            variant: "warning"
+          });
         }
       } catch (err: any) {
         console.error('Error fetching shop products:', err);
         setError(err.message || 'Failed to load products');
         
         // Fallback to mock data in case of error
-        const mockShopProducts = mockProducts.map(p => ({...p, shopId: shopId})).slice(0, 5);
+        const mockShopProducts = mockProducts.map(p => ({...p, shopId})).slice(0, 5);
         setProducts(mockShopProducts);
         
         toast({
