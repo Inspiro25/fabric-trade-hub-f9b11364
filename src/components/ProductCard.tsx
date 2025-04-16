@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -8,6 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils';
+import { Product } from '@/lib/products/types';
 
 export interface Product {
   id: string;
@@ -70,14 +70,31 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const { addToWishlist } = useWishlist();
 
   const handleAddToCart = () => {
-    addToCart({
+    // Convert single image to array if it exists
+    const images = image ? [image] : [];
+
+    // Create a product-like object with the minimum required properties
+    const productData: Product = {
       id,
       name,
       price,
       salePrice,
-      image,
-      quantity: 1,
-    }, 1, '', ''); // Adding the additional required parameters (quantity, color, size)
+      description: product?.description || '',
+      images,
+      category: category || '',
+      colors: product?.colors || [],
+      sizes: product?.sizes || [],
+      isNew: isNew || false,
+      isTrending: isTrending || false,
+      rating: rating || 0,
+      reviewCount: reviewCount || 0,
+      stock: product?.stock || 0,
+      tags: product?.tags || [],
+      created_at: product?.created_at || new Date().toISOString(),
+      updated_at: product?.updated_at || new Date().toISOString(),
+    };
+    
+    addToCart(productData, 1, '', '');
     
     toast({
       title: "Added to cart",
