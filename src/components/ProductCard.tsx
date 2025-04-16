@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       salePrice,
       image,
       quantity: 1,
-    });
+    }, 1, '', ''); // Adding the additional required parameters (quantity, color, size)
     
     toast({
       title: "Added to cart",
