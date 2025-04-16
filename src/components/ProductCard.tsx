@@ -86,7 +86,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleAddToWishlist = () => {
-    addToWishlist(id);
+    // Create a product-like object with the minimum required properties
+    // This matches what WishlistContext expects
+    const productData = {
+      id,
+      name,
+      price,
+      salePrice,
+      images: image ? [image] : [],
+      description: product?.description || '',
+      colors: product?.colors || [],
+      sizes: product?.sizes || [],
+      rating: rating || 0,
+      stock: product?.stock || 0,
+      tags: product?.tags || [],
+    };
+    
+    // Pass the product object to addToWishlist
+    addToWishlist(productData);
     
     toast({
       title: "Added to wishlist",
