@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { SearchProductCard, SearchProductCardSkeleton } from './SearchProductCard';
 import { SearchPageProduct } from '@/hooks/search/types';
@@ -69,6 +68,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
   const isLoadingState = loading || isLoading;
 
   const handleProductClick = (product: SearchPageProduct) => {
+    // Navigate to product detail page
+    navigate(`/products/${product.id}`);
+    
     if (onProductClick) {
       onProductClick(product);
     } else if (onSelectProduct) {
@@ -221,17 +223,18 @@ const SearchResults: React.FC<SearchResultsProps> = ({
           : "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2" // Compact view
       )}>
         {products.map(product => (
-          <SearchProductCard
-            key={product.id}
-            product={product}
-            onAddToCart={() => handleAddToCart(product)}
-            onAddToWishlist={() => handleAddToWishlist(product)}
-            onShare={() => handleShare(product)}
-            onClick={() => handleProductClick(product)}
-            viewMode={viewMode}
-            buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
-            isCompact={viewMode === 'compact'}
-          />
+          <div key={product.id} onClick={() => handleProductClick(product)} style={{ cursor: 'pointer' }}>
+            <SearchProductCard
+              product={product}
+              onAddToCart={() => handleAddToCart(product)}
+              onAddToWishlist={() => handleAddToWishlist(product)}
+              onShare={() => handleShare(product)}
+              onClick={() => handleProductClick(product)}
+              viewMode={viewMode}
+              buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+              isCompact={viewMode === 'compact'}
+            />
+          </div>
         ))}
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTrendingProducts } from '@/lib/products/trending';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -29,7 +29,6 @@ const TrendingNow = () => {
     setVisibleItems(prev => prev + ITEMS_PER_PAGE);
   };
 
-  // Filter buttons for time period
   const filterButtons = [
     { value: 'all', label: 'All Time' },
     { value: 'today', label: 'Today' },
@@ -37,7 +36,6 @@ const TrendingNow = () => {
     { value: 'month', label: 'This Month' },
   ];
 
-  // Sort options
   const sortOptions = [
     { value: 'popularity', label: 'Most Popular' },
     { value: 'rating', label: 'Highest Rated' },
@@ -65,7 +63,6 @@ const TrendingNow = () => {
           Discover what's popular right now based on views, ratings, and purchases
         </div>
         
-        {/* Filter and Sort Controls */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
           <div className="flex overflow-x-auto pb-2 no-scrollbar">
             {filterButtons.map(filter => (
@@ -112,7 +109,6 @@ const TrendingNow = () => {
           </div>
         </div>
         
-        {/* Product Grid */}
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[...Array(8)].map((_, index) => (
@@ -160,18 +156,20 @@ const TrendingNow = () => {
                   key={product.id} 
                   className="transform transition hover:-translate-y-1"
                 >
-                  <ProductCard 
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    salePrice={product.salePrice}
-                    image={product.images[0]}
-                    category={product.category}
-                    isNew={product.isNew || false}
-                    isTrending={true}
-                    rating={product.rating}
-                    reviewCount={product.reviewCount}
-                  />
+                  <Link to={`/products/${product.id}`}>
+                    <ProductCard 
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      salePrice={product.salePrice}
+                      image={product.images[0]}
+                      category={product.category}
+                      isNew={product.isNew || false}
+                      isTrending={true}
+                      rating={product.rating}
+                      reviewCount={product.reviewCount}
+                    />
+                  </Link>
                 </div>
               ))}
             </div>

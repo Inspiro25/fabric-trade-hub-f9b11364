@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/ProductCard';
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useCategories } from '@/hooks/use-categories';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Filter, SlidersHorizontal } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -41,7 +41,6 @@ export default function Search() {
         case 'name':
           return a.name.localeCompare(b.name);
         default:
-          // Handle created_at safely since it's optional
           const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
           const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
           return dateB - dateA;
@@ -50,7 +49,6 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Search Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <Input
@@ -65,7 +63,6 @@ export default function Search() {
 
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Mobile Filter Button */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" className="md:hidden mb-4">
@@ -84,7 +81,6 @@ export default function Search() {
             </SheetContent>
           </Sheet>
 
-          {/* Desktop Filters */}
           <div className="hidden md:block w-64 flex-shrink-0">
             <FiltersSidebar
               categories={categories}
@@ -95,7 +91,6 @@ export default function Search() {
             />
           </div>
 
-          {/* Products Section */}
           <div className="flex-1">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold dark:text-white">
@@ -126,17 +121,18 @@ export default function Search() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={{
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
-                        stock: product.stock || 0, // Ensure stock is provided with default
-                        images: product.images
-                      }}
-                      className="h-full"
-                    />
+                    <Link key={product.id} to={`/products/${product.id}`}>
+                      <ProductCard
+                        product={{
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          stock: product.stock || 0,
+                          images: product.images
+                        }}
+                        className="h-full"
+                      />
+                    </Link>
                   ))
                 ) : (
                   <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
@@ -152,7 +148,6 @@ export default function Search() {
   );
 }
 
-// Separate FiltersSidebar component for better organization
 function FiltersSidebar({ categories, selectedCategories, setSelectedCategories, sortBy, setSortBy }) {
   return (
     <div className="space-y-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm">

@@ -23,7 +23,6 @@ const Wishlist = () => {
   const { isDarkMode } = useTheme();
 
   useEffect(() => {
-    // Set isLoaded after a short delay to trigger animations
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 300);
@@ -172,20 +171,24 @@ const Wishlist = () => {
               "grid"
             )}>
               {wishlistItems.map((product) => (
-                <ProductCard 
+                <Link 
                   key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  image={product.images?.[0] || '/placeholder.svg'}
-                  category={product.category}
-                  isNew={product.isNew}
-                  isTrending={product.isTrending}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                  isDarkMode={isDarkMode}
-                />
+                  to={`/products/${product.id}`}
+                >
+                  <ProductCard 
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    salePrice={product.salePrice}
+                    image={product.images?.[0] || '/placeholder.svg'}
+                    category={product.category}
+                    isNew={product.isNew}
+                    isTrending={product.isTrending}
+                    rating={product.rating}
+                    reviewCount={product.reviewCount}
+                    isDarkMode={isDarkMode}
+                  />
+                </Link>
               ))}
             </div>
           </div>
