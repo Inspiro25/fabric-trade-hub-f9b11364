@@ -7,34 +7,10 @@ import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/utils';
-import { Product } from '@/lib/products/types';
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  salePrice: number | null;
-  images: string[];
-  category: string;
-  colors: string[];
-  sizes: string[];
-  isNew: boolean;
-  isTrending: boolean;
-  rating: number;
-  reviewCount: number;
-  stock: number;
-  tags: string[];
-  shopId: string;
-  brand: string;
-  shopName: string;
-  categoryId: string;
-  created_at: string;
-  updated_at: string;
-}
+import { Product as ProductType } from '@/lib/products/types';
 
 interface ProductCardProps {
-  product?: Product;
+  product?: ProductType;
   className?: string;
   id: string;
   name: string;
@@ -74,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     const images = image ? [image] : [];
 
     // Create a product-like object with the minimum required properties
-    const productData: Product = {
+    const productData: ProductType = {
       id,
       name,
       price,
@@ -92,6 +68,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
       tags: product?.tags || [],
       created_at: product?.created_at || new Date().toISOString(),
       updated_at: product?.updated_at || new Date().toISOString(),
+      shopId: product?.shopId || '',
+      brand: product?.brand || '',
+      shopName: product?.shopName || '',
+      categoryId: product?.categoryId || '',
     };
     
     addToCart(productData, 1, '', '');
