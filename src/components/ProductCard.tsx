@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -33,18 +34,18 @@ export interface Product {
 }
 
 interface ProductCardProps {
-  product: Product;
+  product?: Product;
   className?: string;
   id: string;
   name: string;
   price: number;
-  salePrice: number | null;
-  image: string;
-  category: string;
-  isNew: boolean;
-  isTrending: boolean;
-  rating: number;
-  reviewCount: number;
+  salePrice?: number | null;
+  image?: string;
+  category?: string;
+  isNew?: boolean;
+  isTrending?: boolean;
+  rating?: number;
+  reviewCount?: number;
   isDarkMode?: boolean;
 }
 
@@ -179,3 +180,4 @@ const ProductCard: React.FC<ProductCardProps> = ({
 };
 
 export default ProductCard;
+export { type ProductCardProps };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ProductGrid from '@/components/features/ProductGrid';
 import { formatCategoryName, slugToCategory } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -11,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getCategoriesWithDetails } from '@/lib/products/categories';
 import { Link } from 'react-router-dom';
-import ProductCard from '@/components/features/ProductCard';
+import ProductCard from '@/components/ProductCard';
 
 const CategoryPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();

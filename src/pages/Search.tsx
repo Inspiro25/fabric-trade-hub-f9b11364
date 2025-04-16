@@ -1,6 +1,7 @@
+
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { ProductCard } from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard';
 import { useSearchParams } from 'react-router-dom';
 import { useSearchData } from '@/hooks/use-search-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
