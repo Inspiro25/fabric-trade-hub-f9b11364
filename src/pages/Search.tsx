@@ -124,13 +124,16 @@ export default function Search() {
                   filteredProducts.map((product) => (
                     <Link key={product.id} to={`/products/${product.id}`}>
                       <ProductCard
-                        product={{
-                          id: product.id,
-                          name: product.name,
-                          price: product.price,
-                          stock: product.stock || 0,
-                          images: product.images
-                        }}
+                        id={product.id}
+                        name={product.name}
+                        price={product.price}
+                        salePrice={product.sale_price || null}
+                        image={product.images?.[0] || '/placeholder.svg'}
+                        category={product.category_id || ''}
+                        isNew={product.is_new || false}
+                        isTrending={product.is_trending || false}
+                        rating={product.rating || 0}
+                        reviewCount={product.review_count || 0}
                         className="h-full"
                       />
                     </Link>

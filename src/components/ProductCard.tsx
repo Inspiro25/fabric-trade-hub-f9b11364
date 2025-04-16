@@ -78,6 +78,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       image,
       quantity: 1,
     });
+    
     toast({
       title: "Added to cart",
       description: `${name} added to your cart`,
@@ -86,13 +87,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleAddToWishlist = () => {
     addToWishlist(id);
+    
     toast({
       title: "Added to wishlist",
       description: `${name} added to your wishlist`,
     });
   };
 
-  const discountedPrice = salePrice !== null ? salePrice : price;
+  const discountedPrice = salePrice !== null && salePrice !== undefined ? salePrice : price;
 
   return (
     <div className={cn("relative rounded-xl overflow-hidden border", isDarkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white", className)}>
@@ -134,7 +136,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             )}>
               {formatCurrency(discountedPrice)}
             </span>
-            {salePrice !== null && (
+            {salePrice !== null && salePrice !== undefined && salePrice !== price && (
               <span className="text-sm line-through text-gray-500">
                 {formatCurrency(price)}
               </span>
@@ -170,7 +172,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
               isDarkMode ? "bg-orange-400 hover:bg-orange-500 text-gray-900" : ""
             )}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className="h-4 w-4 inline-block mr-2" />
             Add to Cart
           </button>
         </div>
