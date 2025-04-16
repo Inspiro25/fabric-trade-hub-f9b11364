@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import ProductCard from '@/components/ProductCard';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useSearchData } from '@/hooks/use-search-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { useCategories } from '@/hooks/use-categories';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Filter, SlidersHorizontal } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const query = searchParams.get('q') || '';
   const { products, loading } = useSearchData(query);
   const { categories } = useCategories();
@@ -47,6 +47,10 @@ export default function Search() {
           return dateB - dateA;
       }
     });
+
+  const handleProductClick = (productId: string) => {
+    navigate(`/products/${productId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -122,21 +126,21 @@ export default function Search() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map((product) => (
-                    <Link key={product.id} to={`/products/${product.id}`}>
-                      <ProductCard
-                        id={product.id}
-                        name={product.name}
-                        price={product.price}
-                        salePrice={product.sale_price || null}
-                        image={product.images?.[0] || '/placeholder.svg'}
-                        category={product.category_id || ''}
-                        isNew={product.is_new || false}
-                        isTrending={product.is_trending || false}
-                        rating={product.rating || 0}
-                        reviewCount={product.review_count || 0}
-                        className="h-full"
-                      />
-                    </Link>
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      salePrice={product.sale_price || null}
+                      image={product.images?.[0] || '/placeholder.svg'}
+                      category={product.category_id || ''}
+                      isNew={product.is_new || false}
+                      isTrending={product.is_trending || false}
+                      rating={product.rating || 0}
+                      reviewCount={product.review_count || 0}
+                      className="h-full"
+                      onClick={() => handleProductClick(product.id)}
+                    />
                   ))
                 ) : (
                   <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">

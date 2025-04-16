@@ -23,6 +23,7 @@ interface ProductCardProps {
   rating?: number;
   reviewCount?: number;
   isDarkMode?: boolean;
+  onClick?: () => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -39,13 +40,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
   rating,
   reviewCount,
   isDarkMode: propIsDarkMode,
+  onClick,
 }) => {
   const { isDarkMode: contextIsDarkMode } = useTheme();
   const isDarkMode = propIsDarkMode !== undefined ? propIsDarkMode : contextIsDarkMode;
   const { addToCart } = useCart();
   const { addToWishlist } = useWishlist();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     // Convert single image to array if it exists
     const images = image ? [image] : [];
 
@@ -82,7 +86,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
     });
   };
 
-  const handleAddToWishlist = () => {
+  const handleAddToWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
     // Create a product-like object with the minimum required properties
     // This matches what WishlistContext expects
     const productData = {
@@ -110,37 +116,33 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const discountedPrice = salePrice !== null && salePrice !== undefined ? salePrice : price;
 
-  return (
+  const cardContent = (
     <div className={cn("relative rounded-xl overflow-hidden border", isDarkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white", className)}>
-      <Link to={`/products/${id}`}>
-        <div className="relative aspect-square overflow-hidden">
-          <img
-            src={image}
-            alt={name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          {isNew && (
-            <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-md z-10">
-              New
-            </div>
-          )}
-          {isTrending && (
-            <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-md z-10">
-              Trending
-            </div>
-          )}
-        </div>
-      </Link>
+      <div className="relative aspect-square overflow-hidden">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        {isNew && (
+          <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-md z-10">
+            New
+          </div>
+        )}
+        {isTrending && (
+          <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-md z-10">
+            Trending
+          </div>
+        )}
+      </div>
 
       <div className="p-4">
-        <Link to={`/products/${id}`}>
-          <h3 className={cn(
-            "font-medium line-clamp-2 mb-2",
-            isDarkMode ? "text-white" : "text-gray-900"
-          )}>
-            {name}
-          </h3>
-        </Link>
+        <h3 className={cn(
+          "font-medium line-clamp-2 mb-2",
+          isDarkMode ? "text-white" : "text-gray-900"
+        )}>
+          {name}
+        </h3>
 
         <div className="flex items-center justify-between">
           <div className="flex items-baseline gap-2">
@@ -193,6 +195,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
       </div>
     </div>
   );
+
+  // If onClick is provided, wrap in a div with onClick handler
+  if (onClick) {
+    return (
+      <div onClick={onClick} className="cursor-pointer">
+        {cardContent}
+      </div>
+    );
+  }
+
+  // Otherwise, just return the card content
+  return cardContent;
 };
 
 export default ProductCard;

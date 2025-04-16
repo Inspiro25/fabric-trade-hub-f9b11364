@@ -9,7 +9,6 @@ import { useCategoryProducts } from '@/hooks/use-category-products';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getCategoriesWithDetails } from '@/lib/products/categories';
-import { Link } from 'react-router-dom';
 import ProductCard from '@/components/ProductCard';
 
 const CategoryPage = () => {
@@ -80,6 +79,10 @@ const CategoryPage = () => {
   const handleSortChange = (newSortBy: 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity') => {
     setSortBy(newSortBy);
     setPage(1);
+  };
+
+  const handleProductClick = (productId: string) => {
+    navigate(`/products/${productId}`);
   };
 
   useEffect(() => {
@@ -200,25 +203,21 @@ const CategoryPage = () => {
         ) : products && products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map(product => (
-              <Link 
+              <ProductCard 
                 key={product.id}
-                to={`/products/${product.id}`}
-                className="transform transition hover:-translate-y-1"
-              >
-                <ProductCard 
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  salePrice={product.salePrice}
-                  image={product.images?.[0] || '/placeholder.svg'}
-                  category={product.category}
-                  isNew={product.isNew}
-                  isTrending={product.isTrending}
-                  rating={product.rating}
-                  reviewCount={product.reviewCount}
-                  isDarkMode={isDarkMode}
-                />
-              </Link>
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                salePrice={product.salePrice}
+                image={product.images?.[0] || '/placeholder.svg'}
+                category={product.category}
+                isNew={product.isNew}
+                isTrending={product.isTrending}
+                rating={product.rating}
+                reviewCount={product.reviewCount}
+                isDarkMode={isDarkMode}
+                onClick={() => handleProductClick(product.id)}
+              />
             ))}
           </div>
         ) : (
