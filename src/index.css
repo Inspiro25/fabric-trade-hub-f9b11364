@@ -1,0 +1,347 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 30 100% 50%; /* Changed to Orange */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 30 100% 96%; /* Light Orange */
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 30 100% 50%; /* Changed to Orange */
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 30 100% 50%; /* Changed to Orange */
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 30 100% 50%; /* Changed to Orange */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 30 100% 15%; /* Dark Orange */
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 30 100% 50%; /* Changed to Orange */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 30 100% 50%; /* Changed to Orange */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-gradient-to-br from-orange-50 via-orange-50/80 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  .dark-gradient-bg {
+    @apply bg-gradient-to-br from-gray-900 via-[#2a2a2a] to-gray-900;
+  }
+  
+  .brown-gradient-bg {
+    @apply bg-gradient-to-br from-[#261a0d] via-[#292018] to-[#221815];
+  }
+  
+  .dark-glass {
+    @apply bg-gray-900/80 backdrop-blur-sm border border-gray-800;
+  }
+}
+
+@layer components {
+  .mobile-container {
+    @apply px-4 sm:px-6 md:px-8 lg:px-12;
+  }
+  
+  .mobile-padding-y {
+    @apply py-4 sm:py-6 md:py-8 lg:py-12;
+  }
+  
+  .mobile-padding-x {
+    @apply px-4 sm:px-6 md:px-8 lg:px-12;
+  }
+  
+  .mobile-padding {
+    @apply p-4 sm:p-6 md:p-8 lg:p-12;
+  }
+  
+  .mobile-gap {
+    @apply gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .glass-morphism {
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border border-white/20 dark:border-gray-800/20;
+  }
+  
+  .neo-morphism {
+    @apply bg-gray-50 dark:bg-gray-900 shadow-subtle;
+  }
+  
+  .heading-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+  }
+  
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+  }
+  
+  .heading-md {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+  
+  .heading-sm {
+    @apply text-xl md:text-2xl font-semibold;
+  }
+  
+  .body-lg {
+    @apply text-lg leading-relaxed;
+  }
+  
+  .body-md {
+    @apply text-base leading-relaxed;
+  }
+  
+  .body-sm {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .caption {
+    @apply text-xs text-muted-foreground;
+  }
+  
+  .category-chip {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 dark:bg-gray-700 dark:text-gray-100;
+  }
+  
+  .product-card-container {
+    @apply relative overflow-hidden rounded-lg border border-border transition-all duration-300 hover:shadow-elevated;
+  }
+  
+  .image-hover-zoom {
+    @apply transition-all duration-400 ease-apple hover:scale-105;
+  }
+  
+  .animate-page-transition {
+    @apply animate-fade-up;
+  }
+
+  .vyoma-button {
+    @apply bg-vyoma-primary text-white rounded-full font-medium hover:bg-vyoma-secondary transition-colors;
+  }
+
+  .vyoma-card {
+    @apply rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-subtle;
+  }
+
+  .vyoma-input {
+    @apply rounded-full border border-vyoma-gray dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 px-4 py-2 focus:border-vyoma-primary focus:ring-1 focus:ring-vyoma-primary;
+  }
+
+  .vyoma-badge {
+    @apply bg-vyoma-light dark:bg-orange-900/30 text-vyoma-primary dark:text-orange-300 text-xs font-medium px-2 py-1 rounded-full;
+  }
+
+  .vyoma-searchbar {
+    @apply bg-vyoma-gray dark:bg-gray-800 rounded-full px-4 py-2 text-sm w-full focus:outline-none dark:text-gray-200;
+  }
+
+  .search-bar-mobile {
+    @apply w-full relative flex items-center;
+  }
+  
+  .search-bar-mobile input {
+    @apply h-10 pl-9 pr-12 rounded-full text-sm dark:bg-gray-800 dark:text-gray-200;
+  }
+  
+  .search-bar-mobile .search-icon {
+    @apply absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 dark:text-gray-400;
+  }
+  
+  .search-bar-mobile .clear-icon {
+    @apply absolute right-11 top-1/2 transform -translate-y-1/2 h-4 w-4 dark:text-gray-400;
+  }
+  
+  .search-bar-mobile .submit-button {
+    @apply absolute right-1 top-1/2 transform -translate-y-1/2 h-8 rounded-full flex items-center justify-center;
+  }
+  
+  /* Dark theme specific classes */
+  .dark-card {
+    @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg shadow-sm;
+  }
+  
+  .dark-tab-active {
+    @apply data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400;
+  }
+  
+  .dark-input {
+    @apply bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500 focus:ring-orange-500;
+  }
+  
+  .dark-button {
+    @apply bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-700 dark:hover:bg-orange-800;
+  }
+  
+  .dark-button-outline {
+    @apply border-orange-600 text-orange-500 hover:bg-orange-600/10 dark:border-orange-500 dark:text-orange-400 dark:hover:bg-orange-500/20;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Image loading blur effect */
+.image-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-loading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Vyoma specific styles */
+.vyoma-bottom-tab {
+  @apply flex flex-col items-center justify-center text-xs font-medium py-2 dark:text-gray-300;
+}
+
+.vyoma-bottom-tab.active {
+  @apply text-vyoma-primary dark:text-orange-400;
+}
+
+.vyoma-bottom-tab-icon {
+  @apply mb-1;
+}
+
+.vyoma-product-grid {
+  @apply grid grid-cols-2 gap-4;
+}
+
+/* Dark mode mobile optimizations */
+@media (max-width: 768px) {
+  .dark .mobile-card {
+    @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg p-3;
+  }
+  
+  .dark .mobile-search-container {
+    @apply bg-gray-900 border-gray-700;
+  }
+  
+  .dark .mobile-tabs {
+    @apply bg-gray-800 border-gray-700;
+  }
+}
