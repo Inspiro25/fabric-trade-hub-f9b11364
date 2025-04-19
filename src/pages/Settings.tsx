@@ -16,27 +16,36 @@ import {
   SheetTrigger,
   SheetClose,
 } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 
 const SettingItem = ({ 
   icon, 
   title, 
   description, 
-  action 
+  action,
+  onClick 
 }: { 
   icon: React.ReactNode; 
   title: string; 
   description: string; 
-  action: React.ReactNode; 
+  action: React.ReactNode;
+  onClick?: () => void;
 }) => (
-  <div className="flex items-center justify-between py-3">
-    <div className="flex items-start gap-3">
+  <div 
+    className={cn(
+      "flex items-center justify-between py-4 px-4 md:px-6",
+      onClick && "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
+    )}
+    onClick={onClick}
+  >
+    <div className="flex items-start gap-3 flex-1">
       <div className="mt-0.5 text-gray-500 dark:text-gray-400">{icon}</div>
-      <div>
-        <h3 className="text-sm font-medium dark:text-white">{title}</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+      <div className="min-w-0 flex-1">
+        <h3 className="text-sm font-medium dark:text-white truncate">{title}</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>
       </div>
     </div>
-    <div>{action}</div>
+    <div className="ml-4 flex-shrink-0">{action}</div>
   </div>
 );
 
@@ -55,27 +64,24 @@ const Settings = () => {
   // Notification settings state
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false); // Add state for SMS notifications
+  const [smsNotifications, setSmsNotifications] = useState(false);
   
   // Language state
   const [language, setLanguage] = useState('English');
   
   useEffect(() => {
-    // Initialize form with user profile data when it becomes available
     if (userProfile) {
       setDisplayName(userProfile.displayName || '');
       setEmail(userProfile.email || '');
       setPhoneNumber(userProfile.phone || '');
       setAddress(userProfile.address || '');
       
-      // Initialize notification preferences if available
       if (userProfile.preferences?.notifications) {
         setEmailNotifications(userProfile.preferences.notifications.email);
         setPushNotifications(userProfile.preferences.notifications.push);
         setSmsNotifications(userProfile.preferences.notifications.sms);
       }
       
-      // Initialize language preference if available
       if (userProfile.preferences?.language) {
         setLanguage(userProfile.preferences.language);
       }
@@ -144,7 +150,6 @@ const Settings = () => {
         description: `You will ${newValue ? 'now' : 'no longer'} receive push notifications.`,
       });
     } catch (error) {
-      // Revert the UI state if update fails
       setPushNotifications(!newValue);
       toast({
         title: "Update Failed",
@@ -175,7 +180,6 @@ const Settings = () => {
         description: `You will ${newValue ? 'now' : 'no longer'} receive email notifications.`,
       });
     } catch (error) {
-      // Revert the UI state if update fails
       setEmailNotifications(!newValue);
       toast({
         title: "Update Failed",
@@ -185,7 +189,6 @@ const Settings = () => {
     }
   };
 
-  // Add a toggle for SMS notifications
   const toggleSmsNotifications = async () => {
     const newValue = !smsNotifications;
     setSmsNotifications(newValue);
@@ -207,7 +210,6 @@ const Settings = () => {
         description: `You will ${newValue ? 'now' : 'no longer'} receive SMS notifications.`,
       });
     } catch (error) {
-      // Revert the UI state if update fails
       setSmsNotifications(!newValue);
       toast({
         title: "Update Failed",
@@ -238,7 +240,6 @@ const Settings = () => {
         description: `Your language preference has been updated to ${newLanguage}.`,
       });
     } catch (error) {
-      // Revert the UI state if update fails
       setLanguage(language);
       toast({
         title: "Update Failed",
@@ -250,236 +251,165 @@ const Settings = () => {
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Desktop Header */}
-      <div className="hidden md:block sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-6 py-4">
-          <h1 className="text-2xl font-semibold dark:text-white">Settings</h1>
-        </div>
-      </div>
-
-      {/* Mobile Header */}
-      <div className="md:hidden sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 rounded-full dark:text-gray-300" 
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft size={16} />
-          </Button>
-          <h1 className="text-lg font-semibold dark:text-white">Settings</h1>
-        </div>
-      </div>
-      
       {/* Settings Content */}
-      <div className="container mx-auto px-4 md:px-6 py-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Sidebar Navigation - Desktop Only */}
-          <div className="hidden md:block w-64 shrink-0">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-1">
-              <button 
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                onClick={() => document.getElementById('profile-section')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <User size={16} />
-                Profile
-              </button>
-              <button 
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                onClick={() => document.getElementById('notifications-section')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Bell size={16} />
-                Notifications
-              </button>
-              <button 
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                onClick={() => document.getElementById('appearance-section')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Monitor size={16} />
-                Appearance
-              </button>
-              <button 
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                onClick={() => document.getElementById('security-section')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Lock size={16} />
-                Security
-              </button>
-              <button 
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                onClick={() => document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <CreditCard size={16} />
-                Payment
-              </button>
+      <div className="divide-y divide-gray-200 dark:divide-gray-700 pb-20">
+        {/* Profile Section */}
+        <div className="bg-white dark:bg-gray-800">
+          <Sheet>
+            <SheetTrigger asChild>
+              <div>
+                <SettingItem
+                  icon={<User size={18} />}
+                  title="Profile"
+                  description={userProfile?.displayName || currentUser?.email || "Update your profile information"}
+                  action={<ArrowLeft size={16} className="rotate-180" />}
+                />
+              </div>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-lg">
+              <SheetHeader>
+                <SheetTitle>Edit Profile</SheetTitle>
+              </SheetHeader>
+              <div className="py-6">
+                <ProfileForm
+                  displayName={displayName}
+                  setDisplayName={setDisplayName}
+                  email={email}
+                  setEmail={setEmail}
+                  phoneNumber={phoneNumber}
+                  setPhoneNumber={setPhoneNumber}
+                  address={address}
+                  setAddress={setAddress}
+                  isLoading={isProfileLoading}
+                  handleSubmit={handleProfileSubmit}
+                  emailDisabled={true}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Notifications Section */}
+        <div className="bg-white dark:bg-gray-800">
+          <div className="py-2">
+            <div className="px-4 md:px-6 py-3">
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Notifications</h2>
             </div>
+            
+            <SettingItem
+              icon={<Bell size={18} />}
+              title="Push Notifications"
+              description="Get notified about order updates and promotions"
+              action={<Switch checked={pushNotifications} onCheckedChange={togglePushNotifications} />}
+            />
+            
+            <SettingItem
+              icon={<Bell size={18} />}
+              title="Email Notifications"
+              description="Receive notifications via email"
+              action={<Switch checked={emailNotifications} onCheckedChange={toggleEmailNotifications} />}
+            />
+            
+            <SettingItem
+              icon={<Bell size={18} />}
+              title="SMS Notifications"
+              description="Receive notifications via SMS"
+              action={<Switch checked={smsNotifications} onCheckedChange={toggleSmsNotifications} />}
+            />
           </div>
+        </div>
 
-          {/* Main Content */}
-          <div className="flex-1 space-y-6">
-            {/* Profile Section */}
-            <div id="profile-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="p-4">
-                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile</h2>
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="w-full md:w-auto">
-                      Edit Profile
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="overflow-y-auto">
-                    <SheetHeader>
-                      <SheetTitle>Edit Profile</SheetTitle>
-                    </SheetHeader>
-                    <div className="py-4">
-                      <ProfileForm
-                        displayName={displayName}
-                        setDisplayName={setDisplayName}
-                        email={email}
-                        setEmail={setEmail}
-                        phoneNumber={phoneNumber}
-                        setPhoneNumber={setPhoneNumber}
-                        address={address}
-                        setAddress={setAddress}
-                        isLoading={isProfileLoading}
-                        handleSubmit={handleProfileSubmit}
-                        emailDisabled={true}
-                      />
-                    </div>
-                    <div className="mt-4">
-                      <SheetClose asChild>
-                        <Button variant="outline" className="w-full">Cancel</Button>
-                      </SheetClose>
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
+        {/* Appearance Section */}
+        <div className="bg-white dark:bg-gray-800">
+          <div className="py-2">
+            <div className="px-4 md:px-6 py-3">
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Appearance</h2>
             </div>
-
-            {/* Notifications Section */}
-            <div id="notifications-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="p-4">
-                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notifications</h2>
-                
-                <SettingItem
-                  icon={<Bell size={18} />}
-                  title="Push Notifications"
-                  description="Get notified about order updates and promotions"
-                  action={<Switch checked={pushNotifications} onCheckedChange={togglePushNotifications} />}
-                />
-                
-                <Separator className="dark:bg-gray-700" />
-                
-                <SettingItem
-                  icon={<Bell size={18} />}
-                  title="Email Notifications"
-                  description="Receive notifications via email"
-                  action={<Switch checked={emailNotifications} onCheckedChange={toggleEmailNotifications} />}
-                />
-
-                <Separator className="dark:bg-gray-700" />
-                
-                <SettingItem
-                  icon={<Bell size={18} />}
-                  title="SMS Notifications"
-                  description="Receive notifications via SMS"
-                  action={<Switch checked={smsNotifications} onCheckedChange={toggleSmsNotifications} />}
-                />
-              </div>
-            </div>
-
-            {/* Appearance Section */}
-            <div id="appearance-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="p-4">
-                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Appearance</h2>
-                
-                <SettingItem
-                  icon={<Moon size={18} />}
-                  title="Dark Mode"
-                  description="Toggle between light and dark theme"
-                  action={<Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />}
-                />
-                
-                <Separator className="dark:bg-gray-700" />
-                
-                <SettingItem
-                  icon={<Globe size={18} />}
-                  title="Language"
-                  description="Change your preferred language"
-                  action={
-                    <select
-                      value={language}
-                      onChange={(e) => handleLanguageChange(e.target.value)}
-                      className="text-xs bg-transparent border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 dark:text-gray-300"
-                    >
-                      <option value="English">English</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
-                      <option value="Japanese">Japanese</option>
-                    </select>
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Security Section */}
-            <div id="security-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="p-4">
-                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Security</h2>
-                
-                <SettingItem
-                  icon={<Lock size={18} />}
-                  title="Change Password"
-                  description="Update your account password"
-                  action={
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-xs dark:text-gray-300" 
-                      onClick={() => navigate('/auth')}
-                    >
-                      Change
-                    </Button>
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Payment Section */}
-            <div id="payment-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="p-4">
-                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment</h2>
-                
-                <SettingItem
-                  icon={<CreditCard size={18} />}
-                  title="Payment Methods"
-                  description="Manage your payment options"
-                  action={
-                    <Button variant="ghost" size="sm" className="text-xs dark:text-gray-300">
-                      Manage
-                    </Button>
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Account Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="p-4">
-                <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Account</h2>
-                
-                <Button 
-                  variant="destructive" 
-                  className="w-full md:w-auto" 
-                  onClick={handleLogout}
+            
+            <SettingItem
+              icon={<Moon size={18} />}
+              title="Dark Mode"
+              description="Toggle between light and dark theme"
+              action={<Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />}
+            />
+            
+            <SettingItem
+              icon={<Globe size={18} />}
+              title="Language"
+              description="Change your preferred language"
+              action={
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  className="text-sm bg-transparent border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 dark:text-gray-300"
                 >
-                  <LogOut size={16} className="mr-2" />
-                  Sign Out
-                </Button>
-              </div>
+                  <option value="English">English</option>
+                  <option value="Spanish">Spanish</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Japanese">Japanese</option>
+                </select>
+              }
+            />
+          </div>
+        </div>
+
+        {/* Security Section */}
+        <div className="bg-white dark:bg-gray-800">
+          <div className="py-2">
+            <div className="px-4 md:px-6 py-3">
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Security</h2>
             </div>
+            
+            <SettingItem
+              icon={<Lock size={18} />}
+              title="Change Password"
+              description="Update your account password"
+              action={
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-sm"
+                  onClick={() => navigate('/auth')}
+                >
+                  Change
+                </Button>
+              }
+            />
+          </div>
+        </div>
+
+        {/* Payment Section */}
+        <div className="bg-white dark:bg-gray-800">
+          <div className="py-2">
+            <div className="px-4 md:px-6 py-3">
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Payment</h2>
+            </div>
+            
+            <SettingItem
+              icon={<CreditCard size={18} />}
+              title="Payment Methods"
+              description="Manage your payment options"
+              action={
+                <Button variant="ghost" size="sm" className="text-sm">
+                  Manage
+                </Button>
+              }
+            />
+          </div>
+        </div>
+
+        {/* Account Section */}
+        <div className="bg-white dark:bg-gray-800">
+          <div className="p-4 md:p-6">
+            <Button 
+              variant="destructive" 
+              className="w-full" 
+              onClick={handleLogout}
+            >
+              <LogOut size={16} className="mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </div>

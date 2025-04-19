@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
@@ -64,7 +63,7 @@ const CartItem: React.FC<CartItemProps> = ({
         <Link 
           to={`/product/${item.id}`} 
           className={cn(
-            "font-medium text-sm hover:text-kutuku-primary transition-colors truncate block",
+            "font-medium text-sm hover:text-blue-600 transition-colors truncate block",
             isDarkMode ? "text-gray-200" : "text-gray-800"
           )}
         >
@@ -73,13 +72,13 @@ const CartItem: React.FC<CartItemProps> = ({
         <div className="text-xs mt-0.5 flex flex-wrap gap-1">
           <span className={cn(
             "inline-flex items-center px-1.5 py-0.5 rounded-full text-xs",
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-muted-foreground"
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"
           )}>
             {item.size}
           </span>
           <span className={cn(
             "inline-flex items-center px-1.5 py-0.5 rounded-full text-xs",
-            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-muted-foreground"
+            isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-600"
           )}>
             {item.color}
           </span>
@@ -98,7 +97,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 "w-6 h-6 flex items-center justify-center transition-colors",
                 isDarkMode 
                   ? "text-gray-400 hover:text-gray-200" 
-                  : "text-muted-foreground hover:text-foreground",
+                  : "text-gray-500 hover:text-gray-700",
                 item.quantity <= 1 && "opacity-50 cursor-not-allowed"
               )}
               onClick={handleDecreaseQuantity} 
@@ -109,7 +108,7 @@ const CartItem: React.FC<CartItemProps> = ({
             </button>
             <span className={cn(
               "w-6 text-center text-xs font-medium",
-              isDarkMode && "text-gray-200"
+              isDarkMode ? "text-gray-200" : "text-gray-700"
             )}>
               {item.quantity}
             </span>
@@ -119,7 +118,7 @@ const CartItem: React.FC<CartItemProps> = ({
                 "w-6 h-6 flex items-center justify-center transition-colors",
                 isDarkMode 
                   ? "text-gray-400 hover:text-gray-200" 
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-gray-500 hover:text-gray-700"
               )}
               onClick={handleIncreaseQuantity}
             >
@@ -134,7 +133,7 @@ const CartItem: React.FC<CartItemProps> = ({
               "w-6 h-6 flex items-center justify-center transition-colors rounded-full",
               isDarkMode 
                 ? "text-gray-400 hover:text-red-400 hover:bg-gray-700" 
-                : "text-muted-foreground hover:text-destructive hover:bg-red-50"
+                : "text-gray-500 hover:text-red-600 hover:bg-red-50"
             )}
             onClick={handleRemoveItem}
           >
