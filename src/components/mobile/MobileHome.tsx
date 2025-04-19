@@ -72,7 +72,7 @@ const categoryIcons = [
       isDarkMode ? "bg-gray-900" : "bg-gray-50"
     )}>
       {/* Banner carousel */}
-      <div className="mt-2">
+      <div>
         <Swiper
           modules={[Pagination, Autoplay]}
           pagination={{ clickable: true }}
