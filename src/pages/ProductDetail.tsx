@@ -198,7 +198,7 @@ const MinimalReviewForm = ({ productId }: { productId: string }) => {
           className={cn(
             "flex items-center",
             isDarkMode 
-              ? "bg-orange-600 hover:bg-orange-700 text-white" 
+              ? "bg-blue-600 hover:bg-blue-700 text-white" 
               : "bg-kutuku-primary hover:bg-kutuku-secondary text-white"
           )}
         >
@@ -600,7 +600,7 @@ const ProductDetail: React.FC = () => {
                   )}>
                     <Truck className={cn(
                       "h-5 w-5",
-                      isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                      isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                     )} />
                   </div>
                   <div>
@@ -627,7 +627,7 @@ const ProductDetail: React.FC = () => {
                   )}>
                     <RefreshCw className={cn(
                       "h-5 w-5",
-                      isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                      isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                     )} />
                   </div>
                   <div>
@@ -654,7 +654,7 @@ const ProductDetail: React.FC = () => {
                   )}>
                     <Shield className={cn(
                       "h-5 w-5",
-                      isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                      isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                     )} />
                   </div>
                   <div>
@@ -681,7 +681,7 @@ const ProductDetail: React.FC = () => {
                   )}>
                     <Package className={cn(
                       "h-5 w-5",
-                      isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                      isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                     )} />
                   </div>
                   <div>
@@ -770,7 +770,7 @@ const ProductDetail: React.FC = () => {
               <div className="flex items-center mb-4">
                 <span className={cn(
                   "text-2xl font-semibold",
-                  isDarkMode ? "text-orange-400" : "text-gray-900"
+                  isDarkMode ? "text-blue-400" : "text-gray-900"
                 )}>₹{product.salePrice.toFixed(2)}</span>
                 <span className={cn(
                   "ml-2 line-through",
@@ -881,7 +881,7 @@ const ProductDetail: React.FC = () => {
                 className={cn(
                   "flex-1",
                   isDarkMode 
-                    ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                    ? "bg-blue-600 hover:bg-blue-700 text-white" 
                     : "bg-kutuku-primary hover:bg-kutuku-secondary text-white"
                 )}
                 onClick={handleAddToCart}
@@ -992,7 +992,7 @@ const ProductDetail: React.FC = () => {
                         <div className="flex items-start gap-2">
                           <Truck className={cn(
                             "h-4 w-4 mt-0.5",
-                            isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                            isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                           )} />
                           <div>
                             <h4 className={cn(
@@ -1008,7 +1008,7 @@ const ProductDetail: React.FC = () => {
                         <div className="flex items-start gap-2">
                           <Clock className={cn(
                             "h-4 w-4 mt-0.5",
-                            isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                            isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                           )} />
                           <div>
                             <h4 className={cn(

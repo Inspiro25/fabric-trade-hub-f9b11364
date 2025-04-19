@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Select,
@@ -69,7 +68,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className={cn(
             "h-4 w-4",
-            isDarkMode ? "text-orange-300" : "text-vyoma-primary"
+            isDarkMode ? "text-blue-300" : "text-vyoma-primary"
           )} />
           <Select
             value={itemsPerPage.toString()}

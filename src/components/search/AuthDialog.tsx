@@ -45,8 +45,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center",
                 isDarkMode 
-                  ? "bg-orange-500/20 text-orange-400" 
-                  : "bg-orange-100 text-orange-600"
+                  ? "bg-blue-500/20 text-blue-400" 
+                  : "bg-blue-100 text-blue-600"
               )}>
                 <LogIn className="h-5 w-5" />
               </div>
@@ -71,8 +71,8 @@ const AuthDialog: React.FC<AuthDialogProps> = ({
               className={cn(
                 "w-full h-11 rounded-lg text-sm font-medium transition-colors",
                 isDarkMode 
-                  ? "bg-orange-500 hover:bg-orange-600 text-white" 
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                  ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                  : "bg-blue-500 hover:bg-blue-600 text-white"
               )}
             >
               <div className="flex items-center justify-center">

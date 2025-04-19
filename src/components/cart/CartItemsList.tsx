@@ -89,7 +89,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
           
           <div className={cn(
             "mt-2 font-medium",
-            isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+            isDarkMode ? "text-blue-400" : "text-kutuku-primary"
           )}>
             ₹{item.price}
           </div>
@@ -218,7 +218,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
           )}>
             <ShoppingBag className={cn(
               "h-3 w-3",
-              isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              isDarkMode ? "text-blue-400" : "text-kutuku-primary"
             )} />
           </div>
           Items ({cartItems.length})

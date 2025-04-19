@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '@/lib/products';
@@ -144,8 +143,8 @@ export default function HomeProductShowcase({
               <Link to={linkTo} className={cn(
                 "text-sm font-medium flex items-center transition-colors",
                 isDarkMode 
-                  ? "text-orange-400 hover:text-orange-300" 
-                  : "text-orange-500 hover:text-orange-600"
+                  ? "text-blue-400 hover:text-blue-300" 
+                  : "text-blue-500 hover:text-blue-600"
               )}>
                 View All
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -161,7 +160,7 @@ export default function HomeProductShowcase({
               )}>
                 <Truck className={cn(
                   "h-4 w-4 mr-1",
-                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                  isDarkMode ? "text-blue-400" : "text-blue-500"
                 )} />
                 <span>Free Shipping</span>
               </div>
@@ -171,7 +170,7 @@ export default function HomeProductShowcase({
               )}>
                 <Timer className={cn(
                   "h-4 w-4 mr-1",
-                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                  isDarkMode ? "text-blue-400" : "text-blue-500"
                 )} />
                 <span>Limited Time Offers</span>
               </div>
@@ -181,7 +180,7 @@ export default function HomeProductShowcase({
               )}>
                 <Shield className={cn(
                   "h-4 w-4 mr-1",
-                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                  isDarkMode ? "text-blue-400" : "text-blue-500"
                 )} />
                 <span>Quality Guarantee</span>
               </div>
@@ -232,11 +231,11 @@ export default function HomeProductShowcase({
           <>
             <div className={cn(
               "absolute top-10 right-10 w-20 h-20 rounded-full border opacity-50",
-              isDarkMode ? "border-gray-600" : "border-orange-200"
+              isDarkMode ? "border-gray-600" : "border-blue-200"
             )} />
             <div className={cn(
               "absolute bottom-10 left-10 w-32 h-32 rounded-full border opacity-30",
-              isDarkMode ? "border-gray-600" : "border-orange-200"
+              isDarkMode ? "border-gray-600" : "border-blue-200"
             )} />
           </>
         )}
@@ -284,8 +283,8 @@ export default function HomeProductShowcase({
             <Link to={linkTo} className={cn(
               "text-sm font-medium flex items-center transition-colors",
               isDarkMode 
-                ? "text-orange-400 hover:text-orange-300" 
-                : "text-orange-500 hover:text-orange-600"
+                ? "text-blue-400 hover:text-blue-300" 
+                : "text-blue-500 hover:text-blue-600"
             )}>
               View All
               <ArrowRight className="ml-1 h-4 w-4" />
@@ -327,11 +326,11 @@ export default function HomeProductShowcase({
         <>
           <div className={cn(
             "absolute top-10 right-10 w-20 h-20 rounded-full border opacity-50",
-            isDarkMode ? "border-gray-600" : "border-orange-200"
+            isDarkMode ? "border-gray-600" : "border-blue-200"
           )} />
           <div className={cn(
             "absolute bottom-10 left-10 w-32 h-32 rounded-full border opacity-30",
-            isDarkMode ? "border-gray-600" : "border-orange-200"
+            isDarkMode ? "border-gray-600" : "border-blue-200"
           )} />
         </>
       )}

@@ -16,16 +16,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 30 100% 50%; /* Changed to Orange */
+    --primary: 217 91% 60%; /* Blue */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 240 4.8% 95.9%;
+    --secondary: 217 91% 65%; /* Lighter Blue */
     --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 240 4.8% 95.9%;
+    --muted: 217 10% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 30 100% 96%; /* Light Orange */
+    --accent: 217 91% 96%; /* Light Blue */
     --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
@@ -39,12 +39,12 @@
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 30 100% 50%; /* Changed to Orange */
+    --sidebar-primary: 217 91% 60%; /* Blue */
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 30 100% 50%; /* Changed to Orange */
+    --sidebar-ring: 217 91% 60%; /* Blue */
   }
 
   .dark {
@@ -57,16 +57,16 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 30 100% 50%; /* Changed to Orange */
+    --primary: 217 91% 60%; /* Blue */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 240 3.7% 15.9%;
+    --secondary: 217 91% 65%; /* Lighter Blue */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 3.7% 15.9%;
+    --muted: 217 10% 15.9%;
     --muted-foreground: 240 5% 64.9%;
 
-    --accent: 30 100% 15%; /* Dark Orange */
+    --accent: 217 91% 15%; /* Dark Blue */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -78,12 +78,12 @@
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 30 100% 50%; /* Changed to Orange */
+    --sidebar-primary: 217 91% 60%; /* Blue */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 30 100% 50%; /* Changed to Orange */
+    --sidebar-ring: 217 91% 60%; /* Blue */
   }
 }
 
@@ -93,7 +93,7 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-orange-50 via-orange-50/80 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-foreground;
+    @apply bg-gradient-to-br from-blue-50/90 via-blue-50/50 to-white/90 dark:from-blue-950 dark:via-gray-900 dark:to-gray-900 text-foreground transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: 'Poppins', sans-serif;
     min-height: 100vh;
@@ -211,19 +211,19 @@
   }
 
   .vyoma-button {
-    @apply bg-vyoma-primary text-white rounded-full font-medium hover:bg-vyoma-secondary transition-colors;
+    @apply bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200;
   }
 
   .vyoma-card {
-    @apply rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-subtle;
+    @apply bg-white dark:bg-gray-800 border border-blue-100 dark:border-blue-900 rounded-lg shadow-sm;
   }
 
   .vyoma-input {
-    @apply rounded-full border border-vyoma-gray dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 px-4 py-2 focus:border-vyoma-primary focus:ring-1 focus:ring-vyoma-primary;
+    @apply border-blue-200 dark:border-blue-800 focus:border-blue-500 dark:focus:border-blue-400;
   }
 
   .vyoma-badge {
-    @apply bg-vyoma-light dark:bg-orange-900/30 text-vyoma-primary dark:text-orange-300 text-xs font-medium px-2 py-1 rounded-full;
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100;
   }
 
   .vyoma-searchbar {
@@ -256,19 +256,50 @@
   }
   
   .dark-tab-active {
-    @apply data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400;
+    @apply data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400;
   }
   
   .dark-input {
-    @apply bg-gray-800 border-gray-700 text-gray-200 focus:border-orange-500 focus:ring-orange-500;
+    @apply bg-gray-800 border-gray-700 text-gray-200 focus:border-blue-500 focus:ring-blue-500;
   }
   
   .dark-button {
-    @apply bg-orange-600 hover:bg-orange-700 text-white dark:bg-orange-700 dark:hover:bg-orange-800;
+    @apply bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200;
   }
   
   .dark-button-outline {
-    @apply border-orange-600 text-orange-500 hover:bg-orange-600/10 dark:border-orange-500 dark:text-orange-400 dark:hover:bg-orange-500/20;
+    @apply border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white transition-colors duration-200;
+  }
+
+  .vyoma-bottom-tab {
+    @apply text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400;
+  }
+
+  .vyoma-bottom-tab.active {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+
+  .vyoma-bottom-tab-icon {
+    @apply mb-1;
+  }
+
+  .vyoma-product-grid {
+    @apply grid grid-cols-2 gap-4;
+  }
+
+  /* Dark mode mobile optimizations */
+  @media (max-width: 768px) {
+    .dark .mobile-card {
+      @apply bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg p-3;
+    }
+    
+    .dark .mobile-search-container {
+      @apply bg-gray-900 border-gray-700;
+    }
+    
+    .dark .mobile-tabs {
+      @apply bg-gray-800 border-gray-700;
+    }
   }
 }
 
@@ -283,12 +314,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
-  border-radius: 4px;
+  @apply bg-blue-200 dark:bg-blue-800;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  @apply bg-blue-300 dark:bg-blue-700;
 }
 
 /* Image loading blur effect */
@@ -320,7 +350,7 @@
 }
 
 .vyoma-bottom-tab.active {
-  @apply text-vyoma-primary dark:text-orange-400;
+  @apply text-vyoma-primary dark:text-blue-400;
 }
 
 .vyoma-bottom-tab-icon {

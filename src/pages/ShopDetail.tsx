@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Star, ShoppingBag, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthDialog from '@/components/search/AuthDialog';
+import { cn } from '@/lib/utils';
 
 const ShopDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,11 @@ const ShopDetail = () => {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isSupabaseAuthenticated, currentUser } = useAuth();
+  
+  // Update pagination state with mobile considerations
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = isMobile ? 6 : 8; // Reduce items per page on mobile
+  const [isPageChanging, setIsPageChanging] = useState(false);
 
   // Fetch shop data and check follow status
   const fetchShopData = useCallback(async () => {
@@ -171,20 +177,51 @@ const ShopDetail = () => {
     }
   };
 
+  // Improved page change handler with smooth scroll
+  const handlePageChange = useCallback((page: number) => {
+    setIsPageChanging(true);
+    setCurrentPage(page);
+    
+    // Get the products section element
+    const productsSection = document.querySelector('[data-value="products"]');
+    
+    if (productsSection) {
+      // Smooth scroll to just above the products section
+      const yOffset = -60; // Offset to account for sticky header
+      const y = productsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    }
+    
+    // Reset the page changing state after animation
+    setTimeout(() => {
+      setIsPageChanging(false);
+    }, 500);
+  }, []);
+
+  // Calculate paginated products with loading state
+  const paginatedProducts = shopProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   if (isLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-orange-50'}`}>
-        <div className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${isDarkMode ? 'border-orange-500' : 'border-orange-500'}`}></div>
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-blue-50'}`}>
+        <div className={`animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${isDarkMode ? 'border-blue-500' : 'border-blue-500'}`}></div>
       </div>
     );
   }
 
   if (error || !shop) {
     return (
-      <div className={`container mx-auto px-4 py-6 text-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-orange-50'}`}>
-        <h2 className="text-lg font-bold mb-3">{error || "Shop not found"}</h2>
-        <p className="mb-4 text-sm">The shop you're looking for doesn't exist or couldn't be loaded.</p>
-        <Link to="/shops" className={`px-4 py-2 rounded text-white ${isDarkMode ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'}`}>
+      <div className={`container mx-auto px-4 py-6 text-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-blue-50'}`}>
+        <h2 className="text-xl font-semibold mb-2">Shop Not Found</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">The shop you're looking for doesn't exist or has been removed.</p>
+        <Link to="/shops" className={`px-4 py-2 rounded text-white ${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}`}>
           Back to Shops
         </Link>
       </div>
@@ -192,10 +229,16 @@ const ShopDetail = () => {
   }
 
   return (
-    <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-orange-50'}`}>
+    <div className={cn(
+      "min-h-screen pb-16",
+      isDarkMode ? "bg-gray-900" : "bg-blue-50"
+    )}>
       <ShopDetailHeader isDarkMode={isDarkMode} />
       
-      <div className="container mx-auto px-4 -mt-2">
+      <div className={cn(
+        "container mx-auto px-4",
+        isMobile ? "-mt-1" : "-mt-2"
+      )}>
         <div className="relative">
           <ShopDetailCard 
             shop={shop} 
@@ -214,56 +257,179 @@ const ShopDetail = () => {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 mt-3 pb-24">
+      <div className={cn(
+        "container mx-auto px-4",
+        isMobile ? "mt-2" : "mt-3",
+        "pb-24"
+      )}>
         <Tabs defaultValue="products" className="w-full">
-          <TabsList className={`w-full grid grid-cols-3 h-8 ${isDarkMode ? 'bg-gray-800/70' : 'bg-orange-50'}`}>
-            <TabsTrigger value="products" className={`text-xs ${isDarkMode ? 'data-[state=active]:bg-orange-950 data-[state=active]:text-orange-400' : 'data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700'}`}>Products</TabsTrigger>
-            <TabsTrigger value="about" className={`text-xs ${isDarkMode ? 'data-[state=active]:bg-orange-950 data-[state=active]:text-orange-400' : 'data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700'}`}>About</TabsTrigger>
-            <TabsTrigger value="reviews" className={`text-xs ${isDarkMode ? 'data-[state=active]:bg-orange-950 data-[state=active]:text-orange-400' : 'data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700'}`}>Reviews</TabsTrigger>
+          <TabsList className={cn(
+            "w-full grid grid-cols-3",
+            isMobile ? "h-10" : "h-8",
+            isDarkMode ? "bg-gray-800/70" : "bg-blue-50"
+          )}>
+            <TabsTrigger 
+              value="products" 
+              className={cn(
+                isMobile ? "text-[11px]" : "text-xs",
+                isDarkMode 
+                  ? "data-[state=active]:bg-blue-950 data-[state=active]:text-blue-400" 
+                  : "data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700"
+              )}
+            >
+              Products
+            </TabsTrigger>
+            <TabsTrigger 
+              value="about" 
+              className={cn(
+                isMobile ? "text-[11px]" : "text-xs",
+                isDarkMode 
+                  ? "data-[state=active]:bg-blue-950 data-[state=active]:text-blue-400" 
+                  : "data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700"
+              )}
+            >
+              About
+            </TabsTrigger>
+            <TabsTrigger 
+              value="reviews" 
+              className={cn(
+                isMobile ? "text-[11px]" : "text-xs",
+                isDarkMode 
+                  ? "data-[state=active]:bg-blue-950 data-[state=active]:text-blue-400" 
+                  : "data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700"
+              )}
+            >
+              Reviews
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="products" className="mt-3">
+          <TabsContent 
+            value="products" 
+            className={cn(
+              isMobile ? "mt-2" : "mt-3",
+              isPageChanging ? "opacity-60 transition-opacity duration-200" : ""
+            )}
+          >
             <ProductGrid 
-              products={shopProducts}
+              products={paginatedProducts}
               title={`${shop.name} Products`}
               subtitle=""
               columns={isMobile ? 2 : 3}
-              showPagination={shopProducts.length > 8}
-              itemsPerPage={8}
+              showPagination={shopProducts.length > itemsPerPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={shopProducts.length}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
               showFilters={false}
+              paginationClassName={cn(
+                "mt-4",
+                isMobile ? "text-sm space-x-1" : "text-base space-x-2"
+              )}
+              isLoading={isPageChanging}
             />
           </TabsContent>
           
-          <TabsContent value="about" className="mt-3">
-            <Card className={`border-none shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg overflow-hidden`}>
-              <CardContent className="p-3 text-xs">
-                <h3 className={`font-medium mb-2 text-sm ${isDarkMode ? 'text-orange-400' : 'text-orange-800'}`}>Shop Information</h3>
-                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-3`}>{shop.description}</p>
+          <TabsContent value="about" className={cn(
+            isMobile ? "mt-2" : "mt-3"
+          )}>
+            <Card className={cn(
+              "border-none shadow-sm rounded-lg overflow-hidden",
+              isDarkMode ? "bg-gray-800" : "bg-white"
+            )}>
+              <CardContent className={cn(
+                isMobile ? "p-2.5" : "p-3",
+                "text-xs"
+              )}>
+                <h3 className={cn(
+                  "font-medium mb-2",
+                  isMobile ? "text-xs" : "text-sm",
+                  isDarkMode ? "text-blue-400" : "text-blue-800"
+                )}>
+                  Shop Information
+                </h3>
+                <p className={cn(
+                  "mb-3",
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                )}>
+                  {shop.description}
+                </p>
                 
-                <div className={`${isDarkMode ? 'bg-gray-700/60' : 'bg-orange-50'} p-2 rounded-md`}>
-                  <h4 className={`font-medium mb-1 ${isDarkMode ? 'text-orange-400' : 'text-orange-700'} text-[11px]`}>Address</h4>
-                  <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{shop.address}</p>
+                <div className={cn(
+                  "p-2 rounded-md",
+                  isDarkMode ? "bg-gray-700/60" : "bg-blue-50"
+                )}>
+                  <h4 className={cn(
+                    "font-medium mb-1",
+                    isDarkMode ? "text-blue-400" : "text-blue-700",
+                    isMobile ? "text-[10px]" : "text-[11px]"
+                  )}>
+                    Address
+                  </h4>
+                  <p className={isDarkMode ? "text-gray-300" : "text-gray-600"}>
+                    {shop.address}
+                  </p>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-3 mt-3">
-                  <div className={`${isDarkMode ? 'bg-gray-700/60' : 'bg-orange-50'} p-2 rounded-md`}>
-                    <h4 className={`font-medium mb-1 ${isDarkMode ? 'text-orange-400' : 'text-orange-700'} text-[11px]`}>Rating</h4>
+                <div className={cn(
+                  "grid grid-cols-3 gap-2",
+                  isMobile ? "mt-2" : "mt-3"
+                )}>
+                  <div className={cn(
+                    "p-2 rounded-md",
+                    isDarkMode ? "bg-gray-700/60" : "bg-blue-50"
+                  )}>
+                    <h4 className={cn(
+                      "font-medium mb-1",
+                      isDarkMode ? "text-blue-400" : "text-blue-700",
+                      isMobile ? "text-[10px]" : "text-[11px]"
+                    )}>
+                      Rating
+                    </h4>
                     <div className="flex items-center">
-                      <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                      <Star className={cn(
+                        "text-yellow-500 mr-1",
+                        isMobile ? "h-2.5 w-2.5" : "h-3 w-3"
+                      )} />
                       <span>{shop.rating.toFixed(1)} ({shop.reviewCount} reviews)</span>
                     </div>
                   </div>
-                  <div className={`${isDarkMode ? 'bg-gray-700/60' : 'bg-orange-50'} p-2 rounded-md`}>
-                    <h4 className={`font-medium mb-1 ${isDarkMode ? 'text-orange-400' : 'text-orange-700'} text-[11px]`}>Products</h4>
+                  <div className={cn(
+                    "p-2 rounded-md",
+                    isDarkMode ? "bg-gray-700/60" : "bg-blue-50"
+                  )}>
+                    <h4 className={cn(
+                      "font-medium mb-1",
+                      isDarkMode ? "text-blue-400" : "text-blue-700",
+                      isMobile ? "text-[10px]" : "text-[11px]"
+                    )}>
+                      Products
+                    </h4>
                     <div className="flex items-center">
-                      <ShoppingBag className={`h-3 w-3 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'} mr-1`} />
+                      <ShoppingBag className={cn(
+                        "mr-1",
+                        isMobile ? "h-2.5 w-2.5" : "h-3 w-3",
+                        isDarkMode ? "text-blue-400" : "text-blue-600"
+                      )} />
                       <span>{shopProducts.length} products</span>
                     </div>
                   </div>
-                  <div className={`${isDarkMode ? 'bg-gray-700/60' : 'bg-orange-50'} p-2 rounded-md`}>
-                    <h4 className={`font-medium mb-1 ${isDarkMode ? 'text-orange-400' : 'text-orange-700'} text-[11px]`}>Followers</h4>
+                  <div className={cn(
+                    "p-2 rounded-md",
+                    isDarkMode ? "bg-gray-700/60" : "bg-blue-50"
+                  )}>
+                    <h4 className={cn(
+                      "font-medium mb-1",
+                      isDarkMode ? "text-blue-400" : "text-blue-700",
+                      isMobile ? "text-[10px]" : "text-[11px]"
+                    )}>
+                      Followers
+                    </h4>
                     <div className="flex items-center">
-                      <Users className={`h-3 w-3 ${isDarkMode ? 'text-orange-400' : 'text-orange-600'} mr-1`} />
+                      <Users className={cn(
+                        "mr-1",
+                        isMobile ? "h-2.5 w-2.5" : "h-3 w-3",
+                        isDarkMode ? "text-blue-400" : "text-blue-600"
+                      )} />
                       <span>{followersCount} followers</span>
                     </div>
                   </div>
@@ -272,7 +438,9 @@ const ShopDetail = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="reviews" className="mt-3">
+          <TabsContent value="reviews" className={cn(
+            isMobile ? "mt-2" : "mt-3"
+          )}>
             <ShopReviewsTab shopId={shop.id} />
           </TabsContent>
         </Tabs>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
@@ -44,7 +43,7 @@ const ProfileAvatar = ({
     <div className="flex flex-col items-center mb-6 relative">
       <div className={cn(
         "absolute inset-0 -z-10 rounded-full blur-3xl opacity-20 w-32 h-32 mx-auto",
-        isDarkMode ? "bg-orange-500" : "bg-blue-500"
+        isDarkMode ? "bg-blue-500" : "bg-blue-500"
       )}></div>
       
       <div className="relative">
@@ -55,7 +54,7 @@ const ProfileAvatar = ({
           <AvatarImage src={photoURL || undefined} alt={displayName} />
           <AvatarFallback className={cn(
             "text-2xl",
-            isDarkMode ? "bg-gray-700 text-orange-300" : "bg-blue-100 text-blue-600"
+            isDarkMode ? "bg-gray-700 text-blue-300" : "bg-blue-100 text-blue-600"
           )}>
             {getInitials(displayName) || getInitials(email) || '?'}
           </AvatarFallback>

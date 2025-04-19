@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Laptop, Smartphone, ArrowRight } from 'lucide-react';
@@ -100,8 +99,8 @@ const ElectronicsShowcase = () => {
                   {category.title}
                 </h3>
                 <p className={cn(
-                  "text-orange-500 text-xs flex items-center mt-1 group-hover:font-medium",
-                  isDarkMode && "text-orange-400"
+                  "text-blue-500 text-xs flex items-center mt-1 group-hover:font-medium",
+                  isDarkMode && "text-blue-400"
                 )}>
                   Shop Now 
                   <motion.span
@@ -120,8 +119,8 @@ const ElectronicsShowcase = () => {
         <div className="flex justify-center gap-3">
           <Button 
             className={cn(
-              "bg-orange-500 hover:bg-orange-600",
-              isDarkMode && "bg-orange-600 hover:bg-orange-700"
+              "bg-blue-500 hover:bg-blue-600",
+              isDarkMode && "bg-blue-600 hover:bg-blue-700"
             )} 
             asChild
           >
@@ -133,7 +132,7 @@ const ElectronicsShowcase = () => {
           <Button 
             variant="outline" 
             className={cn(
-              "border-orange-200",
+              "border-blue-200",
               isDarkMode && "border-gray-700 text-gray-200 hover:bg-gray-800"
             )} 
             asChild

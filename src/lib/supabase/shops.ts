@@ -88,17 +88,18 @@ export const getShopById = async (id: string): Promise<Shop | undefined> => {
       address: shop?.address || '',
       ownerName: shop?.owner_name || '',
       ownerEmail: shop?.owner_email || '',
-      phoneNumber: shop?.phone_number || '', // Using the new column with a default value
+      phoneNumber: shop?.phone_number || '',
       rating: shop?.rating || 0,
       reviewCount: shop?.review_count || 0,
       followers: shop?.followers_count || 0,
-      productIds: [], // We'll fetch products separately
+      productIds: [],
       isVerified: shop?.is_verified || false,
-      status: (shop?.status as 'active' | 'pending' | 'suspended') || 'pending',
+      status: (shop?.status === 'suspended' ? 'inactive' : (shop?.status || 'pending')) as 'active' | 'inactive' | 'pending',
       createdAt: shop?.created_at || '',
       shopId: shop?.shop_id || '',
-      password: shop?.password || '', 
-      followers_count: shop?.followers_count || 0, 
+      password: shop?.password || '',
+      followers_count: shop?.followers_count || 0,
+      updated_at: shop?.updated_at || shop?.created_at || new Date().toISOString()
     };
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);

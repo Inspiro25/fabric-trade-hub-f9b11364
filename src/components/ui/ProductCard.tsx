@@ -210,7 +210,7 @@ const ProductCard = ({
               <>
                 <span className={cn(
                   "font-bold text-xs",
-                  isDarkMode ? "text-orange-400" : ""
+                  isDarkMode ? "text-blue-400" : ""
                 )}>₹{productSalePrice.toFixed(2)}</span>
                 <span className={cn(
                   "ml-1 text-[10px] line-through",
@@ -280,7 +280,7 @@ const ProductCard = ({
               </div>
               <div className={cn(
                 "block mb-1 transition-colors",
-                isDarkMode ? "hover:text-orange-400" : "hover:text-primary"
+                isDarkMode ? "hover:text-blue-400" : "hover:text-primary"
               )}>
                 <h3 className={cn(
                   "font-medium text-sm line-clamp-1",
@@ -317,7 +317,7 @@ const ProductCard = ({
                   <>
                     <span className={cn(
                       "font-semibold text-sm",
-                      isDarkMode ? "text-orange-400" : ""
+                      isDarkMode ? "text-blue-400" : ""
                     )}>₹{productSalePrice.toFixed(2)}</span>
                     <span className={cn(
                       "ml-2 text-xs line-through",
@@ -337,7 +337,7 @@ const ProductCard = ({
               <Button 
                 className={cn(
                   "flex-grow text-xs py-1 px-2 h-8",
-                  isDarkMode && "bg-orange-600 hover:bg-orange-700"
+                  isDarkMode && "bg-blue-600 hover:bg-blue-700"
                 )}
                 onClick={handleAddToCart}
               >
@@ -467,7 +467,7 @@ const ProductCard = ({
         </div>
         <div className={cn(
           "block mb-1 transition-colors",
-          isDarkMode ? "hover:text-orange-400" : "hover:text-primary"
+          isDarkMode ? "hover:text-blue-400" : "hover:text-primary"
         )}>
           <h3 className={cn(
             "font-medium text-xs line-clamp-1",
@@ -504,7 +504,7 @@ const ProductCard = ({
             <>
               <span className={cn(
                 "font-semibold text-xs",
-                isDarkMode ? "text-orange-400" : ""
+                isDarkMode ? "text-blue-400" : ""
               )}>₹{productSalePrice.toFixed(2)}</span>
               <span className={cn(
                 "ml-1 text-[10px] line-through",

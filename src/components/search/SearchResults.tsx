@@ -202,7 +202,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             onShare={() => handleShare(product)}
             onClick={() => handleProductClick(product)}
             viewMode={viewMode}
-            buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+            buttonColor={isDarkMode ? "bg-blue-600 hover:bg-blue-700" : ""}
             isCompact={false}
           />
         ))}

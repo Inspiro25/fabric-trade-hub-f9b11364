@@ -84,7 +84,7 @@ const ShopActions: React.FC<ShopActionsProps> = ({
           "h-7 text-xs px-2.5",
           isFollowing ? 
             (isDarkMode ? "bg-gray-600 hover:bg-gray-700" : "bg-gray-600 hover:bg-gray-700 text-white") : 
-            (isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "bg-orange-500 hover:bg-orange-600 text-white"),
+            (isDarkMode ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600 text-white"),
           isLoading ? "opacity-70 cursor-not-allowed" : ""
         )}
         onClick={handleFollowClick}

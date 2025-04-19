@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -94,49 +93,30 @@ const ShopManagement: React.FC = () => {
   }, [shopId, setValue, navigate]);
 
   const submitForm = async (data: ShopFormValues) => {
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-    
-      const shopData: Omit<Shop, 'id'> = {
-        name: data.name,
-        description: data.description,
-        logo: data.logo,
-        coverImage: data.coverImage,
-        address: data.address,
-        ownerName: data.ownerName,
-        ownerEmail: data.ownerEmail,
-        phoneNumber: data.phoneNumber, 
-        status: data.status as 'active' | 'pending' | 'suspended',
-        isVerified: data.isVerified || false,
-        rating: 0,
-        reviewCount: 0,
-        followers: 0,
-        followers_count: 0,
-        productIds: [],
-        createdAt: new Date().toISOString(),
-        shopId: data.shopId || `shop-${Math.floor(Math.random() * 10000)}`,
-        password: data.password,
-      };
-    
       if (shopId) {
-        const success = await updateShop(shopId, shopData);
+        // Update existing shop
+        const success = await updateShop(shopId, data);
         if (success) {
           toast.success('Shop updated successfully');
+          navigate('/admin/dashboard');
         } else {
           toast.error('Failed to update shop');
         }
       } else {
-        const newShopId = await createShop(shopData);
+        // Create new shop
+        const newShopId = await createShop(data);
         if (newShopId) {
           toast.success('Shop created successfully');
-          navigate(`/admin/dashboard`);
+          navigate('/admin/dashboard');
         } else {
           toast.error('Failed to create shop');
         }
       }
     } catch (error) {
-      console.error('Error creating/updating shop:', error);
-      toast.error('An unexpected error occurred');
+      console.error('Error submitting form:', error);
+      toast.error('An error occurred while submitting the form');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Separator } from '@/components/ui/separator';
 import { User, AtSign, Phone, Home } from 'lucide-react';
@@ -18,7 +17,7 @@ const ProfileInfo = ({ displayName, email, phoneNumber, address }: ProfileInfoPr
   return (
     <div className="space-y-4">
       <InfoItem 
-        icon={<User className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        icon={<User className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
         label="Display Name" 
         value={displayName || 'Not provided'} 
       />
@@ -26,7 +25,7 @@ const ProfileInfo = ({ displayName, email, phoneNumber, address }: ProfileInfoPr
       <Separator className={isDarkMode ? "bg-gray-700" : ""} />
       
       <InfoItem 
-        icon={<AtSign className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        icon={<AtSign className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
         label="Email" 
         value={email || 'Not provided'} 
       />
@@ -34,7 +33,7 @@ const ProfileInfo = ({ displayName, email, phoneNumber, address }: ProfileInfoPr
       <Separator className={isDarkMode ? "bg-gray-700" : ""} />
       
       <InfoItem 
-        icon={<Phone className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        icon={<Phone className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
         label="Phone Number" 
         value={phoneNumber || 'Not provided'} 
       />
@@ -42,7 +41,7 @@ const ProfileInfo = ({ displayName, email, phoneNumber, address }: ProfileInfoPr
       <Separator className={isDarkMode ? "bg-gray-700" : ""} />
       
       <InfoItem 
-        icon={<Home className={isDarkMode ? "text-orange-400" : "text-blue-500"} />} 
+        icon={<Home className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
         label="Address" 
         value={address || 'Not provided'} 
       />

@@ -98,7 +98,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
               )}>Total</span>
               <span className={cn(
                 "font-bold",
-                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                isDarkMode ? "text-blue-400" : "text-kutuku-primary"
               )}>{formatCurrency(total)}</span>
             </div>
           </div>
@@ -112,7 +112,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             <div className="flex items-center gap-2 mb-2">
               <BadgePercent className={cn(
                 "w-4 h-4",
-                isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                isDarkMode ? "text-blue-400" : "text-kutuku-primary"
               )} />
               <span className={cn(
                 "text-sm font-medium",

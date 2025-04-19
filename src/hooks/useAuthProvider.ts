@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { User, AuthError } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { UserProfile } from '@/types/auth';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 
 export const useAuthProvider = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -12,37 +12,23 @@ export const useAuthProvider = () => {
 
   useEffect(() => {
     // Check for existing session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        setCurrentUser(session?.user ?? null);
-        setIsSupabaseAuthenticated(!!session);
-        
-        if (session?.user) {
-          await ensureUserProfile(session.user);
-        }
-      } catch (error) {
-        console.error('Error checking auth session:', error);
-        toast.error('Error checking authentication status');
-      } finally {
-        setLoading(false);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user ?? null);
+      setIsSupabaseAuthenticated(!!session);
+      if (session?.user) {
+        ensureUserProfile(session.user);
       }
-    };
-
-    initializeAuth();
+    });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event, session?.user?.id);
       setCurrentUser(session?.user ?? null);
       setIsSupabaseAuthenticated(!!session);
-      
       if (session?.user) {
-        await ensureUserProfile(session.user);
+        ensureUserProfile(session.user);
       } else {
         setUserProfile(null);
+        setLoading(false);
       }
     });
 
@@ -53,27 +39,31 @@ export const useAuthProvider = () => {
 
   const ensureUserProfile = async (user: User) => {
     try {
-      if (!user?.id) {
+      if (!user || !user.id) {
         console.error('Invalid user object received:', user);
+        setLoading(false);
         return;
       }
       
       console.log('Ensuring user profile exists for:', user.id);
       
+      // First check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
+      // Handle the case where no profile exists
       if (fetchError) {
-        if (fetchError.code === 'PGRST116') {
-          console.log('Creating new user profile for:', user.id);
+        if (fetchError.code === 'PGRST116') { // "No rows returned" error code
+          console.log('No user profile found, will create one for user:', user.id);
           
-          const newProfile: UserProfile = {
+          // If no profile exists, create one
+          const newProfile = {
             id: user.id,
             display_name: user.user_metadata?.full_name || user.user_metadata?.name || 
-                       (user.email ? user.email.split('@')[0] : 'User'),
+                           (user.email ? user.email.split('@')[0] : 'User'),
             email: user.email || '',
             avatar_url: user.user_metadata?.avatar_url || '',
             preferences: {},
@@ -85,137 +75,54 @@ export const useAuthProvider = () => {
             .insert(newProfile);
 
           if (insertError) {
-            throw insertError;
+            console.error('Error creating user profile:', insertError);
+            toast.error('Failed to create your user profile. Some features may be limited.');
+            setLoading(false);
+            return;
           }
 
-          setUserProfile(newProfile);
+          console.log('User profile created, fetching it back');
+          
+          // Fetch the newly created profile
+          const { data: newProfileData, error: refetchError } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (refetchError) {
+            console.error('Error fetching new user profile:', refetchError);
+            setLoading(false);
+            return;
+          }
+
+          console.log('Successfully created and fetched user profile');
+          setUserProfile(newProfileData);
+          setLoading(false);
+          return;
+        } else {
+          // Any other error while fetching the profile
+          console.error('Error fetching user profile:', fetchError);
+          toast.error('Error loading your profile');
+          setLoading(false);
           return;
         }
-        throw fetchError;
       }
 
-      setUserProfile(existingProfile);
+      // Profile exists, set it in state
+      if (existingProfile) {
+        console.log('User profile found, setting state for user:', user.id);
+        setUserProfile(existingProfile);
+      } else {
+        console.error('No error and no profile - unexpected state');
+        // This should not happen but handle it just in case
+        toast.error('Error loading your profile');
+      }
     } catch (error) {
-      console.error('Error in ensureUserProfile:', error);
+      console.error('Exception in ensureUserProfile:', error);
       toast.error('Failed to set up user profile');
-    }
-  };
-
-  const login = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password
-      });
-      
-      if (error) throw error;
-      return data.user;
-    } catch (error) {
-      console.error('Error logging in:', error);
-      throw error;
-    }
-  };
-
-  const register = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            email_confirm_sent_at: new Date().toISOString()
-          }
-        }
-      });
-      
-      if (error) throw error;
-      
-      if (data?.user) {
-        await ensureUserProfile(data.user);
-      }
-      
-      return data.user;
-    } catch (error) {
-      console.error('Error registering:', error);
-      throw error;
-    }
-  };
-
-  const loginWithGoogle = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
-        }
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error logging in with Google:', error);
-      throw error;
-    }
-  };
-
-  const loginWithFacebook = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'email,public_profile'
-        }
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error logging in with Facebook:', error);
-      throw error;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setUserProfile(null);
-      setCurrentUser(null);
-      setIsSupabaseAuthenticated(false);
-    } catch (error) {
-      console.error('Error logging out:', error);
-      throw error;
-    }
-  };
-
-  const forgotPassword = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error sending password reset:', error);
-      throw error;
-    }
-  };
-
-  const updateProfile = async (data: Partial<UserProfile>) => {
-    if (!currentUser) throw new Error('No user logged in');
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update(data)
-        .eq('id', currentUser.id);
-      
-      if (error) throw error;
-      
-      setUserProfile(prev => prev ? { ...prev, ...data } : null);
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -234,6 +141,162 @@ export const useAuthProvider = () => {
       toast.error('Failed to fetch user profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      
+      // No need to create profile here - the auth state change will trigger ensureUserProfile
+      toast.success('Logged in successfully');
+      return data.user;
+    } catch (error) {
+      console.error('Error logging in:', error);
+      toast.error('Failed to log in');
+      throw error;
+    }
+  };
+
+  const register = async (email: string, password: string) => {
+    try {
+      console.log('Starting registration process for:', email);
+      
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) {
+        console.error('Supabase auth signup error:', error);
+        throw error;
+      }
+      
+      console.log('Supabase signup successful, user data:', data.user);
+      
+      if (data.user) {
+        // Create user profile immediately after registration
+        try {
+          console.log('Creating user profile for new user:', data.user.id);
+          const newProfile = {
+            id: data.user.id,
+            display_name: email.split('@')[0] || 'User',
+            email: email,
+            preferences: {},
+            created_at: new Date().toISOString()
+          };
+
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert(newProfile);
+            
+          if (profileError) {
+            console.error('Error creating user profile:', profileError);
+            toast.error('Account created but profile setup failed. Some features may be limited.');
+          } else {
+            console.log('User profile created successfully');
+          }
+        } catch (profileError) {
+          console.error('Exception during profile creation:', profileError);
+          // Don't fail the registration if profile creation fails
+          toast.error('Account created but profile setup failed. Some features may be limited.');
+        }
+      } else {
+        console.warn('User created but data.user is null or undefined');
+      }
+      
+      toast.success('Registration successful! Please check your email to verify your account.');
+      return data.user;
+    } catch (error) {
+      console.error('Error registering:', error);
+      toast.error('Failed to register: ' + (error.message || 'Unknown error'));
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+      if (error) throw error;
+      // User profile will be created after OAuth callback and auth state change
+    } catch (error) {
+      console.error('Error logging in with Google:', error);
+      toast.error('Failed to log in with Google');
+      throw error;
+    }
+  };
+
+  const loginWithFacebook = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          scopes: 'email,public_profile'
+        }
+      });
+      if (error) throw error;
+      // User profile will be created after OAuth callback and auth state change
+    } catch (error) {
+      console.error('Error logging in with Facebook:', error);
+      toast.error('Failed to log in with Facebook');
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error('Failed to log out');
+      throw error;
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`
+      });
+      if (error) throw error;
+      toast.success('Password reset instructions sent to your email');
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      toast.error('Failed to send password reset instructions');
+      throw error;
+    }
+  };
+
+  const updateProfile = async (data: Partial<UserProfile>) => {
+    if (!currentUser) throw new Error('No user logged in');
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(data)
+        .eq('id', currentUser.id);
+      if (error) throw error;
+      await fetchUserProfile(currentUser.id);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+      throw error;
     }
   };
 
@@ -330,7 +393,6 @@ export const useAuthProvider = () => {
     logout,
     forgotPassword,
     updateProfile,
-    fetchUserProfile,
     addAddress,
     updateAddress,
     removeAddress,

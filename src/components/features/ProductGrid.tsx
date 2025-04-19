@@ -207,15 +207,6 @@ export const ProductGrid = ({
         <div className="mt-6">
           <Pagination>
             <PaginationContent>
-              {totalPages > 3 && (
-                <PaginationItem>
-                  <PaginationFirst 
-                    onClick={() => handlePageChange(1)}
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              )}
-              
               <PaginationItem>
                 <PaginationPrevious 
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
@@ -223,48 +214,12 @@ export const ProductGrid = ({
                 />
               </PaginationItem>
               
-              {/* Dynamic page numbers */}
-              {(() => {
-                // Calculate which page numbers to show
-                let startPage = Math.max(1, currentPage - 1);
-                let endPage = Math.min(totalPages, startPage + 2);
-                
-                // Adjust if we're near the end
-                if (endPage - startPage < 2) {
-                  startPage = Math.max(1, endPage - 2);
-                }
-                
-                const pages = [];
-                for (let i = startPage; i <= endPage; i++) {
-                  pages.push(
-                    <PaginationItem key={i}>
-                      <PaginationLink 
-                        isActive={currentPage === i}
-                        onClick={() => handlePageChange(i)}
-                      >
-                        {i}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                }
-                return pages;
-              })()}
-              
               <PaginationItem>
                 <PaginationNext 
                   onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                   className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
-              
-              {totalPages > 3 && (
-                <PaginationItem>
-                  <PaginationLast 
-                    onClick={() => handlePageChange(totalPages)}
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                  />
-                </PaginationItem>
-              )}
             </PaginationContent>
           </Pagination>
         </div>

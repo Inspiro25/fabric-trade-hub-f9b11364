@@ -29,7 +29,7 @@ const MobileAppLayout: React.FC<{
     <div className={`flex flex-col min-h-screen ${
       isDarkMode 
         ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-gray-100' 
-        : 'bg-gradient-to-b from-orange-50/60 via-white to-white text-gray-900'
+        : 'bg-gradient-to-b from-blue-50/60 via-white to-white text-gray-900'
     }`}>
       <main className={`flex-1 ${showMobileNavigation ? 'pb-24' : 'pb-6'}`}>
         {children}

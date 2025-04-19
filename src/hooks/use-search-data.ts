@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { SearchPageProduct } from '@/components/search/SearchProductCard';
@@ -17,139 +17,82 @@ export const useSearchData = (query: string) => {
   const [resultsPerPage, setResultsPerPage] = useState(20);
   const [pageCount, setPageCount] = useState(1);
   
-  const fetchData = async () => {
-    // Always set loading at the start
+  const fetchData = useCallback(async () => {
+    console.log('[useSearchData] fetchData called with query:', query);
     setLoading(true);
     setError(null);
-    
-    // Log incoming query for debugging
-    console.log('[useSearchData] Query:', query, typeof query);
-    
-    // Skip fetching if we're on initial load and have no query
-    if (initialLoad && !query) {
-      console.log('[useSearchData] Initial load with no query, skipping fetch');
-      setLoading(false);
-      return;
-    }
 
-    try {      
-      // Fetch products matching the search query
-      let productsQuery = supabase
-        .from('products')
-        .select('*');
-      
-      if (query && query.trim()) {
-        console.log('[useSearchData] Searching for:', query.trim());
-        productsQuery = productsQuery.ilike('name', `%${query.trim()}%`);
+    try {
+      if (query) {
+        console.log('[useSearchData] Fetching products for query:', query);
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('*')
+          .ilike('name', `%${query}%`)
+          .order('created_at', { ascending: false });
+
+        if (productsError) {
+          console.error('[useSearchData] Error fetching products:', productsError);
+          throw productsError;
+        }
+
+        console.log('[useSearchData] Products fetched:', productsData);
+        setProducts(productsData || []);
+        setTotalProducts(productsData?.length || 0);
       } else {
         console.log('[useSearchData] No query provided, fetching all products');
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (productsError) {
+          console.error('[useSearchData] Error fetching all products:', productsError);
+          throw productsError;
+        }
+
+        console.log('[useSearchData] All products fetched:', productsData);
+        setProducts(productsData || []);
+        setTotalProducts(productsData?.length || 0);
       }
-      
-      const { data: productsData, error: productsError } = await productsQuery;
-      
-      if (productsError) {
-        console.error('[useSearchData] Error fetching products:', productsError);
-        throw new Error(`Failed to fetch products: ${productsError.message}`);
-      }
-      
-      console.log('[useSearchData] Search results count:', productsData?.length || 0);
-      
-      if (productsData && productsData.length > 0) {
-        console.log('[useSearchData] First result:', productsData[0].name);
-      } else {
-        console.log('[useSearchData] No results found');
-      }
-      
-      // Format product data
-      const formattedProducts: SearchPageProduct[] = (productsData || []).map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: Number(product.price),
-        sale_price: product.sale_price ? Number(product.sale_price) : null,
-        images: product.images || ['/placeholder.svg'],
-        category_id: product.category_id || '',
-        shop_id: product.shop_id,
-        is_new: product.is_new || false,
-        is_trending: product.is_trending || false,
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        rating: product.rating || 0,
-        review_count: product.review_count || 0,
-        stock: product.stock || 0
-      }));
-      
-      setProducts(formattedProducts);
-      setTotalProducts(formattedProducts.length);
-      setPageCount(Math.ceil(formattedProducts.length / resultsPerPage));
 
       // Fetch categories
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
-        .select('*');
-      
+        .select('*')
+        .order('name');
+
       if (categoriesError) {
-        console.error('Error fetching categories:', categoriesError);
-        setCategories([]);
-      } else {
-        setCategories(categoriesData || []);
+        console.error('[useSearchData] Error fetching categories:', categoriesError);
+        throw categoriesError;
       }
+
+      setCategories(categoriesData || []);
 
       // Fetch shops
       const { data: shopsData, error: shopsError } = await supabase
         .from('shops')
-        .select('*');
-      
+        .select('*')
+        .order('name');
+
       if (shopsError) {
-        console.error('Error fetching shops:', shopsError);
-        setShops([]);
-      } else {
-        setShops(shopsData || []);
+        console.error('[useSearchData] Error fetching shops:', shopsError);
+        throw shopsError;
       }
-      
-      // Save search history if query exists
-      if (query) {
-        const { data: session } = await supabase.auth.getSession();
-        if (session?.session?.user) {
-          try {
-            await supabase.from('search_history').upsert(
-              { 
-                user_id: session.session.user.id,
-                query: query.toLowerCase().trim(),
-                searched_at: new Date().toISOString() 
-              },
-              { onConflict: 'user_id,query', ignoreDuplicates: false }
-            );
-          } catch (historyError) {
-            console.error('Error saving search history:', historyError);
-          }
-        }
-      }
-      
-      setInitialLoad(false);
-    } catch (err: any) {
-      console.error('Search error:', err);
-      
-      setError(err?.message || 'Failed to fetch data');
-      toast({
-        title: "Error fetching search results",
-        description: "Please try again later",
-        variant: "destructive"
-      });
-      
-      // Set empty results on error
-      setProducts([]);
-      setTotalProducts(0);
-      setPageCount(0);
+
+      setShops(shopsData || []);
+    } catch (err) {
+      console.error('[useSearchData] Error in fetchData:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }, [query]);
 
   // Fetch data when query changes
   useEffect(() => {
     fetchData();
-  }, [query]);
+  }, [fetchData]);
 
   return {
     products,

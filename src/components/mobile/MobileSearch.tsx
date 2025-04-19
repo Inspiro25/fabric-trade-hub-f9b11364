@@ -17,6 +17,7 @@ import { Product } from '@/lib/types/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Avatar } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
 
 const MobileSearch = () => {
   console.log('Rendering updated MobileSearch component');
@@ -103,25 +104,28 @@ const MobileSearch = () => {
   useEffect(() => {
     if (debouncedQuery.trim()) {
       setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        // Mock search results - in a real app, this would be an API call
-        const mockResults: Product[] = Array(8).fill(null).map((_, i) => ({
-          id: `result-${i}`,
-          name: `${debouncedQuery} ${i % 2 === 0 ? 'Premium' : 'Classic'} ${i % 3 === 0 ? 'Collection' : 'Edition'}`,
-          price: 29.99 + i * 10,
-          salePrice: i % 3 === 0 ? (29.99 + i * 10) * 0.8 : undefined,
-          images: [
-            `https://picsum.photos/seed/${debouncedQuery}${i}/300/300`
-          ],
-          description: `This is a product matching "${debouncedQuery}"`,
-          category: i % 2 === 0 ? "clothing" : "accessories",
-          rating: 3.5 + (i % 5) * 0.3,
-          brand: featuredBrands[i % featuredBrands.length].name
-        }));
-        setSearchResults(mockResults);
-        setIsLoading(false);
-      }, 600);
+      const fetchSearchResults = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .ilike('name', `%${debouncedQuery}%`)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error('Error fetching search results:', error);
+            return;
+          }
+
+          setSearchResults(data || []);
+        } catch (err) {
+          console.error('Error in search:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchSearchResults();
     } else {
       setSearchResults([]);
     }
@@ -130,7 +134,7 @@ const MobileSearch = () => {
   const handleSearch = () => {
     if (query.trim()) {
       saveRecentSearch(query);
-      navigate(`/search-results?q=${encodeURIComponent(query)}`);
+      navigate(`/search?q=${encodeURIComponent(query)}`);
     }
   };
 
@@ -450,7 +454,7 @@ const MobileSearch = () => {
                       "rounded-full",
                       isDarkMode ? "border-gray-700 text-gray-300" : "border-gray-200 text-gray-700"
                     )}
-                    onClick={() => navigate(`/search-results?q=${encodeURIComponent(query)}`)}
+                    onClick={() => navigate(`/search?q=${encodeURIComponent(query)}`)}
                   >
                     View all results
                   </Button>

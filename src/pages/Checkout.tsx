@@ -151,13 +151,13 @@ const Checkout = () => {
       "min-h-screen",
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30"
+        : "bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30"
     )}>
       <main className="container mx-auto px-4 py-8 pb-24 max-w-6xl">
         <div className="flex items-center gap-2 mb-6">
           <Link to="/cart" className={cn(
             "inline-flex items-center text-sm",
-            isDarkMode ? "text-gray-400 hover:text-orange-400" : "text-gray-600 hover:text-kutuku-primary"
+            isDarkMode ? "text-gray-400 hover:text-blue-400" : "text-gray-600 hover:text-kutuku-primary"
           )}>
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to cart
@@ -169,7 +169,7 @@ const Checkout = () => {
           <div className="lg:col-span-2">
             <Card className={cn(
               "border-none shadow-lg",
-              isDarkMode ? "bg-gray-800" : "bg-white shadow-orange-100/50"
+              isDarkMode ? "bg-gray-800" : "bg-white shadow-blue-100/50"
             )}>
               <CardContent className="p-6">
                 {!paymentStep ? (
@@ -178,11 +178,11 @@ const Checkout = () => {
                       "p-4 rounded-lg mb-4",
                       isDarkMode 
                         ? "bg-gray-800/50 border border-gray-700" 
-                        : "bg-orange-50/80 border border-orange-100"
+                        : "bg-blue-50/80 border border-blue-100"
                     )}>
                       <h2 className={cn(
                         "text-lg font-semibold flex items-center gap-2 mb-4",
-                        isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                        isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                       )}>
                         <User className="h-5 w-5" /> Billing Information
                       </h2>
@@ -202,7 +202,7 @@ const Checkout = () => {
                               className={cn(
                                 "h-10 text-sm",
                                 isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                   : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                               )}
                               required
@@ -226,7 +226,7 @@ const Checkout = () => {
                               className={cn(
                                 "h-10 text-sm",
                                 isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                   : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                               )}
                               required
@@ -250,7 +250,7 @@ const Checkout = () => {
                             className={cn(
                               "h-10 text-sm",
                               isDarkMode 
-                                ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                 : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                             )}
                             required
@@ -273,7 +273,7 @@ const Checkout = () => {
                             className={cn(
                               "h-10 text-sm",
                               isDarkMode 
-                                ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                 : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                             )}
                             required
@@ -295,7 +295,7 @@ const Checkout = () => {
                               className={cn(
                                 "h-10 text-sm",
                                 isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                   : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                               )}
                               required
@@ -315,7 +315,7 @@ const Checkout = () => {
                               className={cn(
                                 "h-10 text-sm",
                                 isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                   : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                               )}
                               required
@@ -335,7 +335,7 @@ const Checkout = () => {
                               className={cn(
                                 "h-10 text-sm",
                                 isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
                                   : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
                               )}
                               required
@@ -349,7 +349,7 @@ const Checkout = () => {
                   <div className="space-y-4">
                     <h2 className={cn(
                       "text-lg font-semibold flex items-center gap-2 mb-4",
-                      isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                      isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                     )}>
                       <CreditCard className="h-5 w-5" /> Payment Information
                     </h2>
@@ -358,15 +358,15 @@ const Checkout = () => {
                       "rounded-lg overflow-hidden mb-4",
                       isDarkMode 
                         ? "bg-gray-800/50 border border-gray-700" 
-                        : "bg-orange-50/80 border border-orange-100"
+                        : "bg-blue-50/80 border border-blue-100"
                     )}>
                       <div className={cn(
                         "p-3",
-                        isDarkMode ? "bg-gray-700" : "bg-orange-100/80"
+                        isDarkMode ? "bg-gray-700" : "bg-blue-100/80"
                       )}>
                         <h3 className={cn(
                           "text-sm font-medium flex items-center gap-1",
-                          isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                          isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                         )}>
                           <MapPin className="h-4 w-4" /> Billing Address
                         </h3>
@@ -390,7 +390,7 @@ const Checkout = () => {
                           "p-4 flex items-center gap-3 cursor-pointer transition-colors",
                           isDarkMode 
                             ? "border border-gray-700 hover:bg-gray-700" 
-                            : "border border-orange-200 hover:bg-orange-50/80 shadow-sm"
+                            : "border border-blue-200 hover:bg-blue-50/80 shadow-sm"
                         )}
                         onClick={initiateRazorpayPayment}
                       >
@@ -418,7 +418,7 @@ const Checkout = () => {
                         className={cn(
                           "w-full h-11 text-sm rounded-full",
                           isDarkMode 
-                            ? "bg-orange-600 hover:bg-orange-700" 
+                            ? "bg-blue-600 hover:bg-blue-700" 
                             : "bg-kutuku-primary hover:bg-kutuku-secondary shadow-md"
                         )}
                         onClick={initiateRazorpayPayment}
@@ -436,12 +436,12 @@ const Checkout = () => {
           <div className="lg:col-span-1">
             <Card className={cn(
               "border-none shadow-lg sticky top-24",
-              isDarkMode ? "bg-gray-800" : "bg-white shadow-orange-100/50"
+              isDarkMode ? "bg-gray-800" : "bg-white shadow-blue-100/50"
             )}>
               <CardContent className="p-6">
                 <h2 className={cn(
                   "text-lg font-semibold mb-4",
-                  isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                  isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                 )}>Order Summary</h2>
                 
                 <div className={cn(
@@ -458,7 +458,7 @@ const Checkout = () => {
                 
                 <Separator className={cn(
                   "my-4",
-                  isDarkMode ? "bg-gray-700" : "bg-orange-100"
+                  isDarkMode ? "bg-gray-700" : "bg-blue-100"
                 )} />
                 
                 <div className="space-y-2 text-sm">
@@ -479,12 +479,12 @@ const Checkout = () => {
                   
                   <Separator className={cn(
                     "my-2",
-                    isDarkMode ? "bg-gray-700" : "bg-orange-100"
+                    isDarkMode ? "bg-gray-700" : "bg-blue-100"
                   )} />
                   
                   <div className="flex justify-between font-bold">
                     <span className={isDarkMode ? "text-gray-200" : "text-gray-800"}>Total</span>
-                    <span className={isDarkMode ? "text-orange-400" : "text-kutuku-primary"}>
+                    <span className={isDarkMode ? "text-blue-400" : "text-kutuku-primary"}>
                       ₹{(cartTotal + 4.99 + cartTotal * 0.18).toFixed(2)}
                     </span>
                   </div>
@@ -497,7 +497,7 @@ const Checkout = () => {
                         className={cn(
                           "w-full h-11 text-sm rounded-full",
                           isDarkMode 
-                            ? "bg-orange-600 hover:bg-orange-700" 
+                            ? "bg-blue-600 hover:bg-blue-700" 
                             : "bg-kutuku-primary hover:bg-kutuku-secondary shadow-md"
                         )}
                       >
@@ -510,11 +510,11 @@ const Checkout = () => {
                 {/* Order Security Details */}
                 <div className={cn(
                   "mt-6 p-4 rounded-lg",
-                  isDarkMode ? "bg-gray-700/50" : "bg-orange-50/80"
+                  isDarkMode ? "bg-gray-700/50" : "bg-blue-50/80"
                 )}>
                   <h3 className={cn(
                     "text-sm font-medium mb-3",
-                    isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                    isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                   )}>Order Protection</h3>
                   <div className="space-y-2">
                     <div className="flex items-start gap-2">

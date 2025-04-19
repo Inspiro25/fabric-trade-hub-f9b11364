@@ -1,146 +1,90 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-type Theme = 'light' | 'dark' | 'system';
-
-type ThemeContextType = {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
+interface Theme {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
-  orangeGradient: string;
-  tertiaryColor: string;
   textColor: string;
   mutedTextColor: string;
   cardBgColor: string;
   cardBorderColor: string;
   sectionBgColor: string;
-  setTheme: (theme: Theme) => void;
-  currentTheme: Theme;
+}
+
+type ThemeContextType = {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+  theme: Theme;
 };
 
-const ThemeContext = createContext<ThemeContextType>({
-  isDarkMode: false,
-  toggleDarkMode: () => {},
-  primaryColor: '#FF6B00',
-  secondaryColor: '#FF8A3D',
-  accentColor: '#FFF0EA',
-  orangeGradient: 'linear-gradient(to right, #FF6B00, #FF8A3D)',
-  tertiaryColor: '#FFD1BD',
+const lightTheme: Theme = {
+  primaryColor: '#2563EB',
+  secondaryColor: '#3B82F6',
+  accentColor: '#EFF6FF',
   textColor: '#1A1A1A',
   mutedTextColor: '#757575',
   cardBgColor: '#FFFFFF',
   cardBorderColor: '#E5E5E5',
   sectionBgColor: '#F8F8F8',
-  setTheme: () => {},
-  currentTheme: 'system'
-});
+};
 
-export const useTheme = () => useContext(ThemeContext);
+const darkTheme: Theme = {
+  primaryColor: '#60A5FA',
+  secondaryColor: '#3B82F6',
+  accentColor: '#1E3A8A',
+  textColor: '#FFFFFF',
+  mutedTextColor: '#9CA3AF',
+  cardBgColor: '#1F2937',
+  cardBorderColor: '#374151',
+  sectionBgColor: '#111827',
+};
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme');
-      if (stored === 'dark' || stored === 'light' || stored === 'system') {
-        return stored;
-      }
-      return 'system';
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [theme, setTheme] = useState<Theme>(lightTheme);
+
+  useEffect(() => {
+    // Check if user has a theme preference in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      const isDark = savedTheme === 'dark';
+      setIsDarkMode(isDark);
+      setTheme(isDark ? darkTheme : lightTheme);
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+      setTheme(prefersDark ? darkTheme : lightTheme);
     }
-    return 'system';
-  });
+  }, []);
 
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme');
-      if (stored === 'dark') {
-        return true;
-      }
-      if (stored === 'light') {
-        return false;
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
-    
-    if (newTheme === 'dark') {
-      setIsDarkMode(true);
-    } else if (newTheme === 'light') {
-      setIsDarkMode(false);
-    } else if (newTheme === 'system') {
-      setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
-  };
-
-  // For dark mode, we'll use slightly brighter orange colors to improve contrast
-  const primaryColor = isDarkMode ? '#FF8A3D' : '#FF6B00';
-  const secondaryColor = isDarkMode ? '#FFA264' : '#FF8A3D';
-  const accentColor = isDarkMode ? '#433127' : '#FFF0EA';
-  const tertiaryColor = isDarkMode ? '#5D4A3F' : '#FFD1BD';
-  const textColor = isDarkMode ? '#FFFFFF' : '#1A1A1A';
-  const mutedTextColor = isDarkMode ? '#ABABAB' : '#757575';
-  const cardBgColor = isDarkMode ? '#2A2A2A' : '#FFFFFF';
-  const cardBorderColor = isDarkMode ? '#3D3D3D' : '#E5E5E5';
-  const sectionBgColor = isDarkMode ? '#242424' : '#F8F8F8';
-  
-  const orangeGradient = isDarkMode 
-    ? 'linear-gradient(to right, #FF8A3D, #FFA264)' 
-    : 'linear-gradient(to right, #FF6B00, #FF8A3D)';
-
-  const toggleDarkMode = () => {
-    setIsDarkMode((prev) => {
-      const newValue = !prev;
-      setTheme(newValue ? 'dark' : 'light');
-      return newValue;
+  const toggleTheme = () => {
+    setIsDarkMode(prev => {
+      const newTheme = !prev;
+      localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+      setTheme(newTheme ? darkTheme : lightTheme);
+      return newTheme;
     });
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (isDarkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
+    // Update document class when theme changes
+    document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
-  useEffect(() => {
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = (e: MediaQueryListEvent) => {
-        setIsDarkMode(e.matches);
-      };
-      
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-  }, [theme]);
-
   return (
-    <ThemeContext.Provider value={{ 
-      isDarkMode, 
-      toggleDarkMode, 
-      primaryColor, 
-      secondaryColor, 
-      accentColor,
-      orangeGradient,
-      tertiaryColor,
-      textColor,
-      mutedTextColor,
-      cardBgColor,
-      cardBorderColor,
-      sectionBgColor,
-      setTheme,
-      currentTheme: theme
-    }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, theme }}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}

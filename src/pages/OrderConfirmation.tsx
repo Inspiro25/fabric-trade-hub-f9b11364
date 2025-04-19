@@ -60,7 +60,7 @@ const OrderConfirmation = () => {
             "p-8 text-center relative overflow-hidden",
             isDarkMode 
               ? "bg-gradient-to-r from-gray-800 to-gray-700" 
-              : "bg-gradient-to-r from-orange-50 to-orange-100"
+              : "bg-gradient-to-r from-blue-50 to-blue-100"
           )}>
             {/* Success Icon */}
             <div className={cn(
@@ -86,15 +86,15 @@ const OrderConfirmation = () => {
             </p>
 
             {/* Decorative circles */}
-            <div className="absolute -left-16 -bottom-16 w-32 h-32 rounded-full bg-orange-200/10" />
-            <div className="absolute -right-16 -top-16 w-32 h-32 rounded-full bg-orange-200/10" />
+            <div className="absolute -left-16 -bottom-16 w-32 h-32 rounded-full bg-blue-200/10" />
+            <div className="absolute -right-16 -top-16 w-32 h-32 rounded-full bg-blue-200/10" />
           </div>
 
           <CardContent className="p-6 space-y-6">
             {/* Order Status */}
             <div className={cn(
               "p-4 rounded-lg",
-              isDarkMode ? "bg-gray-900/50" : "bg-orange-50"
+              isDarkMode ? "bg-gray-900/50" : "bg-blue-50"
             )}>
               <div className="flex items-center gap-4">
                 <div className={cn(
@@ -103,7 +103,7 @@ const OrderConfirmation = () => {
                 )}>
                   <Package className={cn(
                     "h-5 w-5",
-                    isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                    isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                   )} />
                 </div>
                 <div>
@@ -274,7 +274,7 @@ const OrderConfirmation = () => {
 
               <div className={cn(
                 "p-4 rounded-lg space-y-2",
-                isDarkMode ? "bg-gray-900/50" : "bg-gray-50"
+                isDarkMode ? "bg-gray-900/50" : "bg-blue-50"
               )}>
                 <div className="flex justify-between text-sm">
                   <span className={isDarkMode ? "text-gray-400" : "text-gray-500"}>Subtotal</span>
@@ -295,7 +295,7 @@ const OrderConfirmation = () => {
                 <div className="flex justify-between text-sm font-medium">
                   <span className={isDarkMode ? "text-white" : "text-gray-900"}>Total</span>
                   <span className={cn(
-                    isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                    isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                   )}>₹{cart.total.toFixed(2)}</span>
                 </div>
               </div>
@@ -304,7 +304,7 @@ const OrderConfirmation = () => {
             {/* Delivery Information */}
             <div className={cn(
               "p-4 rounded-lg flex items-center gap-4",
-              isDarkMode ? "bg-gray-900/50" : "bg-gray-50"
+              isDarkMode ? "bg-gray-900/50" : "bg-blue-50"
             )}>
               <div className={cn(
                 "p-2 rounded-full",
@@ -312,7 +312,7 @@ const OrderConfirmation = () => {
               )}>
                 <Clock className={cn(
                   "h-5 w-5",
-                  isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                  isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                 )} />
               </div>
               <div>
@@ -348,7 +348,7 @@ const OrderConfirmation = () => {
                 className={cn(
                   "flex-1",
                   isDarkMode 
-                    ? "bg-orange-600 hover:bg-orange-700" 
+                    ? "bg-blue-600 hover:bg-blue-700" 
                     : "bg-kutuku-primary hover:bg-kutuku-secondary"
                 )}
               >

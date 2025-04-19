@@ -284,14 +284,8 @@ const Navbar = () => {
         saveSearchHistory(searchQuery.trim());
       }
       
-      // Don't clear the query right away to avoid UX issues
-      setTimeout(() => {
-        setSearchQuery('');
-        setShowSuggestions(false);
-      }, 100);
-    } else {
-      console.log('[Navbar] Empty search query, navigating to base search page');
-      navigate('/search');
+      // Only clear suggestions, not the search query
+      setShowSuggestions(false);
     }
   };
 
@@ -316,16 +310,9 @@ const Navbar = () => {
     }
   };
 
-  const handleSelectSuggestion = (query: string) => {
-    setSearchQuery(query);
-    const params = new URLSearchParams();
-    params.set('q', query);
-    navigate(`/search?${params.toString()}`);
-    setShowSuggestions(false);
-    
-    if (user) {
-      saveSearchHistory(query);
-    }
+  const handleSelectSuggestion = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    handleSearch(new Event('submit') as any);
   };
 
   if (isMobile) {
@@ -629,8 +616,15 @@ const Navbar = () => {
                 placeholder="Search products, brands, categories..."
                 className="pr-10 rounded-full border-vyoma-gray focus:border-vyoma-primary"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                }}
                 onFocus={() => setShowSuggestions(true)}
+                onBlur={() => {
+                  // Delay hiding suggestions to allow for click events
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }}
               />
               <Button 
                 type="submit" 

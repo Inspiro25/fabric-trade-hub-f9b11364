@@ -63,10 +63,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				vyoma: {
-					primary: '#FF6B00', // Bright orange
-					secondary: '#FF8A3D', // Slightly brighter orange
-					light: '#FFF0EA',
-					dark: '#212121',
+					primary: '#2563EB', // Bright blue
+					secondary: '#3B82F6', // Slightly lighter blue
+					light: '#EFF6FF', // Light blue
+					dark: '#1E3A8A', // Dark blue
+					accent: '#60A5FA', // Medium blue
 					gray: '#F6F6F6',
 					muted: '#9E9E9E'
 				}

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag, Users, SortAsc, SortDesc, Grid, List } from 'lucide-react';
+import { MapPin, Search, CheckCircle, Star, Filter, ShoppingBag, Users, SortAsc, SortDesc, Grid, List, BadgeCheck } from 'lucide-react';
 import { useShopSearch } from '@/hooks/use-shop-search';
 import { useIsMobile } from '@/hooks/use-mobile';
 import SearchErrorState from '@/components/search/SearchErrorState';
@@ -34,6 +34,7 @@ const Shops = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showFilters, setShowFilters] = useState(false);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,58 +74,18 @@ const Shops = () => {
   }, [filteredShops, sortBy, sortOrder, showVerifiedOnly]);
 
   return (
-    <div className={cn(
-      "min-h-screen",
-      isDarkMode 
-        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-orange-50 via-orange-50/80 to-white"
-    )}>
-      {/* Header section */}
+    <div className={`min-h-screen ${isDarkMode 
+      ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+      : "bg-gradient-to-br from-blue-50 via-blue-50/80 to-white"
+    }`}>
+      {/* Combined search and filters section */}
       <div className={cn(
-        "border-b",
+        "sticky top-0 z-10 border-b py-4",
         isDarkMode 
-          ? "bg-gray-900/80 border-gray-800" 
-          : "bg-white/80 border-gray-200"
+          ? "bg-gray-900/80 border-gray-800 backdrop-blur-sm" 
+          : "bg-white/80 border-gray-200 backdrop-blur-sm"
       )}>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className={cn(
-                "text-2xl font-bold",
-                isDarkMode ? "text-white" : "text-gray-900"
-              )}>Explore Shops</h1>
-              <p className={cn(
-                "text-sm mt-1",
-                isDarkMode ? "text-gray-400" : "text-gray-600"
-              )}>Discover products from verified partners</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className={cn(
-                  "h-9 w-9",
-                  viewMode === 'grid' && (isDarkMode ? "text-orange-400" : "text-orange-500")
-                )}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  "h-9 w-9",
-                  viewMode === 'list' && (isDarkMode ? "text-orange-400" : "text-orange-500")
-                )}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Combined search and filters section */}
+        <div className="container mx-auto px-4">
           <div className="relative max-w-4xl mx-auto">
             <div className={cn(
               "flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-lg",
@@ -185,19 +146,46 @@ const Shops = () => {
                     "h-10 text-sm border-0 whitespace-nowrap",
                     showVerifiedOnly 
                       ? isDarkMode 
-                        ? "text-orange-400 hover:text-orange-300" 
-                        : "text-orange-500 hover:text-orange-600"
+                        ? "text-blue-400 hover:text-blue-300" 
+                        : "text-blue-500 hover:text-blue-600"
                       : isDarkMode 
                         ? "text-gray-200 hover:bg-gray-700" 
                         : "text-gray-900 hover:bg-gray-200"
                   )}
                 >
-                  <CheckCircle className={cn(
+                  <BadgeCheck className={cn(
                     "h-4 w-4 mr-1.5",
-                    showVerifiedOnly && "text-orange-500"
+                    showVerifiedOnly && "text-blue-500"
                   )} />
                   Verified
                 </Button>
+
+                <div className="hidden sm:block h-10 w-px bg-gray-300 dark:bg-gray-600" />
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-10 w-10",
+                      viewMode === 'grid' && (isDarkMode ? "text-blue-400" : "text-blue-500")
+                    )}
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <Grid className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-10 w-10",
+                      viewMode === 'list' && (isDarkMode ? "text-blue-400" : "text-blue-500")
+                    )}
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -217,7 +205,7 @@ const Shops = () => {
           <div className="flex justify-center items-center py-12">
             <div className={cn(
               "animate-spin rounded-full h-8 w-8 border-b-2",
-              isDarkMode ? "border-orange-500" : "border-orange-500"
+              isDarkMode ? "border-blue-500" : "border-blue-500"
             )}></div>
           </div>
         ) : sortedAndFilteredShops.length === 0 ? (
@@ -242,8 +230,8 @@ const Shops = () => {
               className={cn(
                 "text-sm rounded-lg",
                 isDarkMode 
-                  ? "bg-orange-600 hover:bg-orange-700" 
-                  : "bg-orange-500 hover:bg-orange-600"
+                  ? "bg-blue-600 hover:bg-blue-700" 
+                  : "bg-blue-500 hover:bg-blue-600"
               )}
             >
               Clear Search
@@ -253,7 +241,7 @@ const Shops = () => {
           <div className={cn(
             "gap-4",
             viewMode === 'grid' 
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4" 
               : "flex flex-col"
           )}>
             {sortedAndFilteredShops.map(shop => (
@@ -285,26 +273,27 @@ const Shops = () => {
                         Verified
                       </Badge>
                     )}
+                    <div className={cn(
+                      "absolute -bottom-6 left-4",
+                      "rounded-full border-2 border-white bg-white shadow-sm overflow-hidden",
+                      viewMode === 'grid' ? "h-12 w-12" : "h-10 w-10"
+                    )}>
+                      <img 
+                        src={shop.logo} 
+                        alt={shop.name} 
+                        className="w-full h-full object-cover" 
+                        onError={e => {
+                          (e.target as HTMLImageElement).src = '/placeholder.svg';
+                        }} 
+                      />
+                    </div>
                   </div>
                   
                   <CardContent className={cn(
-                    "p-4",
+                    "p-4 pt-8",
                     viewMode === 'list' && "flex-1"
                   )}>
                     <div className="flex items-start gap-3">
-                      <div className={cn(
-                        "rounded-full border-2 border-white bg-white shadow-sm overflow-hidden",
-                        viewMode === 'grid' ? "h-12 w-12 -mt-12" : "h-10 w-10"
-                      )}>
-                        <img 
-                          src={shop.logo} 
-                          alt={shop.name} 
-                          className="w-full h-full object-cover" 
-                          onError={e => {
-                            (e.target as HTMLImageElement).src = '/placeholder.svg';
-                          }} 
-                        />
-                      </div>
                       <div className="flex-1 min-w-0">
                         <h3 className={cn(
                           "font-medium text-base truncate",
@@ -355,8 +344,8 @@ const Shops = () => {
                       className={cn(
                         "mt-4 w-full text-sm",
                         isDarkMode 
-                          ? "text-orange-400 hover:text-orange-300 hover:bg-gray-700" 
-                          : "text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+                          ? "text-blue-400 hover:text-blue-300 hover:bg-gray-700" 
+                          : "text-blue-500 hover:text-blue-600 hover:bg-blue-50"
                       )}
                     >
                       View Shop

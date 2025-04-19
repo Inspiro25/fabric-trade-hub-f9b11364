@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   AlertDialog,
@@ -13,6 +12,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Shop } from '@/lib/shops/types';
 import { ShopForm, ShopFormValues } from './ShopForm';
+import { useNavigate } from 'react-router-dom';
 
 interface ShopDialogsProps {
   isAddDialogOpen: boolean;
@@ -41,6 +41,18 @@ const ShopDialogs: React.FC<ShopDialogsProps> = ({
   handleDeleteShop,
   isMobile = false
 }) => {
+  const navigate = useNavigate();
+
+  const handleAddShop = () => {
+    sessionStorage.removeItem('adminShopId'); // Clear any existing shopId
+    navigate('/admin/shops/new');
+  };
+
+  const handleEditShop = (shop: Shop) => {
+    sessionStorage.setItem('adminShopId', shop.id);
+    navigate('/admin/shops/edit');
+  };
+
   return (
     <>
       {/* Add Shop Dialog */}

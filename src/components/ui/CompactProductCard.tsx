@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
@@ -103,7 +102,7 @@ const CompactProductCard: React.FC<CompactProductCardProps> = ({
                 <>
                   <span className={cn(
                     "text-xs font-semibold",
-                    isDarkMode ? "text-orange-400" : "text-gray-900"
+                    isDarkMode ? "text-blue-400" : "text-gray-900"
                   )}>
                     ₹{product.salePrice.toFixed(2)}
                   </span>
@@ -142,7 +141,7 @@ const CompactProductCard: React.FC<CompactProductCardProps> = ({
                 variant="ghost"
                 className={cn(
                   "h-5 w-5 p-0",
-                  isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
+                  isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600"
                 )}
                 onClick={handleAddToCart}
               >

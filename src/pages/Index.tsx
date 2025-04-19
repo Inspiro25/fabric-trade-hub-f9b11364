@@ -63,14 +63,14 @@ const FashionTrends = () => {
   return (
     <section className={cn(
       "py-10 px-4 rounded-xl",
-      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/60 to-white"
+      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-blue-50/60 to-white"
     )}>
       <div className="container mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <TrendingUp className={cn(
               "h-5 w-5",
-              isDarkMode ? "text-orange-400" : "text-orange-500"
+              isDarkMode ? "text-blue-400" : "text-blue-500"
             )} />
             <h2 className={cn(
               "text-2xl font-bold",
@@ -81,7 +81,7 @@ const FashionTrends = () => {
           </div>
           <Link to="/trends" className={cn(
             "font-medium flex items-center transition-colors",
-            isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
+            isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600"
           )}>
             View All <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -145,7 +145,7 @@ const BrandsSpotlight = () => {
   return (
     <section className={cn(
       "py-10 rounded-xl",
-      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/80 to-white"
+      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-blue-50/80 to-white"
     )}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
@@ -181,8 +181,8 @@ const BrandsSpotlight = () => {
                 <h3 className={cn(
                   "text-sm font-medium text-center transition-colors",
                   isDarkMode 
-                    ? "text-gray-300 group-hover:text-orange-400" 
-                    : "group-hover:text-orange-500"
+                    ? "text-gray-300 group-hover:text-blue-400" 
+                    : "group-hover:text-blue-500"
                 )}>
                   {brand.name}
                 </h3>
@@ -216,7 +216,10 @@ const Index = () => {
   const { isDarkMode } = useTheme();
 
   return (
-    <div className="min-h-screen">
+    <div className={cn(
+      "min-h-screen",
+      isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-blue-50/60 to-white"
+    )}>
       <main>
         <HomeHero />
         
@@ -225,7 +228,7 @@ const Index = () => {
         <AnimatedSection delay={0.1}>
           <section className={cn(
             "py-10",
-            isDarkMode ? "bg-gradient-to-b from-gray-800/60 to-gray-900" : "bg-gradient-to-b from-orange-50/60 to-white"
+            isDarkMode ? "bg-gradient-to-b from-gray-800/60 to-gray-900" : "bg-gradient-to-b from-blue-50/60 to-white"
           )}>
             <div className="container mx-auto px-4">
               <div className="text-center mb-8">
@@ -270,7 +273,7 @@ const Index = () => {
                 </div>
                 <Link to="/categories" className={cn(
                   "text-sm font-medium flex items-center transition-colors",
-                  isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
+                  isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600"
                 )}>
                   View All <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
@@ -319,13 +322,13 @@ const Index = () => {
         <AnimatedSection delay={0.5}>
           <div className={cn(
             "py-4 rounded-xl mx-4",
-            isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/30 to-white"
+            isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-blue-50/30 to-white"
           )}>
             <div className="container mx-auto px-4 max-w-4xl">
               <div className="flex items-center mb-3">
                 <Clock className={cn(
                   "mr-2 h-4 w-4",
-                  isDarkMode ? "text-orange-400" : "text-orange-500"
+                  isDarkMode ? "text-blue-400" : "text-blue-500"
                 )} />
                 <h2 className={cn(
                   "text-lg font-bold",
@@ -396,7 +399,7 @@ const Index = () => {
         <AnimatedSection delay={1.0}>
           <div className={cn(
             "py-6 mx-4 rounded-xl",
-            isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-orange-50/40 to-white"
+            isDarkMode ? "bg-gray-800/50" : "bg-gradient-to-b from-blue-50/40 to-white"
           )}>
             <div className="container mx-auto px-4">
               {discountedProducts.length > 0 && (

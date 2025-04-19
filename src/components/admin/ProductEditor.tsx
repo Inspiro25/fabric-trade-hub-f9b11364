@@ -31,14 +31,14 @@ const formSchema = z.object({
     .max(2000, "Description must not exceed 2000 characters"),
   price: z.string()
     .refine(val => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "Price must be a valid number greater than 0",
+    message: "Price must be a valid number greater than 0",
     })
     .refine(val => Number(val) <= 1000000, {
       message: "Price must not exceed 1,000,000",
-    }),
+  }),
   salePrice: z.string()
     .refine(val => val === '' || (!isNaN(Number(val)) && Number(val) >= 0), {
-      message: "Sale price must be a valid number",
+    message: "Sale price must be a valid number",
     })
     .refine(val => val === '' || Number(val) <= 1000000, {
       message: "Sale price must not exceed 1,000,000",
@@ -47,11 +47,11 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required"),
   stock: z.string()
     .refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Stock must be a valid number",
+    message: "Stock must be a valid number",
     })
     .refine(val => Number(val) <= 10000, {
       message: "Stock must not exceed 10,000 units",
-    }),
+  }),
   isNew: z.boolean().default(false),
   isTrending: z.boolean().default(false),
 });
@@ -266,7 +266,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       setShowColorPicker(false);
     }
   };
-  
+
   // Add size with validation
   const addSize = () => {
     if (validateSize(newSize)) {
@@ -274,7 +274,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       setNewSize('');
     }
   };
-  
+
   // Add tag with validation
   const addTag = () => {
     if (validateTag(newTag)) {
@@ -282,7 +282,7 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       setNewTag('');
     }
   };
-  
+
   // Add common size
   const addCommonSize = (size: string) => {
     if (!sizes.includes(size)) {
@@ -449,13 +449,13 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>{mode === 'add' ? 'Add New Product' : 'Edit Product'}</CardTitle>
-            <CardDescription>
-              {mode === 'add' 
-                ? 'Fill in the details to add a new product to your shop inventory'
-                : 'Update the product details in your inventory'
-              }
-            </CardDescription>
+        <CardTitle>{mode === 'add' ? 'Add New Product' : 'Edit Product'}</CardTitle>
+        <CardDescription>
+          {mode === 'add' 
+            ? 'Fill in the details to add a new product to your shop inventory'
+            : 'Update the product details in your inventory'
+          }
+        </CardDescription>
           </div>
           {mode === 'edit' && lastSaved && (
             <div className="text-sm text-gray-500">
@@ -473,168 +473,168 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
           </TabsList>
           
           <TabsContent value="details">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Product Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter product name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <FormControl>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                            disabled={isLoadingCategories}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.length > 0 ? (
-                                categories.map((category) => (
-                                  <SelectItem key={category.id} value={category.id}>
-                                    {category.name}
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                <SelectItem value="no-categories" disabled>
-                                  No categories available
-                                </SelectItem>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter product description" 
-                          className="min-h-[100px]" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter product name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        disabled={isLoadingCategories}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.length > 0 ? (
+                            categories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-categories" disabled>
+                              No categories available
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter product description" 
+                      className="min-h-[100px]" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
                         <FormLabel>Price (₹)</FormLabel>
-                        <FormControl>
+                    <FormControl>
                           <Input placeholder="299" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="salePrice"
-                    render={({ field }) => (
-                      <FormItem>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="salePrice"
+                render={({ field }) => (
+                  <FormItem>
                         <FormLabel>Sale Price (₹)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Optional" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="stock"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Stock Quantity</FormLabel>
-                        <FormControl>
-                          <Input placeholder="50" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="isNew"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel>Mark as New</FormLabel>
-                          <FormDescription className="text-xs">
-                            Highlight this product as newly added
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="isTrending"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                        <div className="space-y-0.5">
-                          <FormLabel>Mark as Trending</FormLabel>
-                          <FormDescription className="text-xs">
-                            Feature this product in trending sections
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div>
-                  <FormLabel>Product Images</FormLabel>
-                  <div className="mt-2">
+                    <FormControl>
+                      <Input placeholder="Optional" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="stock"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stock Quantity</FormLabel>
+                    <FormControl>
+                      <Input placeholder="50" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="isNew"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Mark as New</FormLabel>
+                      <FormDescription className="text-xs">
+                        Highlight this product as newly added
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="isTrending"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Mark as Trending</FormLabel>
+                      <FormDescription className="text-xs">
+                        Feature this product in trending sections
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div>
+              <FormLabel>Product Images</FormLabel>
+              <div className="mt-2">
                     <div
                       {...getRootProps()}
                       className={cn(
@@ -665,8 +665,8 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                           <div
                             className="h-full bg-primary transition-all duration-300"
                             style={{ width: `${uploadProgress}%` }}
-                          />
-                        </div>
+                />
+              </div>
                         <p className="text-sm text-gray-500 mt-1">
                           Uploading... {Math.round(uploadProgress)}%
                         </p>
@@ -711,14 +711,14 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                         <Palette className="h-4 w-4" />
                         Colors
                       </FormLabel>
-                    </div>
-                    
+            </div>
+            
                     <div className="space-y-2">
                       <div className="flex gap-2">
                         <div className="relative flex-1">
-                          <Input 
-                            placeholder="Add a color" 
-                            value={newColor}
+                  <Input 
+                    placeholder="Add a color" 
+                    value={newColor}
                             onChange={(e) => {
                               setNewColor(e.target.value);
                               validateColor(e.target.value);
@@ -734,21 +734,21 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                             />
                           </div>
                         </div>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="icon" 
-                          onClick={addColor}
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={addColor}
                           disabled={!!colorError}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
                       {colorError && <p className="text-sm text-red-500">{colorError}</p>}
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      {colors.map(color => (
+                  {colors.map(color => (
                         <div key={color} className="group flex items-center bg-gray-100 px-3 py-1.5 rounded-md text-sm">
                           <div 
                             className="w-4 h-4 rounded-full mr-2" 
@@ -758,21 +758,21 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                             }}
                           />
                           <span>{color}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeColor(color)}
+                      <button
+                        type="button"
+                        onClick={() => removeColor(color)}
                             className="ml-2 text-gray-500 hover:text-red-500 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
                       {colors.length === 0 && (
                         <p className="text-sm text-gray-500 italic">No colors added yet</p>
                       )}
-                    </div>
-                  </div>
-                  
+                </div>
+              </div>
+              
                   {/* Sizes Section */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -803,27 +803,27 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
+                </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      {sizes.map(size => (
+                  {sizes.map(size => (
                         <div key={size} className="group flex items-center bg-gray-100 px-3 py-1.5 rounded-md text-sm">
                           <span>{size}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeSize(size)}
+                      <button
+                        type="button"
+                        onClick={() => removeSize(size)}
                             className="ml-2 text-gray-500 hover:text-red-500 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
                       {sizes.length === 0 && (
                         <p className="text-sm text-gray-500 italic">No sizes selected yet</p>
                       )}
-                    </div>
-                  </div>
-                  
+                </div>
+              </div>
+              
                   {/* Tags Section */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -835,62 +835,62 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
                     
                     <div className="space-y-2">
                       <div className="flex gap-2">
-                        <Input 
-                          placeholder="Add a tag" 
-                          value={newTag}
+                  <Input 
+                    placeholder="Add a tag" 
+                    value={newTag}
                           onChange={(e) => {
                             setNewTag(e.target.value);
                             validateTag(e.target.value);
                           }}
                           className={tagError ? "border-red-500" : ""}
-                        />
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="icon" 
-                          onClick={addTag}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={addTag}
                           disabled={!!tagError}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
                       {tagError && <p className="text-sm text-red-500">{tagError}</p>}
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
-                      {tags.map(tag => (
+                  {tags.map(tag => (
                         <div key={tag} className="group flex items-center bg-gray-100 px-3 py-1.5 rounded-md text-sm">
                           <span>{tag}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
                             className="ml-2 text-gray-500 hover:text-red-500 transition-colors"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-                      ))}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
                       {tags.length === 0 && (
                         <p className="text-sm text-gray-500 italic">No tags added yet</p>
                       )}
-                    </div>
-                  </div>
                 </div>
-                
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isSubmitting 
-                      ? (mode === 'add' ? 'Creating...' : 'Saving...') 
-                      : (mode === 'add' ? 'Add Product' : 'Save Changes')
-                    }
-                  </Button>
-                </div>
-              </form>
-            </Form>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                <Save className="mr-2 h-4 w-4" />
+                {isSubmitting 
+                  ? (mode === 'add' ? 'Creating...' : 'Saving...') 
+                  : (mode === 'add' ? 'Add Product' : 'Save Changes')
+                }
+              </Button>
+            </div>
+          </form>
+        </Form>
           </TabsContent>
           
           <TabsContent value="preview">

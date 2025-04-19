@@ -27,10 +27,7 @@ import Shops from '@/pages/Shops';
 import Cart from '@/pages/Cart';
 import NewArrivals from '@/pages/NewArrivals'; // Using NewArrivals as Categories page
 import CategoryPage from '@/pages/CategoryPage'; // New category page
-import Login from '@/pages/Authentication'; // Using Authentication for Login
-import Register from '@/pages/Authentication'; // Using Authentication for Register too
-import ForgotPassword from '@/pages/Authentication'; // Using Authentication for ForgotPassword
-import ResetPassword from '@/pages/Authentication'; // Using Authentication for ResetPassword
+import UnifiedLogin from '@/pages/UnifiedLogin';
 import Account from '@/pages/Profile'; // Using Profile as Account
 import MyOrders from '@/pages/MyOrders';
 import AccountWishlist from '@/pages/Wishlist'; // Using Wishlist as AccountWishlist
@@ -41,7 +38,6 @@ import Offers from '@/pages/Offers';
 import AuthCallback from '@/pages/AuthCallback'; // Add this import
 
 // Management pages
-import ManagementLogin from '@/pages/ManagementLogin';
 import ManagementDashboard from '@/pages/ManagementDashboard';
 import ManagementShops from '@/pages/ManagementShops';
 import ManagementUsers from '@/pages/ManagementPartners'; // Using ManagementPartners as ManagementUsers
@@ -50,7 +46,6 @@ import ManagementSettings from '@/pages/Settings'; // Using Settings as Manageme
 import ManagementOffers from '@/pages/ManagementOffers';
 
 // Admin pages
-import AdminLogin from '@/pages/AdminLogin';
 import ShopDashboard from '@/pages/ShopDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AdminSettings from './pages/AdminSettings';
@@ -77,10 +72,7 @@ function App() {
       </Route>
 
       <Route path="/auth">
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="forgot-password" element={<ForgotPassword />} />
-        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="login" element={<UnifiedLogin />} />
         <Route path="callback" element={<AuthCallback />} />
       </Route>
 
@@ -92,7 +84,7 @@ function App() {
       </Route>
 
       <Route path="/management" element={<DashboardLayout />}>
-        <Route path="login" element={<ManagementLogin />} />
+        <Route path="login" element={<UnifiedLogin />} />
         <Route index element={<ManagementDashboard />} />
         <Route path="dashboard" element={<ManagementDashboard />} />
         <Route path="shops" element={<ManagementShops />} />
@@ -104,7 +96,7 @@ function App() {
       </Route>
 
       <Route path="/admin">
-        <Route path="login" element={<AdminLogin />} />
+        <Route path="login" element={<UnifiedLogin />} />
         <Route path="dashboard" element={<ShopDashboard />} />
         <Route path="settings" element={<AdminSettings />} />
       </Route>

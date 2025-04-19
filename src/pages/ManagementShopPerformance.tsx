@@ -155,8 +155,8 @@ const ManagementShopPerformance = () => {
             acc[date].orders += 1;
             return acc;
           }, {} as Record<string, { sales: number; orders: number }>);
-
-          return {
+    
+    return {
             id: shop.id,
             name: shop.name,
             sales: totalSales,
@@ -167,7 +167,7 @@ const ManagementShopPerformance = () => {
             followerCount: shop.follower_count || 0,
             productCount: shop.product_count || 0,
             monthlyGrowth: ((totalSales - (totalSales * 0.8)) / (totalSales * 0.8)) * 100, // Example growth calculation
-            conversionRate,
+      conversionRate,
             averageOrderValue,
             topProducts: (topProducts as ShopProduct[]).map(p => ({
               id: p.id,
@@ -226,7 +226,7 @@ const ManagementShopPerformance = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h2 className="text-xl md:text-3xl font-bold tracking-tight">Shop Performance</h2>
+          <h2 className="text-xl md:text-3xl font-bold tracking-tight">Shop Performance</h2>
             <p className="text-sm text-muted-foreground">
               Monitor and analyze shop performance metrics
             </p>
@@ -234,18 +234,18 @@ const ManagementShopPerformance = () => {
         </div>
         
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={timeFilter} onValueChange={setTimeFilter}>
+            <Select value={timeFilter} onValueChange={setTimeFilter}>
             <SelectTrigger className="w-[140px]">
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Select period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-              <SelectItem value="quarter">This Quarter</SelectItem>
-              <SelectItem value="year">This Year</SelectItem>
-            </SelectContent>
-          </Select>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+                <SelectItem value="quarter">This Quarter</SelectItem>
+                <SelectItem value="year">This Year</SelectItem>
+              </SelectContent>
+            </Select>
           
           <Button 
             variant="outline" 
@@ -297,68 +297,68 @@ const ManagementShopPerformance = () => {
             <>
               {/* Key Metrics */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+            <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                  </CardHeader>
+              </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       ₹{selectedShopData.sales.toLocaleString()}
-                    </div>
+                </div>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
-                      <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                  <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
                       <span className="text-green-500">+{selectedShopData.monthlyGrowth.toFixed(1)}%</span>
                       <span className="ml-1">vs last period</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                  </CardHeader>
+              </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {selectedShopData.orders.toLocaleString()}
-                    </div>
+                </div>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                       <ShoppingCart className="h-3 w-3 mr-1" />
                       <span>Avg. ₹{selectedShopData.averageOrderValue.toFixed(2)} per order</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-                  </CardHeader>
+              </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {selectedShopData.conversionRate.toFixed(1)}%
-                    </div>
+                </div>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                       <Users className="h-3 w-3 mr-1" />
                       <span>{selectedShopData.followerCount} followers</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">Total Profit</CardTitle>
-                  </CardHeader>
+              </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       ₹{selectedShopData.profit.toLocaleString()}
-                    </div>
+                </div>
                     <div className="flex items-center text-xs text-muted-foreground mt-1">
                       <BarChart className="h-3 w-3 mr-1" />
                       <span>30% margin</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
               {/* Charts */}
               <div className="grid gap-4 md:grid-cols-2">
                 <Card>
@@ -368,9 +368,9 @@ const ManagementShopPerformance = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-[300px]">
-                      <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={selectedShopData.dailySales}>
-                          <CartesianGrid strokeDasharray="3 3" />
+                            <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="date" />
                           <YAxis yAxisId="left" />
                           <YAxis yAxisId="right" orientation="right" />
@@ -390,8 +390,8 @@ const ManagementShopPerformance = () => {
                             name="Orders"
                           />
                         </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+                        </ResponsiveContainer>
+                      </div>
                   </CardContent>
                 </Card>
 
@@ -402,29 +402,29 @@ const ManagementShopPerformance = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-[300px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
                             data={selectedShopData.salesByCategory}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                             outerRadius={80}
-                            fill="#8884d8"
+                                fill="#8884d8"
                             dataKey="sales"
-                          >
+                              >
                             {selectedShopData.salesByCategory.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
                   </CardContent>
                 </Card>
-              </div>
+                              </div>
 
               {/* Top Products */}
               <Card>
@@ -439,7 +439,7 @@ const ManagementShopPerformance = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{index + 1}.</span>
                           <span className="text-sm">{product.name}</span>
-                        </div>
+                              </div>
                         <div className="flex items-center gap-2">
                           <Package className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm font-medium">
@@ -448,9 +448,9 @@ const ManagementShopPerformance = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
+                    </div>
                 </CardContent>
-              </Card>
+                </Card>
             </>
           )}
         </div>
