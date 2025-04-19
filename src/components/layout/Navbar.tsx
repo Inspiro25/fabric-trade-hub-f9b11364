@@ -336,9 +336,9 @@ const Navbar = () => {
             </Button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center text-xl font-bold text-vyoma-primary">
-              <Sun className="h-6 w-6 mr-1.5" />
-              <span>VYOMA</span>
+            <Link to="/" className="flex items-center text-xl font-bold text-zalekart-primary">
+              <img src="/logo.svg" alt="Zalekart" className="h-8 w-8 mr-1.5" />
+              <span>ZALEKART</span>
             </Link>
 
             {/* Mobile Right Side Buttons */}
@@ -370,7 +370,7 @@ const Navbar = () => {
               <Input
                 type="text"
                 placeholder="Search products, brands, categories..."
-                className="pr-10 rounded-full border-vyoma-gray focus:border-vyoma-primary"
+                className="pr-10 rounded-full border-zalekart-gray focus:border-zalekart-primary"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
@@ -379,7 +379,7 @@ const Navbar = () => {
                 type="submit" 
                 size="icon" 
                 variant="ghost" 
-                className="absolute right-0 top-0 h-full flex items-center justify-center text-vyoma-muted hover:text-vyoma-primary"
+                className="absolute right-0 top-0 h-full flex items-center justify-center text-zalekart-muted hover:text-zalekart-primary"
               >
                 <Search className="h-4 w-4" />
               </Button>
@@ -391,9 +391,9 @@ const Navbar = () => {
             <div className="fixed inset-0 z-50 bg-white">
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b">
-                  <Link to="/" className="flex items-center text-xl font-bold text-vyoma-primary">
-                    <Sun className="h-6 w-6 mr-1.5" />
-                    <span>VYOMA</span>
+                  <Link to="/" className="flex items-center text-xl font-bold text-zalekart-primary">
+                    <img src="/logo.svg" alt="Zalekart" className="h-8 w-8 mr-1.5" />
+                    <span>ZALEKART</span>
                   </Link>
                   <Button
                     variant="ghost"
@@ -489,7 +489,7 @@ const Navbar = () => {
     }));
   };
 
-  const letterDelays = createLetterDelays("VYOMA");
+  const letterDelays = createLetterDelays("ZALEKART");
 
   return (
     <header
@@ -500,7 +500,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center space-x-6">
-            <Link to="/" className="flex items-center text-xl font-bold transition-transform hover:scale-105 text-vyoma-primary">
+            <Link to="/" className="flex items-center text-xl font-bold transition-transform hover:scale-105 text-zalekart-primary">
               <motion.div 
                 className="flex items-center relative"
                 initial="initial"
@@ -518,7 +518,7 @@ const Navbar = () => {
                     times: [0, 0.4, 0.7, 1]
                   }}
                 >
-                  <Sun className="h-6 w-6 mr-1.5" />
+                  <img src="/logo.svg" alt="Zalekart" className="h-8 w-8 mr-1.5" />
                 </motion.div>
                 
                 <motion.div 
@@ -539,7 +539,7 @@ const Navbar = () => {
                 </motion.div>
                 
                 <div className="flex">
-                  {Array.from("VYOMA").map((letter, index) => (
+                  {Array.from("ZALEKART").map((letter, index) => (
                     <motion.span
                       key={index}
                       variants={letterVariants}
@@ -560,7 +560,7 @@ const Navbar = () => {
                       {letter}
                       {index === 4 && (
                         <motion.span 
-                          className="absolute -top-1 right-0 h-1.5 w-1.5 bg-vyoma-primary rounded-full"
+                          className="absolute -top-1 right-0 h-1.5 w-1.5 bg-zalekart-primary rounded-full"
                           initial={{ scale: 0 }}
                           animate={{ scale: [0, 1.5, 1] }}
                           transition={{ delay: 1.2, duration: 0.5 }}
@@ -614,7 +614,7 @@ const Navbar = () => {
               <Input
                 type="text"
                 placeholder="Search products, brands, categories..."
-                className="pr-10 rounded-full border-vyoma-gray focus:border-vyoma-primary"
+                className="pr-10 rounded-full border-zalekart-gray focus:border-zalekart-primary"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -630,7 +630,7 @@ const Navbar = () => {
                 type="submit" 
                 size="icon" 
                 variant="ghost" 
-                className="absolute right-0 top-0 h-full flex items-center justify-center text-vyoma-muted hover:text-vyoma-primary"
+                className="absolute right-0 top-0 h-full flex items-center justify-center text-zalekart-muted hover:text-zalekart-primary"
               >
                 <Search className="h-4 w-4" />
               </Button>
@@ -650,14 +650,14 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             <AccountDropdown />
 
-            <Button variant="ghost" size="icon" className="relative hover:text-vyoma-primary" asChild>
+            <Button variant="ghost" size="icon" className="relative hover:text-zalekart-primary" asChild>
               <Link to="/offers">
                 <Percent className="h-5 w-5" />
                 <span className="sr-only">Offers</span>
               </Link>
             </Button>
 
-            <Button variant="ghost" size="icon" className="relative hover:text-vyoma-primary" asChild>
+            <Button variant="ghost" size="icon" className="relative hover:text-zalekart-primary" asChild>
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {cartItemCount > 0 && (
@@ -669,7 +669,7 @@ const Navbar = () => {
               </Link>
             </Button>
 
-            <Button variant="ghost" size="icon" className="relative hover:text-vyoma-primary" asChild>
+            <Button variant="ghost" size="icon" className="relative hover:text-zalekart-primary" asChild>
               <Link to="/shops">
                 <Store className="h-5 w-5" />
                 <span className="sr-only">Shops</span>

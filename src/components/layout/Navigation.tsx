@@ -119,7 +119,7 @@ export function Navigation() {
                   animate="animate"
                   whileHover="hover"
                 >
-                  {"VYOMA".split('').map((letter, i) => (
+                  {"ZALEKART".split('').map((letter, i) => (
                     <motion.span
                       key={i}
                       variants={letterVariants}

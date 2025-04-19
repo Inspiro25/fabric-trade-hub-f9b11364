@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail } from 'lucide-react';
@@ -16,7 +15,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Vyoma</h3>
+            <h3 className="text-lg font-semibold mb-4">Zalekart</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Premium clothing and accessories for the modern fashion enthusiast.
             </p>
@@ -31,7 +30,7 @@ const Footer: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2" />
-                <span>contact@vyoma.com</span>
+                <span>contact@zalekart.com</span>
               </div>
             </div>
           </div>
@@ -114,8 +113,12 @@ const Footer: React.FC = () => {
 
         {/* Copyright */}
         <div className="border-t pt-8 text-center">
+          <div className="flex items-center gap-2">
+            <img src="/logo.svg" alt="Zalekart" className="h-8 w-8" />
+            <span className="text-xl font-bold">ZALEKART</span>
+          </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Vyoma. All rights reserved.
+            © {new Date().getFullYear()} Zalekart. All rights reserved.
           </p>
         </div>
       </div>
