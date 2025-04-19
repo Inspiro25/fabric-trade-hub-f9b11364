@@ -90,7 +90,7 @@ export const SearchProductCard: React.FC<ProductCardProps> = ({
           <Badge className="absolute top-2 left-2">New</Badge>
         )}
         {is_trending && (
-          <Badge className="absolute top-2 right-2 bg-orange-500 text-white">Trending</Badge>
+          <Badge className="absolute top-2 right-2 bg-blue-500 text-white">Trending</Badge>
         )}
       </div>
 

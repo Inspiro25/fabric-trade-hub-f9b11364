@@ -38,7 +38,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
           "text-base font-medium flex items-center",
           isDarkMode ? "text-gray-100" : ""
         )}>
-          <Clock className="h-4 w-4 mr-2 text-orange-500" />
+          <Clock className="h-4 w-4 mr-2 text-blue-500" />
           Recent Searches
         </h3>
         {history.length > 0 && (
@@ -68,7 +68,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({
               "group flex items-center px-3 py-1.5 rounded-full",
               isDarkMode
                 ? "bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-100"
-                : "bg-orange-50 hover:bg-orange-100 border-orange-200 text-gray-700"
+                : "bg-blue-50 hover:bg-blue-100 border-blue-200 text-gray-700"
             )}
           >
             <button

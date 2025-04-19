@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
@@ -18,16 +17,16 @@ const EmptyCart: React.FC = () => {
     )}>
       <div className={cn(
         "inline-flex justify-center items-center p-3 rounded-full mb-4",
-        isDarkMode ? "bg-gray-700" : "bg-vyoma-light"
+        isDarkMode ? "bg-gray-700" : "bg-blue-50"
       )}>
         <ShoppingCart className={cn(
           "w-8 h-8",
-          isDarkMode ? "text-orange-400" : "text-vyoma-primary"
+          isDarkMode ? "text-blue-400" : "text-blue-600"
         )} />
       </div>
       <h2 className={cn(
         "text-lg font-semibold mb-2",
-        isDarkMode ? "text-gray-100" : ""
+        isDarkMode ? "text-gray-100" : "text-gray-900"
       )}>Your cart is empty</h2>
       <p className={cn(
         "mb-6 text-sm max-w-xs mx-auto",
@@ -39,10 +38,10 @@ const EmptyCart: React.FC = () => {
         size="lg" 
         asChild 
         className={cn(
-          "rounded-full",
+          "rounded-full text-white",
           isDarkMode 
-            ? "bg-orange-600 hover:bg-orange-700" 
-            : "bg-vyoma-primary hover:bg-vyoma-secondary"
+            ? "bg-blue-600 hover:bg-blue-700" 
+            : "bg-blue-600 hover:bg-blue-700"
         )}
       >
         <Link to="/">Continue Shopping</Link>

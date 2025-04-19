@@ -58,9 +58,9 @@ const categoryIcons = [
     { name: "Fashion", icon: "👕", color: "bg-blue-100" },
     { name: "Electronics", icon: "📱", color: "bg-green-100" },
     { name: "Home", icon: "🏠", color: "bg-yellow-100" },
-    { name: "Beauty", icon: "💄", color: "bg-pink-100" },
+    { name: "Beauty", icon: "💄", color: "bg-blue-100" },
     { name: "Toys", icon: "🧸", color: "bg-purple-100" },
-    { name: "Grocery", icon: "🛒", color: "bg-orange-100" },
+    { name: "Grocery", icon: "🛒", color: "bg-blue-100" },
     { name: "Sports", icon: "⚽", color: "bg-red-100" },
     { name: "Books", icon: "📚", color: "bg-indigo-100" },
     { name: "Appliances", icon: "🔌", color: "bg-teal-100" },
@@ -107,7 +107,7 @@ const categoryIcons = [
                   </Button>
                 </motion.div>
                 <div className="absolute top-3 right-3">
-                  <Badge className="bg-gradient-to-r from-pink-500 to-orange-500 px-3 py-1 text-white">
+                  <Badge className="bg-gradient-to-r from-blue-500 to-blue-500 px-3 py-1 text-white">
                     TRENDING
                   </Badge>
                 </div>

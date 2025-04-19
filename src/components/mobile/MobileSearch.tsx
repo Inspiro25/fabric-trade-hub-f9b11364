@@ -43,7 +43,7 @@ const MobileSearch = () => {
     { 
       name: "Women", 
       image: "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?q=80&w=400&auto=format&fit=crop",
-      color: "from-pink-500/80 to-rose-500/80" 
+      color: "from-blue-500/80 to-rose-500/80" 
     },
     { 
       name: "Men", 

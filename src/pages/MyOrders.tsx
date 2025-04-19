@@ -349,7 +349,7 @@ const MyOrders: React.FC = () => {
       {isRefreshing && (
         <div className={cn(
           "fixed top-0 left-0 right-0 h-1 bg-kutuku-primary",
-          isDarkMode && "bg-orange-600"
+          isDarkMode && "bg-blue-600"
         )}>
           <div className="h-full w-1/3 animate-[progress_1s_ease-in-out_infinite] bg-white/20" />
         </div>

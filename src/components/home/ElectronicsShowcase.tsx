@@ -43,7 +43,7 @@ const ElectronicsShowcase = () => {
 
   return (
     <AnimatedGradient 
-      hue="orange" 
+      hue="blue" 
       intensity="soft" 
       className={cn(
         "py-6 md:py-10 rounded-xl mx-4",

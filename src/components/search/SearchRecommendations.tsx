@@ -158,7 +158,7 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
               onClick={() => handleProductClick(product.id)}
               viewMode="grid"
               isCompact={isCompact}
-              buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+              buttonColor={isDarkMode ? "bg-blue-600 hover:bg-blue-700" : ""}
             />
           ))}
         </div>
@@ -191,7 +191,7 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
                   onClick={() => handleProductClick(product.id)}
                   viewMode="grid"
                   isCompact={isCompact}
-                  buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+                  buttonColor={isDarkMode ? "bg-blue-600 hover:bg-blue-700" : ""}
                 />
               ))}
             </div>
@@ -215,7 +215,7 @@ const SearchRecommendations: React.FC<SearchRecommendationsProps> = ({
                   onClick={() => handleProductClick(product.id)}
                   viewMode="grid"
                   isCompact={isCompact}
-                  buttonColor={isDarkMode ? "bg-orange-600 hover:bg-orange-700" : ""}
+                  buttonColor={isDarkMode ? "bg-blue-600 hover:bg-blue-700" : ""}
                 />
               ))}
             </div>

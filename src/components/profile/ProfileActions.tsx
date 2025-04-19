@@ -48,7 +48,7 @@ const ProfileActions = ({ onLogout }: ProfileActionsProps) => {
                   : "bg-white hover:bg-gray-50"
               )}
             >
-              <span className={isDarkMode ? "text-orange-400" : "text-orange-500"}>
+              <span className={isDarkMode ? "text-blue-400" : "text-blue-500"}>
                 {action.icon}
               </span>
               {action.label}

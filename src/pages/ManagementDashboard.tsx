@@ -381,7 +381,7 @@ const ManagementDashboard = () => {
                     activity.type === 'order' && "bg-green-500",
                     activity.type === 'user' && "bg-blue-500",
                     activity.type === 'alert' && "bg-yellow-500",
-                    activity.type === 'offer' && "bg-orange-500"
+                    activity.type === 'offer' && "bg-blue-500"
                   )} />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm font-medium leading-none">

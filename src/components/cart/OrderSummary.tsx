@@ -107,7 +107,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
             "p-3 rounded-lg",
             isDarkMode 
               ? "bg-gray-700/50" 
-              : "bg-orange-50"
+              : "bg-blue-50"
           )}>
             <div className="flex items-center gap-2 mb-2">
               <BadgePercent className={cn(
@@ -127,7 +127,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
                 className={cn(
                   "rounded-r-none h-8 text-xs",
                   isDarkMode 
-                    ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-orange-500" 
+                    ? "bg-gray-700 border-gray-600 text-gray-200 focus-visible:ring-blue-500" 
                     : "focus-visible:ring-kutuku-primary"
                 )} 
                 disabled={isPromoApplied} 
@@ -137,9 +137,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
                 className={cn(
                   "rounded-l-none h-8 text-xs",
                   !isPromoApplied && isDarkMode
-                    ? "bg-orange-600 hover:bg-orange-700" 
+                    ? "bg-blue-600 hover:bg-blue-700" 
                     : !isPromoApplied 
-                      ? "bg-orange-500 hover:bg-orange-600 text-white"
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
                       : isDarkMode && "bg-gray-700 text-gray-300"
                 )}
                 onClick={applyPromoCode} 
@@ -176,7 +176,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, isLoaded }) => {
               className={cn(
                 "w-full rounded-full",
                 isDarkMode 
-                  ? "bg-orange-600 hover:bg-orange-700" 
+                  ? "bg-blue-600 hover:bg-blue-700" 
                   : "bg-kutuku-primary hover:bg-kutuku-secondary"
               )} 
               size="sm"

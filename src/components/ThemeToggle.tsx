@@ -68,7 +68,7 @@ const ThemeToggle: React.FC = () => {
           {currentTheme === "light" && (
             <span className={cn(
               "ml-auto h-2 w-2 rounded-full",
-              isDarkMode ? "bg-orange-400" : "bg-orange-500"
+              isDarkMode ? "bg-blue-400" : "bg-blue-500"
             )}></span>
           )}
         </DropdownMenuItem>
@@ -85,7 +85,7 @@ const ThemeToggle: React.FC = () => {
           {currentTheme === "dark" && (
             <span className={cn(
               "ml-auto h-2 w-2 rounded-full",
-              isDarkMode ? "bg-orange-400" : "bg-orange-500"
+              isDarkMode ? "bg-blue-400" : "bg-blue-500"
             )}></span>
           )}
         </DropdownMenuItem>
@@ -102,7 +102,7 @@ const ThemeToggle: React.FC = () => {
           {currentTheme === "system" && (
             <span className={cn(
               "ml-auto h-2 w-2 rounded-full",
-              isDarkMode ? "bg-orange-400" : "bg-orange-500"
+              isDarkMode ? "bg-blue-400" : "bg-blue-500"
             )}></span>
           )}
         </DropdownMenuItem>

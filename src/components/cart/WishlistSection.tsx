@@ -49,8 +49,8 @@ const WishlistSection: React.FC<WishlistSectionProps> = ({ className = "" }) => 
       className={cn(
         "relative transition-colors cursor-pointer",
         isDarkMode 
-          ? "text-gray-300 hover:text-pink-400 hover:bg-gray-800" 
-          : "text-gray-700 hover:text-pink-500 hover:bg-gray-100",
+          ? "text-gray-300 hover:text-blue-400 hover:bg-gray-800" 
+          : "text-gray-700 hover:text-blue-500 hover:bg-gray-100",
         className
       )}
     >
@@ -58,7 +58,7 @@ const WishlistSection: React.FC<WishlistSectionProps> = ({ className = "" }) => 
       {wishlistCount > 0 && (
         <span className={cn(
           "absolute -top-1 -right-1 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center",
-          isDarkMode ? "bg-pink-600" : "bg-pink-500"
+          isDarkMode ? "bg-blue-600" : "bg-blue-500"
         )}>
           {wishlistCount}
         </span>

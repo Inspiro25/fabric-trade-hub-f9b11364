@@ -122,7 +122,7 @@ const CategorySection = ({
               </div>
               <div className={cn(
                 "absolute bottom-0 left-0 right-0 h-1 scale-x-0 group-hover:scale-x-100 transition-transform origin-left",
-                isDarkMode ? "bg-orange-600" : "bg-primary"
+                isDarkMode ? "bg-blue-600" : "bg-primary"
               )}></div>
             </div>
           ))}
@@ -136,7 +136,7 @@ const CategorySection = ({
               className={cn(
                 "flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer",
                 isDarkMode 
-                  ? "border-gray-700 hover:border-orange-600" 
+                  ? "border-gray-700 hover:border-blue-600" 
                   : "border-gray-200 hover:border-primary"
               )}
             >
@@ -146,7 +146,7 @@ const CategorySection = ({
               )}>{category.name}</span>
               <ArrowRight className={cn(
                 "h-3 w-3",
-                isDarkMode ? "text-orange-500" : "text-primary"
+                isDarkMode ? "text-blue-500" : "text-primary"
               )} />
             </div>
           ))}
@@ -160,7 +160,7 @@ const CategorySection = ({
             className={cn(
               "inline-flex items-center text-sm font-medium",
               isDarkMode 
-                ? "text-orange-500 hover:text-orange-400" 
+                ? "text-blue-500 hover:text-blue-400" 
                 : "text-primary hover:text-primary/80"
             )}
           >

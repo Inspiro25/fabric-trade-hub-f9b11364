@@ -142,8 +142,8 @@ const HomeCategoryGrid = ({ categories: propCategories }) => {
             className={cn(
               "inline-flex items-center text-sm font-medium",
               isDarkMode 
-                ? "text-orange-400 hover:text-orange-300" 
-                : "text-orange-500 hover:text-orange-600"
+                ? "text-blue-400 hover:text-blue-300" 
+                : "text-blue-500 hover:text-blue-600"
             )}
           >
             View all categories

@@ -80,7 +80,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
               <span className="mx-1">•</span>
               <Users className={cn(
                 isMobile ? "h-2 w-2" : "h-2.5 w-2.5",
-                isDarkMode ? "text-orange-400" : "text-orange-500",
+                isDarkMode ? "text-blue-400" : "text-blue-500",
                 "mr-1"
               )} />
               <span>{followersCount} followers</span>
@@ -123,7 +123,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
             <span className={cn(
               "flex items-center font-medium",
               isMobile ? "text-[9px]" : "text-[10px]",
-              isDarkMode ? "text-orange-400" : "text-orange-600"
+              isDarkMode ? "text-blue-400" : "text-blue-600"
             )}>
               <ShoppingBag className={cn(
                 "mr-1",

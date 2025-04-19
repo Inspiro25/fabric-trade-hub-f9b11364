@@ -93,7 +93,7 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
     }
     
     // If no match, use placeholder
-    return `https://placehold.co/100x100/orange/white?text=${encodeURIComponent(category)}`;
+    return `https://placehold.co/100x100/blue/white?text=${encodeURIComponent(category)}`;
   };
 
   const handleCategoryClick = (category: Category) => {
@@ -119,7 +119,7 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
           to="/categories" 
           className={cn(
             "text-sm font-medium",
-            isDarkMode ? "text-orange-400" : "text-orange-500"
+            isDarkMode ? "text-blue-400" : "text-blue-500"
           )}
         >
           See All
@@ -160,8 +160,8 @@ const HomeCategories: React.FC<HomeCategoriesProps> = ({ categories: propCategor
             <span className={cn(
               "text-xs text-center font-medium transition-colors",
               isDarkMode 
-                ? "text-gray-300 group-hover:text-orange-400" 
-                : "text-gray-700 group-hover:text-orange-500"
+                ? "text-gray-300 group-hover:text-blue-400" 
+                : "text-gray-700 group-hover:text-blue-500"
             )}>
               {category.name}
             </span>

@@ -192,7 +192,7 @@ export const mockProducts: Product[] = [
       "https://images.unsplash.com/photo-1577447181665-009d53bd8d15?q=80&w=1974"
     ],
     category: "Dresses",
-    colors: ["Floral Print", "Blue", "Pink"],
+    colors: ["Floral Print", "Blue", "blue"],
     sizes: ["XS", "S", "M", "L", "XL"],
     isNew: true,
     rating: 4.7,
@@ -250,7 +250,7 @@ export const mockProducts: Product[] = [
       "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?q=80&w=1934"
     ],
     category: "Sweaters",
-    colors: ["Cream", "Light Pink", "Sage Green"],
+    colors: ["Cream", "Light blue", "Sage Green"],
     sizes: ["XS", "S", "M", "L"],
     rating: 4.3,
     reviewCount: 67,

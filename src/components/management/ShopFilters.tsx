@@ -36,19 +36,19 @@ const ShopFilters: React.FC<ShopFiltersProps> = ({
         )}>
           <TabsTrigger 
             value="all"
-            className={isDarkMode ? "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400" : ""}
+            className={isDarkMode ? "data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400" : ""}
           >
             All Shops
           </TabsTrigger>
           <TabsTrigger 
             value="verified"
-            className={isDarkMode ? "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400" : ""}
+            className={isDarkMode ? "data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400" : ""}
           >
             Verified
           </TabsTrigger>
           <TabsTrigger 
             value="unverified"
-            className={isDarkMode ? "data-[state=active]:bg-gray-700 data-[state=active]:text-orange-400" : ""}
+            className={isDarkMode ? "data-[state=active]:bg-gray-700 data-[state=active]:text-blue-400" : ""}
           >
             Unverified
           </TabsTrigger>

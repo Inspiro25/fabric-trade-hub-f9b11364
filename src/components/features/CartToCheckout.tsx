@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
@@ -21,18 +20,18 @@ const CartToCheckout = ({ total, itemCount, className = '' }: CartToCheckoutProp
       "fixed bottom-0 left-0 right-0 border-t p-3 z-40",
       isDarkMode 
         ? "bg-gray-900 border-gray-800 shadow-lg shadow-black/20" 
-        : "bg-white shadow-lg border-t",
+        : "bg-white shadow-lg border-gray-200",
       className
     )}>
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center gap-2">
           <div className={cn(
             "p-2 rounded-full",
-            isDarkMode ? "bg-gray-800" : "bg-kutuku-light"
+            isDarkMode ? "bg-gray-800" : "bg-blue-50"
           )}>
             <ShoppingBag className={cn(
               "h-4 w-4",
-              isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              isDarkMode ? "text-blue-400" : "text-blue-600"
             )} />
           </div>
           <div>
@@ -44,22 +43,22 @@ const CartToCheckout = ({ total, itemCount, className = '' }: CartToCheckoutProp
             </p>
             <p className={cn(
               "text-sm font-bold leading-tight",
-              isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+              isDarkMode ? "text-blue-400" : "text-blue-600"
             )}>₹{total.toFixed(2)}</p>
           </div>
         </div>
         
         <Button 
           className={cn(
-            "text-xs px-4 py-2 h-10 rounded-full",
+            "text-xs px-4 py-2 h-10 rounded-full text-white",
             isDarkMode 
-              ? "bg-orange-600 hover:bg-orange-700" 
-              : "bg-kutuku-primary hover:bg-kutuku-secondary"
+              ? "bg-blue-600 hover:bg-blue-700" 
+              : "bg-blue-600 hover:bg-blue-700"
           )}
           asChild
         >
           <Link to="/checkout" className="flex items-center justify-center gap-1">
-            Checkout
+            Proceed to Checkout
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </Button>

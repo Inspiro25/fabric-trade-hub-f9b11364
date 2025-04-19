@@ -109,7 +109,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
               <>
                 <span className={cn(
                   "font-semibold",
-                  isDarkMode ? "text-orange-400" : "text-gray-900"
+                  isDarkMode ? "text-blue-400" : "text-gray-900"
                 )}>
                   ₹{product.sale_price.toFixed(2)}
                 </span>
@@ -132,7 +132,7 @@ export const GridProductCard: React.FC<ProductCardBaseProps> = ({
           <Button 
             className={cn(
               "flex-grow text-xs h-8",
-              buttonColor || (isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "bg-orange-500 hover:bg-orange-600 text-white")
+              buttonColor || (isDarkMode ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600 text-white")
             )}
             onClick={handleAddToCartClick}
             disabled={isAddingThisToCart}

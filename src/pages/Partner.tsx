@@ -131,7 +131,7 @@ const Partner = () => {
               className={cn(
                 "text-lg px-8 py-6",
                 isDarkMode 
-                  ? "bg-orange-500 hover:bg-orange-600" 
+                  ? "bg-blue-500 hover:bg-blue-600" 
                   : "bg-kutuku-primary hover:bg-kutuku-secondary"
               )}
             >
@@ -323,7 +323,7 @@ const Partner = () => {
               className={cn(
                 "text-lg px-8 py-6",
                 isDarkMode 
-                  ? "bg-orange-500 hover:bg-orange-600" 
+                  ? "bg-blue-500 hover:bg-blue-600" 
                   : "bg-kutuku-primary hover:bg-kutuku-secondary"
               )}
             >

@@ -194,7 +194,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
               className={cn(
                 "text-xs",
                 isDarkMode 
-                  ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                  ? "bg-blue-600 hover:bg-blue-700 text-white" 
                   : "bg-kutuku-primary hover:bg-kutuku-secondary"
               )}
               size="sm"
@@ -216,7 +216,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ productId, shopId, onReviewSubm
             className={cn(
               "text-xs",
               isDarkMode 
-                ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                ? "bg-blue-600 hover:bg-blue-700 text-white" 
                 : "bg-kutuku-primary hover:bg-kutuku-secondary"
             )}
             size="sm"

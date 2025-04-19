@@ -43,22 +43,22 @@ const AccountDropdown = () => {
           className={cn(
             "relative h-10 flex items-center gap-2 px-2 rounded-full transition-all",
             isDarkMode 
-              ? "hover:bg-gray-800/70 text-orange-200 hover:text-orange-300" 
-              : "hover:bg-orange-50 text-kutuku-primary hover:text-kutuku-secondary"
+              ? "hover:bg-gray-800/70 text-blue-200 hover:text-blue-300" 
+              : "hover:bg-blue-50 text-kutuku-primary hover:text-kutuku-secondary"
           )}
         >
           <Avatar className={cn(
             "h-8 w-8 border-2", 
             isDarkMode 
               ? "border-gray-700 bg-gray-800" 
-              : "border-orange-100 bg-orange-50"
+              : "border-blue-100 bg-blue-50"
           )}>
             <AvatarImage src={avatarUrl} alt={userName} />
             <AvatarFallback className={cn(
               "text-sm font-medium",
               isDarkMode 
-                ? "bg-orange-900/30 text-orange-200" 
-                : "bg-orange-100 text-orange-800"
+                ? "bg-blue-900/30 text-blue-200" 
+                : "bg-blue-100 text-blue-800"
             )}>
               {getInitials(userName)}
             </AvatarFallback>

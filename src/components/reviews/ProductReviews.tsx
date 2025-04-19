@@ -77,7 +77,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId, rating, revi
           onClick={() => setShowReviewForm(!showReviewForm)}
           variant={showReviewForm ? "secondary" : "default"}
           size="sm"
-          className={isDarkMode ? "bg-orange-600 hover:bg-orange-700 text-white" : ""}
+          className={isDarkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
         >
           {showReviewForm ? "Cancel" : "Write a Review"}
         </Button>

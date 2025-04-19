@@ -22,7 +22,7 @@ const EmptyWishlist: React.FC = () => {
       )}>
         <Heart className={cn(
           "w-8 h-8",
-          isDarkMode ? "text-pink-400" : "text-pink-500"
+          isDarkMode ? "text-blue-400" : "text-blue-500"
         )} />
       </div>
       <h2 className={cn(
@@ -41,8 +41,8 @@ const EmptyWishlist: React.FC = () => {
         className={cn(
           "rounded-full",
           isDarkMode 
-            ? "bg-pink-600 hover:bg-pink-700" 
-            : "bg-pink-500 hover:bg-pink-600"
+            ? "bg-blue-600 hover:bg-blue-700" 
+            : "bg-blue-500 hover:bg-blue-600"
         )}
       >
         <Link to="/">Start Shopping</Link>

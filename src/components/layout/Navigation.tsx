@@ -188,10 +188,10 @@ export function Navigation() {
                       </div>
                     ) : (
                       <>
-                        <DropdownMenuItem onClick={() => navigate('/profile')}>
+                        <DropdownMenuItem onClick={() => navigate('/account/settings')}>
                           Your Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/orders')}>
+                        <DropdownMenuItem onClick={() => navigate('/account/orders')}>
                           Your Orders
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => navigate('/wishlist')}>
@@ -205,9 +205,9 @@ export function Navigation() {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Link to="/orders" className="flex flex-col hover:text-blue-200">
-                  <span className="text-xs">Returns</span>
-                  <span className="font-bold">&amp; Orders</span>
+                <Link to="/account/orders" className="flex flex-col hover:text-blue-200">
+                  <span className="text-xs">My</span>
+                  <span className="font-bold">Orders</span>
                 </Link>
               </div>
             </div>
@@ -284,13 +284,16 @@ export function Navigation() {
             )}
             
             <nav className="flex flex-col space-y-4">
-              <Link to="/profile" className="text-sm hover:text-blue-200">Your Profile</Link>
-              <Link to="/orders" className="text-sm hover:text-blue-200">Returns & Orders</Link>
-              <Link to="/deals" className="text-sm hover:text-blue-200">Today's Deals</Link>
-              <Link to="/customer-service" className="text-sm hover:text-blue-200">Customer Service</Link>
+              <Link to="/account/settings" className="text-sm hover:text-blue-200">Your Profile</Link>
+              <Link to="/account/orders" className="text-sm hover:text-blue-200">My Orders</Link>
+              <Link to="/offers" className="text-sm hover:text-blue-200">Offers</Link>
+              <Link to="/help" className="text-sm hover:text-blue-200">Help Center</Link>
               <Link to="/registry" className="text-sm hover:text-blue-200">Registry</Link>
               <Link to="/gift-cards" className="text-sm hover:text-blue-200">Gift Cards</Link>
-              <Link to="/sell" className="text-sm hover:text-blue-200">Sell</Link>
+              <Link to="/partner" className="text-sm hover:text-blue-200 flex items-center gap-1">
+                <Store className="h-4 w-4" />
+                Become a Partner
+              </Link>
               {currentUser && (
                 <Button 
                   onClick={logout}
@@ -316,11 +319,14 @@ export function Navigation() {
               <Menu className="h-5 w-5 mr-1" />
               All
             </button>
-            <Link to="/deals" className="text-sm hover:text-blue-200">Today's Deals</Link>
-            <Link to="/customer-service" className="text-sm hover:text-blue-200">Customer Service</Link>
+            <Link to="/offers" className="text-sm hover:text-blue-200">Offers</Link>
+            <Link to="/help" className="text-sm hover:text-blue-200">Help Center</Link>
             <Link to="/registry" className="text-sm hover:text-blue-200">Registry</Link>
             <Link to="/gift-cards" className="text-sm hover:text-blue-200">Gift Cards</Link>
-            <Link to="/sell" className="text-sm hover:text-blue-200">Sell</Link>
+            <Link to="/partner" className="text-sm hover:text-blue-200 flex items-center gap-1">
+              <Store className="h-4 w-4" />
+              Become a Partner
+            </Link>
           </div>
         </div>
       </div>

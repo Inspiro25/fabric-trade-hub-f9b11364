@@ -38,7 +38,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
       "flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg shadow-sm mb-3 gap-2 border-b",
       isDarkMode 
         ? "bg-gray-800/90 backdrop-blur-sm border-gray-700" 
-        : "bg-white border-orange-100"
+        : "bg-white border-blue-100"
     )}>
       <div className={cn(
         "text-sm flex flex-wrap items-center",
@@ -47,8 +47,8 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         <Badge variant="outline" className={cn(
           "mr-2",
           isDarkMode 
-            ? "bg-orange-900/50 text-orange-300 border-orange-700" 
-            : "bg-orange-50 text-vyoma-primary border-orange-200"
+            ? "bg-blue-900/50 text-blue-300 border-blue-700" 
+            : "bg-blue-50 text-vyoma-primary border-blue-200"
         )}>
           <CheckCircle className="h-3 w-3 mr-1" />
           <span className="flex items-center">
@@ -77,7 +77,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
             <SelectTrigger className={cn(
               `${isMobile ? 'w-[90px] h-8 text-xs' : 'w-[120px] text-sm'}`,
               isDarkMode 
-                ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-orange-500" 
+                ? "border-gray-700 bg-gray-800 text-gray-200 focus:ring-blue-500" 
                 : "border-gray-200 focus:ring-vyoma-primary"
             )}>
               <SelectValue placeholder="20 per page" />

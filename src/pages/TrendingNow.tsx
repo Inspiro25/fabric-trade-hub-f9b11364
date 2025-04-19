@@ -51,7 +51,7 @@ const TrendingNow = () => {
     )}>      
       <main className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-2 mb-4">
-          <Flame className="h-5 w-5 text-orange-500" />
+          <Flame className="h-5 w-5 text-blue-500" />
           <h1 className={cn(
             "text-xl font-bold",
             isDarkMode ? "text-white" : "text-gray-900"
@@ -76,7 +76,7 @@ const TrendingNow = () => {
                 className={cn(
                   "mr-2 whitespace-nowrap",
                   selectedFilter === filter.value 
-                    ? "bg-orange-500 hover:bg-orange-600 text-white" 
+                    ? "bg-blue-500 hover:bg-blue-600 text-white" 
                     : isDarkMode 
                       ? "bg-gray-800 border-gray-700 text-gray-300" 
                       : "bg-white"
@@ -183,8 +183,8 @@ const TrendingNow = () => {
                   variant="outline" 
                   className={cn(
                     isDarkMode
-                      ? "border-orange-800 text-orange-400 hover:bg-orange-950/50"
-                      : "border-orange-300 text-orange-700"
+                      ? "border-blue-800 text-blue-400 hover:bg-blue-950/50"
+                      : "border-blue-300 text-blue-700"
                   )}
                 >
                   Load More <ChevronDown className="ml-2 h-4 w-4" />

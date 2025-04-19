@@ -113,7 +113,7 @@ export default function HomeProductShowcase({
         highlight ? (
           isDarkMode 
             ? "bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg border border-gray-700" 
-            : "bg-gradient-to-b from-orange-50 to-white shadow-sm border border-orange-100"
+            : "bg-gradient-to-b from-blue-50 to-white shadow-sm border border-blue-100"
         ) : ""
       )}>
         <div className="flex flex-col mb-6">
@@ -252,7 +252,7 @@ export default function HomeProductShowcase({
         highlight ? (
           isDarkMode 
             ? "bg-gradient-to-b from-gray-800 to-gray-900 shadow-lg border border-gray-700" 
-            : "bg-gradient-to-b from-orange-50 to-white shadow-sm border border-orange-100"
+            : "bg-gradient-to-b from-blue-50 to-white shadow-sm border border-blue-100"
         ) : ""
       )}
     >

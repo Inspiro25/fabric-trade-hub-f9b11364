@@ -184,11 +184,11 @@ const CategoryPage = () => {
                   "transition-colors",
                   cat.id === category?.id
                     ? isDarkMode 
-                      ? "bg-orange-500 hover:bg-orange-600 text-white"
-                      : "bg-orange-500 hover:bg-orange-600 text-white"
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-blue-500 hover:bg-blue-600 text-white"
                     : isDarkMode
-                      ? "border-gray-700 hover:border-orange-500/50 hover:text-orange-400"
-                      : "border-gray-200 hover:border-orange-500/50 hover:text-orange-500"
+                      ? "border-gray-700 hover:border-blue-500/50 hover:text-blue-400"
+                      : "border-gray-200 hover:border-blue-500/50 hover:text-blue-500"
                 )}
                 onClick={() => navigate(`/category/${categoryToSlug(cat.name)}`)}
               >

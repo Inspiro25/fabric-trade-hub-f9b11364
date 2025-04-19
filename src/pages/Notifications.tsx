@@ -147,7 +147,7 @@ const Notifications = () => {
                 "p-4 flex transition-colors",
                 notification.read 
                   ? isDarkMode ? "bg-gray-800/70" : "bg-white" 
-                  : isDarkMode ? "bg-gray-700/50" : "bg-orange-50/60"
+                  : isDarkMode ? "bg-gray-700/50" : "bg-blue-50/60"
               )}
             >
               <div className={cn(

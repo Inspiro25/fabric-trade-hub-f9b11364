@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 interface AnimatedGradientProps {
   className?: string;
   children: React.ReactNode;
-  hue?: 'orange' | 'blue' | 'green' | 'purple';
+  hue?: 'blue' | 'blue' | 'green' | 'purple';
   intensity?: 'soft' | 'medium' | 'strong';
   speed?: 'slow' | 'medium' | 'fast';
 }
@@ -14,18 +14,18 @@ interface AnimatedGradientProps {
 export function AnimatedGradient({
   className,
   children,
-  hue = 'orange',
+  hue = 'blue',
   intensity = 'medium',
   speed = 'medium',
 }: AnimatedGradientProps) {
   // Calculate colors based on hue
   const getGradientColors = () => {
     switch (hue) {
-      case 'orange':
+      case 'blue':
         return {
-          soft: { from: 'from-orange-50', via: 'via-orange-100/40', to: 'to-white' },
-          medium: { from: 'from-orange-100', via: 'via-orange-200/60', to: 'to-orange-50' },
-          strong: { from: 'from-orange-200', via: 'via-orange-300/70', to: 'to-orange-100' },
+          soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
+          medium: { from: 'from-blue-100', via: 'via-blue-200/60', to: 'to-blue-50' },
+          strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
         };
       case 'blue':
         return {
@@ -47,9 +47,9 @@ export function AnimatedGradient({
         };
       default:
         return {
-          soft: { from: 'from-orange-50', via: 'via-orange-100/40', to: 'to-white' },
-          medium: { from: 'from-orange-100', via: 'via-orange-200/60', to: 'to-orange-50' },
-          strong: { from: 'from-orange-200', via: 'via-orange-300/70', to: 'to-orange-100' },
+          soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
+          medium: { from: 'from-blue-100', via: 'via-blue-200/60', to: 'to-blue-50' },
+          strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
         };
     }
   };

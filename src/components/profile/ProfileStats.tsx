@@ -48,8 +48,8 @@ const ProfileStats = ({ cartCount }: ProfileStatsProps) => {
           <div className={cn(
             "p-2 rounded-full mb-1",
             isDarkMode 
-              ? "bg-gray-700 text-orange-400" 
-              : "bg-orange-100 text-orange-600"
+              ? "bg-gray-700 text-blue-400" 
+              : "bg-blue-100 text-blue-600"
           )}>
             {stat.icon}
           </div>

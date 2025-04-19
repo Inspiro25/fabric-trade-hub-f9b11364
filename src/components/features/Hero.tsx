@@ -43,7 +43,7 @@ const Hero = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <Badge className="bg-orange-500 hover:bg-orange-600 rounded-full px-3 py-1 text-white mb-3">
+            <Badge className="bg-blue-500 hover:bg-blue-600 rounded-full px-3 py-1 text-white mb-3">
               Summer Collection
             </Badge>
           </motion.div>
@@ -54,7 +54,7 @@ const Hero = () => {
             transition={{ delay: 0.4 }}
             className="text-3xl font-bold mb-2 leading-tight"
           >
-            Your Perfect <span className="text-orange-400">Style</span>
+            Your Perfect <span className="text-blue-400">Style</span>
           </motion.h1>
           
           <motion.p 
@@ -73,7 +73,7 @@ const Hero = () => {
             transition={{ delay: 0.6 }}
             className="flex flex-wrap gap-3"
           >
-            <Button size="sm" className="bg-orange-500 hover:bg-orange-600 gap-2 rounded-full" asChild>
+            <Button size="sm" className="bg-blue-500 hover:bg-blue-600 gap-2 rounded-full" asChild>
               <Link to="/new-arrivals">
                 <ShoppingBag className="h-4 w-4" />
                 Shop Now
@@ -98,7 +98,7 @@ const Hero = () => {
               <Link 
                 key={cat}
                 to={`/category/${cat.toLowerCase()}`}
-                className="bg-white/90 backdrop-blur-sm shadow-sm rounded-full px-3 py-1 flex items-center gap-2 flex-shrink-0 hover:bg-orange-50 transition-colors"
+                className="bg-white/90 backdrop-blur-sm shadow-sm rounded-full px-3 py-1 flex items-center gap-2 flex-shrink-0 hover:bg-blue-50 transition-colors"
               >
                 <span className="font-medium text-xs">{cat}</span>
               </Link>

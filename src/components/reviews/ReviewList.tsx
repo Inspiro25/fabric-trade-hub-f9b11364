@@ -81,7 +81,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
       <div className="flex justify-center items-center p-6">
         <div className={cn(
           "animate-spin rounded-full h-8 w-8 border-t-2 border-b-2",
-          isDarkMode ? "border-orange-500" : "border-kutuku-primary"
+          isDarkMode ? "border-blue-500" : "border-kutuku-primary"
         )}></div>
       </div>
     );
@@ -165,7 +165,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
                   onClick={() => toggleExpandReview(review.id)} 
                   className={cn(
                     "text-xs hover:underline mt-1",
-                    isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                    isDarkMode ? "text-blue-400" : "text-kutuku-primary"
                   )}
                 >
                   {expandedReviews.includes(review.id) ? 'Show less' : 'Read more'}
@@ -181,7 +181,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, shopId, maxShown }) 
               className={cn(
                 "h-7 text-xs px-2",
                 isDarkMode 
-                  ? "text-gray-400 hover:text-orange-400 hover:bg-gray-700" 
+                  ? "text-gray-400 hover:text-blue-400 hover:bg-gray-700" 
                   : "text-gray-500 hover:text-kutuku-primary"
               )}
               onClick={() => handleMarkHelpful(review.id)}

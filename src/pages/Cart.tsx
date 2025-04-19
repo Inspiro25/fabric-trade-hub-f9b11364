@@ -64,12 +64,12 @@ const Cart = () => {
         "animate-in fade-in min-h-screen flex items-center justify-center",
         isDarkMode 
           ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-          : "bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30"
+          : "bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30"
       )}>
         <div className="text-center">
           <Loader2 className={cn(
             "h-8 w-8 animate-spin mx-auto",
-            isDarkMode ? "text-orange-400" : "text-kutuku-primary" 
+            isDarkMode ? "text-blue-400" : "text-blue-600" 
           )} />
           <p className={cn(
             "mt-4",
@@ -85,7 +85,7 @@ const Cart = () => {
       "animate-in fade-in min-h-screen",
       isDarkMode 
         ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-orange-50/50 via-white to-orange-50/30"
+        : "bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30"
     )}>
       <main className="pt-4 pb-24 px-4 md:pt-8 md:pb-20">
         <div className="container mx-auto max-w-7xl">
@@ -93,11 +93,11 @@ const Cart = () => {
             <div className="flex items-center gap-2">
               <div className={cn(
                 "p-1.5 rounded-full md:hidden",
-                isDarkMode ? "bg-gray-800" : "bg-orange-50/80"
+                isDarkMode ? "bg-gray-800" : "bg-blue-50/80"
               )}>
                 <ShoppingBag className={cn(
                   "h-4 w-4",
-                  isDarkMode ? "text-orange-400" : "text-kutuku-primary"
+                  isDarkMode ? "text-blue-400" : "text-blue-600"
                 )} />
               </div>
               <h1 className={cn(

@@ -32,7 +32,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo
           to={linkTo} 
           className={cn(
             "text-sm font-medium flex items-center",
-            isDarkMode ? "text-orange-400 hover:text-orange-300" : "text-orange-500 hover:text-orange-600"
+            isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600"
           )}
         >
           See All

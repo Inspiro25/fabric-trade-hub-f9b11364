@@ -80,13 +80,13 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
           "text-lg font-medium flex items-center",
           isDarkMode ? "text-white" : ""
         )}>
-          <Tag className="h-4 w-4 mr-2 text-orange-500" />
+          <Tag className="h-4 w-4 mr-2 text-blue-500" />
           Popular Categories
         </h3>
         
         <Button variant="link" className={cn(
-          "text-orange-500 p-0 h-auto text-sm",
-          isDarkMode ? "hover:text-orange-400" : "hover:text-orange-600"
+          "text-blue-500 p-0 h-auto text-sm",
+          isDarkMode ? "hover:text-blue-400" : "hover:text-blue-600"
         )} asChild>
           <Link to="/categories">View All <ChevronRight className="h-3 w-3 ml-1" /></Link>
         </Button>
@@ -121,8 +121,8 @@ const SearchCategories: React.FC<SearchCategoriesProps> = ({
                 "text-sm rounded-full px-3 py-1 h-auto flex items-center gap-1",
                 selectedCategory === category.id 
                   ? isDarkMode
-                    ? 'bg-orange-600 text-white hover:bg-orange-700'
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
                   : isDarkMode
                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-700'

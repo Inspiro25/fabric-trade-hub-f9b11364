@@ -101,7 +101,7 @@ const DashboardLayout = () => {
           "flex items-center gap-3 rounded-lg px-3 py-2 transition-all relative",
           activePath === path 
             ? isDarkMode 
-              ? "bg-gray-800 text-orange-400 font-medium" 
+              ? "bg-gray-800 text-blue-400 font-medium" 
               : "bg-gray-100 text-purple-600 font-medium"
             : isDarkMode
               ? "text-gray-400 hover:bg-gray-800"
@@ -122,7 +122,7 @@ const DashboardLayout = () => {
             variant="secondary" 
             className={cn(
               "ml-auto",
-              isDarkMode ? "bg-orange-400/20 text-orange-400" : "bg-purple-100 text-purple-600"
+              isDarkMode ? "bg-blue-400/20 text-blue-400" : "bg-purple-100 text-purple-600"
             )}
           >
             {badge}
@@ -148,7 +148,7 @@ const DashboardLayout = () => {
     <div className="flex items-center gap-2 rounded-lg p-2">
       <Avatar>
         <AvatarFallback className={cn(
-          isDarkMode ? "bg-gray-800 text-orange-400" : "bg-purple-100 text-purple-600"
+          isDarkMode ? "bg-gray-800 text-blue-400" : "bg-purple-100 text-purple-600"
         )}>
           {username.charAt(0).toUpperCase()}
         </AvatarFallback>
@@ -347,7 +347,7 @@ const DashboardLayout = () => {
                 variant="secondary" 
                 className={cn(
                   "absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center",
-                  isDarkMode ? "bg-orange-400/20 text-orange-400" : "bg-purple-100 text-purple-600"
+                  isDarkMode ? "bg-blue-400/20 text-blue-400" : "bg-purple-100 text-purple-600"
                 )}
               >
                 {notifications}

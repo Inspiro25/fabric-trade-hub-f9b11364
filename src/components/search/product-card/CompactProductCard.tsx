@@ -74,7 +74,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
         <div className="flex items-center mb-1">
           <span className={cn(
             "text-xs font-semibold",
-            isDarkMode ? "text-orange-400" : "text-gray-900"
+            isDarkMode ? "text-blue-400" : "text-gray-900"
           )}>
             ₹{(product.sale_price || product.price).toFixed(2)}
           </span>
@@ -90,7 +90,7 @@ export const CompactProductCard: React.FC<ProductCardBaseProps> = ({
             size="sm"
             className={cn(
               "flex-grow h-6 text-[10px] px-1",
-              buttonColor || (isDarkMode ? "bg-orange-600 hover:bg-orange-700" : "bg-orange-500 hover:bg-orange-600 text-white")
+              buttonColor || (isDarkMode ? "bg-blue-600 hover:bg-blue-700" : "bg-blue-500 hover:bg-blue-600 text-white")
             )}
             onClick={handleAddToCartClick}
             disabled={isAddingThisToCart}

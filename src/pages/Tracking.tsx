@@ -59,7 +59,7 @@ const getStatusIcon = (status: string) => {
     case 'Shipped':
       return <Package size={18} className="text-blue-600" />;
     case 'Processing':
-      return <Package size={18} className="text-orange-600" />;
+      return <Package size={18} className="text-blue-600" />;
     default:
       return <MapPin size={18} className="text-gray-600" />;
   }
@@ -160,7 +160,7 @@ const Tracking = () => {
               <Badge variant="outline" className={`
                 ${trackingInfo.status === 'Delivered' ? 'bg-green-50 text-green-700 border-green-200' : ''}
                 ${trackingInfo.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
-                ${trackingInfo.status === 'Processing' ? 'bg-orange-50 text-orange-700 border-orange-200' : ''}
+                ${trackingInfo.status === 'Processing' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
               `}>
                 {trackingInfo.status}
               </Badge>
