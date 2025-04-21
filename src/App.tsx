@@ -44,6 +44,7 @@ import ManagementUsers from '@/pages/ManagementPartners'; // Using ManagementPar
 import ManagementAnalytics from '@/pages/ManagementShopPerformance'; // Using ManagementShopPerformance as ManagementAnalytics
 import ManagementSettings from '@/pages/Settings'; // Using Settings as ManagementSettings
 import ManagementOffers from '@/pages/ManagementOffers';
+import ManagementSupport from './pages/ManagementSupport';
 
 // Admin pages
 import ShopDashboard from '@/pages/ShopDashboard';
@@ -93,6 +94,7 @@ function App() {
         <Route path="shop-performance" element={<ManagementAnalytics />} />
         <Route path="settings" element={<ManagementSettings />} />
         <Route path="offers" element={<ManagementOffers />} />
+        <Route path="support" element={<ManagementSupport />} />
       </Route>
 
       <Route path="/admin">

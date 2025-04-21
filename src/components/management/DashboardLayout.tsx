@@ -139,7 +139,8 @@ const DashboardLayout = () => {
         <NavItem path="/management/analytics" icon={BarChart3} label="Analytics" isMobile={isMobile} />
         <NavItem path="/management/shops" icon={Store} label="Shops" isMobile={isMobile} />
         <NavItem path="/management/offers" icon={Tag} label="Offers" isMobile={isMobile} />
-        <NavItem path="/management/partner" icon={Users} label="Partner" isMobile={isMobile} badge={2} />
+        <NavItem path="/management/users" icon={Users} label="Partner" isMobile={isMobile} badge={2} />
+        <NavItem path="/management/support" icon={HelpCircle} label="Support" isMobile={isMobile} />
       </ul>
     </nav>
   );

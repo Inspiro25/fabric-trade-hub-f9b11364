@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
 import { 
   Search, 
@@ -11,7 +11,10 @@ import {
   User,
   Store,
   Sun,
-  Moon
+  Moon,
+  Package,
+  Tag,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { 
@@ -70,7 +73,7 @@ export function Navigation() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 0);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -85,6 +88,15 @@ export function Navigation() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     navigate(`/search?category=${selectedCategory}&query=${searchQuery}`);
+  };
+
+  const handleSignIn = () => {
+    setIsMobileMenuOpen(false);
+    navigate('/auth/login');
+  };
+
+  const handleMenuItemClick = () => {
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -103,6 +115,7 @@ export function Navigation() {
               <button 
                 className="lg:hidden"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? (
                   <X className="h-6 w-6" />
@@ -138,7 +151,7 @@ export function Navigation() {
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -151,6 +164,17 @@ export function Navigation() {
                   <Moon className="h-5 w-5" />
                 )}
               </button>
+
+              {/* Mobile Sign In Button */}
+              {!currentUser && (
+                <Button
+                  onClick={handleSignIn}
+                  className="lg:hidden bg-white text-blue-600 hover:bg-blue-50"
+                  size="sm"
+                >
+                  Sign in
+                </Button>
+              )}
 
               {/* Delivery Location - Mobile */}
               <button className="lg:hidden flex items-center gap-1 hover:text-blue-200">
@@ -174,14 +198,19 @@ export function Navigation() {
                     {!currentUser ? (
                       <div className="p-4 text-center">
                         <Button 
-                          onClick={() => navigate('/login')}
-                          className="w-full mb-2 bg-blue-500 hover:bg-blue-600"
+                          onClick={handleSignIn}
+                          className="w-full mb-2 bg-white text-blue-600 hover:bg-blue-50"
+                          size="sm"
                         >
                           Sign in
                         </Button>
                         <p className="text-sm text-gray-600">
                           New customer?{' '}
-                          <Link to="/register" className="text-blue-600 hover:underline">
+                          <Link 
+                            to="/auth/login" 
+                            state={{ tab: "signup" }}
+                            className="text-blue-600 hover:underline"
+                          >
                             Start here
                           </Link>
                         </p>
@@ -264,49 +293,65 @@ export function Navigation() {
       </div>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className={cn(
-          'lg:hidden',
-          isDarkMode ? 'bg-blue-900' : 'bg-blue-700'
-        )}>
-          <div className="container mx-auto px-4 py-4">
-            {!currentUser ? (
-              <Button 
-                onClick={() => navigate('/login')}
-                className="w-full mb-4 bg-blue-500 hover:bg-blue-600"
-              >
-                Sign in
-              </Button>
-            ) : (
-              <div className="mb-4 text-sm">
-                <p>Hello, {userProfile?.displayName}</p>
-              </div>
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              'lg:hidden absolute w-full shadow-lg',
+              isDarkMode ? 'bg-blue-900' : 'bg-blue-700'
             )}
-            
-            <nav className="flex flex-col space-y-4">
-              <Link to="/account/settings" className="text-sm hover:text-blue-200">Your Profile</Link>
-              <Link to="/account/orders" className="text-sm hover:text-blue-200">My Orders</Link>
-              <Link to="/offers" className="text-sm hover:text-blue-200">Offers</Link>
-              <Link to="/help" className="text-sm hover:text-blue-200">Help Center</Link>
-              <Link to="/registry" className="text-sm hover:text-blue-200">Registry</Link>
-              <Link to="/gift-cards" className="text-sm hover:text-blue-200">Gift Cards</Link>
-              <Link to="/partner" className="text-sm hover:text-blue-200 flex items-center gap-1">
-                <Store className="h-4 w-4" />
-                Become a Partner
-              </Link>
-              {currentUser && (
-                <Button 
-                  onClick={logout}
-                  variant="outline"
-                  className="w-full text-white border-white hover:bg-blue-600"
+          >
+            <div className="container mx-auto px-4 py-4">
+              <nav className="flex flex-col space-y-3">
+                <Link 
+                  to="/account/settings" 
+                  className="text-sm hover:text-blue-200 flex items-center gap-2"
+                  onClick={handleMenuItemClick}
                 >
-                  Sign Out
-                </Button>
-              )}
-            </nav>
-          </div>
-        </div>
-      )}
+                  <User className="h-4 w-4" />
+                  Your Profile
+                </Link>
+                <Link 
+                  to="/account/orders" 
+                  className="text-sm hover:text-blue-200 flex items-center gap-2"
+                  onClick={handleMenuItemClick}
+                >
+                  <Package className="h-4 w-4" />
+                  My Orders
+                </Link>
+                <Link 
+                  to="/offers" 
+                  className="text-sm hover:text-blue-200 flex items-center gap-2"
+                  onClick={handleMenuItemClick}
+                >
+                  <Tag className="h-4 w-4" />
+                  Offers
+                </Link>
+                <Link 
+                  to="/help" 
+                  className="text-sm hover:text-blue-200 flex items-center gap-2"
+                  onClick={handleMenuItemClick}
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Help Center
+                </Link>
+                <Link 
+                  to="/partner" 
+                  className="text-sm hover:text-blue-200 flex items-center gap-2"
+                  onClick={handleMenuItemClick}
+                >
+                  <Store className="h-4 w-4" />
+                  Become a Partner
+                </Link>
+              </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Bottom Navigation Row (Desktop Only) */}
       <div className={cn(
