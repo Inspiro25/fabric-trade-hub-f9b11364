@@ -54,6 +54,11 @@ export const createOrder = async (
       throw productError;
     }
 
+    if (!productData?.shop_id) {
+      console.error('No shop_id found for product');
+      throw new Error('Product not associated with any shop');
+    }
+
     // Create the order with shop information
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -66,6 +71,9 @@ export const createOrder = async (
         payment_id: paymentId,
         payment_status: 'completed',
         shipping_address: shippingAddress,
+        customer_name: shippingAddress.name,
+        customer_email: userId, // Using userId as email for now
+        customer_phone: shippingAddress.phone,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })

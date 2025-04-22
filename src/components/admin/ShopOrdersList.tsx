@@ -139,7 +139,7 @@ const ShopOrdersList: React.FC<ShopOrdersListProps> = ({ shopId }) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         filtered = filtered.filter(order => 
-          order.shipping_address.name?.toLowerCase().includes(query) ||
+          order.customer_name?.toLowerCase().includes(query) ||
           order.customer_email?.toLowerCase().includes(query) ||
           order.id.toLowerCase().includes(query)
         );
@@ -256,7 +256,7 @@ const ShopOrdersList: React.FC<ShopOrdersListProps> = ({ shopId }) => {
                   <TableCell>{formatDate(order.created_at)}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{order.shipping_address.name}</span>
+                      <span className="font-medium">{order.customer_name}</span>
                       <span className="text-xs text-muted-foreground">
                         {order.customer_email}
                       </span>
