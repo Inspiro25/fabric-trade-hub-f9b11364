@@ -1,5 +1,4 @@
 
-
 export interface ShopFormValues {
   name: string;
   shopId: string;
@@ -30,6 +29,7 @@ export interface Shop {
   reviewCount: number;
   followers_count: number;
   followersCount: number;
+  followers?: number; // Add this for compatibility with Shops.tsx
   owner_name?: string;
   ownerName?: string; // Add this for compatibility
   owner_email?: string;
@@ -40,4 +40,3 @@ export interface Shop {
   created_at?: string;
   productIds?: string[]; // Add this for compatibility with products.ts
 }
-

@@ -1,5 +1,4 @@
 
-
 // Re-export types
 export type { Product, ProductCategory, ProductReview } from './types';
 
@@ -23,9 +22,8 @@ export { getNewArrivals } from './newArrivals';
 export * from './collections';
 
 // Import Product type for mockProducts
-import type { Product } from './types';
+import { Product } from './types';
 
 // Mock product data for development
 export const mockProducts: Product[] = [];
 export const productStore = { products: mockProducts };
-

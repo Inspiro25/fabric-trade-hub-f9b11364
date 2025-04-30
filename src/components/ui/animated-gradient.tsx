@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils"
 
 interface GradientProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: "default" | "primary" | "secondary" | "destructive" | "success" | "warning" | "info" | "green" | "red" | "yellow" | "purple" | "orange";
+  hue?: string;
+  intensity?: string;
 }
 
 const AnimatedGradient = React.forwardRef<HTMLSpanElement, GradientProps>(
-  ({ className, variant = "default", ...props }, ref) => {
+  ({ className, variant = "default", hue, intensity, ...props }, ref) => {
     const gradientClasses = () => {
       switch (variant) {
         case 'default':
@@ -81,17 +83,21 @@ const AnimatedGradient = React.forwardRef<HTMLSpanElement, GradientProps>(
 
     const { soft, strong } = gradientClasses();
 
+    // If custom hue and intensity are provided, use them instead of preset gradients
+    const gradientStyles = hue && intensity ? {
+      backgroundImage: `linear-gradient(to right, ${hue}/${intensity}, transparent)`
+    } : {};
+
     return (
       <span
         ref={ref}
         className={cn(
           "bg-gradient-to-r",
-          soft.from,
-          soft.via,
-          soft.to,
+          !hue && [soft.from, soft.via, soft.to],
           "animate-gradient",
           className
         )}
+        style={gradientStyles}
         {...props}
       />
     )

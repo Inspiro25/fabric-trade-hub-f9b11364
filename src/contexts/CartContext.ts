@@ -15,6 +15,7 @@ export interface CartItem {
   total: number;
   size?: string;
   color?: string;
+  product?: Product; // Add this for compatibility with Checkout.tsx
   selectedOptions?: Array<{
     name: string;
     value: string;
@@ -24,7 +25,7 @@ export interface CartItem {
 // Define the CartContext type
 export interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity: number, color: string, size: string) => void;
+  addToCart: (product: Product, quantity: number, color?: string, size?: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -36,6 +37,7 @@ export interface CartContextType {
   isRemoving?: boolean;
   isUpdating?: boolean;
   migrateCartToUser: () => Promise<void>;
+  total?: number; // Add this for Checkout.tsx compatibility
 }
 
 // Create the context
