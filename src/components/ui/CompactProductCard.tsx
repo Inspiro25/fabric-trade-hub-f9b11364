@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
@@ -6,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from "sonner";
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface CompactProductCardProps {

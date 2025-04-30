@@ -1,11 +1,12 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/types/product';
+import { Product } from '@/lib/products/types';
 import { productStore } from '@/lib/types/product';
 
-export interface DealProduct extends Product {
+export interface DealProduct extends Omit<Product, 'created_at'> {
   discountPercentage: number;
   endTime: Date;
+  created_at?: string;
 }
 
 /**
@@ -44,17 +45,24 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
         description: product.description || '',
         price: price,
         salePrice: salePrice,
+        sale_price: salePrice,
         images: product.images || [],
         category: product.category_id || '',
+        category_id: product.category_id || '',
         colors: product.colors || [],
         sizes: product.sizes || [],
         isNew: product.is_new || false,
+        is_new: product.is_new || false,
         isTrending: product.is_trending || false,
+        is_trending: product.is_trending || false,
         rating: product.rating || 0,
         reviewCount: product.review_count || 0,
+        review_count: product.review_count || 0,
         stock: product.stock || 0,
         tags: product.tags || [],
         shopId: product.shop_id || '',
+        shop_id: product.shop_id || '',
+        created_at: product.created_at,
         discountPercentage,
         endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
       };
@@ -86,6 +94,13 @@ const getFallbackDeal = (): DealProduct | null => {
     const discountPercentage = Math.round(((product.price - (product.salePrice || 0)) / product.price) * 100);
     return {
       ...product,
+      sale_price: product.salePrice,
+      category_id: product.category || '',
+      is_new: product.isNew,
+      is_trending: product.isTrending,
+      review_count: product.reviewCount,
+      shop_id: product.shopId,
+      created_at: new Date().toISOString(),
       discountPercentage,
       endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
     };

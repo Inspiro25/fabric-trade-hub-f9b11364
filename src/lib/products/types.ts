@@ -3,21 +3,29 @@
 export interface Product {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   price: number;
   sale_price?: number;
+  salePrice?: number;
   images: string[];
-  category_id: string;
+  category_id?: string;
+  category?: string;
   shop_id?: string;
   rating: number;
-  review_count: number;
+  review_count?: number;
+  reviewCount?: number;
   stock: number;
   colors?: string[];
   sizes?: string[];
   tags?: string[];
   is_new?: boolean;
+  isNew?: boolean;
   is_trending?: boolean;
-  created_at: string;
+  isTrending?: boolean;
+  brand?: string;
+  specifications?: Record<string, string>;
+  sku?: string;
+  created_at?: string;
 }
 
 // Add any additional product-related types here

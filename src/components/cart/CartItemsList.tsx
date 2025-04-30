@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState, memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { type CartItem as CartItemType } from "@/types/cart";
+import { type CartItem as CartItemType } from "@/contexts/CartContext";
 import CartItem from './CartItem';
 import {
   Card,
@@ -91,7 +92,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             "mt-2 font-medium",
             isDarkMode ? "text-blue-400" : "text-blue-600"
           )}>
-            ₹{item.price}
+            ₹{item.price || (item.product.sale_price || item.product.price)}
           </div>
           
           <div className="mt-4 flex items-center justify-between">

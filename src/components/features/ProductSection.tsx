@@ -44,7 +44,11 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo
         {products.slice(0, 4).map(product => (
           <ProductCard 
             key={product.id}
-            product={product}
+            product={{
+              ...product,
+              category: product.category || '',
+              reviewCount: product.reviewCount || product.review_count || 0
+            }}
           />
         ))}
       </div>

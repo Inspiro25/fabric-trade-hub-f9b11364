@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import { ArrowRight, ArrowLeft, Truck, Timer, Shield } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
