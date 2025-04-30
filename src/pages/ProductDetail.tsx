@@ -366,27 +366,16 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!product) return;
-
-    setIsAddingToCart(true);
-    try {
-      await addToCart(product, quantity, selectedColor, selectedSize);
-      
-      toast({
-        title: 'Added to cart',
-        description: `${product.name} has been added to your cart.`,
-      });
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add item to cart. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsAddingToCart(false);
-    }
+  const handleAddToCart = () => {
+    addToCart(
+      product.id,
+      product.name,
+      product.images[0] || '',
+      product.sale_price || product.price,
+      product.stock,
+      product.shop_id || '',
+      product.sale_price || null
+    );
   };
 
   const handleShare = (platform: string) => {

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -6,7 +5,7 @@ import { SearchPageProduct } from './types';
 import { Product } from '@/lib/products/types';
 
 export const useSearchCartIntegration = () => {
-  const { addToCart, isAdding: isAddingToCart } = useCart();
+  const { addToCart } = useCart();
   const { addToWishlist, isAddingToWishlist } = useWishlist();
   
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
@@ -21,24 +20,29 @@ export const useSearchCartIntegration = () => {
       salePrice: searchProduct.salePrice,
       sale_price: searchProduct.salePrice,
       images: searchProduct.images || (searchProduct.image ? [searchProduct.image] : []),
-      category: searchProduct.category,
-      category_id: searchProduct.category_id,
-      rating: searchProduct.rating,
-      reviewCount: searchProduct.reviewCount,
-      review_count: searchProduct.reviewCount,
-      stock: searchProduct.stock || 10,
-      shop_id: searchProduct.shop_id || searchProduct.shopId,
-      colors: searchProduct.colors || [],
-      sizes: searchProduct.sizes || [],
-      tags: searchProduct.tags || []
+      category: searchProduct.category || '',
+      category_id: searchProduct.category_id || '',
+      rating: searchProduct.rating || 0,
+      reviewCount: searchProduct.reviewCount || 0,
+      review_count: searchProduct.reviewCount || 0,
+      stock: searchProduct.stock || 0,
+      tags: searchProduct.tags || [],
+      shop_id: searchProduct.shopId || ''
     };
   };
   
-  // Handler for adding to cart
-  const handleAddToCart = useCallback((product: SearchPageProduct) => {
-    const fullProduct = convertToProduct(product);
-    addToCart(fullProduct, 1, '', '');
-  }, [addToCart]);
+  const handleAddToCart = (product: SearchPageProduct) => {
+    const convertedProduct = convertToProduct(product);
+    addToCart(
+      convertedProduct.id,
+      convertedProduct.name,
+      convertedProduct.images[0] || '',
+      convertedProduct.sale_price || convertedProduct.price,
+      convertedProduct.stock,
+      convertedProduct.shop_id || '',
+      convertedProduct.sale_price || null
+    );
+  };
   
   // Handler for adding to wishlist
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
@@ -62,7 +66,6 @@ export const useSearchCartIntegration = () => {
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct,
-    isAddingToCart,
     isAddingToWishlist,
     copiedLink
   };

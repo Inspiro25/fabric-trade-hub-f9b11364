@@ -101,32 +101,16 @@ const ProductCard = ({
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (product) {
-      addToCart(product, 1, product.colors[0] || '', product.sizes[0] || '');
-    } else {
-      const productObj: Product = {
-        id: productId,
-        name: productName,
-        price: productPrice,
-        salePrice: productSalePrice,
-        images: [productImage],
-        category: productCategory,
-        isNew: productIsNew,
-        isTrending: productIsTrending,
-        rating: productRating,
-        reviewCount: productReviewCount,
-        colors: ['default'],
-        sizes: ['default'],
-        description: '',
-        stock: 10,
-        tags: [],
-      };
-      addToCart(productObj, 1, 'default', 'default');
-    }
+  const handleAddToCart = () => {
+    addToCart(
+      product.id,
+      product.name,
+      product.images[0] || '',
+      product.sale_price || product.price,
+      product.stock,
+      product.shop_id || product.shopId || '',
+      product.sale_price || product.salePrice || null
+    );
   };
 
   const handleCardClick = (e: React.MouseEvent) => {

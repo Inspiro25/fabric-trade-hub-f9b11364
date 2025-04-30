@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -200,6 +199,40 @@ export default function Checkout() {
     }
   };
 
+  // Map cartItems to match the structure expected by the checkout page
+  const items = cartItems.map(item => ({
+    id: item.id,
+    productId: item.productId,
+    quantity: item.quantity,
+    name: item.name,
+    image: item.image,
+    price: item.price,
+    color: item.color || '',
+    size: item.size || '',
+    total: item.total
+  }));
+
+  // Update references from product to the item itself
+  const renderCartItems = () => {
+    return cartItems.map((item) => (
+      <div key={item.id} className="flex py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 h-24 w-24 bg-gray-100 rounded-md overflow-hidden">
+          <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+        </div>
+        <div className="ml-4 flex-1">
+          <div className="flex justify-between">
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{item.name}</h3>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{formatCurrency(item.price)}</p>
+          </div>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {item.color && `Color: ${item.color}`} {item.size && `Size: ${item.size}`}
+          </p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Quantity: {item.quantity}</p>
+        </div>
+      </div>
+    ));
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-8">Checkout</h1>
@@ -287,16 +320,7 @@ export default function Checkout() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                {cart.map((item) => (
-                  <div key={`${item.product.id}-${item.color}-${item.size}`} className="flex justify-between">
-                    <span className="text-gray-600 truncate max-w-[70%]">
-                      {item.product.name} ({item.quantity})
-                    </span>
-                    <span>
-                      ₹{((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                {renderCartItems()}
               </div>
               <div className="border-t pt-4">
                 <div className="flex justify-between">

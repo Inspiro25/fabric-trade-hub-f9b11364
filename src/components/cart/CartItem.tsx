@@ -16,19 +16,19 @@ interface CartItemProps {
 }
 
 const CartItem: React.FC<CartItemProps> = ({ id, product, quantity, size, color }) => {
-  const { removeFromCart, updateQuantity } = useCart();
+  const { removeFromCart, updateQuantity, increaseQuantity, decreaseQuantity } = useCart();
 
   const handleRemove = () => {
     removeFromCart(id);
   };
 
   const handleIncreaseQuantity = () => {
-    updateQuantity(id, quantity + 1);
+    increaseQuantity(id);
   };
 
   const handleDecreaseQuantity = () => {
     if (quantity > 1) {
-      updateQuantity(id, quantity - 1);
+      decreaseQuantity(id);
     }
   };
 

@@ -37,5 +37,5 @@ export interface Shop {
   is_verified?: boolean;
   isVerified?: boolean; // Add this for compatibility
   created_at?: string;
-  productIds?: string[]; // Add this to fix the productIds property error
+  productIds?: string[]; // Add this for compatibility with products.ts
 }

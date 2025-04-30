@@ -1,289 +1,125 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Filter } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useProductsByCategory } from '@/hooks/use-product-fetching';
+import ProductCard from '@/components/ui/ProductCard';
 import { Button } from '@/components/ui/button';
-import ProductGrid from '@/components/features/ProductGrid';
-import { formatCategoryName, slugToCategory } from '@/lib/utils';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { useProductsByCategory } from '@/hooks/use-product-fetching';
-import { supabase } from '@/integrations/supabase/client';
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { getCategoriesWithDetails } from '@/lib/products/categories';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Product } from '@/lib/products/types';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+const itemsPerPage = 12;
 
 const CategoryPage = () => {
   const { categorySlug } = useParams<{ categorySlug: string }>();
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
-  const [category, setCategory] = useState<{ id: string; name: string; description: string | null; image: string | null } | null>(null);
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity'>('newest');
-  const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
   const { isDarkMode } = useTheme();
+  const [categoryId, setCategoryId] = useState<string | null>(null);
 
-  // Remove the duplicate useEffect and keep only this one
   useEffect(() => {
-    const fetchAllCategories = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('*')
-          .order('name');
-        
-        if (error) throw error;
-        setCategories(data || []);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
+    // Convert category slug to ID (replace with your actual logic)
+    const categoryIdFromSlug = (slug: string | undefined) => {
+      switch (slug) {
+        case 't-shirts': return 't-shirts';
+        case 'hoodies': return 'hoodies';
+        case 'jeans': return 'jeans';
+        case 'jackets': return 'jackets';
+        case 'shoes': return 'shoes';
+        default: return null;
       }
     };
-    
-    fetchAllCategories();
-  }, []);
 
-  // Update the category fetch effect
-  useEffect(() => {
-    const fetchCategory = async () => {
-      if (!categorySlug) return;
-      
-      try {
-        const categoryName = slugToCategory(categorySlug);
-        
-        const { data: categoryData, error: categoryError } = await supabase
-          .from('categories')
-          .select(`
-            *,
-            products (
-              id,
-              name,
-              description,
-              price,
-              images,
-              rating,
-              stock,
-              created_at
-            )
-          `)
-          .ilike('name', categoryName)
-          .single();
-        
-        if (categoryError) throw categoryError;
-        
-        if (categoryData) {
-          setCategory(categoryData);
-          // Products will be available in categoryData.products
-        }
-      } catch (error) {
-        console.error('Error fetching category data:', error);
-      }
-    };
-    
-    fetchCategory();
+    const id = categoryIdFromSlug(categorySlug);
+    setCategoryId(id);
+    setCurrentPage(1); // Reset page on category change
   }, [categorySlug]);
-  
-  // Use our new hook to fetch products by category
-  const { data, isLoading, error } = useProductsByCategory(
-    category?.id || '',
-    page,
-    12,
-    sortBy
-  );
-  
-  const products = data?.products || [];
-  const totalProducts = data?.total || 0;
-  
-  // Handle page change
+
+  const { products, loading, error, totalCount } = useProductsByCategory(categoryId || '', itemsPerPage, currentPage);
+  const isLoading = loading;
+
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    window.scrollTo(0, 0);
+    setCurrentPage(newPage);
   };
-  
-  // Handle sort change
-  const handleSortChange = (newSortBy: 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'popularity') => {
-    setSortBy(newSortBy);
-    setPage(1);
-  };
-  
-  if (isLoading && !category) {
-    return (
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className={cn(
-            "h-8 w-32 rounded animate-pulse",
-            isDarkMode ? "bg-gray-700" : "bg-gray-200"
-          )}></div>
-          <div className={cn(
-            "h-8 w-8 rounded animate-pulse",
-            isDarkMode ? "bg-gray-700" : "bg-gray-200"
-          )}></div>
-        </div>
-        
-        <div className={cn(
-          "h-40 w-full rounded-lg mb-6 animate-pulse",
-          isDarkMode ? "bg-gray-700" : "bg-gray-200"
-        )}></div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={cn(
-              "h-60 rounded animate-pulse",
-              isDarkMode ? "bg-gray-700" : "bg-gray-200"
-            )}></div>
-          ))}
-        </div>
-      </div>
-    );
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
   }
-  
-  // Add this useEffect for fetching categories
-  useEffect(() => {
-    const fetchAllCategories = async () => {
-      try {
-        const data = await getCategoriesWithDetails();
-        setCategories(data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    
-    fetchAllCategories();
-  }, []);
 
   return (
     <div className={cn(
-      "min-h-screen pb-16",
-      isDarkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+      "container mx-auto py-8",
+      isDarkMode ? "dark" : ""
     )}>
-      {/* Header with back button */}
-      <div className={cn(
-        "sticky top-0 z-10 p-4 border-b",
-        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
-      )}>
-        <div className="flex items-center mb-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className={isDarkMode ? "text-gray-300 hover:text-white" : ""}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="ml-2 text-lg font-medium">
-            {category?.name || formatCategoryName(categorySlug || '')}
-          </h1>
-        </div>
-
-        {/* Add this new categories scroll area */}
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex space-x-2 pb-2">
-            {categories.map((cat) => (
-              <Button
-                key={cat.id}
-                variant={cat.id === category?.id ? "default" : "outline"}
-                size="sm"
-                className={cn(
-                  "transition-colors",
-                  cat.id === category?.id
-                    ? isDarkMode 
-                      ? "bg-blue-500 hover:bg-blue-600 text-white"
-                      : "bg-blue-500 hover:bg-blue-600 text-white"
-                    : isDarkMode
-                      ? "border-gray-700 hover:border-blue-500/50 hover:text-blue-400"
-                      : "border-gray-200 hover:border-blue-500/50 hover:text-blue-500"
-                )}
-                onClick={() => navigate(`/category/${categoryToSlug(cat.name)}`)}
-              >
-                {cat.name}
-              </Button>
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold capitalize">{categorySlug?.replace(/-/g, ' ')}</h1>
+        <p className="text-gray-500">
+          {isLoading ? 'Loading products...' : `Showing ${products.length} of ${totalCount} products`}
+        </p>
       </div>
-      
-      {/* Category banner */}
-      {category?.image && (
-        <div className="relative h-40 w-full mb-4">
-          <img 
-            src={category.image}
-            alt={category.name}
-            className="w-full h-full object-cover"
-          />
-          <div className={cn(
-            "absolute inset-0 flex flex-col justify-end p-4",
-            isDarkMode 
-              ? "bg-gradient-to-t from-gray-900/90 to-transparent" 
-              : "bg-gradient-to-t from-white/80 to-transparent"
-          )}>
-            <h2 className="text-2xl font-bold">{category.name}</h2>
-            {category.description && (
-              <p className={cn(
-                "text-sm mt-1",
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              )}>
-                {category.description}
-              </p>
-            )}
-          </div>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[...Array(itemsPerPage)].map((_, i) => (
+            <Card key={i} className="overflow-hidden">
+              <div className="aspect-w-4 aspect-h-5">
+                <Skeleton className="w-full h-full" />
+              </div>
+              <CardHeader>
+                <CardTitle><Skeleton className="h-4 w-3/4" /></CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-3 w-1/2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : products.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-10">
+          <h2 className="text-xl font-semibold">No products found</h2>
+          <p className="text-gray-500">Please check back later.</p>
         </div>
       )}
-      
-      {/* Products grid */}
-      <div className="p-4">
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-4">
-            {[...Array(12)].map((_, i) => (
-              <div key={i} className={cn(
-                "h-60 rounded animate-pulse",
-                isDarkMode ? "bg-gray-700" : "bg-gray-200"
-              )}></div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className={cn(
-            "text-center py-12 px-4",
-            isDarkMode ? "bg-gray-800" : "bg-gray-50"
-          )}>
-            <h3 className="text-lg font-medium mb-2">Error loading products</h3>
-            <p className={cn(
-              "text-sm mb-4",
-              isDarkMode ? "text-gray-400" : "text-gray-500"
-            )}>
-              We couldn't load products for this category. Please try again.
-            </p>
-            <Button onClick={() => window.location.reload()}>
-              Retry
-            </Button>
-          </div>
-        ) : products.length > 0 ? (
-          <ProductGrid 
-            products={products} 
-            columns={2} 
-            showPagination={totalProducts > 12}
-            itemsPerPage={12}
-            totalItems={totalProducts}
-            currentPage={page}
-            onPageChange={handlePageChange}
-            showFilters={true}
-            useAlternateLayout={true}
-          />
-        ) : (
-          <div className={cn(
-            "text-center py-12 px-4",
-            isDarkMode ? "bg-gray-800" : "bg-gray-50"
-          )}>
-            <h3 className="text-lg font-medium mb-2">No products found</h3>
-            <p className={cn(
-              "text-sm mb-4",
-              isDarkMode ? "text-gray-400" : "text-gray-500"
-            )}>
-              We couldn't find any products in this category.
-            </p>
-            <Button onClick={() => navigate('/')}>
-              Continue Shopping
-            </Button>
-          </div>
-        )}
-      </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-8">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            variant="outline"
+            className="mr-2"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Previous
+          </Button>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            variant="outline"
+          >
+            Next
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

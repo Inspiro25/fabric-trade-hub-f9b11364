@@ -7,19 +7,28 @@ export interface Shop {
   description: string;
   logo: string;
   cover_image: string;
+  coverImage?: string; // For compatibility 
   address: string;
   is_verified: boolean;
+  isVerified?: boolean; // For compatibility
   shop_id: string;
+  shopId?: string; // For compatibility
   owner_name: string;
+  ownerName?: string; // For compatibility
   owner_email: string;
+  ownerEmail?: string; // For compatibility
   status: ShopStatus;
   password: string;
   phone_number: string;
+  phoneNumber?: string; // For compatibility
   rating: number;
   review_count: number;
+  reviewCount?: number; // For compatibility
   followers_count: number;
+  followersCount?: number; // For compatibility
   created_at: string;
   updated_at?: string;
+  productIds?: string[]; // Add productIds for use in products.ts
 }
 
 export interface ShopWithProducts extends Shop {
@@ -90,6 +99,7 @@ export interface Product {
   images: string[];
   category_id: string;
   shop_id?: string;
+  shopId?: string; // For compatibility
   rating: number;
   review_count: number;
   stock: number;

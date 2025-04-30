@@ -1,16 +1,8 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Product } from '@/lib/types/product';
-import { createProduct, updateProduct, fetchCategories } from '@/lib/supabase/products';
-import { Save, X, Plus, Minus, TagIcon, Upload, Image as ImageIcon, Check, ChevronDown, ChevronUp, Info, Clock, Tag, Users, ThumbsUp, MessageSquare } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Check, ChevronsUpDown, Plus, X, Loader2, ImagePlus, Tag, Palette, Ruler } from "lucide-react";
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';

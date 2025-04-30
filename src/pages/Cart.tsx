@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import Footer from '@/components/layout/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -14,7 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthDialog from '@/components/search/AuthDialog';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
+  const { cart, cartItems, removeFromCart, updateQuantity, getCartTotal, getCartCount, isLoading } = useCart();
   const { currentUser, loading: authLoading } = useAuth();
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
