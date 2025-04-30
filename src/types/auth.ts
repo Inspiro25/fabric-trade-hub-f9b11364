@@ -1,9 +1,7 @@
 
-// Add or modify the ExtendedUser type to include phone and address properties
-
 export interface ExtendedUser {
   id: string;
-  uid?: string; // Add this for OrderContext
+  uid?: string;
   email: string;
   display_name?: string;
   avatarUrl?: string;
@@ -28,4 +26,15 @@ export interface AuthContextType {
   sendVerificationEmail: (email: string) => Promise<void>;
   verifyEmail: (token: string) => Promise<any>;
   fetchUserProfile: (userId: string) => Promise<any>;
+}
+
+export interface UserProfile {
+  id: string;
+  display_name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  preferences?: Record<string, any>;
+  avatar_url?: string;
+  email_confirmed_at?: string;
 }

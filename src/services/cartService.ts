@@ -1,7 +1,6 @@
-
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { CartItem } from '@/contexts/CartContext';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import { toast } from 'sonner';
 
 // Fetch cart items from Supabase

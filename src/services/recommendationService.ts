@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 
 // Record product view
 export const recordProductView = async (userId: string | undefined, productId: string): Promise<void> => {

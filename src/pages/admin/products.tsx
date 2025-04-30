@@ -1,4 +1,4 @@
-import { ProductForm } from '@/components/admin/ProductForm';
+import ProductForm from '@/components/admin/ProductForm';
 import { useCategories } from '@/hooks/use-categories';
 import { supabase } from '@/lib/supabase';
 

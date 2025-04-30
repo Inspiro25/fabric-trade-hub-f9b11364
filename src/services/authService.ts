@@ -1,4 +1,4 @@
-import { UserProfile } from '@/types/auth';
+import { ExtendedUser, UserProfile } from '@/types/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { formatPreferences } from '@/utils/dataHelpers';

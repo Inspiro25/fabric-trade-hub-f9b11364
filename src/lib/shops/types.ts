@@ -26,6 +26,7 @@ export interface Shop {
   reviewCount?: number; // For compatibility
   followers_count: number;
   followersCount?: number; // For compatibility
+  followers?: number; // Added for compatibility with Shops.tsx
   created_at: string;
   updated_at?: string;
   productIds?: string[]; // Add productIds for use in products.ts

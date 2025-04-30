@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSupabaseClient } from '@supabase/supabase-js';
-import { ExtendedUser } from '@/types/auth';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { ExtendedUser, UserProfile } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,7 +15,7 @@ export function useAuthProvider() {
   const [userProfile, setUserProfile] = useState<ExtendedUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const supabase = useSupabaseClient();
+  const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY) as SupabaseClient;
 
   const fetchUserProfile = async (userId: string) => {
     try {

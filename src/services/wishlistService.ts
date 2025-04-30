@@ -1,7 +1,6 @@
-
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 
 // Fetch user wishlist
 export const fetchUserWishlist = async (userId: string): Promise<Product[]> => {
