@@ -28,7 +28,7 @@ export const isInCart = (
   );
 };
 
-// Format price as currency
+// Format price as currency - ensure we're using the same function signature
 export const formatCartPrice = (price: number): string => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -36,3 +36,6 @@ export const formatCartPrice = (price: number): string => {
     minimumFractionDigits: 0,
   }).format(price);
 };
+
+// Alias for formatCartPrice to help with transition
+export const formatPrice = formatCartPrice;
