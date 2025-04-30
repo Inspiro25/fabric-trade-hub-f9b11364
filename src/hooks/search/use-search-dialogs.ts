@@ -6,10 +6,6 @@ export const useSearchDialogs = () => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareableLink, setShareableLink] = useState('');
 
-  const handleLogin = () => {
-    setIsDialogOpen(false);
-  };
-
   return {
     isDialogOpen,
     setIsDialogOpen,
@@ -17,6 +13,5 @@ export const useSearchDialogs = () => {
     setIsShareDialogOpen,
     shareableLink,
     setShareableLink,
-    handleLogin
   };
 };

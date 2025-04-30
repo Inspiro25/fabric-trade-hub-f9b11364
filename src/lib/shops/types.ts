@@ -1,45 +1,35 @@
+
+export type ShopStatus = 'active' | 'pending' | 'suspended';
+
 export interface Shop {
   id: string;
   name: string;
   description: string;
   logo: string;
-  coverImage: string; 
+  cover_image: string;
   address: string;
-  ownerName: string; 
-  ownerEmail: string;
-  phoneNumber: string;
+  is_verified: boolean;
+  shop_id: string;
+  owner_name: string;
+  owner_email: string;
+  status: ShopStatus;
+  password: string;
+  phone_number: string;
   rating: number;
-  reviewCount: number;
-  followers: number;
+  review_count: number;
   followers_count: number;
-  productIds: string[];
-  isVerified: boolean;
-  status: 'active' | 'inactive' | 'pending';
-  createdAt: string;
-  shopId: string;
-  password?: string;
-  logo_url?: string;
-  cover_url?: string;
-  totalRevenue?: number;
-  orderCount?: number;
-  customerCount?: number;
-  productCount?: number;
-  updated_at: string;
+  created_at: string;
+  updated_at?: string;
 }
 
-export interface ShopSummary {
-  id: string;
-  name: string;
-  logo: string;
-  rating: number;
-  followers: number;
-  productCount: number;
-  isVerified: boolean;
-}
-
-export interface ShopFilter {
-  category?: string;
-  minRating?: number;
-  verified?: boolean;
-  sortBy?: 'popular' | 'rating' | 'newest';
+export interface ShopWithProducts extends Shop {
+  products: Array<{
+    id: string;
+    name: string;
+    price: number;
+    sale_price?: number;
+    images: string[];
+    rating: number;
+    review_count: number;
+  }>;
 }

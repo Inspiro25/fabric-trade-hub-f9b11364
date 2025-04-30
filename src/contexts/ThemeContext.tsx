@@ -17,6 +17,7 @@ type ThemeType = 'light' | 'dark' | 'system';
 type ThemeContextType = {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  toggleTheme: () => void; // Add this for backward compatibility
   theme: Theme;
   setTheme: (theme: ThemeType) => void;
   currentTheme: ThemeType;
@@ -94,6 +95,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // Add toggleTheme for backward compatibility
+  const toggleTheme = toggleDarkMode;
+
   const setTheme = (newTheme: ThemeType) => {
     setCurrentTheme(newTheme);
     localStorage.setItem('theme', newTheme);
@@ -115,7 +119,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [isDarkMode]);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode, theme, setTheme, currentTheme }}>
+    <ThemeContext.Provider value={{ 
+      isDarkMode, 
+      toggleDarkMode, 
+      toggleTheme, // Add this for backward compatibility 
+      theme, 
+      setTheme, 
+      currentTheme 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

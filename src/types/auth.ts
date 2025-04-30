@@ -45,8 +45,10 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (data: Partial<UserProfile>) => Promise<void>; // Add this
   addAddress: (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => Promise<void>;
   updateAddress: (address: UserProfile['savedAddresses'][0]) => Promise<void>;
   removeAddress: (addressId: string) => Promise<void>;
   setDefaultAddress: (addressId: string) => Promise<void>;
+  user: User | null; // Add this for backward compatibility
 }

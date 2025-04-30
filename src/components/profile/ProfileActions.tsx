@@ -1,61 +1,68 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Clock, CreditCard, Settings, Heart, ShoppingCart, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
+import { LogOut, Settings, HelpCircle, ShoppingBag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface ProfileActionsProps {
-  className?: string;
+export interface ProfileActionsProps {
+  onLogout: () => Promise<void>; // Add this to the interface
 }
 
-export default function ProfileActions({ className }: ProfileActionsProps) {
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-  };
-
+const ProfileActions = ({ onLogout }: ProfileActionsProps) => {
+  const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
+  
   return (
-    <div className={`space-y-2 ${className}`}>
-      <Link to="/account/orders">
-        <Button variant="outline" className="w-full justify-start text-left" size="lg">
-          <Clock className="mr-2 h-5 w-5" /> My Orders
-        </Button>
-      </Link>
-      
-      <Link to="/account/addresses">
-        <Button variant="outline" className="w-full justify-start text-left" size="lg">
-          <MapPin className="mr-2 h-5 w-5" /> Manage Addresses
-        </Button>
-      </Link>
-      
-      <Link to="/account/wishlist">
-        <Button variant="outline" className="w-full justify-start text-left" size="lg">
-          <Heart className="mr-2 h-5 w-5" /> Wishlist
-        </Button>
-      </Link>
-      
-      <Link to="/cart">
-        <Button variant="outline" className="w-full justify-start text-left" size="lg">
-          <ShoppingCart className="mr-2 h-5 w-5" /> Cart
-        </Button>
-      </Link>
-      
-      <Link to="/account/settings">
-        <Button variant="outline" className="w-full justify-start text-left" size="lg">
-          <Settings className="mr-2 h-5 w-5" /> Settings
-        </Button>
-      </Link>
+    <div className={cn(
+      "flex justify-center gap-2 mb-6",
+      isDarkMode ? "text-gray-300" : "text-gray-700"
+    )}>
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="flex gap-1 items-center"
+        onClick={() => navigate('/account/orders')}
+      >
+        <ShoppingBag size={14} />
+        <span>Orders</span>
+      </Button>
       
       <Button 
         variant="outline" 
-        className="w-full justify-start text-left text-red-600 hover:text-red-700 hover:bg-red-50" 
-        size="lg"
-        onClick={handleLogout}
+        size="sm" 
+        className="flex gap-1 items-center"
+        onClick={() => navigate('/account/settings')}
       >
-        <LogOut className="mr-2 h-5 w-5" /> Logout
+        <Settings size={14} />
+        <span>Settings</span>
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="flex gap-1 items-center"
+        onClick={() => navigate('/help')}
+      >
+        <HelpCircle size={14} />
+        <span>Help</span>
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        size="sm"
+        className={cn(
+          "flex gap-1 items-center",
+          isDarkMode ? "hover:text-red-400 hover:border-red-400" : "hover:text-red-600 hover:border-red-500"
+        )}
+        onClick={onLogout}
+      >
+        <LogOut size={14} />
+        <span>Logout</span>
       </Button>
     </div>
   );
-}
+};
+
+export default ProfileActions;

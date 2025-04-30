@@ -1,8 +1,6 @@
 
 import { SearchPageProduct } from '@/hooks/search/types';
 
-export type { SearchPageProduct };
-
 export interface ProductCardBaseProps {
   product: SearchPageProduct;
   isAddingToCart?: boolean | string;
@@ -13,5 +11,5 @@ export interface ProductCardBaseProps {
   onClick?: (product: SearchPageProduct) => void;
   buttonColor?: string;
   viewMode?: 'grid' | 'list';
-  isCompact?: boolean; // Add the isCompact property
+  isCompact?: boolean;
 }
