@@ -13,6 +13,7 @@ export interface CartItem {
   stock?: number; // Add stock property
   total?: number; // Add total property
   shopId?: string; // Add shopId property
+  selectedOptions?: Record<string, any>; // Add selectedOptions property
 }
 
 export interface CartContextProps {
