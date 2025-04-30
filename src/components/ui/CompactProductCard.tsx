@@ -84,3 +84,6 @@ export function CompactProductCard({
     </Card>
   );
 }
+
+// Add default export to resolve the import issue
+export default CompactProductCard;

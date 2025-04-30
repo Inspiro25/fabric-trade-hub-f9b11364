@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { GridProductCard } from './GridProductCard';
 import { ListProductCard } from './ListProductCard';
-import { CompactProductCard } from './CompactProductCard';
+import { CompactProductCard } from '@/components/search/product-card/CompactProductCard';
 import { ProductCardSkeleton } from './ProductCardSkeleton';
 import type { ProductCardBaseProps, SearchPageProduct } from '@/hooks/search/types';
 
