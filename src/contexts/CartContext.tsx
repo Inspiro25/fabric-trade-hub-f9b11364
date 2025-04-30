@@ -7,23 +7,10 @@ import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
 import AuthDialog from '@/components/search/AuthDialog';
-import { CartItem } from '@/types/cart';
+import { CartItem, CartContextType } from './CartContext';
 
-// Create the context with proper typing
-interface CartContextType {
-  cartItems: CartItem[];
-  addToCart: (product: Product, quantity: number, color: string, size: string) => void;
-  removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
-  getCartTotal: () => number;
-  getCartCount: () => number;
-  isInCart: (productId: string, color?: string, size?: string) => boolean;
-  isLoading: boolean;
-  migrateCartToUser: () => Promise<void>;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Re-using the context from CartContext.ts
+import CartContext from './CartContext';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -173,13 +160,4 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )}
     </CartContext.Provider>
   );
-};
-
-// Export hook for easy usage
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
 };

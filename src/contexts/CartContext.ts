@@ -9,38 +9,38 @@ export interface CartItem {
   quantity: number;
   size?: string;
   color?: string;
+  price?: number;
+  total?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// Define the CartContext type
 export interface CartContextType {
-  cart: CartItem[];
-  addToCart: (item: {
-    id: string;
-    name: string;
-    price: number;
-    image: string;
-    quantity: number;
-    color?: string | null;
-    size?: string | null;
-  }) => void;
+  cartItems: CartItem[];
+  addToCart: (product: Product, quantity: number, color: string, size: string) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
-  getCartCount: () => number;
   getCartTotal: () => number;
-  isInCart: (id: string) => boolean;
+  getCartCount: () => number;
+  isInCart: (productId: string, color?: string, size?: string) => boolean;
+  isLoading: boolean;
+  migrateCartToUser: () => Promise<void>;
 }
 
-const CartContext = createContext<CartContextType | null>(null);
+// Create the context
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const useCart = () => {
+// Create and export the useCart hook
+export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useCart must be used within a CartProvider');
   }
   return context;
 };
 
-// Re-export the CartProvider from CartContext.tsx for backward compatibility
+// Export the context and CartProvider
 export { CartProvider } from './CartContext.tsx';
-
 export default CartContext;

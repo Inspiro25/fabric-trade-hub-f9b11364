@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import ProductCard from '@/components/ui/ProductCard';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -44,17 +44,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo
         {products.slice(0, 4).map(product => (
           <ProductCard 
             key={product.id}
-            id={product.id}
-            name={product.name}
-            price={product.price}
-            salePrice={product.salePrice}
-            image={product.images[0]}
-            category={product.category}
-            isNew={product.isNew}
-            isTrending={product.isTrending}
-            rating={product.rating}
-            reviewCount={product.reviewCount}
-            layout="vertical"
+            product={product}
           />
         ))}
       </div>

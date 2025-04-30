@@ -1,31 +1,39 @@
+
 import { CartItem } from '@/contexts/CartContext';
 
 // Calculate the total price of all items in the cart
-export const getCartTotal = (cartItems: CartItem[]): number => {
-  return cartItems.reduce((total, item) => {
-    const itemPrice = item.product.salePrice || item.product.price;
+export const getCartTotal = (cart: CartItem[]): number => {
+  return cart.reduce((total, item) => {
+    const itemPrice = item.product.sale_price || item.product.price;
     return total + itemPrice * item.quantity;
   }, 0);
 };
 
-// Calculate the total number of items in the cart
-export const getCartCount = (cartItems: CartItem[]): number => {
-  return cartItems.reduce((count, item) => count + item.quantity, 0);
+// Get the total number of items in the cart
+export const getCartCount = (cart: CartItem[]): number => {
+  return cart.reduce((count, item) => count + item.quantity, 0);
 };
 
 // Check if a product is already in the cart
 export const isInCart = (
-  cartItems: CartItem[], 
-  productId: string, 
-  color?: string, 
+  cart: CartItem[],
+  productId: string,
+  color?: string,
   size?: string
 ): boolean => {
-  return cartItems.some(item => {
-    // If color and size are specified, check for exact match
-    if (color && size) {
-      return item.product.id === productId && item.color === color && item.size === size;
-    }
-    // Otherwise, just check if the product is in the cart at all
-    return item.product.id === productId;
-  });
+  return cart.some(
+    item => 
+      item.product.id === productId && 
+      (color === undefined || item.color === color) && 
+      (size === undefined || item.size === size)
+  );
+};
+
+// Format price as currency
+export const formatCartPrice = (price: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+  }).format(price);
 };
