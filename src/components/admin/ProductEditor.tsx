@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -9,10 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/lib/types/product';
 import { createProduct, updateProduct, fetchCategories } from '@/lib/supabase/products';
-import { Save, X, Plus, Minus, TagIcon, Upload, Image as ImageIcon, Check, ChevronDown, ChevronUp, Palette, Ruler } from 'lucide-react';
+import { Save, X, Plus, Minus, TagIcon, Upload, Image as ImageIcon, Check, ChevronDown, ChevronUp, Info, Clock, Tag, Users, ThumbsUp, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import MultiImageUpload from '@/components/ui/multi-image-upload';
 import { Switch } from '@/components/ui/switch';
 import { FormDescription } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

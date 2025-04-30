@@ -36,12 +36,46 @@ export function AddressDialog() {
     is_default: false,
   });
 
+  const clearForm = () => {
+    setFormData({
+      name: '',
+      full_name: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: '',
+      phone_number: '',
+      is_default: false
+    });
+  };
+
   useEffect(() => {
     if (currentUser) {
       console.log('Fetching addresses for user:', currentUser.id);
       fetchAddresses();
     }
   }, [currentUser, fetchAddresses]);
+
+  useEffect(() => {
+    if (address) {
+      setFormData({
+        name: address.name || '',
+        full_name: address.full_name || address.name || '',
+        address_line1: address.address_line1,
+        address_line2: address.address_line2 || '',
+        city: address.city,
+        state: address.state,
+        postal_code: address.postal_code,
+        country: address.country,
+        phone_number: address.phone_number,
+        is_default: address.is_default
+      });
+    } else {
+      clearForm();
+    }
+  }, [address, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -259,4 +293,4 @@ export function AddressDialog() {
       </DialogContent>
     </Dialog>
   );
-} 
+}

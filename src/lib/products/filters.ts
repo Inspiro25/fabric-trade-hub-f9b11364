@@ -3,19 +3,15 @@ import { Product } from '@/lib/products/types';
 import { 
   useNewArrivals, 
   useTrendingProducts, 
-  useProductsByCategory,
-  fetchProductsByCategory as fetchByCategory,
-  fetchNewArrivals as fetchNew,
-  fetchTrendingProducts as fetchTrending,
-  fetchProducts as fetchWithOptions,
-  fetchProductsByShop as fetchByShop
+  useProductsByCategory
 } from '@/hooks/use-product-fetching';
 
 // Function to get related products
 export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
   try {
-    const { products } = await fetchByCategory(category, 10);
-    return products.filter(p => p.id !== currentProductId).slice(0, 4);
+    const result = await fetch(`/api/products/related?category=${category}&exclude=${currentProductId}`);
+    const data = await result.json();
+    return data.products.filter((p: Product) => p.id !== currentProductId).slice(0, 4);
   } catch (error) {
     console.error('Error getting related products:', error);
     return [];
@@ -24,17 +20,32 @@ export const getRelatedProducts = async (currentProductId: string, category: str
 
 // Utility functions to get filtered products
 export const getNewArrivals = async (): Promise<Product[]> => {
-  return fetchNew();
+  try {
+    const result = await fetch('/api/products/new-arrivals');
+    const data = await result.json();
+    return data.products;
+  } catch (error) {
+    console.error('Error fetching new arrivals:', error);
+    return [];
+  }
 };
 
 export const getTrendingProducts = async (): Promise<Product[]> => {
-  return fetchTrending();
+  try {
+    const result = await fetch('/api/products/trending');
+    const data = await result.json();
+    return data.products;
+  } catch (error) {
+    console.error('Error fetching trending products:', error);
+    return [];
+  }
 };
 
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
-    const { products } = await fetchByCategory(category);
-    return products;
+    const result = await fetch(`/api/products/category/${category}`);
+    const data = await result.json();
+    return data.products;
   } catch (error) {
     console.error(`Error fetching products with category ${category}:`, error);
     return [];
@@ -43,12 +54,9 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
 
 export const getProductsByTags = async (tag: string): Promise<Product[]> => {
   try {
-    const { products } = await fetchWithOptions({
-      tags: [tag],
-      limit: 8
-    });
-    
-    return products;
+    const result = await fetch(`/api/products/tags/${tag}`);
+    const data = await result.json();
+    return data.products;
   } catch (error) {
     console.error(`Error fetching products with tag ${tag}:`, error);
     return [];
@@ -58,13 +66,9 @@ export const getProductsByTags = async (tag: string): Promise<Product[]> => {
 // Add additional filter functions as needed
 export const getTopRatedProducts = async (): Promise<Product[]> => {
   try {
-    const { products } = await fetchWithOptions({
-      minRating: 4,
-      sortBy: 'rating',
-      limit: 8
-    });
-    
-    return products;
+    const result = await fetch('/api/products/top-rated');
+    const data = await result.json();
+    return data.products;
   } catch (error) {
     console.error('Error fetching top rated products:', error);
     return [];
@@ -73,12 +77,9 @@ export const getTopRatedProducts = async (): Promise<Product[]> => {
 
 export const getDiscountedProducts = async (): Promise<Product[]> => {
   try {
-    const { products } = await fetchWithOptions({
-      hasDiscount: true,
-      limit: 8
-    });
-    
-    return products;
+    const result = await fetch('/api/products/discounted');
+    const data = await result.json();
+    return data.products;
   } catch (error) {
     console.error('Error fetching discounted products:', error);
     return [];
@@ -87,12 +88,9 @@ export const getDiscountedProducts = async (): Promise<Product[]> => {
 
 export const getBestSellingProducts = async (): Promise<Product[]> => {
   try {
-    const { products } = await fetchWithOptions({
-      sortBy: 'popularity',
-      limit: 8
-    });
-    
-    return products;
+    const result = await fetch('/api/products/best-selling');
+    const data = await result.json();
+    return data.products;
   } catch (error) {
     console.error('Error fetching best selling products:', error);
     return [];

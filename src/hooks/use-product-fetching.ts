@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/products/types';
 import { firebaseUIDToUUID } from '@/utils/format';
@@ -62,8 +62,7 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
           name: item.name,
           description: item.description || '',
           price: item.price,
-          salePrice: item.discount_price,
-          sale_price: item.discount_price,
+          salePrice: item.discount_price || item.sale_price,
           images: item.images || [],
           category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
@@ -593,3 +592,24 @@ const fetchUserData = async (userId: string) => {
     throw error;
   }
 };
+
+const transformProduct = useCallback((item: any): Product => {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    price: item.price,
+    salePrice: item.discount_price || item.sale_price,
+    images: item.images || [],
+    category: item.category_id || '',
+    colors: item.colors || [],
+    sizes: item.sizes || [],
+    tags: item.tags || [],
+    stock: item.stock || 0,
+    rating: item.rating || 0,
+    reviewCount: item.review_count || 0,
+    isNew: item.is_new,
+    isTrending: item.is_trending,
+    shopId: item.shop_id
+  };
+}, []);

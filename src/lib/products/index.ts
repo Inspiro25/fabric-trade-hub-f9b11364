@@ -20,13 +20,6 @@ export { getNewArrivals as getNewArrivalsFromDB } from './newArrivals';
 
 export * from './collections';
 
-// Add these missing exports
-export const productStore = {
-  products: [],
-  updateProducts: (products: any[]) => { /* Implementation */ },
-  addProduct: (product: any) => { /* Implementation */ },
-  updateProduct: (id: string, data: any) => { /* Implementation */ },
-  removeProduct: (id: string) => { /* Implementation */ },
-};
-
-export const mockProducts = [];
+// Add the Product store from the correct location
+import { productStore, mockProducts } from '@/lib/types/product';
+export { productStore, mockProducts };
