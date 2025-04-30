@@ -1,4 +1,5 @@
-import { Product } from '@/lib/products';
+
+import { Product } from '@/lib/products/types';
 import { supabase } from '@/integrations/supabase/client';
 
 export const getNewArrivals = async (): Promise<Product[]> => {
@@ -12,5 +13,5 @@ export const getNewArrivals = async (): Promise<Product[]> => {
     throw new Error(error.message);
   }
 
-  return data || [];
+  return (data as Product[]) || [];
 };

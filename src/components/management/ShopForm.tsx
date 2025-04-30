@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -36,7 +35,7 @@ const shopSchema = yup.object({
   shopId: yup.string().required('Shop ID is required'),
   ownerName: yup.string().required('Owner name is required'),
   ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
-  status: yup.string().oneOf(['active', 'pending', 'suspended']).required('Status is required'),
+  status: yup.string().oneOf(['active', 'pending', 'suspended'] as const).required('Status is required'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
 }).required();
@@ -49,7 +48,7 @@ interface ShopFormProps {
 }
 
 const ShopForm = ({
-  defaultValues,
+  defaultValues = {},
   onSubmit,
   submitLabel,
   isSubmitting = false
@@ -57,18 +56,18 @@ const ShopForm = ({
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
     resolver: yupResolver(shopSchema),
     defaultValues: {
-      name: defaultValues?.name || '',
-      description: defaultValues?.description || '',
-      logo: defaultValues?.logo || '',
-      coverImage: defaultValues?.coverImage || '',
-      address: defaultValues?.address || '',
-      isVerified: defaultValues?.isVerified || false,
-      shopId: defaultValues?.shopId || '',
-      ownerName: defaultValues?.ownerName || '',
-      ownerEmail: defaultValues?.ownerEmail || '',
-      status: defaultValues?.status || 'pending',
-      password: defaultValues?.password || '',
-      phoneNumber: defaultValues?.phoneNumber || '',
+      name: defaultValues.name ?? '',
+      description: defaultValues.description ?? '',
+      logo: defaultValues.logo ?? '',
+      coverImage: defaultValues.coverImage ?? '',
+      address: defaultValues.address ?? '',
+      isVerified: defaultValues.isVerified ?? false,
+      shopId: defaultValues.shopId ?? '',
+      ownerName: defaultValues.ownerName ?? '',
+      ownerEmail: defaultValues.ownerEmail ?? '',
+      status: defaultValues.status ?? 'pending',
+      password: defaultValues.password ?? '',
+      phoneNumber: defaultValues.phoneNumber ?? '',
     }
   });
 

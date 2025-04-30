@@ -21,6 +21,7 @@ export interface WishlistContextType {
   isLoading: boolean;
   isAddingToWishlist: boolean | string;
   isRemovingFromWishlist: boolean | string;
+  wishlist: string[]; // Add this property to match usage in components
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -40,6 +41,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isRemovingFromWishlist, setIsRemovingFromWishlist] = useState<boolean | string>(false);
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Extract product IDs for simpler access
+  const wishlist = useMemo(() => 
+    wishlistItems.map(item => item.product.id), 
+    [wishlistItems]
+  );
 
   // Fetch wishlist items on mount or when user changes
   useEffect(() => {
@@ -63,6 +70,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .select(`
           id,
           created_at,
+          product_id,
           products:product_id (*)
         `)
         .eq('user_id', currentUser.id);
@@ -71,7 +79,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       const items: WishlistItem[] = data.map(item => ({
         id: item.id,
-        product: item.products,
+        product: item.products as Product,
         addedAt: item.created_at
       }));
       
@@ -192,7 +200,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isInWishlist,
     isLoading,
     isAddingToWishlist,
-    isRemovingFromWishlist
+    isRemovingFromWishlist,
+    wishlist
   }), [
     wishlistItems,
     addToWishlist,
@@ -201,7 +210,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isInWishlist,
     isLoading,
     isAddingToWishlist,
-    isRemovingFromWishlist
+    isRemovingFromWishlist,
+    wishlist
   ]);
 
   return (

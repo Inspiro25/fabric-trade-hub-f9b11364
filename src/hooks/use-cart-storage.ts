@@ -43,7 +43,8 @@ export function useCartStorage(currentUser: any, options: UseCartStorageOptions 
               price,
               sale_price,
               images,
-              stock
+              stock,
+              shop_id
             )
           `)
           .eq('user_id', currentUser.id)
@@ -57,7 +58,9 @@ export function useCartStorage(currentUser: any, options: UseCartStorageOptions 
           productId: item.product_id,
           quantity: item.quantity,
           name: item.products.name,
-          image: item.products.images?.[0] || '',
+          image: Array.isArray(item.products.images) && item.products.images.length > 0 
+            ? item.products.images[0] 
+            : '',
           price: item.products.sale_price || item.products.price,
           stock: item.products.stock || 10,
           shopId: item.products.shop_id,

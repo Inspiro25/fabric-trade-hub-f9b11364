@@ -20,7 +20,7 @@ export const useSearchCartIntegration = () => {
       price: searchProduct.price,
       salePrice: searchProduct.salePrice,
       sale_price: searchProduct.salePrice,
-      images: searchProduct.images || [(searchProduct.images && searchProduct.images[0]) || ''],
+      images: searchProduct.images || (searchProduct.image ? [searchProduct.image] : []),
       category: searchProduct.category,
       category_id: searchProduct.category_id,
       rating: searchProduct.rating,

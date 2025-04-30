@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/types/product';
+import { Product } from '@/lib/products/types';
 import { firebaseUIDToUUID } from '@/utils/format';
 
 interface UseProductFetchingProps {
@@ -25,7 +25,8 @@ const baseProductQuery = `
   colors,
   sizes,
   tags,
-  categories!category_id (
+  review_count,
+  categories:categories!category_id (
     id,
     name,
     description
@@ -196,9 +197,7 @@ export const useDiscountedProducts = (limit = 10) => {
   return { products, loading, error };
 };
 
-// ... Apply the same mapping pattern to all the remaining product fetching functions
 export const useTopRatedProducts = (limit = 10) => {
-  // ... keep existing code and update the mapping in a similar way to above functions
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -356,6 +355,65 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
   }, [categoryId, limit, page]);
 
   return { products, loading, error, totalCount };
+};
+
+// Export utility functions for compatibility
+export const fetchNewArrivals = async (limit = 10) => {
+  const { products } = await useNewArrivals(limit);
+  return products;
+};
+
+export const fetchTrendingProducts = async (limit = 10) => {
+  const { products } = await useTrendingProducts(limit);
+  return products;
+};
+
+export const fetchProductsByCategory = async (categoryId: string, limit = 10) => {
+  const { products } = await useProductsByCategory(categoryId, limit);
+  return { products };
+};
+
+export const fetchRelatedProducts = async (productId: string, category: string, limit = 4) => {
+  const { products } = await useProductsByCategory(category, limit);
+  return products.filter(p => p.id !== productId);
+};
+
+export const fetchProducts = async (options: any) => {
+  const { products } = await useProductFetching(options);
+  return { products };
+};
+
+export const fetchProductsByShop = async (shopId: string, limit = 10) => {
+  // Implement shop products fetching
+  const { data, error } = await supabase
+    .from('products')
+    .select(baseProductQuery)
+    .eq('shop_id', shopId)
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching products by shop:', error);
+    return [];
+  }
+  
+  return data.map(item => ({
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    price: item.price,
+    salePrice: item.discount_price,
+    sale_price: item.discount_price,
+    images: item.images || [],
+    category: item.categories?.name || '',
+    category_id: item.category_id,
+    rating: item.rating || 0,
+    reviewCount: item.review_count || 0,
+    review_count: item.review_count || 0,
+    stock: item.stock || 0,
+    colors: item.colors || [],
+    sizes: item.sizes || [],
+    tags: item.tags || []
+  }));
 };
 
 // Remove the firebaseUIDToUUID function definition since it's imported

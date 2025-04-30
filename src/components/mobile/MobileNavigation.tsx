@@ -13,9 +13,11 @@ const MobileNavigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { getCartCount } = useCart();
-  const { wishlist } = useWishlist();
+  const { wishlistItems } = useWishlist();
   const { isDarkMode } = useTheme();
   const { currentUser } = useAuth();
+  
+  const wishlistCount = wishlistItems?.length || 0;
 
   const navItems = [
     {
@@ -38,7 +40,7 @@ const MobileNavigation: React.FC = () => {
       path: '/wishlist',
       label: 'Wishlist',
       icon: Heart,
-      count: wishlist.length,
+      count: wishlistCount,
       requiresAuth: true,
     },
     {

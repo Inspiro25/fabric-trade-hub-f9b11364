@@ -12,10 +12,10 @@ interface WishlistSectionProps {
 }
 
 const WishlistSection: React.FC<WishlistSectionProps> = ({ className = "" }) => {
-  const { wishlist, isLoading } = useWishlist();
+  const { wishlistItems, isLoading } = useWishlist();
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
-  const wishlistCount = wishlist?.length || 0;
+  const wishlistCount = wishlistItems?.length || 0;
   
   const handleWishlistClick = () => {
     try {

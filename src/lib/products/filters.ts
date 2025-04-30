@@ -1,6 +1,16 @@
 
-import { Product } from '@/lib/types/product';
-import { fetchProducts, fetchRelatedProducts, fetchNewArrivals, fetchTrendingProducts, fetchProductsByCategory, fetchProductsByShop } from '@/hooks/use-product-fetching';
+import { Product } from '@/lib/products/types';
+import { 
+  useNewArrivals, 
+  useTrendingProducts, 
+  useProductsByCategory,
+  fetchProductsByCategory,
+  fetchNewArrivals,
+  fetchTrendingProducts,
+  fetchProducts,
+  fetchRelatedProducts,
+  fetchProductsByShop 
+} from '@/hooks/use-product-fetching';
 
 // Function to get related products
 export const getRelatedProducts = async (currentProductId: string, category: string): Promise<Product[]> => {
