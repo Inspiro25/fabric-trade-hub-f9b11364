@@ -51,6 +51,23 @@ export const transformProduct = (item: any): Product => {
   };
 };
 
+// Function to fetch all products from the database
+export const fetchProducts = async (): Promise<Product[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(baseProductQuery)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    
+    return data.map(item => transformProduct(item));
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+};
+
 // Get a single product by ID
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {
@@ -91,6 +108,12 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
 // Update a product in the database
 export const updateProduct = async (productId: string, productData: Partial<Product>): Promise<Product | null> => {
   try {
+    // Fix the shopId property to shop_id for compatibility with the database
+    if (productData.shopId && !productData.shop_id) {
+      productData.shop_id = productData.shopId;
+      delete productData.shopId;
+    }
+    
     const { data, error } = await supabase
       .from('products')
       .update(productData)
@@ -185,3 +208,4 @@ export const updateVyomaClothingImages = async () => {
   console.log('Updating Vyoma clothing images');
   return true;
 };
+

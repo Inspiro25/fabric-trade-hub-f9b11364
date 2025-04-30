@@ -1,11 +1,11 @@
 
 import { Product } from '@/lib/types/product';
 import { 
-  fetchProducts as supabaseFetchProducts,
   getProductById as supabaseGetProductById,
   createProduct as supabaseCreateProduct,
   updateProduct as supabaseUpdateProduct,
-  deleteProduct as supabaseDeleteProduct
+  deleteProduct as supabaseDeleteProduct,
+  fetchProducts as supabaseFetchProducts
 } from '@/lib/supabase/products';
 import { productStore } from '@/lib/types/product';
 
@@ -52,17 +52,12 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
 // Create a new product
 export const createProduct = async (productData: Omit<Product, 'id'>): Promise<string | null> => {
   try {
-    const productId = await supabaseCreateProduct(productData);
+    const product = await supabaseCreateProduct(productData);
     
-    if (productId) {
-      const newProduct = {
-        id: productId,
-        ...productData,
-      };
-      
+    if (product) {
       // Update local cache
-      productStore.addProduct(newProduct);
-      return productId;
+      productStore.addProduct(product);
+      return product.id;
     }
     
     return null;
@@ -75,9 +70,9 @@ export const createProduct = async (productData: Omit<Product, 'id'>): Promise<s
 // Update a product
 export const updateProduct = async (id: string, productData: Partial<Product>): Promise<boolean> => {
   try {
-    const success = await supabaseUpdateProduct(id, productData);
+    const updatedProduct = await supabaseUpdateProduct(id, productData);
     
-    if (success) {
+    if (updatedProduct) {
       // Update local cache
       productStore.updateProduct(id, productData);
       return true;

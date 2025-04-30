@@ -1,4 +1,5 @@
 
+
 export interface ShopFormValues {
   name: string;
   shopId: string;
@@ -39,3 +40,4 @@ export interface Shop {
   created_at?: string;
   productIds?: string[]; // Add this for compatibility with products.ts
 }
+

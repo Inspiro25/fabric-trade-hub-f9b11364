@@ -1,5 +1,6 @@
-import { getStorage } from '@/lib/firebase';
-export const storage = getStorage();
+
+import { storage } from '@/lib/firebase';
+export { storage };
 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 

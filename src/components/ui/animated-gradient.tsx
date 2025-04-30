@@ -1,9 +1,10 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 interface GradientProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "default" | "primary" | "secondary" | "destructive" | "success" | "warning" | "info" | "blue" | "green" | "red" | "yellow" | "purple" | "orange";
+  variant?: "default" | "primary" | "secondary" | "destructive" | "success" | "warning" | "info" | "green" | "red" | "yellow" | "purple" | "orange";
 }
 
 const AnimatedGradient = React.forwardRef<HTMLSpanElement, GradientProps>(
@@ -41,11 +42,6 @@ const AnimatedGradient = React.forwardRef<HTMLSpanElement, GradientProps>(
             strong: { from: 'from-yellow-200', via: 'via-yellow-300/70', to: 'to-yellow-100' },
           };
         case 'info':
-          return {
-            soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
-            strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
-          };
-        case 'blue':
           return {
             soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
             strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
