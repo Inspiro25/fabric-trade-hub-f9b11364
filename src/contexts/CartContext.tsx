@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/products/types';
@@ -7,12 +6,9 @@ import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
 import AuthDialog from '@/components/search/AuthDialog';
-import { CartItem, CartContextType } from './CartContext';
+import CartContext, { CartItem, CartContextType } from './CartContext';
 
-// Re-using the context from CartContext.ts
-import CartContext from './CartContext';
-
-// Export the useCart hook directly from this file for consistency
+// Export the useCart hook
 export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
   if (context === undefined) {

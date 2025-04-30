@@ -1,5 +1,5 @@
 
-import { createContext, useContext } from 'react';
+import { createContext } from 'react';
 import { Product } from '@/lib/products/types';
 
 // Define the CartItem type
@@ -35,7 +35,5 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 // Export default context
 export default CartContext;
 
-// Export the CartProvider (but no useCart, that's defined and exported in CartContext.tsx)
-export { CartProvider } from './CartContext.tsx';
-
-// We do NOT export useCart hook here anymore to avoid circular dependency
+// Export the CartProvider and useCart from CartContext.tsx
+export { CartProvider, useCart } from './CartContext.tsx';
