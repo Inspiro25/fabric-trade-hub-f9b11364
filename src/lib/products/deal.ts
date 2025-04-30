@@ -60,9 +60,7 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
         review_count: product.review_count || 0,
         stock: product.stock || 0,
         tags: product.tags || [],
-        shopId: product.shop_id || '',
         shop_id: product.shop_id || '',
-        created_at: product.created_at,
         discountPercentage,
         endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
       };
@@ -111,7 +109,6 @@ const getFallbackDeal = (): DealProduct | null => {
       stock: 50,
       tags: ["cotton", "casual", "summer"],
       shop_id: "shop-1",
-      shopId: "shop-1",
       discountPercentage: 33,
       endTime: new Date(Date.now() + 24 * 60 * 60 * 1000)
     };

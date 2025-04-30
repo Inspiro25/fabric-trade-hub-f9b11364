@@ -11,6 +11,7 @@ export interface Product {
   category_id?: string;
   category: string;
   shop_id?: string;
+  shopId?: string;
   rating: number;
   review_count?: number;
   reviewCount: number;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -93,7 +92,7 @@ export const useAuthProvider = () => {
           // Create profile
           const newProfile: Partial<UserProfile> = {
             id: userId,
-            displayName: user.user_metadata?.name || 
+            display_name: user.user_metadata?.name || 
                        user.user_metadata?.full_name || 
                        user.email?.split('@')[0] || 
                        'User',
@@ -108,17 +107,17 @@ export const useAuthProvider = () => {
               currency: 'INR',
               language: 'en'
             },
-            avatarUrl: user.user_metadata?.avatar_url || '',
+            avatar_url: user.user_metadata?.avatar_url || '',
           };
 
           const { error: insertError } = await supabase
             .from('user_profiles')
             .insert({
               id: userId,
-              display_name: newProfile.displayName,
+              display_name: newProfile.display_name,
               email: newProfile.email,
               preferences: newProfile.preferences,
-              avatar_url: newProfile.avatarUrl
+              avatar_url: newProfile.avatar_url
             });
 
           if (insertError) {
@@ -153,56 +152,18 @@ export const useAuthProvider = () => {
     }
   };
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      console.log('Fetching profile for user:', userId);
-      setLoading(true);
-      
-      const { data: profile, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.log('Error fetching profile, will try to create one:', error);
-        await ensureUserProfile(userId);
-        return;
-      }
-
-      if (profile) {
-        console.log('Retrieved user profile:', profile.id);
-        
-        // Fetch saved addresses
-        const { data: addresses } = await supabase
-          .from('user_addresses')
-          .select('*')
-          .eq('user_id', userId)
-          .order('is_default', { ascending: false });
-
-        const formattedProfile = formatProfileData(profile, addresses);
-        setUserProfile(formattedProfile);
-      } else {
-        console.log('No profile found, creating one');
-        await ensureUserProfile(userId);
-      }
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Helper to format profile data from Supabase
   const formatProfileData = (profile: any, addresses?: any[]): UserProfile => {
     const formattedProfile: UserProfile = {
       id: profile.id,
-      displayName: profile.display_name || 'User',
+      display_name: profile.display_name || 'User',
+      displayName: profile.display_name || 'User', // Add compatibility field
       email: profile.email || '',
       phone: profile.phone,
       address: profile.address,
       preferences: profile.preferences || {},
-      avatarUrl: profile.avatar_url,
+      avatar_url: profile.avatar_url,
+      avatarUrl: profile.avatar_url, // Add compatibility field
     };
 
     if (addresses && addresses.length > 0) {
@@ -673,7 +634,6 @@ export const useAuthProvider = () => {
     updateProfile,
     addAddress,
     updateAddress,
-    removeAddress,
-    setDefaultAddress
+    removeAddress
   };
 };

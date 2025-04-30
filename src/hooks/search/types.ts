@@ -1,3 +1,4 @@
+
 import { Product } from '@/lib/products/types';
 
 // Extend the Product interface for search-related functionality

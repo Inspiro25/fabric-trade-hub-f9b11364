@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -26,8 +27,11 @@ export const useSearchCartIntegration = () => {
       reviewCount: searchProduct.reviewCount || 0,
       review_count: searchProduct.reviewCount || 0,
       stock: searchProduct.stock || 0,
+      colors: searchProduct.colors || [],
+      sizes: searchProduct.sizes || [],
       tags: searchProduct.tags || [],
-      shop_id: searchProduct.shopId || ''
+      shop_id: searchProduct.shopId || '',
+      shopId: searchProduct.shopId || ''
     };
   };
   

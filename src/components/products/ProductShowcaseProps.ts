@@ -4,7 +4,7 @@ import { Product } from '@/lib/products/types';
 export interface ProductShowcaseProps {
   products: Product[];
   title: string;
-  subtitle?: string; // Make subtitle optional
+  subtitle?: string;
   linkTo?: string;
   isLoaded?: boolean;
   layout?: string;

@@ -9,21 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ShopStatus } from '@/lib/shops/types';
-
-export interface ShopFormValues {
-  name: string;
-  description: string;
-  logo: string;
-  coverImage: string;
-  address: string;
-  isVerified: boolean;
-  shopId: string;
-  ownerName: string;
-  ownerEmail: string;
-  status: ShopStatus;
-  password: string;
-  phoneNumber: string;
-}
+import { ShopFormValues } from '@/types/shop';
 
 const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),

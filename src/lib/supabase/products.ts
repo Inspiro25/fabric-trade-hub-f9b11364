@@ -108,7 +108,7 @@ export const getShopProducts = async (shopId: string): Promise<Product[]> => {
 // Update a product in the database
 export const updateProduct = async (productId: string, productData: Partial<Product>): Promise<Product | null> => {
   try {
-    // Fix the shopId property to shop_id for compatibility with the database
+    // Convert shopId to shop_id if it exists
     if (productData.shopId && !productData.shop_id) {
       productData.shop_id = productData.shopId;
       delete productData.shopId;
