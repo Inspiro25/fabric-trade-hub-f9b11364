@@ -9,6 +9,7 @@ export interface ExtendedUser extends User {
   email_confirmed_at?: string;
   uid?: string; // Added for compatibility with existing code
   display_name?: string; // Added for backward compatibility
+  preferences?: Record<string, any>; // Added for compatibility with existing code
   // Add other custom properties as needed
 }
 
