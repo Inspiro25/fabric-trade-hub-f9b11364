@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { MapPin, Star, CheckCircle, Calendar, ShoppingBag, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
-import { Shop } from '@/lib/shops';
+import { Shop, convertToDisplayShop } from '@/lib/shops/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ShopDetailCardProps {
@@ -20,7 +21,8 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   const isMobile = useIsMobile();
-  const createdDate = new Date(shop.createdAt);
+  const displayShop = convertToDisplayShop(shop);
+  const createdDate = new Date(displayShop.createdAt);
   const timeAgo = formatDistanceToNow(createdDate, { addSuffix: true });
 
   return (
@@ -30,8 +32,8 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
         isMobile ? "h-24" : "h-28"
       )}>
         <img 
-          src={shop.coverImage} 
-          alt={shop.name}
+          src={displayShop.coverImage} 
+          alt={displayShop.name}
           className={`w-full h-full object-cover ${isDarkMode ? 'opacity-70' : 'opacity-80'}`}
         />
       </div>
@@ -44,8 +46,8 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
             isDarkMode ? "border-gray-700" : "border-white"
           )}>
             <img 
-              src={shop.logo} 
-              alt={`${shop.name} logo`}
+              src={displayShop.logo} 
+              alt={`${displayShop.name} logo`}
               className="w-full h-full object-cover"
             />
           </div>
@@ -56,8 +58,8 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
                 "font-semibold",
                 isMobile ? "text-xs" : "text-sm",
                 isDarkMode ? "text-white" : ""
-              )}>{shop.name}</h2>
-              {shop.isVerified && (
+              )}>{displayShop.name}</h2>
+              {displayShop.isVerified && (
                 <CheckCircle className={cn(
                   "text-green-500 ml-1.5",
                   isMobile ? "h-2.5 w-2.5" : "h-3 w-3"
@@ -76,7 +78,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
               )} />
               <span>{shop.rating.toFixed(1)}</span>
               <span className="mx-1">•</span>
-              <span>{shop.reviewCount} reviews</span>
+              <span>{displayShop.reviewCount} reviews</span>
               <span className="mx-1">•</span>
               <Users className={cn(
                 isMobile ? "h-2 w-2" : "h-2.5 w-2.5",
@@ -95,7 +97,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
                 "mr-1",
                 isMobile ? "h-2 w-2" : "h-2.5 w-2.5"
               )} />
-              <span className="truncate">{shop.address}</span>
+              <span className="truncate">{displayShop.address}</span>
             </div>
           </div>
         </div>
@@ -106,7 +108,7 @@ const ShopDetailCard: React.FC<ShopDetailCardProps> = ({
           isDarkMode ? "text-gray-300 border-t border-gray-700" : "text-gray-600 border-t border-gray-100",
           "pt-2"
         )}>
-          <p className="line-clamp-2">{shop.description}</p>
+          <p className="line-clamp-2">{displayShop.description}</p>
           
           <div className="flex items-center justify-between mt-2 pt-1">
             <span className={cn(

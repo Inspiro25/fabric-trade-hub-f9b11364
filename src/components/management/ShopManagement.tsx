@@ -43,7 +43,7 @@ const ShopManagement: React.FC = () => {
     setIsSubmitting(true);
     try {
       if (shopId) {
-        // Update existing shop
+        // Update existing shop - convert form values to database model
         const updateData: Partial<Shop> = {
           name: data.name,
           description: data.description,
@@ -67,7 +67,7 @@ const ShopManagement: React.FC = () => {
           toast.error('Failed to update shop');
         }
       } else {
-        // Create new shop
+        // Create new shop - convert form values to database model
         const newShopData: Omit<Shop, 'id' | 'rating' | 'review_count' | 'followers_count' | 'created_at'> = {
           name: data.name,
           description: data.description,

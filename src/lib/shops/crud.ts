@@ -22,7 +22,7 @@ export const fetchShops = async (): Promise<Shop[]> => {
 export const getShopById = async (id: string): Promise<Shop | undefined> => {
   try {
     const shop = await supabaseGetShopById(id);
-    return shop;
+    return shop || undefined;
   } catch (error) {
     console.error(`Error fetching shop ${id}:`, error);
     return undefined;
@@ -51,7 +51,7 @@ export const updateShop = async (id: string, shopData: Partial<Shop>): Promise<b
 };
 
 // Function to create a new shop
-export const createShop = async (shopData: Omit<Shop, 'id'>): Promise<string | null> => {
+export const createShop = async (shopData: Omit<Shop, 'id' | 'rating' | 'review_count' | 'followers_count' | 'created_at'>): Promise<string | null> => {
   try {
     const shopId = await supabaseCreateShop(shopData);
     

@@ -2,6 +2,44 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Shop } from '../shops/types';
 
+// Fetch all shops
+export const fetchShops = async (): Promise<Shop[]> => {
+  try {
+    const { data: shops, error } = await supabase
+      .from('shops')
+      .select(`
+        id,
+        name,
+        description,
+        logo,
+        cover_image,
+        address,
+        owner_name,
+        owner_email,
+        phone_number,
+        rating,
+        review_count,
+        followers_count,
+        is_verified,
+        status,
+        created_at,
+        shop_id,
+        password
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching shops:', error);
+      return [];
+    }
+
+    return shops as Shop[];
+  } catch (error) {
+    console.error('Error in fetchShops:', error);
+    return [];
+  }
+};
+
 // Fetch a shop by ID
 export const getShopById = async (id: string): Promise<Shop | null> => {
   try {

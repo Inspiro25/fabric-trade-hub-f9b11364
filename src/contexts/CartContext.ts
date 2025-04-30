@@ -2,7 +2,7 @@
 import { createContext, useContext } from 'react';
 import { Product } from '@/types/product';
 
-// Define the CartItem type and export it
+// Define the CartItem type
 export interface CartItem {
   id: string;
   product: Product;
