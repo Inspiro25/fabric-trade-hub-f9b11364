@@ -65,7 +65,7 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
           salePrice: item.discount_price,
           sale_price: item.discount_price,
           images: item.images || [],
-          category: item.categories?.name || '',
+          category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
           rating: item.rating || 0,
           reviewCount: item.review_count || 0,
@@ -117,7 +117,7 @@ export const useNewArrivals = (limit = 10) => {
           salePrice: item.discount_price,
           sale_price: item.discount_price,
           images: item.images || [],
-          category: item.categories?.name || '',
+          category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
           rating: item.rating || 0,
           reviewCount: item.review_count || 0,
@@ -171,7 +171,7 @@ export const useDiscountedProducts = (limit = 10) => {
           salePrice: item.discount_price,
           sale_price: item.discount_price,
           images: item.images || [],
-          category: item.categories?.name || '',
+          category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
           rating: item.rating || 0,
           reviewCount: item.review_count || 0,
@@ -223,7 +223,7 @@ export const useTopRatedProducts = (limit = 10) => {
           salePrice: item.discount_price,
           sale_price: item.discount_price,
           images: item.images || [],
-          category: item.categories?.name || '',
+          category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
           rating: item.rating || 0,
           reviewCount: item.review_count || 0,
@@ -275,7 +275,7 @@ export const useTrendingProducts = (limit = 10) => {
           salePrice: item.discount_price,
           sale_price: item.discount_price,
           images: item.images || [],
-          category: item.categories?.name || '',
+          category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
           rating: item.rating || 0,
           reviewCount: item.review_count || 0,
@@ -328,7 +328,7 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
           salePrice: item.discount_price,
           sale_price: item.discount_price,
           images: item.images || [],
-          category: item.categories?.name || '',
+          category: item.categories ? item.categories.name || '' : '',
           category_id: item.category_id,
           rating: item.rating || 0,
           reviewCount: item.review_count || 0,
@@ -357,63 +357,223 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
   return { products, loading, error, totalCount };
 };
 
-// Export utility functions for compatibility
-export const fetchNewArrivals = async (limit = 10) => {
-  const { products } = await useNewArrivals(limit);
-  return products;
-};
+// Export utility functions for compatibility with consistent naming
+export const fetchNewArrivals = async (limit = 10): Promise<Product[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(baseProductQuery)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-export const fetchTrendingProducts = async (limit = 10) => {
-  const { products } = await useTrendingProducts(limit);
-  return products;
-};
-
-export const fetchProductsByCategory = async (categoryId: string, limit = 10) => {
-  const { products } = await useProductsByCategory(categoryId, limit);
-  return { products };
-};
-
-export const fetchRelatedProducts = async (productId: string, category: string, limit = 4) => {
-  const { products } = await useProductsByCategory(category, limit);
-  return products.filter(p => p.id !== productId);
-};
-
-export const fetchProducts = async (options: any) => {
-  const { products } = await useProductFetching(options);
-  return { products };
-};
-
-export const fetchProductsByShop = async (shopId: string, limit = 10) => {
-  // Implement shop products fetching
-  const { data, error } = await supabase
-    .from('products')
-    .select(baseProductQuery)
-    .eq('shop_id', shopId)
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching products by shop:', error);
+    if (error) throw error;
+    
+    const mappedProducts: Product[] = data?.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price,
+      salePrice: item.discount_price,
+      sale_price: item.discount_price,
+      images: item.images || [],
+      category: item.categories ? item.categories.name || '' : '',
+      category_id: item.category_id,
+      rating: item.rating || 0,
+      reviewCount: item.review_count || 0,
+      review_count: item.review_count || 0,
+      stock: item.stock || 0,
+      colors: item.colors || [],
+      sizes: item.sizes || [],
+      tags: item.tags || []
+    })) || [];
+    
+    return mappedProducts;
+  } catch (error) {
+    console.error('Error in fetchNewArrivals:', error);
     return [];
   }
-  
-  return data.map(item => ({
-    id: item.id,
-    name: item.name,
-    description: item.description || '',
-    price: item.price,
-    salePrice: item.discount_price,
-    sale_price: item.discount_price,
-    images: item.images || [],
-    category: item.categories?.name || '',
-    category_id: item.category_id,
-    rating: item.rating || 0,
-    reviewCount: item.review_count || 0,
-    review_count: item.review_count || 0,
-    stock: item.stock || 0,
-    colors: item.colors || [],
-    sizes: item.sizes || [],
-    tags: item.tags || []
-  }));
+};
+
+export const fetchTrendingProducts = async (limit = 10): Promise<Product[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(baseProductQuery)
+      .order('views', { ascending: false })
+      .gt('views', 100)
+      .limit(limit);
+
+    if (error) throw error;
+    
+    const mappedProducts: Product[] = data?.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price,
+      salePrice: item.discount_price,
+      sale_price: item.discount_price,
+      images: item.images || [],
+      category: item.categories ? item.categories.name || '' : '',
+      category_id: item.category_id,
+      rating: item.rating || 0,
+      reviewCount: item.review_count || 0,
+      review_count: item.review_count || 0,
+      stock: item.stock || 0,
+      colors: item.colors || [],
+      sizes: item.sizes || [],
+      tags: item.tags || []
+    })) || [];
+    
+    return mappedProducts;
+  } catch (error) {
+    console.error('Error in fetchTrendingProducts:', error);
+    return [];
+  }
+};
+
+export const fetchProductsByCategory = async (categoryId: string, limit = 10): Promise<{products: Product[]}> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(baseProductQuery)
+      .eq('category_id', categoryId)
+      .limit(limit);
+
+    if (error) throw error;
+    
+    const mappedProducts: Product[] = data?.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price,
+      salePrice: item.discount_price,
+      sale_price: item.discount_price,
+      images: item.images || [],
+      category: item.categories ? item.categories.name || '' : '',
+      category_id: item.category_id,
+      rating: item.rating || 0,
+      reviewCount: item.review_count || 0,
+      review_count: item.review_count || 0,
+      stock: item.stock || 0,
+      colors: item.colors || [],
+      sizes: item.sizes || [],
+      tags: item.tags || []
+    })) || [];
+    
+    return { products: mappedProducts };
+  } catch (error) {
+    console.error(`Error fetching products by category ${categoryId}:`, error);
+    return { products: [] };
+  }
+};
+
+export const fetchRelatedProducts = async (productId: string, category: string, limit = 4): Promise<Product[]> => {
+  try {
+    const { products } = await fetchProductsByCategory(category, limit + 1);
+    return products.filter(p => p.id !== productId).slice(0, limit);
+  } catch (error) {
+    console.error('Error fetching related products:', error);
+    return [];
+  }
+};
+
+export const fetchProducts = async (options: any = {}): Promise<{products: Product[]}> => {
+  try {
+    let query = supabase
+      .from('products')
+      .select(baseProductQuery);
+    
+    // Apply filters based on options
+    if (options.minRating) {
+      query = query.gte('rating', options.minRating);
+    }
+    
+    if (options.hasDiscount) {
+      query = query.not('discount_price', 'is', null);
+      query = query.gt('discount_price', 0);
+    }
+    
+    if (options.tags && options.tags.length) {
+      query = query.contains('tags', options.tags);
+    }
+    
+    if (options.sortBy) {
+      const sortField = options.sortBy === 'popularity' ? 'views' : 
+                       options.sortBy === 'rating' ? 'rating' : 'created_at';
+      query = query.order(sortField, { ascending: false });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+    
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) throw error;
+    
+    const mappedProducts: Product[] = data?.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price,
+      salePrice: item.discount_price,
+      sale_price: item.discount_price,
+      images: item.images || [],
+      category: item.categories ? item.categories.name || '' : '',
+      category_id: item.category_id,
+      rating: item.rating || 0,
+      reviewCount: item.review_count || 0,
+      review_count: item.review_count || 0,
+      stock: item.stock || 0,
+      colors: item.colors || [],
+      sizes: item.sizes || [],
+      tags: item.tags || []
+    })) || [];
+    
+    return { products: mappedProducts };
+  } catch (error) {
+    console.error('Error fetching products with options:', error);
+    return { products: [] };
+  }
+};
+
+export const fetchProductsByShop = async (shopId: string, limit = 10): Promise<Product[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(baseProductQuery)
+      .eq('shop_id', shopId)
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching products by shop:', error);
+      return [];
+    }
+    
+    return data.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price,
+      salePrice: item.discount_price,
+      sale_price: item.discount_price,
+      images: item.images || [],
+      category: item.categories ? item.categories.name || '' : '',
+      category_id: item.category_id,
+      rating: item.rating || 0,
+      reviewCount: item.review_count || 0,
+      review_count: item.review_count || 0,
+      stock: item.stock || 0,
+      colors: item.colors || [],
+      sizes: item.sizes || [],
+      tags: item.tags || []
+    }));
+  } catch (error) {
+    console.error('Error in fetchProductsByShop:', error);
+    return [];
+  }
 };
 
 // Remove the firebaseUIDToUUID function definition since it's imported

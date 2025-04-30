@@ -1,4 +1,4 @@
-import { Product } from '@/lib/products';
+import { Product } from '@/lib/products/types';
 import { getShopById } from './crud';
 import { getShopProducts as supabaseGetShopProducts } from '@/lib/supabase/products';
 import { shops } from './mockData';
@@ -16,9 +16,9 @@ export const getShopProducts = async (shopId: string, allProducts?: Product[]): 
       return products;
     }
     
-    // If allProducts was provided, use it for the fallback
+    // If allProducts was provided and shop has productIds, use it for the fallback
     if (allProducts && shop.productIds && shop.productIds.length > 0) {
-      return allProducts.filter(product => shop.productIds.includes(product.id));
+      return allProducts.filter(product => shop.productIds!.includes(product.id));
     }
     
     // Otherwise just return an empty array
@@ -30,7 +30,7 @@ export const getShopProducts = async (shopId: string, allProducts?: Product[]): 
     if (allProducts) {
       const shop = shops.find(s => s.id === shopId);
       if (shop && shop.productIds && shop.productIds.length > 0) {
-        return allProducts.filter(product => shop.productIds.includes(product.id));
+        return allProducts.filter(product => shop.productIds!.includes(product.id));
       }
     }
     

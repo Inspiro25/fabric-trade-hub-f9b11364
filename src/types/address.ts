@@ -1,7 +1,9 @@
+
 export interface Address {
   id: string;
   user_id: string;
-  full_name: string;
+  name: string;
+  full_name?: string;
   address_line1: string;
   address_line2?: string;
   city: string;

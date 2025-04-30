@@ -14,6 +14,7 @@ export interface WishlistItem {
 
 export interface WishlistContextType {
   wishlistItems: WishlistItem[];
+  wishlist: string[]; // Product IDs array
   addToWishlist: (product: Product) => Promise<boolean>;
   removeFromWishlist: (productId: string) => Promise<boolean>;
   clearWishlist: () => Promise<boolean>;
@@ -21,7 +22,6 @@ export interface WishlistContextType {
   isLoading: boolean;
   isAddingToWishlist: boolean | string;
   isRemovingFromWishlist: boolean | string;
-  wishlist: string[]; // Add this property to match usage in components
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -79,7 +79,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       const items: WishlistItem[] = data.map(item => ({
         id: item.id,
-        product: item.products as Product,
+        // Fix the type conversion issue with explicit Product type assertion
+        product: item.products as unknown as Product,
         addedAt: item.created_at
       }));
       
@@ -194,24 +195,24 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const value = useMemo(() => ({
     wishlistItems,
+    wishlist,
     addToWishlist,
     removeFromWishlist,
     clearWishlist,
     isInWishlist,
     isLoading,
     isAddingToWishlist,
-    isRemovingFromWishlist,
-    wishlist
+    isRemovingFromWishlist
   }), [
     wishlistItems,
+    wishlist,
     addToWishlist,
     removeFromWishlist,
     clearWishlist,
     isInWishlist,
     isLoading,
     isAddingToWishlist,
-    isRemovingFromWishlist,
-    wishlist
+    isRemovingFromWishlist
   ]);
 
   return (

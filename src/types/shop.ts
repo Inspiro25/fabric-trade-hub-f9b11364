@@ -1,17 +1,17 @@
 
 export interface ShopFormValues {
   name: string;
-  shopId?: string;
-  phoneNumber?: string;
-  address?: string;
-  password?: string;
-  description?: string;
-  logo?: string;
-  coverImage?: string;
-  isVerified?: boolean;
-  ownerName?: string;
-  ownerEmail?: string;
-  status?: "active" | "pending" | "suspended";
+  shopId: string;
+  phoneNumber: string;
+  address: string;
+  password: string;
+  description: string;
+  logo: string;
+  coverImage: string;
+  isVerified: boolean;
+  ownerName: string;
+  ownerEmail: string;
+  status: "active" | "pending" | "suspended";
 }
 
 export interface Shop {
@@ -37,4 +37,5 @@ export interface Shop {
   is_verified?: boolean;
   isVerified?: boolean;
   created_at?: string;
+  productIds?: string[]; // Add this to fix the productIds property error
 }

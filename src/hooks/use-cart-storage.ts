@@ -52,22 +52,27 @@ export function useCartStorage(currentUser: any, options: UseCartStorageOptions 
           
         if (error) throw error;
         
-        // Transform to CartItem format
-        const transformedItems: CartItem[] = data.map(item => ({
-          id: item.id,
-          productId: item.product_id,
-          quantity: item.quantity,
-          name: item.products.name,
-          image: Array.isArray(item.products.images) && item.products.images.length > 0 
-            ? item.products.images[0] 
-            : '',
-          price: item.products.sale_price || item.products.price,
-          stock: item.products.stock || 10,
-          shopId: item.products.shop_id,
-          total: (item.products.sale_price || item.products.price) * item.quantity,
-          color: item.color || undefined,
-          size: item.size || undefined
-        }));
+        // Transform to CartItem format with proper access to nested objects
+        const transformedItems: CartItem[] = data.map(item => {
+          // Get the products object from the response
+          const product = item.products;
+          
+          return {
+            id: item.id,
+            productId: item.product_id,
+            quantity: item.quantity,
+            name: product.name,
+            image: Array.isArray(product.images) && product.images.length > 0 
+              ? product.images[0] 
+              : '',
+            price: product.sale_price || product.price,
+            stock: product.stock || 10,
+            shopId: product.shop_id,
+            total: (product.sale_price || product.price) * item.quantity,
+            color: item.color || undefined,
+            size: item.size || undefined
+          };
+        });
         
         setCartItems(transformedItems);
       } else {

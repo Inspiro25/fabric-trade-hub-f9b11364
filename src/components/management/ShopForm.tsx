@@ -25,7 +25,7 @@ export interface ShopFormValues {
   phoneNumber: string;
 }
 
-const shopSchema = yup.object({
+const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().required('Logo URL is required'),
@@ -38,7 +38,7 @@ const shopSchema = yup.object({
   status: yup.string().oneOf(['active', 'pending', 'suspended'] as const).required('Status is required'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-}).required();
+});
 
 interface ShopFormProps {
   defaultValues?: Partial<ShopFormValues>;
@@ -53,22 +53,25 @@ const ShopForm = ({
   submitLabel,
   isSubmitting = false
 }: ShopFormProps) => {
+  // Define the default values with all required fields
+  const formDefaults: ShopFormValues = {
+    name: defaultValues.name || '',
+    description: defaultValues.description || '',
+    logo: defaultValues.logo || '',
+    coverImage: defaultValues.coverImage || '',
+    address: defaultValues.address || '',
+    isVerified: defaultValues.isVerified || false,
+    shopId: defaultValues.shopId || '',
+    ownerName: defaultValues.ownerName || '',
+    ownerEmail: defaultValues.ownerEmail || '',
+    status: defaultValues.status || 'pending',
+    password: defaultValues.password || '',
+    phoneNumber: defaultValues.phoneNumber || '',
+  };
+
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
     resolver: yupResolver(shopSchema),
-    defaultValues: {
-      name: defaultValues.name ?? '',
-      description: defaultValues.description ?? '',
-      logo: defaultValues.logo ?? '',
-      coverImage: defaultValues.coverImage ?? '',
-      address: defaultValues.address ?? '',
-      isVerified: defaultValues.isVerified ?? false,
-      shopId: defaultValues.shopId ?? '',
-      ownerName: defaultValues.ownerName ?? '',
-      ownerEmail: defaultValues.ownerEmail ?? '',
-      status: defaultValues.status ?? 'pending',
-      password: defaultValues.password ?? '',
-      phoneNumber: defaultValues.phoneNumber ?? '',
-    }
+    defaultValues: formDefaults
   });
 
   return (
