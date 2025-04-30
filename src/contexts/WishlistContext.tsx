@@ -14,6 +14,7 @@ interface WishlistContextType {
   isInWishlist: (productId: string) => boolean;
   clearWishlist: () => void;
   isLoading: boolean;
+  wishlist: string[]; // Array of product IDs for compatibility
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -30,6 +31,14 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const { currentUser } = useAuth();
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Derived state - extract IDs for compatibility with existing code
+  const wishlist = wishlistItems.map(item => item.id);
+
+  // Define isInWishlist function first before using it anywhere else
+  const isInWishlist = useCallback((productId: string): boolean => {
+    return wishlistItems.some(item => item.id === productId);
+  }, [wishlistItems]);
 
   // Load wishlist data from Supabase or localStorage
   useEffect(() => {
@@ -49,7 +58,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // Transform data to WishlistItem format
           const items: WishlistItem[] = data
             .filter(item => item.product) // Filter out items with no product
-            .map(item => item.product as Product);
+            .map(item => item.product as unknown as Product);
             
           setWishlistItems(items);
         } else {
@@ -164,11 +173,6 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     toast.success('Removed from wishlist');
   }, [currentUser]);
 
-  // Check if a product is in the wishlist
-  const isInWishlist = useCallback((productId: string): boolean => {
-    return wishlistItems.some(item => item.id === productId);
-  }, [wishlistItems]);
-
   // Clear the entire wishlist
   const clearWishlist = useCallback(async () => {
     // Clear from Supabase if user is logged in
@@ -255,7 +259,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         removeFromWishlist,
         isInWishlist,
         clearWishlist,
-        isLoading
+        isLoading,
+        wishlist
       }}
     >
       {children}

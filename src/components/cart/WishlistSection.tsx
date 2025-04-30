@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Heart, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';  // Changed from Link to useNavigate
+import { useNavigate } from 'react-router-dom';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,7 @@ const WishlistSection: React.FC<WishlistSectionProps> = ({ className = "" }) => 
   const { wishlist, isLoading } = useWishlist();
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
-  const wishlistCount = wishlist?.length || 0;  // Added null check
+  const wishlistCount = wishlist?.length || 0;
   
   const handleWishlistClick = () => {
     try {

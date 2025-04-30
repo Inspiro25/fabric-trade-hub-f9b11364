@@ -1,53 +1,45 @@
 
-import { Product } from '@/types/product';
+import { Product } from '@/lib/products/types';
 
-export interface SearchPageProduct extends Product {
-  id: string;
-  name: string;
-  price: number;
-  sale_price?: number;
-  images: string[];
-  category?: string;
-  category_id?: string;
-  shop_id?: string;
-  rating?: number;
-  review_count?: number;
-  reviewCount?: number;
-  is_new?: boolean;
-  is_trending?: boolean;
+// Extend the Product interface for search-related functionality
+export interface SearchPageProduct extends Omit<Product, 'description' | 'colors' | 'sizes' | 'tags' | 'stock'> {
   description?: string;
   colors?: string[];
   sizes?: string[];
-  stock?: number;
   tags?: string[];
+  stock?: number;
 }
 
-export interface ProductCardBaseProps {
-  product: SearchPageProduct;
-  isAddingToCart?: boolean | string;
-  isAddingToWishlist?: boolean | string;
-  onAddToCart?: (product: SearchPageProduct) => void;
-  onAddToWishlist?: (product: SearchPageProduct) => void;
-  onShare?: (product: SearchPageProduct) => void;
-  onClick?: (product: SearchPageProduct) => void;
-  buttonColor?: string;
-  viewMode?: 'grid' | 'list';
-  isCompact?: boolean;
-}
-
-export interface SearchResults {
-  products: SearchPageProduct[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
-}
-
-export interface SearchFilterState {
-  query: string;
-  category?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  rating?: number;
+export interface SearchFilters {
+  price?: {
+    min: number;
+    max: number;
+  };
+  categories?: string[];
+  ratings?: number[];
+  brands?: string[];
+  colors?: string[];
+  sizes?: string[];
+  onSale?: boolean;
+  inStock?: boolean;
   sortBy?: string;
+}
+
+export interface SearchHistoryItem {
+  id: string;
+  query: string;
+  timestamp: number;
+}
+
+export interface SearchSortOption {
+  label: string;
+  value: string;
+}
+
+export interface SearchResult {
+  products: SearchPageProduct[];
+  total: number;
   page: number;
+  pageSize: number;
+  totalPages: number;
 }

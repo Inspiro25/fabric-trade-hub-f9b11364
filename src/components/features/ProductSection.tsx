@@ -41,16 +41,25 @@ const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo
       </div>
       
       <div className="grid grid-cols-2 gap-3">
-        {products.slice(0, 4).map(product => (
-          <ProductCard 
-            key={product.id}
-            product={{
-              ...product,
-              category: product.category || '',
-              reviewCount: product.reviewCount || product.review_count || 0
-            }}
-          />
-        ))}
+        {products.slice(0, 4).map(product => {
+          // Ensure the product has all required properties
+          const enhancedProduct: Product = {
+            ...product,
+            category: product.category || '',
+            reviewCount: product.reviewCount || product.review_count || 0,
+            colors: product.colors || [],
+            sizes: product.sizes || [],
+            stock: product.stock || 0,
+            tags: product.tags || []
+          };
+          
+          return (
+            <ProductCard 
+              key={product.id}
+              product={enhancedProduct}
+            />
+          );
+        })}
       </div>
     </section>
   );

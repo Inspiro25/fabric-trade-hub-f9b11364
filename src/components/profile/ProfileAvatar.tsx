@@ -1,124 +1,158 @@
-import React, { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getInitials } from '@/lib/utils';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
-import { Upload, Pencil } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import FileUpload from '@/components/ui/file-upload';
-import { toast } from 'sonner';
+
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Upload, Loader2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
-type ProfileAvatarProps = {
-  photoURL: string | null;
-  displayName: string;
-  email: string;
-  phoneNumber: string;
-  editMode: boolean;
-};
+interface ProfileAvatarProps {
+  className?: string;
+  editable?: boolean;
+}
 
-const ProfileAvatar = ({ 
-  photoURL, 
-  displayName, 
-  email,
-  phoneNumber,
-  editMode 
-}: ProfileAvatarProps) => {
-  const { isDarkMode } = useTheme();
-  const { updateUserProfile } = useAuth();
-  const [showUploader, setShowUploader] = useState(false);
+export function ProfileAvatar({ className, editable = true }: ProfileAvatarProps) {
+  const { currentUser, updateUserProfile } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
-  const handleAvatarUpload = async (url: string) => {
+  const displayName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
+  const initials = displayName.substring(0, 2).toUpperCase();
+  const avatarUrl = previewUrl || currentUser?.photoURL;
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+    
     try {
-      await updateUserProfile({ avatarUrl: url });
-      toast.success('Profile picture updated successfully');
-      setShowUploader(false);
+      setIsUploading(true);
+      
+      // Create preview
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+      
+      // Upload to storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('user-content')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('user-content')
+        .getPublicUrl(filePath);
+        
+      if (urlData) {
+        // Update user profile with new avatar URL
+        await updateUserProfile?.({
+          photoURL: urlData.publicUrl
+        });
+        
+        toast.success('Profile picture updated');
+      }
     } catch (error) {
-      console.error('Error updating profile picture:', error);
+      console.error('Avatar upload error:', error);
       toast.error('Failed to update profile picture');
+      // Reset preview on error
+      setPreviewUrl(null);
+    } finally {
+      setIsUploading(false);
     }
   };
   
+  const handleRemoveAvatar = async () => {
+    if (!currentUser) return;
+    
+    try {
+      setIsUploading(true);
+      
+      // Update profile with no avatar
+      await updateUserProfile?.({
+        photoURL: null
+      });
+      
+      setPreviewUrl(null);
+      toast.success('Profile picture removed');
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      toast.error('Failed to remove profile picture');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center mb-6 relative">
-      <div className={cn(
-        "absolute inset-0 -z-10 rounded-full blur-3xl opacity-20 w-32 h-32 mx-auto",
-        isDarkMode ? "bg-blue-500" : "bg-blue-500"
-      )}></div>
+    <div className={cn("relative flex flex-col items-center", className)}>
+      <Avatar className="h-24 w-24 border-2 border-white shadow-md">
+        <AvatarImage src={avatarUrl || undefined} alt={displayName} />
+        <AvatarFallback className="text-lg bg-primary text-primary-foreground">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
       
-      <div className="relative">
-        <Avatar className={cn(
-          "h-24 w-24 mb-3 border-4",
-          isDarkMode ? "border-gray-800" : "border-white"
-        )}>
-          <AvatarImage src={photoURL || undefined} alt={displayName} />
-          <AvatarFallback className={cn(
-            "text-2xl",
-            isDarkMode ? "bg-gray-700 text-blue-300" : "bg-blue-100 text-blue-600"
-          )}>
-            {getInitials(displayName) || getInitials(email) || '?'}
-          </AvatarFallback>
-        </Avatar>
-        
-        <Button 
-          type="button"
-          size="icon"
-          variant="secondary"
-          className={cn(
-            "absolute bottom-2 right-0 rounded-full h-8 w-8 shadow-md border",
-            isDarkMode ? "bg-gray-700 border-gray-600" : "bg-white border-gray-100"
+      {editable && !isUploading && (
+        <div className="mt-2 flex gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="text-xs"
+            asChild
+          >
+            <label>
+              <Upload className="mr-1 h-3 w-3" />
+              Change
+              <input 
+                type="file" 
+                className="hidden" 
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </label>
+          </Button>
+          
+          {avatarUrl && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="text-xs text-destructive hover:text-destructive"
+              onClick={handleRemoveAvatar}
+            >
+              <X className="mr-1 h-3 w-3" />
+              Remove
+            </Button>
           )}
-          onClick={() => setShowUploader(!showUploader)}
-        >
-          <Pencil className="h-4 w-4" />
-          <span className="sr-only">Edit profile picture</span>
-        </Button>
-      </div>
-      
-      {showUploader && (
-        <div className={cn(
-          "w-full max-w-sm mt-4 p-3 rounded-lg animate-in fade-in-50 zoom-in-95",
-          isDarkMode ? "bg-gray-800" : "bg-white shadow-md"
-        )}>
-          <FileUpload
-            onUploadComplete={handleAvatarUpload}
-            initialImage={photoURL || undefined}
-            bucketName="avatars"
-            folderPath="profile"
-            fileTypes="image/*"
-            maxSize={2}
-          />
         </div>
       )}
       
-      {!editMode && (
-        <>
-          <h2 className={cn(
-            "text-xl font-semibold",
-            isDarkMode ? "text-white" : ""
-          )}>
-            {displayName || 'User'}
-          </h2>
-          
-          <p className={cn(
-            "text-sm",
-            isDarkMode ? "text-gray-400" : "text-gray-500"
-          )}>
-            {email || 'No email provided'}
-          </p>
-          
-          {phoneNumber && (
-            <p className={cn(
-              "text-xs mt-1",
-              isDarkMode ? "text-gray-500" : "text-gray-500"
-            )}>
-              {phoneNumber}
-            </p>
-          )}
-        </>
+      {isUploading && (
+        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Updating...
+        </div>
       )}
     </div>
   );
-};
+}
 
 export default ProfileAvatar;

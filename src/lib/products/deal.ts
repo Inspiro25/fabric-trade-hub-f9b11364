@@ -100,7 +100,6 @@ const getFallbackDeal = (): DealProduct | null => {
       is_trending: product.isTrending,
       review_count: product.reviewCount,
       shop_id: product.shopId,
-      created_at: new Date().toISOString(),
       discountPercentage,
       endTime: new Date(Date.now() + 24 * 60 * 60 * 1000) // Deal ends in 24 hours
     };

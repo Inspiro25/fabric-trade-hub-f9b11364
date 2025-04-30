@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,12 +17,16 @@ export interface User {
 export interface AuthContextType {
   currentUser: User | null;
   isLoading: boolean;
-  user?: User | null;
+  user?: User | null; // For backward compatibility
+  loading?: boolean; // For backward compatibility
+  userProfile?: User | null; // For backward compatibility
   signIn: (email: string, password: string) => Promise<{ user: User | null; error: any | null }>;
   signUp: (email: string, password: string, userData?: any) => Promise<{ user: User | null; error: any | null }>;
   signOut: () => Promise<void>;
+  logout?: () => Promise<void>; // For backward compatibility
   resetPassword: (email: string) => Promise<{ error: any | null }>;
   updateUserProfile?: (data: Partial<User>) => Promise<void>;
+  isSupabaseAuthenticated?: boolean; // For backward compatibility
 }
 
 // Create the context
@@ -254,15 +259,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [currentUser]);
 
+  // Add values needed for backward compatibility
   const value = {
     currentUser,
     isLoading,
-    user: currentUser, // Add user property for compatibility
+    loading: isLoading, // For backward compatibility
+    user: currentUser, // For backward compatibility
+    userProfile: currentUser, // For backward compatibility
     signIn,
     signUp,
     signOut,
+    logout: signOut, // For backward compatibility
     resetPassword,
-    updateUserProfile
+    updateUserProfile,
+    isSupabaseAuthenticated: !!currentUser // For backward compatibility
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
