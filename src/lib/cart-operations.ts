@@ -1,3 +1,4 @@
+
 import { CartItem } from "@/types/cart";
 import { Product } from "@/lib/types/product";
 import { useState, useCallback } from "react";
@@ -152,7 +153,8 @@ export const deserializeCart = (serialized: string): CartItem[] => {
   }
 };
 
-// Add the missing useCartOperations hook
+// Add the useCartOperations hook
+// Note: Removed the duplicate export here to fix the error
 export const useCartOperations = (
   cartItems: CartItem[], 
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>,
@@ -394,5 +396,5 @@ export const useCartOperations = (
   };
 };
 
-// Make sure to export the hook
-export { useCartOperations };
+// Remove duplicate export statement
+// export { useCartOperations };

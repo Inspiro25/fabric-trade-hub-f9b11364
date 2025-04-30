@@ -62,8 +62,8 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
       >
         <div className="relative w-24 h-24">
           <Image
-            src={item.product.images[0]}
-            alt={item.product.name}
+            src={item.image}
+            alt={item.name}
             className="rounded-md object-cover"
           />
         </div>
@@ -73,7 +73,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             "font-medium",
             isDarkMode ? "text-white" : "text-gray-900"
           )}>
-            {item.product.name}
+            {item.name}
           </h3>
           
           <div className={cn(
@@ -92,7 +92,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             "mt-2 font-medium",
             isDarkMode ? "text-blue-400" : "text-blue-600"
           )}>
-            ₹{item.price || (item.product.sale_price || item.product.price)}
+            ₹{item.price}
           </div>
           
           <div className="mt-4 flex items-center justify-between">
