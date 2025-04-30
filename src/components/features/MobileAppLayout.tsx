@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MobileNavigation from './MobileNavigation';
 import { useLocation } from 'react-router-dom';
@@ -11,7 +12,7 @@ const MobileAppLayout: React.FC<{
 }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { isDarkMode, sectionBgColor } = useTheme();
+  const { isDarkMode } = useTheme();
 
   // Check if current route is a management or admin route
   const isManagementRoute = location.pathname.startsWith('/management');

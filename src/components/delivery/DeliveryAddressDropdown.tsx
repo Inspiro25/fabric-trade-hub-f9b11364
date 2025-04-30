@@ -4,11 +4,25 @@ import { MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { Address } from '@/types/address';
-import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+// Updated Address type definition to match the database schema
+interface Address {
+  id: string;
+  user_id: string;
+  name: string; // Renamed from full_name to match property access
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  phone_number: string;
+  is_default: boolean;
+}
 
 export function DeliveryAddressDropdown() {
   const { currentUser } = useAuth();
@@ -211,7 +225,8 @@ export function DeliveryAddressDropdown() {
             <p className="mb-4">Sign in to manage your delivery addresses</p>
             <Button 
               onClick={() => window.location.href = '/auth/login'}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="w-full mb-2 bg-blue-600 hover:bg-blue-700"
+              size="sm"
             >
               Sign In
             </Button>

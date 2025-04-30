@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import MobileSearch from './components/mobile/MobileSearch';
@@ -49,7 +50,7 @@ import ManagementSupport from './pages/ManagementSupport';
 
 // Admin pages
 import ShopDashboard from '@/pages/ShopDashboard';
-import AdminDashboard from '@/pages/AdminDashboard';
+// Replace AdminDashboard with ShopDashboard since AdminDashboard doesn't exist
 import AdminSettings from './pages/AdminSettings';
 
 function App() {
