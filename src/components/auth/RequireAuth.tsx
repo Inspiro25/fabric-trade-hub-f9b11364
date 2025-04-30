@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ExtendedUser } from '@/types/auth';
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -31,15 +32,17 @@ const RequireAuth = ({
   const hasRequiredRole = () => {
     if (!adminOnly && !shopAdminOnly) return true;
     
+    const user = currentUser as ExtendedUser | null;
+    
     // Admin-only routes
     if (adminOnly) {
-      return userProfile?.preferences?.role === 'admin';
+      return user?.preferences?.role === 'admin';
     }
     
     // Shop admin routes
     if (shopAdminOnly) {
-      return userProfile?.preferences?.role === 'shop_admin' ||
-             userProfile?.preferences?.role === 'admin';
+      return user?.preferences?.role === 'shop_admin' ||
+             user?.preferences?.role === 'admin';
     }
     
     return false;

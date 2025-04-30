@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -25,7 +26,7 @@ export interface ShopFormValues {
   phoneNumber: string;
 }
 
-const shopSchema = yup.object({
+const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().required('Logo URL is required'),
@@ -55,19 +56,19 @@ const ShopForm = ({
 }: ShopFormProps) => {
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
     resolver: yupResolver(shopSchema),
-    defaultValues: defaultValues || {
-      name: '',
-      description: '',
-      logo: '',
-      coverImage: '',
-      address: '',
-      isVerified: false,
-      shopId: '',
-      ownerName: '',
-      ownerEmail: '',
-      status: 'pending',
-      password: '',
-      phoneNumber: '',
+    defaultValues: {
+      name: defaultValues?.name || '',
+      description: defaultValues?.description || '',
+      logo: defaultValues?.logo || '',
+      coverImage: defaultValues?.coverImage || '',
+      address: defaultValues?.address || '',
+      isVerified: defaultValues?.isVerified || false,
+      shopId: defaultValues?.shopId || '',
+      ownerName: defaultValues?.ownerName || '',
+      ownerEmail: defaultValues?.ownerEmail || '',
+      status: defaultValues?.status || 'pending',
+      password: defaultValues?.password || '',
+      phoneNumber: defaultValues?.phoneNumber || '',
     }
   });
 

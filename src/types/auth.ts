@@ -7,6 +7,7 @@ export interface UserProfile {
   email: string;
   phone?: string;
   address?: string;
+  avatarUrl?: string;
   savedAddresses?: {
     id: string;
     name: string;
@@ -30,11 +31,28 @@ export interface UserProfile {
     language?: string;
     role?: 'user' | 'shop_admin' | 'admin';
   };
+}
+
+export interface ExtendedUser extends User {
+  displayName?: string;
+  photoURL?: string;
   avatarUrl?: string;
+  preferences?: {
+    role?: 'user' | 'shop_admin' | 'admin';
+    theme?: string;
+    currency?: string;
+    language?: string;
+    notifications?: {
+      email: boolean;
+      sms: boolean;
+      push: boolean;
+    };
+  };
+  uid?: string;
 }
 
 export interface AuthContextType {
-  currentUser: User | null;
+  currentUser: ExtendedUser | null;
   userProfile: UserProfile | null;
   loading: boolean;
   isSupabaseAuthenticated: boolean;
@@ -45,10 +63,11 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<void>;
-  updateUserProfile: (data: Partial<UserProfile>) => Promise<void>; // Add this
+  updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
   addAddress: (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => Promise<void>;
   updateAddress: (address: UserProfile['savedAddresses'][0]) => Promise<void>;
   removeAddress: (addressId: string) => Promise<void>;
   setDefaultAddress: (addressId: string) => Promise<void>;
-  user: User | null; // Add this for backward compatibility
+  user: ExtendedUser | null;
+  isLoading?: boolean;
 }

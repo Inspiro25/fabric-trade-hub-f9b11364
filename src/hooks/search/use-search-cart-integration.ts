@@ -1,97 +1,80 @@
 
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { useState, useCallback } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { Product } from '@/lib/types/product';
 import { SearchPageProduct } from './types';
 
 export const useSearchCartIntegration = () => {
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
-  const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
-  const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
+  const { addToCart, isAdding: isAddingToCart } = useCart();
+  const { addToWishlist, isAddingToWishlist } = useWishlist();
   
-  const handleAddToCart = (product: SearchPageProduct) => {
-    setIsAddingToCart(product.id);
-
-    const productForCart: Product = {
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  
+  // Handler for adding a product to cart
+  const handleAddToCart = useCallback((product: SearchPageProduct) => {
+    if (!product) return;
+    
+    const cartItem = {
       id: product.id,
       name: product.name,
       price: product.price,
-      images: product.images || [],
-      sale_price: product.sale_price || product.salePrice,
-      description: product.description || '',
-      category: product.category_id || product.category || '',
-      category_id: product.category_id || product.category || '',
-      colors: product.colors || [],
-      sizes: product.sizes || [],
-      stock: product.stock || 0,
-      rating: product.rating || 0,
-      reviewCount: product.review_count || product.reviewCount || 0,
-      review_count: product.review_count || product.reviewCount || 0,
-      shopId: product.shop_id || product.shopId || null,
-      shop_id: product.shop_id || product.shopId || null,
-      isNew: product.is_new || product.isNew || false,
-      is_new: product.is_new || product.isNew || false,
-      isTrending: product.is_trending || product.isTrending || false,
-      is_trending: product.is_trending || product.isTrending || false,
-      tags: product.tags || []
+      salePrice: product.salePrice || product.sale_price,
+      quantity: 1,
+      image: product.images?.[0] || '',
+      color: product.colors?.[0] || '',
+      size: product.sizes?.[0] || '',
+      // Use shop_id if available, fallback to shopId
+      shopId: product.shop_id || product.shopId || '',
+      shop_id: product.shop_id || product.shopId || '',
+      stock: product.stock || 0
     };
-
-    // Add empty string for color and size since these are required by the addToCart function
-    // The cart context expects 4 arguments: product, quantity, color, and size
-    addToCart(productForCart, 1, '', '');
     
-    setTimeout(() => {
-      setIsAddingToCart(null);
-      // We're not calling toast here anymore as the toast will be triggered in the CartContext
-    }, 500);
-  };
-
-  const handleAddToWishlist = (product: SearchPageProduct) => {
-    setIsAddingToWishlist(product.id);
+    addToCart(cartItem);
+  }, [addToCart]);
+  
+  // Handler for adding a product to wishlist
+  const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
+    if (!product) return;
     
-    // Create a proper product object for the wishlist
-    const productForWishlist: Product = {
+    const wishlistItem = {
       id: product.id,
       name: product.name,
       price: product.price,
-      images: product.images || [],
-      sale_price: product.sale_price || product.salePrice,
-      description: product.description || '',
-      category: product.category_id || product.category || '',
-      category_id: product.category_id || product.category || '',
-      colors: product.colors || [],
-      sizes: product.sizes || [],
-      stock: product.stock || 0,
+      salePrice: product.salePrice || product.sale_price,
+      image: product.images?.[0] || '',
+      category: product.category || '',
       rating: product.rating || 0,
-      reviewCount: product.review_count || product.reviewCount || 0,
-      review_count: product.review_count || product.reviewCount || 0,
-      shopId: product.shop_id || product.shopId || null,
-      shop_id: product.shop_id || product.shopId || null,
-      isNew: product.is_new || product.isNew || false,
-      is_new: product.is_new || product.isNew || false,
-      isTrending: product.is_trending || product.isTrending || false,
-      is_trending: product.is_trending || product.isTrending || false,
-      tags: product.tags || []
+      // Use shop_id if available, fallback to shopId
+      shopId: product.shop_id || product.shopId || '',
+      shop_id: product.shop_id || product.shopId || '',
     };
     
-    setTimeout(() => {
-      addToWishlist(productForWishlist);
-      setIsAddingToWishlist(null);
-      // We're not calling toast here anymore as the toast will be triggered in the WishlistContext
-    }, 500);
-  };
-
-  const handleShareProduct = (product: SearchPageProduct) => {
-    const shareableLink = window.location.origin + '/product/' + product.id;
+    addToWishlist(wishlistItem);
+  }, [addToWishlist]);
+  
+  // Handler for sharing a product
+  const handleShareProduct = useCallback((product: SearchPageProduct) => {
+    if (!product) return '';
+    
+    const shareableLink = `${window.location.origin}/product/${product.id}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareableLink)
+      .then(() => {
+        setCopiedLink(shareableLink);
+        setTimeout(() => setCopiedLink(null), 3000);
+      })
+      .catch(err => {
+        console.error('Failed to copy link: ', err);
+      });
+    
     return shareableLink;
-  };
-
+  }, []);
+  
   return {
     isAddingToCart,
     isAddingToWishlist,
+    copiedLink,
     handleAddToCart,
     handleAddToWishlist,
     handleShareProduct

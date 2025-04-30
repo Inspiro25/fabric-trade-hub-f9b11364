@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, LogOut, Settings, ShoppingBag, Heart, Bell, ChevronDown } from 'lucide-react';
@@ -10,6 +11,7 @@ import { getInitials } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { ExtendedUser } from '@/types/auth';
 
 const AccountDropdown = () => {
   const { currentUser, userProfile, logout } = useAuth();
@@ -18,9 +20,10 @@ const AccountDropdown = () => {
   const { isDarkMode } = useTheme();
 
   const isLoggedIn = !!currentUser;
-  const userName = userProfile?.displayName || currentUser?.email?.split('@')[0] || 'Guest';
+  const user = currentUser as ExtendedUser | null;
+  const userName = userProfile?.displayName || user?.email?.split('@')[0] || 'Guest';
   const userEmail = currentUser?.email || '';
-  const avatarUrl = userProfile?.avatarUrl || '';
+  const avatarUrl = user?.avatarUrl || userProfile?.avatarUrl || '';
 
   const handleLogin = () => {
     navigate('/login');

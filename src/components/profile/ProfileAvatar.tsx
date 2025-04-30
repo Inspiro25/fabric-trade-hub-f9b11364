@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -11,16 +10,28 @@ import { cn } from '@/lib/utils';
 interface ProfileAvatarProps {
   className?: string;
   editable?: boolean;
+  photoURL?: string;
+  displayName?: string;
+  email?: string;
+  phoneNumber?: string;
+  editMode?: boolean;
 }
 
-export function ProfileAvatar({ className, editable = true }: ProfileAvatarProps) {
+export function ProfileAvatar({ 
+  className, 
+  editable = true, 
+  photoURL,
+  displayName: propDisplayName,
+  email: propEmail,
+  editMode 
+}: ProfileAvatarProps) {
   const { currentUser, updateUserProfile } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   
-  const displayName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
+  const displayName = propDisplayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
   const initials = displayName.substring(0, 2).toUpperCase();
-  const avatarUrl = previewUrl || currentUser?.photoURL;
+  const avatarUrl = previewUrl || photoURL || currentUser?.photoURL;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

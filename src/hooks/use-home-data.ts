@@ -1,3 +1,4 @@
+
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 
@@ -16,7 +17,7 @@ export function useHomeData() {
 
   const productsInfiniteQuery = useInfiniteQuery({
     queryKey: ['products-infinite'],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -24,6 +25,7 @@ export function useHomeData() {
       if (error) throw error;
       return data || [];
     },
+    initialPageParam: 0, // Add this line
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 10 ? allPages.length : undefined;
     }

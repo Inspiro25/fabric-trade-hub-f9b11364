@@ -8,6 +8,35 @@ export interface SearchPageProduct extends Omit<Product, 'description' | 'colors
   sizes?: string[];
   tags?: string[];
   stock?: number;
+  shopId?: string;
+  shop_id?: string;
+}
+
+export interface ProductCardBaseProps {
+  product: SearchPageProduct;
+  isAddingToCart?: boolean | string;
+  isAddingToWishlist?: boolean | string;
+  onAddToCart?: (product: SearchPageProduct) => void;
+  onAddToWishlist?: (product: SearchPageProduct) => void;
+  onShare?: (product: SearchPageProduct) => void;
+  onClick?: (product: SearchPageProduct) => void;
+  buttonColor?: string;
+  viewMode?: 'grid' | 'list';
+  isCompact?: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+}
+
+export interface Shop {
+  id: string;
+  name: string;
+  logo?: string;
+  description?: string;
 }
 
 export interface SearchFilters {

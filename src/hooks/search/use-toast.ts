@@ -1,41 +1,68 @@
 
-import { useToast as useShadcnToast } from "@/components/ui/use-toast";
+import { toast as sonnerToast } from 'sonner';
 
-export const useToast = () => {
-  return useShadcnToast();
+type ToastVariant = 'default' | 'destructive' | 'success' | 'info' | 'warning';
+
+interface ToastOptions {
+  title?: string;
+  description?: string;
+  variant?: ToastVariant;
+  duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+}
+
+export const toast = ({
+  title,
+  description,
+  variant = 'default',
+  duration = 5000,
+  action
+}: ToastOptions) => {
+  // Map our variants to sonner variants
+  let mappedVariant: 'success' | 'error' | 'warning' | 'info' | undefined;
+  
+  switch (variant) {
+    case 'destructive':
+      mappedVariant = 'error';
+      break;
+    case 'success':
+      mappedVariant = 'success';
+      break;
+    case 'info':
+      mappedVariant = 'info';
+      break;
+    case 'warning':
+      mappedVariant = 'warning';
+      break;
+    default:
+      mappedVariant = undefined;
+  }
+  
+  const options: any = {
+    duration,
+  };
+  
+  if (action) {
+    options.action = {
+      label: action.label,
+      onClick: action.onClick,
+    };
+  }
+  
+  if (mappedVariant) {
+    sonnerToast[mappedVariant](title, {
+      description,
+      ...options
+    });
+  } else {
+    sonnerToast(title, {
+      description,
+      ...options
+    });
+  }
 };
 
-export const toast = {
-  success: (message: string) => {
-    const { toast } = useShadcnToast();
-    toast({
-      title: "Success",
-      description: message,
-    });
-  },
-  error: (message: string) => {
-    const { toast } = useShadcnToast();
-    toast({
-      title: "Error",
-      description: message,
-      variant: "destructive",
-    });
-  },
-  warning: (message: string) => {
-    const { toast } = useShadcnToast();
-    toast({
-      title: "Warning",
-      description: message,
-      variant: "warning",
-    });
-  },
-  info: (message: string) => {
-    const { toast } = useShadcnToast();
-    toast({
-      title: "Info",
-      description: message,
-    });
-  },
-};
-
-export default toast;
+export default { toast };

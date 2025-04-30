@@ -1,176 +1,46 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
-import { Order } from '@/types/order';
+import { useAuth } from './AuthContext';
+import { ExtendedUser } from '@/types/auth';
+
+export interface OrderItem {
+  id: string;
+  product_id: string;
+  order_id: string;
+  quantity: number;
+  price: number;
+  color?: string;
+  size?: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  status: string;
+  total: number;
+  items: OrderItem[];
+  createdAt: string;
+  paymentStatus: string;
+  shippingAddress: string;
+  paymentMethod: string;
+  trackingNumber?: string;
+  notes?: string;
+}
 
 interface OrderContextType {
   orders: Order[];
-  isLoading: boolean;
-  createOrder: (orderData: Partial<Order>) => Promise<string | null>;
-  getOrderById: (orderId: string) => Promise<Order | null>;
-  refreshOrders: () => Promise<void>;
+  loading: boolean;
+  error: string | null;
+  getOrderById: (id: string) => Order | undefined;
+  createOrder: (orderData: Omit<Order, 'id' | 'createdAt'>) => Promise<string | undefined>;
+  cancelOrder: (id: string) => Promise<boolean>;
+  fetchOrders: () => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
-
-export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useAuth();
-
-  const fetchOrders = async () => {
-    if (!currentUser) {
-      setOrders([]);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          items:order_items(*)
-        `)
-        .eq('user_id', currentUser.uid)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Transform the data to match the Order type
-      const transformedOrders = data.map(order => ({
-        id: order.id,
-        order_number: order.order_number,
-        status: order.status,
-        total_amount: order.total,
-        items: order.items.map((item: any) => ({
-          id: item.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-          color: item.color,
-          size: item.size
-        })),
-        created_at: order.created_at,
-        payment_status: order.payment_status,
-        shipping_address: order.shipping_address,
-        user_id: order.user_id
-      }));
-
-      setOrders(transformedOrders);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      toast.error('Failed to fetch orders');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const createOrder = async (orderData: Partial<Order>): Promise<string | null> => {
-    if (!currentUser) {
-      toast.error('Please login to place an order');
-      return null;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('orders')
-        .insert([{
-          ...orderData,
-          user_id: currentUser.uid,
-          order_number: `ORD-${Date.now()}`,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          payment_status: 'pending'
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Add the new order to the state
-      setOrders(prev => [{
-        id: data.id,
-        order_number: data.order_number,
-        status: data.status,
-        total_amount: data.total,
-        items: data.items || [],
-        created_at: data.created_at,
-        payment_status: data.payment_status,
-        shipping_address: data.shipping_address,
-        user_id: data.user_id
-      }, ...prev]);
-
-      toast.success('Order placed successfully');
-      return data.id;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      toast.error('Failed to place order');
-      return null;
-    }
-  };
-
-  const getOrderById = async (orderId: string): Promise<Order | null> => {
-    if (!currentUser) return null;
-
-    try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          items:order_items(*)
-        `)
-        .eq('id', orderId)
-        .eq('user_id', currentUser.uid)
-        .single();
-
-      if (error) throw error;
-
-      return {
-        id: data.id,
-        order_number: data.order_number,
-        status: data.status,
-        total_amount: data.total,
-        items: data.items.map((item: any) => ({
-          id: item.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-          color: item.color,
-          size: item.size
-        })),
-        created_at: data.created_at,
-        payment_status: data.payment_status,
-        shipping_address: data.shipping_address,
-        user_id: data.user_id
-      };
-    } catch (error) {
-      console.error('Error fetching order:', error);
-      return null;
-    }
-  };
-
-  // Fetch orders when user changes
-  useEffect(() => {
-    fetchOrders();
-  }, [currentUser]);
-
-  const value = {
-    orders,
-    isLoading,
-    createOrder,
-    getOrderById,
-    refreshOrders: fetchOrders
-  };
-
-  return (
-    <OrderContext.Provider value={value}>
-      {children}
-    </OrderContext.Provider>
-  );
-};
 
 export const useOrders = () => {
   const context = useContext(OrderContext);
@@ -178,4 +48,160 @@ export const useOrders = () => {
     throw new Error('useOrders must be used within an OrderProvider');
   }
   return context;
+};
+
+export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { currentUser } = useAuth();
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      if (!currentUser) {
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
+
+      const user = currentUser as ExtendedUser;
+      const { data, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.uid || user.id)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      // Transform the data to match our Order type
+      const transformedOrders: Order[] = (data || []).map((item: any) => ({
+        id: item.id,
+        orderNumber: item.order_number || '',
+        userId: item.user_id,
+        status: item.status,
+        total: item.total_amount || 0,
+        items: item.items || [],
+        createdAt: item.created_at,
+        paymentStatus: item.payment_status || '',
+        shippingAddress: item.shipping_address || '',
+        paymentMethod: item.payment_method || '',
+        trackingNumber: item.tracking_number,
+        notes: item.notes
+      }));
+
+      setOrders(transformedOrders);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError('Failed to fetch orders');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  const getOrderById = useCallback((id: string) => {
+    return orders.find(order => order.id === id);
+  }, [orders]);
+
+  const createOrder = useCallback(async (orderData: Omit<Order, 'id' | 'createdAt'>) => {
+    try {
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const user = currentUser as ExtendedUser;
+      const { data, error: insertError } = await supabase
+        .from('orders')
+        .insert([{
+          user_id: user.uid || user.id,
+          order_number: orderData.orderNumber,
+          status: orderData.status,
+          total_amount: orderData.total,
+          items: orderData.items,
+          payment_status: orderData.paymentStatus,
+          shipping_address: orderData.shippingAddress,
+          payment_method: orderData.paymentMethod,
+          tracking_number: orderData.trackingNumber,
+          notes: orderData.notes
+        }])
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Add the new order to the state
+      if (data) {
+        const newOrder: Order = {
+          id: data.id,
+          orderNumber: data.order_number || '',
+          userId: data.user_id,
+          status: data.status,
+          total: data.total_amount || 0,
+          items: data.items || [],
+          createdAt: data.created_at,
+          paymentStatus: data.payment_status || '',
+          shippingAddress: data.shipping_address || '',
+          paymentMethod: data.payment_method || '',
+          trackingNumber: data.tracking_number,
+          notes: data.notes
+        };
+
+        setOrders(prev => [newOrder, ...prev]);
+        return data.id;
+      }
+    } catch (err) {
+      console.error('Error creating order:', err);
+      throw err;
+    }
+  }, [currentUser]);
+
+  const cancelOrder = useCallback(async (id: string) => {
+    try {
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const user = currentUser as ExtendedUser;
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+        .eq('user_id', user.uid || user.id);
+
+      if (updateError) throw updateError;
+
+      // Update the order in state
+      setOrders(prev => 
+        prev.map(order => 
+          order.id === id ? { ...order, status: 'cancelled' } : order
+        )
+      );
+
+      toast.success('Order cancelled successfully');
+      return true;
+    } catch (err) {
+      console.error('Error cancelling order:', err);
+      toast.error('Failed to cancel order');
+      return false;
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  return (
+    <OrderContext.Provider
+      value={{
+        orders,
+        loading,
+        error,
+        getOrderById,
+        createOrder,
+        cancelOrder,
+        fetchOrders
+      }}
+    >
+      {children}
+    </OrderContext.Provider>
+  );
 };

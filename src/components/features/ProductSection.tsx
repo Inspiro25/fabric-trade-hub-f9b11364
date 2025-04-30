@@ -9,27 +9,56 @@ import { cn } from '@/lib/utils';
 
 interface ProductSectionProps {
   title: string;
+  subtitle?: string;
   products: Product[];
   linkTo: string;
+  viewAllLink?: string;
+  titlePosition?: 'left' | 'right' | 'center';
 }
 
-const ProductSection: React.FC<ProductSectionProps> = ({ title, products, linkTo }) => {
+const ProductSection: React.FC<ProductSectionProps> = ({ 
+  title, 
+  subtitle,
+  products, 
+  linkTo,
+  viewAllLink,
+  titlePosition = 'left'
+}) => {
   const { isDarkMode } = useTheme();
+  const effectiveLinkTo = viewAllLink || linkTo;
   
   return (
     <section className={cn(
       "mb-6 px-4 py-3 rounded-lg",
       isDarkMode ? "bg-gray-800/50" : "bg-white shadow-sm"
     )}>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className={cn(
-          "text-lg font-bold",
-          isDarkMode ? "text-white" : "text-gray-800"
+      <div className={cn(
+        "flex items-center mb-3",
+        titlePosition === 'left' ? "justify-between" : 
+        titlePosition === 'right' ? "justify-between flex-row-reverse" : 
+        "justify-center flex-col"
+      )}>
+        <div className={cn(
+          titlePosition === 'center' && "text-center"
         )}>
-          {title}
-        </h2>
+          <h2 className={cn(
+            "text-lg font-bold",
+            isDarkMode ? "text-white" : "text-gray-800"
+          )}>
+            {title}
+          </h2>
+          {subtitle && (
+            <p className={cn(
+              "text-sm mt-1",
+              isDarkMode ? "text-gray-300" : "text-gray-500"
+            )}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+        
         <Link 
-          to={linkTo} 
+          to={effectiveLinkTo} 
           className={cn(
             "text-sm font-medium flex items-center",
             isDarkMode ? "text-blue-400 hover:text-blue-300" : "text-blue-500 hover:text-blue-600"
