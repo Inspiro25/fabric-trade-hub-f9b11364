@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types/product';
@@ -21,6 +20,11 @@ const baseProductQuery = `
   views,
   created_at,
   category_id,
+  images,
+  stock,
+  colors,
+  sizes,
+  tags,
   categories!category_id (
     id,
     name,
@@ -52,7 +56,26 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
 
         if (error) throw error;
 
-        setProducts(data || []);
+        const mappedProducts: Product[] = data?.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          salePrice: item.discount_price,
+          sale_price: item.discount_price,
+          images: item.images || [],
+          category: item.categories?.name || '',
+          category_id: item.category_id,
+          rating: item.rating || 0,
+          reviewCount: item.review_count || 0,
+          review_count: item.review_count || 0,
+          stock: item.stock || 0,
+          colors: item.colors || [],
+          sizes: item.sizes || [],
+          tags: item.tags || []
+        })) || [];
+
+        setProducts(mappedProducts);
         setTotalCount(count || 0);
       } catch (err) {
         console.error('Error fetching products:', err);
@@ -84,7 +107,27 @@ export const useNewArrivals = (limit = 10) => {
           .limit(limit);
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        const mappedProducts: Product[] = data?.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          salePrice: item.discount_price,
+          sale_price: item.discount_price,
+          images: item.images || [],
+          category: item.categories?.name || '',
+          category_id: item.category_id,
+          rating: item.rating || 0,
+          reviewCount: item.review_count || 0,
+          review_count: item.review_count || 0,
+          stock: item.stock || 0,
+          colors: item.colors || [],
+          sizes: item.sizes || [],
+          tags: item.tags || []
+        })) || [];
+        
+        setProducts(mappedProducts);
       } catch (err) {
         console.error('Error fetching new arrivals:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch new arrivals');
@@ -99,6 +142,7 @@ export const useNewArrivals = (limit = 10) => {
   return { products, loading, error };
 };
 
+// Apply the same pattern to all other functions in this file
 export const useDiscountedProducts = (limit = 10) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +161,27 @@ export const useDiscountedProducts = (limit = 10) => {
           .limit(limit);
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        const mappedProducts: Product[] = data?.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          salePrice: item.discount_price,
+          sale_price: item.discount_price,
+          images: item.images || [],
+          category: item.categories?.name || '',
+          category_id: item.category_id,
+          rating: item.rating || 0,
+          reviewCount: item.review_count || 0,
+          review_count: item.review_count || 0,
+          stock: item.stock || 0,
+          colors: item.colors || [],
+          sizes: item.sizes || [],
+          tags: item.tags || []
+        })) || [];
+        
+        setProducts(mappedProducts);
       } catch (err) {
         console.error('Error fetching discounted products:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch discounted products');
@@ -132,7 +196,9 @@ export const useDiscountedProducts = (limit = 10) => {
   return { products, loading, error };
 };
 
+// ... Apply the same mapping pattern to all the remaining product fetching functions
 export const useTopRatedProducts = (limit = 10) => {
+  // ... keep existing code and update the mapping in a similar way to above functions
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -149,7 +215,27 @@ export const useTopRatedProducts = (limit = 10) => {
           .limit(limit);
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        const mappedProducts: Product[] = data?.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          salePrice: item.discount_price,
+          sale_price: item.discount_price,
+          images: item.images || [],
+          category: item.categories?.name || '',
+          category_id: item.category_id,
+          rating: item.rating || 0,
+          reviewCount: item.review_count || 0,
+          review_count: item.review_count || 0,
+          stock: item.stock || 0,
+          colors: item.colors || [],
+          sizes: item.sizes || [],
+          tags: item.tags || []
+        })) || [];
+        
+        setProducts(mappedProducts);
       } catch (err) {
         console.error('Error fetching top rated products:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch top rated products');
@@ -181,7 +267,27 @@ export const useTrendingProducts = (limit = 10) => {
           .limit(limit);
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        const mappedProducts: Product[] = data?.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          salePrice: item.discount_price,
+          sale_price: item.discount_price,
+          images: item.images || [],
+          category: item.categories?.name || '',
+          category_id: item.category_id,
+          rating: item.rating || 0,
+          reviewCount: item.review_count || 0,
+          review_count: item.review_count || 0,
+          stock: item.stock || 0,
+          colors: item.colors || [],
+          sizes: item.sizes || [],
+          tags: item.tags || []
+        })) || [];
+        
+        setProducts(mappedProducts);
       } catch (err) {
         console.error('Error fetching trending products:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch trending products');
@@ -195,7 +301,6 @@ export const useTrendingProducts = (limit = 10) => {
 
   return { products, loading, error };
 };
-
 
 export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -215,7 +320,27 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setProducts(data || []);
+        
+        const mappedProducts: Product[] = data?.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: item.price,
+          salePrice: item.discount_price,
+          sale_price: item.discount_price,
+          images: item.images || [],
+          category: item.categories?.name || '',
+          category_id: item.category_id,
+          rating: item.rating || 0,
+          reviewCount: item.review_count || 0,
+          review_count: item.review_count || 0,
+          stock: item.stock || 0,
+          colors: item.colors || [],
+          sizes: item.sizes || [],
+          tags: item.tags || []
+        })) || [];
+        
+        setProducts(mappedProducts);
         setTotalCount(count || 0);
       } catch (err) {
         console.error('Error fetching products by category:', err);
@@ -232,7 +357,6 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
 
   return { products, loading, error, totalCount };
 };
-
 
 // Remove the firebaseUIDToUUID function definition since it's imported
 const fetchUserData = async (userId: string) => {

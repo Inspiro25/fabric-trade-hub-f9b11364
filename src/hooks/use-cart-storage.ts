@@ -1,149 +1,96 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/types/cart';
-import { fetchProductById } from '@/lib/products'; // We need this to get product details
-import { firebaseUIDToUUID } from '@/utils/format';
+import { toast } from 'sonner';
 
-export const useCartStorage = (currentUser: any) => {
+interface UseCartStorageOptions {
+  debounceMs?: number;
+}
+
+export function useCartStorage(currentUser: any, options: UseCartStorageOptions = {}) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Load initial cart items
+  const debounceTimer = useRef<number | null>(null);
+  
+  // Load cart data when user changes
   useEffect(() => {
-    const loadCartItems = async () => {
+    loadCart();
+  }, [currentUser?.id]);
+  
+  // Function to load cart data from appropriate source
+  const loadCart = async () => {
+    try {
       setIsLoading(true);
       
-      try {
-        if (currentUser) {
-          // Load cart from database for logged in users
-          const { data, error } = await supabase
-            .from('cart_items')
-            .select('*')
-            .eq('user_id', currentUser.id);
-            
-          if (error) {
-            console.error('Error loading cart:', error);
+      if (currentUser?.id) {
+        // Get cart data from Supabase for logged in users
+        const { data, error } = await supabase
+          .from('user_cart_items')
+          .select(`
+            id, 
+            product_id, 
+            quantity, 
+            color, 
+            size, 
+            price,
+            total,
+            created_at,
+            updated_at,
+            products (
+              id,
+              name,
+              price,
+              sale_price,
+              images,
+              stock
+            )
+          `)
+          .eq('user_id', currentUser.id)
+          .eq('saved_for_later', false);
+          
+        if (error) throw error;
+        
+        // Transform to CartItem format
+        const transformedItems: CartItem[] = data.map(item => ({
+          id: item.id,
+          productId: item.product_id,
+          quantity: item.quantity,
+          name: item.products.name,
+          image: item.products.images?.[0] || '',
+          price: item.products.sale_price || item.products.price,
+          stock: item.products.stock || 10,
+          shopId: item.products.shop_id,
+          total: (item.products.sale_price || item.products.price) * item.quantity,
+          color: item.color || undefined,
+          size: item.size || undefined
+        }));
+        
+        setCartItems(transformedItems);
+      } else {
+        // Get cart from localStorage for guests
+        const guestCartStr = localStorage.getItem('guest_cart');
+        if (guestCartStr) {
+          try {
+            const guestCart = JSON.parse(guestCartStr);
+            setCartItems(guestCart);
+          } catch (e) {
+            console.error('Failed to parse guest cart:', e);
+            localStorage.removeItem('guest_cart');
             setCartItems([]);
-          } else if (data) {
-            // Convert database items to CartItems by fetching product details
-            const cartItemsPromises = data.map(async (item) => {
-              try {
-                const product = await fetchProductById(item.product_id);
-                if (product) {
-                  return {
-                    id: item.id,
-                    product,
-                    quantity: item.quantity,
-                    color: item.color,
-                    size: item.size,
-                    price: item.price,
-                    total: item.total,
-                    created_at: item.created_at,
-                    updated_at: item.updated_at
-                  } as CartItem;
-                }
-                return null;
-              } catch (err) {
-                console.error(`Error fetching product ${item.product_id}:`, err);
-                return null;
-              }
-            });
-            
-            const resolvedItems = await Promise.all(cartItemsPromises);
-            const validItems = resolvedItems.filter(item => item !== null) as CartItem[];
-            setCartItems(validItems);
           }
         } else {
-          // Load guest cart from localStorage
-          const guestCart = localStorage.getItem('guest_cart');
-          if (guestCart) {
-            try {
-              const parsedCart = JSON.parse(guestCart);
-              setCartItems(parsedCart);
-            } catch (e) {
-              console.error('Error parsing guest cart:', e);
-              localStorage.removeItem('guest_cart');
-              setCartItems([]);
-            }
-          }
+          setCartItems([]);
         }
-      } catch (error) {
-        console.error('Error loading cart:', error);
-        setCartItems([]);
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    loadCartItems();
-  }, [currentUser]);
-
-  // Subscribe to real-time cart changes
-  useEffect(() => {
-    if (!currentUser) return;
-
-    // Subscribe to cart changes
-    const cartSubscription = supabase
-      .channel('cart_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'cart_items',
-          filter: `user_id=eq.${currentUser.id}`
-        },
-        async (payload) => {
-          console.log('Cart change received:', payload);
-          
-          // Reload cart items when changes occur
-          const { data, error } = await supabase
-            .from('cart_items')
-            .select('*')
-            .eq('user_id', currentUser.id);
-            
-          if (error) {
-            console.error('Error reloading cart:', error);
-            return;
-          }
-          
-          if (data) {
-            const cartItemsPromises = data.map(async (item) => {
-              try {
-                const product = await fetchProductById(item.product_id);
-                if (product) {
-                  return {
-                    id: item.id,
-                    product,
-                    quantity: item.quantity,
-                    color: item.color,
-                    size: item.size,
-                    price: item.price,
-                    total: item.total,
-                    created_at: item.created_at,
-                    updated_at: item.updated_at
-                  } as CartItem;
-                }
-                return null;
-              } catch (err) {
-                console.error(`Error fetching product ${item.product_id}:`, err);
-                return null;
-              }
-            });
-            
-            const resolvedItems = await Promise.all(cartItemsPromises);
-            const validItems = resolvedItems.filter(item => item !== null) as CartItem[];
-            setCartItems(validItems);
-          }
-        }
-      )
-      .subscribe();
-
-    // Cleanup subscription on unmount
-    return () => {
-      cartSubscription.unsubscribe();
-    };
-  }, [currentUser]);
-
-  return { cartItems, isLoading };
-};
+    } catch (e) {
+      console.error('Error loading cart:', e);
+      toast.error('Failed to load your cart');
+      setCartItems([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return { cartItems, isLoading, loadCart };
+}

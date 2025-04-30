@@ -1,4 +1,3 @@
-
 import { Product } from '@/lib/products/types';
 
 // Extend the Product interface for search-related functionality
@@ -10,6 +9,7 @@ export interface SearchPageProduct extends Omit<Product, 'description' | 'colors
   stock?: number;
   shopId?: string;
   shop_id?: string;
+  image?: string; // Add this property
 }
 
 export interface ProductCardBaseProps {

@@ -7,7 +7,45 @@ import { useCartOperations } from '@/lib/cart-operations';
 import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
 import AuthDialog from '@/components/search/AuthDialog';
-import CartContext, { CartItem, CartContextType } from './CartContext';
+
+// Define CartItem type
+export interface CartItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  name: string;
+  image: string;
+  price: number;
+  stock: number;
+  shopId?: string;
+  total: number;
+  size?: string;
+  color?: string;
+  selectedOptions?: Array<{
+    name: string;
+    value: string;
+  }>;
+}
+
+// Define CartContext type
+export interface CartContextType {
+  cartItems: CartItem[];
+  addToCart: (product: Product, quantity: number, color: string, size: string) => void;
+  removeFromCart: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  clearCart: () => Promise<boolean>;
+  getCartTotal: () => number;
+  getCartCount: () => number;
+  isInCart: (productId: string, color?: string, size?: string) => boolean;
+  isLoading: boolean;
+  isAdding: boolean;
+  isRemoving: boolean;
+  isUpdating: boolean;
+  migrateCartToUser: () => Promise<void>;
+}
+
+// Create Context
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Export the useCart hook
 export const useCart = (): CartContextType => {
@@ -113,6 +151,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!currentUser) {
       setShowAuthDialog(true);
     }
+    
+    return Promise.resolve(true);
   }, [clearCartOp, currentUser]);
 
   const handleLogin = useCallback(() => {
@@ -178,3 +218,5 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </CartContext.Provider>
   );
 };
+
+export default CartContext;

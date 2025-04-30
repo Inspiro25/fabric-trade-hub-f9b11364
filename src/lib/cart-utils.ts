@@ -4,8 +4,7 @@ import { CartItem } from '@/contexts/CartContext';
 // Calculate the total price of all items in the cart
 export const getCartTotal = (cart: CartItem[]): number => {
   return cart.reduce((total, item) => {
-    const itemPrice = item.product.sale_price || item.product.price;
-    return total + itemPrice * item.quantity;
+    return total + item.price * item.quantity;
   }, 0);
 };
 
@@ -23,7 +22,7 @@ export const isInCart = (
 ): boolean => {
   return cart.some(
     item => 
-      item.product.id === productId && 
+      item.productId === productId && 
       (color === undefined || item.color === color) && 
       (size === undefined || item.size === size)
   );

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import HomeHero from './HomeHero';
 import ProductSection from '@/components/features/ProductSection';
@@ -19,13 +18,16 @@ const demoProducts: Product[] = Array(8).fill(null).map((_, i) => ({
   name: `Product ${i + 1}`,
   description: `Description for product ${i + 1}`,
   price: 29.99 + i * 10,
-  discount_price: i % 3 === 0 ? 19.99 + i * 8 : undefined,
+  salePrice: i % 3 === 0 ? 19.99 + i * 8 : undefined,
   images: [`https://placehold.co/300x300?text=Product${i+1}`],
   category: 'category-1',
   reviewCount: 15 + i,
   rating: 4.5,
   stock: 10 + i,
-  shop_id: `shop-${i % 3}`
+  shop_id: `shop-${i % 3}`,
+  colors: [],  // Add required fields
+  sizes: [],   // Add required fields
+  tags: []     // Add required fields
 }));
 
 const DesktopHome: React.FC = () => {
