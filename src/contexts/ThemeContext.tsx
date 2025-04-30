@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface Theme {
@@ -11,10 +12,14 @@ interface Theme {
   sectionBgColor: string;
 }
 
+type ThemeType = 'light' | 'dark' | 'system';
+
 type ThemeContextType = {
   isDarkMode: boolean;
-  toggleTheme: () => void;
+  toggleDarkMode: () => void;
   theme: Theme;
+  setTheme: (theme: ThemeType) => void;
+  currentTheme: ThemeType;
 };
 
 const lightTheme: Theme = {
@@ -43,30 +48,65 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [theme, setTheme] = useState<Theme>(lightTheme);
+  const [theme, setThemeState] = useState<Theme>(lightTheme);
+  const [currentTheme, setCurrentTheme] = useState<ThemeType>('system');
 
   useEffect(() => {
     // Check if user has a theme preference in localStorage
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme') as ThemeType | null;
     if (savedTheme) {
-      const isDark = savedTheme === 'dark';
+      setCurrentTheme(savedTheme);
+      const isDark = savedTheme === 'dark' || 
+                    (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       setIsDarkMode(isDark);
-      setTheme(isDark ? darkTheme : lightTheme);
+      setThemeState(isDark ? darkTheme : lightTheme);
     } else {
       // Check system preference
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(prefersDark);
-      setTheme(prefersDark ? darkTheme : lightTheme);
+      setThemeState(prefersDark ? darkTheme : lightTheme);
+      setCurrentTheme('system');
     }
   }, []);
 
-  const toggleTheme = () => {
+  // Effect to handle system theme changes when using 'system' setting
+  useEffect(() => {
+    if (currentTheme !== 'system') return;
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+      setThemeState(e.matches ? darkTheme : lightTheme);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [currentTheme]);
+
+  const toggleDarkMode = () => {
     setIsDarkMode(prev => {
-      const newTheme = !prev;
-      localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-      setTheme(newTheme ? darkTheme : lightTheme);
-      return newTheme;
+      const newIsDark = !prev;
+      setThemeState(newIsDark ? darkTheme : lightTheme);
+      setCurrentTheme(newIsDark ? 'dark' : 'light');
+      localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
+      return newIsDark;
     });
+  };
+
+  const setTheme = (newTheme: ThemeType) => {
+    setCurrentTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    if (newTheme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+      setThemeState(prefersDark ? darkTheme : lightTheme);
+    } else {
+      const isDark = newTheme === 'dark';
+      setIsDarkMode(isDark);
+      setThemeState(isDark ? darkTheme : lightTheme);
+    }
   };
 
   useEffect(() => {
@@ -75,7 +115,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [isDarkMode]);
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, theme }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode, theme, setTheme, currentTheme }}>
       {children}
     </ThemeContext.Provider>
   );

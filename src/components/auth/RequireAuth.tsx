@@ -1,93 +1,110 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import AuthDialog from '@/components/search/AuthDialog';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface RequireAuthProps {
   children: React.ReactNode;
+  adminOnly?: boolean;
+  shopAdminOnly?: boolean;
   redirectTo?: string;
 }
 
-const RequireAuth = ({ children, redirectTo = '/auth' }: RequireAuthProps) => {
-  const { currentUser, loading } = useAuth();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [showContent, setShowContent] = useState(false);
+const RequireAuth = ({ 
+  children, 
+  adminOnly = false, 
+  shopAdminOnly = false,
+  redirectTo = '/auth/login' 
+}: RequireAuthProps) => {
+  const { currentUser, userProfile, loading } = useAuth();
   const [localLoading, setLocalLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isDarkMode } = useTheme();
+  
+  // Check if user has required role for protected routes
+  const hasRequiredRole = () => {
+    if (!adminOnly && !shopAdminOnly) return true;
+    
+    // Admin-only routes
+    if (adminOnly) {
+      return userProfile?.preferences?.role === 'admin';
+    }
+    
+    // Shop admin routes
+    if (shopAdminOnly) {
+      return userProfile?.preferences?.role === 'shop_admin' ||
+             userProfile?.preferences?.role === 'admin';
+    }
+    
+    return false;
+  };
 
-  // Double-check Supabase session to be extra sure
   useEffect(() => {
-    const checkSupabaseSession = async () => {
+    const checkAuth = async () => {
       try {
-        console.log("RequireAuth: Double-checking Supabase session");
-        const { data: { session } } = await supabase.auth.getSession();
+        // Double-check Supabase session
+        const { data: sessionData } = await supabase.auth.getSession();
         
-        if (session) {
-          console.log("RequireAuth: Valid Supabase session found for user:", session.user.id);
-          
-          // If we have a Supabase session but no currentUser, this indicates a potential issue
-          if (!currentUser && !loading) {
-            console.log("RequireAuth: Supabase session exists but currentUser is null, refreshing page");
-            // Force reload to sync auth state
-            window.location.reload();
+        if (!loading) {
+          // No current user, redirect to login
+          if (!currentUser) {
+            navigate(redirectTo, { state: { from: location.pathname } });
             return;
           }
           
-          setShowContent(true);
-          setShowAuthDialog(false);
-        } else {
-          console.log("RequireAuth: No valid Supabase session found");
-          setShowContent(false);
-          setShowAuthDialog(true);
+          // If user doesn't have required role
+          if (!hasRequiredRole()) {
+            toast({
+              title: "Access denied",
+              description: "You don't have permission to access this page",
+              variant: "destructive"
+            });
+            navigate('/');
+            return;
+          }
+          
+          setLocalLoading(false);
         }
-        
-        setLocalLoading(false);
       } catch (error) {
-        console.error("RequireAuth: Error checking Supabase session", error);
-        toast.error("Authentication error. Please try again.");
-        setLocalLoading(false);
-        setShowContent(false);
-        setShowAuthDialog(true);
+        console.error("Error checking authentication:", error);
+        navigate(redirectTo, { state: { from: location.pathname } });
       }
     };
-    
-    if (!loading) {
-      checkSupabaseSession();
-    }
-  }, [currentUser, loading]);
 
-  const handleLogin = () => {
-    setShowAuthDialog(false);
-    navigate(redirectTo);
-  };
+    checkAuth();
+  }, [currentUser, loading, navigate, location.pathname, redirectTo]);
 
-  // Show a smoother loading experience
+  // Show loading state
   if (loading || localLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className={cn(
+        "flex items-center justify-center min-h-screen",
+        isDarkMode ? "bg-gray-900" : "bg-gray-50"
+      )}>
+        <div className="text-center">
+          <Loader2 className={cn(
+            "h-8 w-8 animate-spin mx-auto",
+            isDarkMode ? "text-blue-400" : "text-blue-600"
+          )} />
+          <p className={cn(
+            "mt-4 text-sm",
+            isDarkMode ? "text-gray-300" : "text-gray-600"
+          )}>
+            Verifying your access...
+          </p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <>
-      {showContent && children}
-      
-      {showAuthDialog && (
-        <AuthDialog
-          open={showAuthDialog}
-          onOpenChange={setShowAuthDialog}
-          onLogin={handleLogin}
-          title="Authentication Required"
-          message="You need to be logged in to access this feature."
-        />
-      )}
-    </>
-  );
+  // User is authenticated and has required permissions
+  return <>{children}</>;
 };
 
 export default RequireAuth;

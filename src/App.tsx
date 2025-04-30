@@ -12,7 +12,8 @@ import Wishlist from '@/pages/Wishlist';
 import Notifications from './components/Notifications'; 
 import Help from '@/pages/Help';
 import Partner from '@/pages/Partner';
-import AddressManagement from '@/pages/AddressManagement'; // Import the new page
+import AddressManagement from '@/pages/AddressManagement';
+import RequireAuth from '@/components/auth/RequireAuth';
 
 // Layout components
 import MainLayout from '@/components/layout/MainLayout';
@@ -50,7 +51,7 @@ import ManagementSupport from './pages/ManagementSupport';
 
 // Admin pages
 import ShopDashboard from '@/pages/ShopDashboard';
-// Replace AdminDashboard with ShopDashboard since AdminDashboard doesn't exist
+// Using ShopDashboard since AdminDashboard doesn't exist
 import AdminSettings from './pages/AdminSettings';
 
 function App() {
@@ -65,11 +66,23 @@ function App() {
         <Route path="cart" element={<Cart />} />
         <Route path="categories" element={<NewArrivals />} />
         <Route path="categories/:id" element={<CategoryPage />} />
-        <Route path="checkout" element={<Checkout />} />
-        <Route path="order-success" element={<OrderSuccess />} />
+        <Route path="checkout" element={
+          <RequireAuth>
+            <Checkout />
+          </RequireAuth>
+        } />
+        <Route path="order-success" element={
+          <RequireAuth>
+            <OrderSuccess />
+          </RequireAuth>
+        } />
         <Route path="search" element={<Search />} />
         <Route path="offers" element={<Offers />} />
-        <Route path="notifications" element={<Notifications />} />
+        <Route path="notifications" element={
+          <RequireAuth>
+            <Notifications />
+          </RequireAuth>
+        } />
         <Route path="help" element={<Help />} />
         <Route path="partner" element={<Partner />} />
       </Route>
@@ -79,15 +92,23 @@ function App() {
         <Route path="callback" element={<AuthCallback />} />
       </Route>
 
-      <Route path="/account" element={<MainLayout />}>
+      <Route path="/account" element={
+        <RequireAuth>
+          <MainLayout />
+        </RequireAuth>
+      }>
         <Route index element={<Account />} />
         <Route path="orders" element={<MyOrders />} />
         <Route path="wishlist" element={<AccountWishlist />} />
         <Route path="settings" element={<AccountSettings />} />
-        <Route path="addresses" element={<AddressManagement />} /> {/* Add new route */}
+        <Route path="addresses" element={<AddressManagement />} />
       </Route>
 
-      <Route path="/management" element={<DashboardLayout />}>
+      <Route path="/management" element={
+        <RequireAuth adminOnly={true} redirectTo='/auth/login'>
+          <DashboardLayout />
+        </RequireAuth>
+      }>
         <Route path="login" element={<UnifiedLogin />} />
         <Route index element={<ManagementDashboard />} />
         <Route path="dashboard" element={<ManagementDashboard />} />
@@ -100,7 +121,11 @@ function App() {
         <Route path="support" element={<ManagementSupport />} />
       </Route>
 
-      <Route path="/admin">
+      <Route path="/admin" element={
+        <RequireAuth shopAdminOnly={true} redirectTo='/auth/login'>
+          <MainLayout />
+        </RequireAuth>
+      }>
         <Route path="login" element={<UnifiedLogin />} />
         <Route path="dashboard" element={<ShopDashboard />} />
         <Route path="settings" element={<AdminSettings />} />

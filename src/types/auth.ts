@@ -1,3 +1,4 @@
+
 import { User } from '@supabase/supabase-js';
 
 export interface UserProfile {
@@ -16,6 +17,7 @@ export interface UserProfile {
     postalCode: string;
     country: string;
     isDefault: boolean;
+    phoneNumber?: string;
   }[];
   preferences?: {
     notifications?: {
@@ -26,6 +28,7 @@ export interface UserProfile {
     theme?: string;
     currency?: string;
     language?: string;
+    role?: 'user' | 'shop_admin' | 'admin';
   };
   avatarUrl?: string;
 }
@@ -35,8 +38,8 @@ export interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   isSupabaseAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | undefined>;
+  register: (email: string, password: string) => Promise<User | undefined>;
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
   logout: () => Promise<void>;

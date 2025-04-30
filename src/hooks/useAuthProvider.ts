@@ -1,8 +1,9 @@
+
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from '@/types/auth';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/components/ui/use-toast';
 
 export const useAuthProvider = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -11,23 +12,52 @@ export const useAuthProvider = () => {
   const [isSupabaseAuthenticated, setIsSupabaseAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.id);
+      
+      // Only synchronous state updates here
       setCurrentUser(session?.user ?? null);
       setIsSupabaseAuthenticated(!!session);
+      
+      // Handle user profile after auth change
       if (session?.user) {
-        ensureUserProfile(session.user);
+        setTimeout(() => {
+          fetchUserProfile(session.user.id);
+        }, 0);
+      } else {
+        setUserProfile(null);
+      }
+
+      // Handle auth events for better UX
+      if (event === 'SIGNED_IN') {
+        toast({
+          title: "Signed in successfully",
+          variant: "default"
+        });
+      } else if (event === 'SIGNED_OUT') {
+        toast({
+          title: "Signed out successfully",
+          variant: "default"
+        });
+      } else if (event === 'PASSWORD_RECOVERY') {
+        toast({
+          title: "Password reset link sent",
+          description: "Please check your email",
+          variant: "default"
+        });
       }
     });
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       setCurrentUser(session?.user ?? null);
       setIsSupabaseAuthenticated(!!session);
+
       if (session?.user) {
-        ensureUserProfile(session.user);
+        fetchUserProfile(session.user.id);
       } else {
-        setUserProfile(null);
         setLoading(false);
       }
     });
@@ -37,90 +67,87 @@ export const useAuthProvider = () => {
     };
   }, []);
 
-  const ensureUserProfile = async (user: User) => {
+  const ensureUserProfile = async (userId: string) => {
     try {
-      if (!user || !user.id) {
-        console.error('Invalid user object received:', user);
-        setLoading(false);
-        return;
-      }
+      console.log('Ensuring profile exists for user:', userId);
       
-      console.log('Ensuring user profile exists for:', user.id);
-      
-      // First check if profile exists
+      // Check if profile exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
 
-      // Handle the case where no profile exists
       if (fetchError) {
         if (fetchError.code === 'PGRST116') { // "No rows returned" error code
-          console.log('No user profile found, will create one for user:', user.id);
+          console.log('Creating new user profile for:', userId);
           
-          // If no profile exists, create one
-          const newProfile = {
-            id: user.id,
-            display_name: user.user_metadata?.full_name || user.user_metadata?.name || 
-                           (user.email ? user.email.split('@')[0] : 'User'),
+          // Get user details
+          const { data: userData } = await supabase.auth.getUser();
+          const user = userData?.user;
+          
+          if (!user) {
+            throw new Error('User data not available');
+          }
+          
+          // Create profile
+          const newProfile: Partial<UserProfile> = {
+            id: userId,
+            displayName: user.user_metadata?.name || 
+                       user.user_metadata?.full_name || 
+                       user.email?.split('@')[0] || 
+                       'User',
             email: user.email || '',
-            avatar_url: user.user_metadata?.avatar_url || '',
-            preferences: {},
-            created_at: new Date().toISOString()
+            preferences: {
+              notifications: {
+                email: true,
+                sms: false,
+                push: true
+              },
+              theme: 'system',
+              currency: 'INR',
+              language: 'en'
+            },
+            avatarUrl: user.user_metadata?.avatar_url || '',
           };
 
           const { error: insertError } = await supabase
             .from('user_profiles')
-            .insert(newProfile);
+            .insert({
+              id: userId,
+              display_name: newProfile.displayName,
+              email: newProfile.email,
+              preferences: newProfile.preferences,
+              avatar_url: newProfile.avatarUrl
+            });
 
           if (insertError) {
             console.error('Error creating user profile:', insertError);
-            toast.error('Failed to create your user profile. Some features may be limited.');
-            setLoading(false);
-            return;
+            throw insertError;
           }
 
-          console.log('User profile created, fetching it back');
-          
-          // Fetch the newly created profile
-          const { data: newProfileData, error: refetchError } = await supabase
+          // Fetch new profile
+          const { data: newProfileData } = await supabase
             .from('user_profiles')
             .select('*')
-            .eq('id', user.id)
+            .eq('id', userId)
             .single();
 
-          if (refetchError) {
-            console.error('Error fetching new user profile:', refetchError);
-            setLoading(false);
-            return;
-          }
-
-          console.log('Successfully created and fetched user profile');
-          setUserProfile(newProfileData);
-          setLoading(false);
-          return;
+          setUserProfile(formatProfileData(newProfileData));
         } else {
-          // Any other error while fetching the profile
           console.error('Error fetching user profile:', fetchError);
-          toast.error('Error loading your profile');
-          setLoading(false);
-          return;
+          throw fetchError;
         }
-      }
-
-      // Profile exists, set it in state
-      if (existingProfile) {
-        console.log('User profile found, setting state for user:', user.id);
-        setUserProfile(existingProfile);
-      } else {
-        console.error('No error and no profile - unexpected state');
-        // This should not happen but handle it just in case
-        toast.error('Error loading your profile');
+      } else if (existingProfile) {
+        setUserProfile(formatProfileData(existingProfile));
       }
     } catch (error) {
-      console.error('Exception in ensureUserProfile:', error);
-      toast.error('Failed to set up user profile');
+      console.error('Error in ensureUserProfile:', error);
+      toast({
+        title: "Profile Error",
+        description: "There was a problem setting up your profile. Some features might be limited.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -128,40 +155,99 @@ export const useAuthProvider = () => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      console.log('Fetching profile for user:', userId);
+      setLoading(true);
+      
+      const { data: profile, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
-      setUserProfile(data);
+      if (error) {
+        console.log('Error fetching profile, will try to create one:', error);
+        await ensureUserProfile(userId);
+        return;
+      }
+
+      if (profile) {
+        console.log('Retrieved user profile:', profile.id);
+        
+        // Fetch saved addresses
+        const { data: addresses } = await supabase
+          .from('user_addresses')
+          .select('*')
+          .eq('user_id', userId)
+          .order('is_default', { ascending: false });
+
+        const formattedProfile = formatProfileData(profile, addresses);
+        setUserProfile(formattedProfile);
+      } else {
+        console.log('No profile found, creating one');
+        await ensureUserProfile(userId);
+      }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
-      toast.error('Failed to fetch user profile');
+      console.error('Error in fetchUserProfile:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  // Helper to format profile data from Supabase
+  const formatProfileData = (profile: any, addresses?: any[]): UserProfile => {
+    const formattedProfile: UserProfile = {
+      id: profile.id,
+      displayName: profile.display_name || 'User',
+      email: profile.email || '',
+      phone: profile.phone,
+      address: profile.address,
+      preferences: profile.preferences || {},
+      avatarUrl: profile.avatar_url,
+    };
+
+    if (addresses && addresses.length > 0) {
+      formattedProfile.savedAddresses = addresses.map(addr => ({
+        id: addr.id,
+        name: addr.name,
+        addressLine1: addr.address_line1,
+        addressLine2: addr.address_line2,
+        city: addr.city,
+        state: addr.state,
+        postalCode: addr.postal_code,
+        country: addr.country,
+        isDefault: addr.is_default
+      }));
+    }
+
+    return formattedProfile;
+  };
+
   const login = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
       if (error) throw error;
       
-      // No need to create profile here - the auth state change will trigger ensureUserProfile
-      toast.success('Logged in successfully');
+      console.log('Login successful for:', data.user?.id);
       return data.user;
-    } catch (error) {
-      console.error('Error logging in:', error);
-      toast.error('Failed to log in');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (email: string, password: string) => {
     try {
-      console.log('Starting registration process for:', email);
+      setLoading(true);
+      console.log('Starting registration for:', email);
       
       const { data, error } = await supabase.auth.signUp({ 
         email, 
@@ -171,55 +257,34 @@ export const useAuthProvider = () => {
         }
       });
       
-      if (error) {
-        console.error('Supabase auth signup error:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('Supabase signup successful, user data:', data.user);
+      console.log('Registration successful for:', data.user?.id);
       
-      if (data.user) {
-        // Create user profile immediately after registration
-        try {
-          console.log('Creating user profile for new user:', data.user.id);
-          const newProfile = {
-            id: data.user.id,
-            display_name: email.split('@')[0] || 'User',
-            email: email,
-            preferences: {},
-            created_at: new Date().toISOString()
-          };
-
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert(newProfile);
-            
-          if (profileError) {
-            console.error('Error creating user profile:', profileError);
-            toast.error('Account created but profile setup failed. Some features may be limited.');
-          } else {
-            console.log('User profile created successfully');
-          }
-        } catch (profileError) {
-          console.error('Exception during profile creation:', profileError);
-          // Don't fail the registration if profile creation fails
-          toast.error('Account created but profile setup failed. Some features may be limited.');
-        }
-      } else {
-        console.warn('User created but data.user is null or undefined');
-      }
+      // Profile will be created by onAuthStateChange listener
+      toast({
+        title: "Registration Successful",
+        description: "Please check your email for verification",
+        variant: "default"
+      });
       
-      toast.success('Registration successful! Please check your email to verify your account.');
       return data.user;
-    } catch (error) {
-      console.error('Error registering:', error);
-      toast.error('Failed to register: ' + (error.message || 'Unknown error'));
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const loginWithGoogle = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -230,17 +295,24 @@ export const useAuthProvider = () => {
           }
         }
       });
+      
       if (error) throw error;
-      // User profile will be created after OAuth callback and auth state change
-    } catch (error) {
-      console.error('Error logging in with Google:', error);
-      toast.error('Failed to log in with Google');
+    } catch (error: any) {
+      console.error('Google login error:', error);
+      toast({
+        title: "Google Login Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const loginWithFacebook = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
@@ -248,136 +320,342 @@ export const useAuthProvider = () => {
           scopes: 'email,public_profile'
         }
       });
+      
       if (error) throw error;
-      // User profile will be created after OAuth callback and auth state change
-    } catch (error) {
-      console.error('Error logging in with Facebook:', error);
-      toast.error('Failed to log in with Facebook');
+    } catch (error: any) {
+      console.error('Facebook login error:', error);
+      toast({
+        title: "Facebook Login Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
+      
       if (error) throw error;
-      toast.success('Logged out successfully');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast.error('Failed to log out');
+      
+      // Clear all previous state
+      setCurrentUser(null);
+      setUserProfile(null);
+      setIsSupabaseAuthenticated(false);
+      
+      // Clear any admin session storage
+      sessionStorage.removeItem('adminUsername');
+      sessionStorage.removeItem('adminShopId');
+      sessionStorage.removeItem('adminShopName');
+      sessionStorage.removeItem('adminRole');
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const forgotPassword = async (email: string) => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`
       });
+      
       if (error) throw error;
-      toast.success('Password reset instructions sent to your email');
-    } catch (error) {
-      console.error('Error sending password reset:', error);
-      toast.error('Failed to send password reset instructions');
+      
+      toast({
+        title: "Reset Email Sent",
+        description: "Check your email for the password reset link",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Forgot password error:', error);
+      toast({
+        title: "Password Reset Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateProfile = async (data: Partial<UserProfile>) => {
     if (!currentUser) throw new Error('No user logged in');
     try {
+      setLoading(true);
+      
+      // Convert from our app format to Supabase format
+      const supabaseData: any = {};
+      
+      if (data.displayName !== undefined) supabaseData.display_name = data.displayName;
+      if (data.email !== undefined) supabaseData.email = data.email;
+      if (data.phone !== undefined) supabaseData.phone = data.phone;
+      if (data.address !== undefined) supabaseData.address = data.address;
+      if (data.preferences !== undefined) supabaseData.preferences = data.preferences;
+      if (data.avatarUrl !== undefined) supabaseData.avatar_url = data.avatarUrl;
+      
       const { error } = await supabase
         .from('user_profiles')
-        .update(data)
+        .update(supabaseData)
         .eq('id', currentUser.id);
+      
       if (error) throw error;
+      
+      // Refresh profile
       await fetchUserProfile(currentUser.id);
-      toast.success('Profile updated successfully');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      
+      toast({
+        title: "Profile Updated",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      toast({
+        title: "Profile Update Failed",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const addAddress = async (address: Omit<UserProfile['savedAddresses'][0], 'id'>) => {
     if (!currentUser) throw new Error('No user logged in');
     try {
+      setLoading(true);
+      
+      // Handle default address if needed
+      if (address.isDefault) {
+        // First set all addresses to non-default
+        const { error: updateError } = await supabase
+          .from('user_addresses')
+          .update({ is_default: false })
+          .eq('user_id', currentUser.id);
+          
+        if (updateError) {
+          console.error('Error updating existing addresses:', updateError);
+        }
+      }
+      
+      // Convert from our app format to Supabase format
+      const supabaseAddress = {
+        user_id: currentUser.id,
+        name: address.name,
+        address_line1: address.addressLine1,
+        address_line2: address.addressLine2 || null,
+        city: address.city,
+        state: address.state,
+        postal_code: address.postalCode,
+        country: address.country,
+        is_default: address.isDefault,
+        phone_number: address.phoneNumber || ''
+      };
+      
       const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          savedAddresses: [...(userProfile?.savedAddresses || []), { ...address, id: crypto.randomUUID() }]
-        })
-        .eq('id', currentUser.id);
+        .from('user_addresses')
+        .insert(supabaseAddress);
+      
       if (error) throw error;
+      
+      // Refresh profile to get new address
       await fetchUserProfile(currentUser.id);
-      toast.success('Address added successfully');
-    } catch (error) {
-      console.error('Error adding address:', error);
-      toast.error('Failed to add address');
+      
+      toast({
+        title: "Address Added",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Add address error:', error);
+      toast({
+        title: "Failed to Add Address",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateAddress = async (address: UserProfile['savedAddresses'][0]) => {
     if (!currentUser) throw new Error('No user logged in');
     try {
+      setLoading(true);
+      
+      // Handle default address if needed
+      if (address.isDefault) {
+        // First set all addresses to non-default
+        const { error: updateError } = await supabase
+          .from('user_addresses')
+          .update({ is_default: false })
+          .eq('user_id', currentUser.id)
+          .neq('id', address.id);
+          
+        if (updateError) {
+          console.error('Error updating existing addresses:', updateError);
+        }
+      }
+      
+      // Convert from our app format to Supabase format
+      const supabaseAddress = {
+        name: address.name,
+        address_line1: address.addressLine1,
+        address_line2: address.addressLine2 || null,
+        city: address.city,
+        state: address.state,
+        postal_code: address.postalCode,
+        country: address.country,
+        is_default: address.isDefault,
+        phone_number: address.phoneNumber || ''
+      };
+      
       const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          savedAddresses: userProfile?.savedAddresses.map(addr => 
-            addr.id === address.id ? address : addr
-          ) || []
-        })
-        .eq('id', currentUser.id);
+        .from('user_addresses')
+        .update(supabaseAddress)
+        .eq('id', address.id)
+        .eq('user_id', currentUser.id);
+      
       if (error) throw error;
+      
+      // Refresh profile
       await fetchUserProfile(currentUser.id);
-      toast.success('Address updated successfully');
-    } catch (error) {
-      console.error('Error updating address:', error);
-      toast.error('Failed to update address');
+      
+      toast({
+        title: "Address Updated",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Update address error:', error);
+      toast({
+        title: "Failed to Update Address",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const removeAddress = async (addressId: string) => {
     if (!currentUser) throw new Error('No user logged in');
     try {
+      setLoading(true);
+      
+      // Check if this is the default address
+      const { data: address, error: fetchError } = await supabase
+        .from('user_addresses')
+        .select('is_default')
+        .eq('id', addressId)
+        .eq('user_id', currentUser.id)
+        .single();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+      }
+      
+      // Delete the address
       const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          savedAddresses: userProfile?.savedAddresses.filter(addr => addr.id !== addressId) || []
-        })
-        .eq('id', currentUser.id);
+        .from('user_addresses')
+        .delete()
+        .eq('id', addressId)
+        .eq('user_id', currentUser.id);
+      
       if (error) throw error;
+      
+      // If this was the default address, set a new default
+      if (address && address.is_default) {
+        const { data: addresses, error: listError } = await supabase
+          .from('user_addresses')
+          .select('id')
+          .eq('user_id', currentUser.id)
+          .limit(1);
+        
+        if (!listError && addresses && addresses.length > 0) {
+          await supabase
+            .from('user_addresses')
+            .update({ is_default: true })
+            .eq('id', addresses[0].id)
+            .eq('user_id', currentUser.id);
+        }
+      }
+      
+      // Refresh profile
       await fetchUserProfile(currentUser.id);
-      toast.success('Address removed successfully');
-    } catch (error) {
-      console.error('Error removing address:', error);
-      toast.error('Failed to remove address');
+      
+      toast({
+        title: "Address Removed",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Remove address error:', error);
+      toast({
+        title: "Failed to Remove Address",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const setDefaultAddress = async (addressId: string) => {
     if (!currentUser) throw new Error('No user logged in');
     try {
+      setLoading(true);
+      
+      // First set all addresses to non-default
+      const { error: updateError } = await supabase
+        .from('user_addresses')
+        .update({ is_default: false })
+        .eq('user_id', currentUser.id);
+      
+      if (updateError) {
+        throw updateError;
+      }
+      
+      // Then set the specified address as default
       const { error } = await supabase
-        .from('user_profiles')
-        .update({
-          savedAddresses: userProfile?.savedAddresses.map(addr => ({
-            ...addr,
-            isDefault: addr.id === addressId
-          })) || []
-        })
-        .eq('id', currentUser.id);
+        .from('user_addresses')
+        .update({ is_default: true })
+        .eq('id', addressId)
+        .eq('user_id', currentUser.id);
+      
       if (error) throw error;
+      
+      // Refresh profile
       await fetchUserProfile(currentUser.id);
-      toast.success('Default address updated successfully');
-    } catch (error) {
-      console.error('Error setting default address:', error);
-      toast.error('Failed to set default address');
+      
+      toast({
+        title: "Default Address Updated",
+        variant: "default"
+      });
+    } catch (error: any) {
+      console.error('Set default address error:', error);
+      toast({
+        title: "Failed to Set Default Address",
+        description: error.message,
+        variant: "destructive"
+      });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 

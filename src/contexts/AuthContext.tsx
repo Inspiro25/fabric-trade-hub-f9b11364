@@ -1,3 +1,4 @@
+
 import { createContext, useContext } from 'react';
 import { User } from '@supabase/supabase-js';
 import { UserProfile } from '@/types/auth';
@@ -8,8 +9,8 @@ export interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   isSupabaseAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | undefined>;
+  register: (email: string, password: string) => Promise<User | undefined>;
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
   logout: () => Promise<void>;

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,14 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from '@/hooks/use-toast';
+import { toast } from '@/components/ui/use-toast';
 import { Store, User, ArrowLeft, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Separator } from '@/components/ui/separator';
 
 // Validation schemas
@@ -49,13 +50,22 @@ type AdminLoginValues = z.infer<typeof adminLoginSchema>;
 
 const UnifiedLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { isDarkMode } = useTheme();
-  const { login } = useAuth();
+  const { login, register: registerUser, currentUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('user');
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>('login');
+
+  // Check if user is already logged in
+  useEffect(() => {
+    if (currentUser) {
+      const { from } = location.state || { from: '/' };
+      navigate(from, { replace: true });
+    }
+  }, [currentUser, navigate, location]);
 
   // Forms
   const userLoginForm = useForm<UserLoginValues>({
@@ -83,14 +93,21 @@ const UnifiedLogin = () => {
     setIsLoading(true);
     try {
       await login(values.email, values.password);
-      toast.success("Login successful", {
-        description: "Welcome back!"
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+        variant: "default"
       });
-      navigate('/');
+      
+      // Redirect to the page they tried to access or home
+      const { from } = location.state || { from: '/' };
+      navigate(from, { replace: true });
     } catch (error: any) {
       console.error('Login error:', error);
-      toast.error("Login failed", {
-        description: error.message || "Invalid credentials"
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -101,21 +118,21 @@ const UnifiedLogin = () => {
   const onUserSignupSubmit = async (values: UserSignupValues) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
+      await registerUser(values.email, values.password);
+      
+      toast({
+        title: "Account created",
+        description: "Please check your email to verify your account",
+        variant: "default"
       });
-
-      if (error) throw error;
-
-      toast.success("Account created", {
-        description: "Please check your email to verify your account"
-      });
+      
       setAuthMode('login');
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast.error("Signup failed", {
-        description: error.message || "Failed to create account"
+      toast({
+        title: "Signup failed",
+        description: error.message || "Failed to create account",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -132,14 +149,18 @@ const UnifiedLogin = () => {
 
       if (error) throw error;
 
-      toast.success("Reset link sent", {
-        description: "Please check your email for password reset instructions"
+      toast({
+        title: "Reset link sent",
+        description: "Please check your email for password reset instructions",
+        variant: "default"
       });
       setAuthMode('login');
     } catch (error: any) {
       console.error('Forgot password error:', error);
-      toast.error("Failed to send reset link", {
-        description: error.message || "Please try again later"
+      toast({
+        title: "Failed to send reset link",
+        description: error.message || "Please try again later",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
@@ -150,18 +171,60 @@ const UnifiedLogin = () => {
   const onAdminSubmit = async (values: AdminLoginValues) => {
     setIsLoading(true);
     try {
-      // Check for management credentials first
+      // First try Supabase login
+      const { data: userData, error: loginError } = await supabase.auth.signInWithPassword({
+        email: `${values.shopId}@admin.platform.com`, // This is a specific format for shop admin emails
+        password: values.password,
+      });
+
+      // If login succeeds and we have user data with the correct role
+      if (!loginError && userData?.user) {
+        // Fetch user profile to check role
+        const { data: profileData } = await supabase
+          .from('user_profiles')
+          .select('preferences')
+          .eq('id', userData.user.id)
+          .single();
+          
+        if (profileData?.preferences?.role === 'shop_admin' || profileData?.preferences?.role === 'admin') {
+          // Set local storage values for admin UI
+          if (profileData?.preferences?.role === 'shop_admin') {
+            sessionStorage.setItem('adminShopId', values.shopId);
+            sessionStorage.setItem('adminRole', 'shop');
+            navigate('/admin/dashboard');
+          } else {
+            sessionStorage.setItem('adminRole', 'main');
+            navigate('/management/dashboard');
+          }
+          
+          toast({
+            title: "Login successful",
+            description: "Welcome to the admin panel",
+            variant: "default"
+          });
+          return;
+        } else {
+          // If user exists but doesn't have admin role, log them out
+          await logout();
+        }
+      }
+
+      // Fallback to checking hardcoded/development credentials
       if (values.shopId === 'admin' && values.password === 'admin123') {
         sessionStorage.setItem('adminUsername', values.shopId);
         sessionStorage.setItem('adminRole', 'main');
-        toast.success("Login successful", {
-          description: "Welcome to the management portal"
+        
+        toast({
+          title: "Login successful",
+          description: "Welcome to the management portal",
+          variant: "default"
         });
+        
         navigate('/management/dashboard');
         return;
       }
 
-      // If not management, try shop admin login
+      // Check for shop admin credentials
       const { data: shopData, error: shopError } = await supabase
         .from('shops')
         .select('*')
@@ -179,15 +242,18 @@ const UnifiedLogin = () => {
 
       // For development/testing, use a default password
       // In production, this should be replaced with proper authentication
-      if (values.password === 'shop123') {
+      if (values.password === 'shop123' || values.password === shopData.password) {
         // Store shop information in session
         sessionStorage.setItem('adminShopId', values.shopId);
         sessionStorage.setItem('adminShopName', shopData.name || 'Shop');
         sessionStorage.setItem('adminRole', 'shop');
 
-        toast.success("Login successful", {
-          description: `Welcome to ${shopData.name || 'your shop'}'s admin panel`
+        toast({
+          title: "Login successful",
+          description: `Welcome to ${shopData.name || 'your shop'}'s admin panel`,
+          variant: "default"
         });
+        
         navigate('/admin/dashboard');
         return;
       }
@@ -195,13 +261,18 @@ const UnifiedLogin = () => {
       throw new Error('Invalid password');
     } catch (error: any) {
       console.error('Admin login error:', error);
-      toast.error("Login failed", {
-        description: error.message || "Invalid shop ID or password"
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid shop ID or password",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Retrieve "from" path from location state if it exists
+  const from = location.state?.from || '/';
 
   const renderUserAuthContent = () => {
     switch (authMode) {
@@ -684,10 +755,17 @@ const UnifiedLogin = () => {
               </TabsContent>
             </Tabs>
           </CardContent>
+          <CardFooter className="px-6 py-4 border-t flex flex-col space-y-2">
+            <div className="text-center text-sm text-gray-500">
+              {from !== '/' && (
+                <p>You need to login to access the requested page.</p>
+              )}
+            </div>
+          </CardFooter>
         </Card>
       </div>
     </div>
   );
 };
 
-export default UnifiedLogin; 
+export default UnifiedLogin;
