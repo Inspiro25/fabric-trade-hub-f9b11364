@@ -10,8 +10,8 @@ interface CartItem {
   productImage: string;
   thumbnailUrl: string;
   price: number;
-	stock: number;
-	shopId: string;
+  stock: number;
+  shopId: string;
   salePrice: number | null;
 }
 
@@ -28,7 +28,7 @@ const useCartStorage = () => {
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
-		syncCartWithDatabase();
+    syncCartWithDatabase();
   }, [cart, currentUser]);
 
   const syncCartWithDatabase = useCallback(async () => {
@@ -49,6 +49,8 @@ const useCartStorage = () => {
         throw error;
       }
       
+      if (!products || products.length === 0) return;
+
       // Update cart items with current product data
       const updatedCart = cart.map(item => {
         const product = products.find(p => p.id === item.productId);
@@ -58,8 +60,8 @@ const useCartStorage = () => {
         return {
           ...item,
           productName: product.name,
-          productImage: product.images && product.images.length > 0 ? product.images[0] : '',
-          thumbnailUrl: product.images && product.images.length > 0 ? product.images[0] : '',
+          productImage: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '',
+          thumbnailUrl: Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '',
           price: product.sale_price || product.price,
           stock: product.stock || 0,
           shopId: product.shop_id,
@@ -91,8 +93,8 @@ const useCartStorage = () => {
           productImage,
           thumbnailUrl: productImage,
           price,
-					stock,
-					shopId,
+          stock,
+          shopId,
           salePrice
         };
         setCart([...cart, newItem]);

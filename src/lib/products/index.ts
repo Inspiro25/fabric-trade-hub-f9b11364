@@ -16,12 +16,10 @@ export {
 } from './filters';
 
 // Export newArrivals with specific naming to avoid conflicts
-export { getNewArrivals as getNewArrivalsFromDB } from './newArrivals';
+export { getNewArrivals as getNewArrivalsFromFilters } from './filters';
+export { getNewArrivals } from './newArrivals';
 
 export * from './collections';
-
-// Import and re-export the product store from its correct location
-import { Product } from './types';
 
 // Mock product data for development
 export const mockProducts: Product[] = [];

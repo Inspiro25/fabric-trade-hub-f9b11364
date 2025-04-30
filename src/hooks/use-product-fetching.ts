@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/products/types';
@@ -33,6 +34,31 @@ const baseProductQuery = `
   )
 `;
 
+// Helper function to transform database product to client Product type
+const transformProduct = (item: any): Product => {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description || '',
+    price: item.price,
+    salePrice: item.discount_price || item.sale_price,
+    sale_price: item.discount_price || item.sale_price,
+    images: item.images || [],
+    category: item.categories ? item.categories.name || '' : '',
+    category_id: item.category_id,
+    rating: item.rating || 0,
+    reviewCount: item.review_count || 0,
+    review_count: item.review_count || 0,
+    stock: item.stock || 0,
+    colors: item.colors || [],
+    sizes: item.sizes || [],
+    tags: item.tags || [],
+    isNew: item.is_new,
+    isTrending: item.is_trending,
+    shop_id: item.shop_id
+  };
+};
+
 export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProductFetchingProps = {}) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,23 +83,7 @@ export const useProductFetching = ({ category, limit = 10, page = 1 }: UseProduc
 
         if (error) throw error;
 
-        const mappedProducts: Product[] = data?.map(item => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          salePrice: item.discount_price || item.sale_price,
-          images: item.images || [],
-          category: item.categories ? item.categories.name || '' : '',
-          category_id: item.category_id,
-          rating: item.rating || 0,
-          reviewCount: item.review_count || 0,
-          review_count: item.review_count || 0,
-          stock: item.stock || 0,
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          tags: item.tags || []
-        })) || [];
+        const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
 
         setProducts(mappedProducts);
         setTotalCount(count || 0);
@@ -108,24 +118,7 @@ export const useNewArrivals = (limit = 10) => {
 
         if (error) throw error;
         
-        const mappedProducts: Product[] = data?.map(item => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          salePrice: item.discount_price,
-          sale_price: item.discount_price,
-          images: item.images || [],
-          category: item.categories ? item.categories.name || '' : '',
-          category_id: item.category_id,
-          rating: item.rating || 0,
-          reviewCount: item.review_count || 0,
-          review_count: item.review_count || 0,
-          stock: item.stock || 0,
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          tags: item.tags || []
-        })) || [];
+        const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
         
         setProducts(mappedProducts);
       } catch (err) {
@@ -162,24 +155,7 @@ export const useDiscountedProducts = (limit = 10) => {
 
         if (error) throw error;
         
-        const mappedProducts: Product[] = data?.map(item => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          salePrice: item.discount_price,
-          sale_price: item.discount_price,
-          images: item.images || [],
-          category: item.categories ? item.categories.name || '' : '',
-          category_id: item.category_id,
-          rating: item.rating || 0,
-          reviewCount: item.review_count || 0,
-          review_count: item.review_count || 0,
-          stock: item.stock || 0,
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          tags: item.tags || []
-        })) || [];
+        const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
         
         setProducts(mappedProducts);
       } catch (err) {
@@ -214,24 +190,7 @@ export const useTopRatedProducts = (limit = 10) => {
 
         if (error) throw error;
         
-        const mappedProducts: Product[] = data?.map(item => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          salePrice: item.discount_price,
-          sale_price: item.discount_price,
-          images: item.images || [],
-          category: item.categories ? item.categories.name || '' : '',
-          category_id: item.category_id,
-          rating: item.rating || 0,
-          reviewCount: item.review_count || 0,
-          review_count: item.review_count || 0,
-          stock: item.stock || 0,
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          tags: item.tags || []
-        })) || [];
+        const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
         
         setProducts(mappedProducts);
       } catch (err) {
@@ -266,24 +225,7 @@ export const useTrendingProducts = (limit = 10) => {
 
         if (error) throw error;
         
-        const mappedProducts: Product[] = data?.map(item => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          salePrice: item.discount_price,
-          sale_price: item.discount_price,
-          images: item.images || [],
-          category: item.categories ? item.categories.name || '' : '',
-          category_id: item.category_id,
-          rating: item.rating || 0,
-          reviewCount: item.review_count || 0,
-          review_count: item.review_count || 0,
-          stock: item.stock || 0,
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          tags: item.tags || []
-        })) || [];
+        const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
         
         setProducts(mappedProducts);
       } catch (err) {
@@ -319,24 +261,7 @@ export const useProductsByCategory = (categoryId: string, limit = 10, page = 1) 
 
         if (error) throw error;
         
-        const mappedProducts: Product[] = data?.map(item => ({
-          id: item.id,
-          name: item.name,
-          description: item.description || '',
-          price: item.price,
-          salePrice: item.discount_price,
-          sale_price: item.discount_price,
-          images: item.images || [],
-          category: item.categories ? item.categories.name || '' : '',
-          category_id: item.category_id,
-          rating: item.rating || 0,
-          reviewCount: item.review_count || 0,
-          review_count: item.review_count || 0,
-          stock: item.stock || 0,
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          tags: item.tags || []
-        })) || [];
+        const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
         
         setProducts(mappedProducts);
         setTotalCount(count || 0);
@@ -367,26 +292,7 @@ export const fetchNewArrivals = async (limit = 10): Promise<Product[]> => {
 
     if (error) throw error;
     
-    const mappedProducts: Product[] = data?.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      salePrice: item.discount_price,
-      sale_price: item.discount_price,
-      images: item.images || [],
-      category: item.categories ? item.categories.name || '' : '',
-      category_id: item.category_id,
-      rating: item.rating || 0,
-      reviewCount: item.review_count || 0,
-      review_count: item.review_count || 0,
-      stock: item.stock || 0,
-      colors: item.colors || [],
-      sizes: item.sizes || [],
-      tags: item.tags || []
-    })) || [];
-    
-    return mappedProducts;
+    return data?.map(item => transformProduct(item)) || [];
   } catch (error) {
     console.error('Error in fetchNewArrivals:', error);
     return [];
@@ -404,26 +310,7 @@ export const fetchTrendingProducts = async (limit = 10): Promise<Product[]> => {
 
     if (error) throw error;
     
-    const mappedProducts: Product[] = data?.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      salePrice: item.discount_price,
-      sale_price: item.discount_price,
-      images: item.images || [],
-      category: item.categories ? item.categories.name || '' : '',
-      category_id: item.category_id,
-      rating: item.rating || 0,
-      reviewCount: item.review_count || 0,
-      review_count: item.review_count || 0,
-      stock: item.stock || 0,
-      colors: item.colors || [],
-      sizes: item.sizes || [],
-      tags: item.tags || []
-    })) || [];
-    
-    return mappedProducts;
+    return data?.map(item => transformProduct(item)) || [];
   } catch (error) {
     console.error('Error in fetchTrendingProducts:', error);
     return [];
@@ -440,24 +327,7 @@ export const fetchProductsByCategory = async (categoryId: string, limit = 10): P
 
     if (error) throw error;
     
-    const mappedProducts: Product[] = data?.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      salePrice: item.discount_price,
-      sale_price: item.discount_price,
-      images: item.images || [],
-      category: item.categories ? item.categories.name || '' : '',
-      category_id: item.category_id,
-      rating: item.rating || 0,
-      reviewCount: item.review_count || 0,
-      review_count: item.review_count || 0,
-      stock: item.stock || 0,
-      colors: item.colors || [],
-      sizes: item.sizes || [],
-      tags: item.tags || []
-    })) || [];
+    const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
     
     return { products: mappedProducts };
   } catch (error) {
@@ -512,24 +382,7 @@ export const fetchProducts = async (options: any = {}): Promise<{products: Produ
     
     if (error) throw error;
     
-    const mappedProducts: Product[] = data?.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      salePrice: item.discount_price,
-      sale_price: item.discount_price,
-      images: item.images || [],
-      category: item.categories ? item.categories.name || '' : '',
-      category_id: item.category_id,
-      rating: item.rating || 0,
-      reviewCount: item.review_count || 0,
-      review_count: item.review_count || 0,
-      stock: item.stock || 0,
-      colors: item.colors || [],
-      sizes: item.sizes || [],
-      tags: item.tags || []
-    })) || [];
+    const mappedProducts: Product[] = data?.map(item => transformProduct(item)) || [];
     
     return { products: mappedProducts };
   } catch (error) {
@@ -551,24 +404,7 @@ export const fetchProductsByShop = async (shopId: string, limit = 10): Promise<P
       return [];
     }
     
-    return data.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      salePrice: item.discount_price,
-      sale_price: item.discount_price,
-      images: item.images || [],
-      category: item.categories ? item.categories.name || '' : '',
-      category_id: item.category_id,
-      rating: item.rating || 0,
-      reviewCount: item.review_count || 0,
-      review_count: item.review_count || 0,
-      stock: item.stock || 0,
-      colors: item.colors || [],
-      sizes: item.sizes || [],
-      tags: item.tags || []
-    }));
+    return data.map(item => transformProduct(item));
   } catch (error) {
     console.error('Error in fetchProductsByShop:', error);
     return [];
@@ -592,24 +428,3 @@ const fetchUserData = async (userId: string) => {
     throw error;
   }
 };
-
-const transformProduct = useCallback((item: any): Product => {
-  return {
-    id: item.id,
-    name: item.name,
-    description: item.description || '',
-    price: item.price,
-    salePrice: item.discount_price || item.sale_price,
-    images: item.images || [],
-    category: item.category_id || '',
-    colors: item.colors || [],
-    sizes: item.sizes || [],
-    tags: item.tags || [],
-    stock: item.stock || 0,
-    rating: item.rating || 0,
-    reviewCount: item.review_count || 0,
-    isNew: item.is_new,
-    isTrending: item.is_trending,
-    shopId: item.shop_id
-  };
-}, []);
