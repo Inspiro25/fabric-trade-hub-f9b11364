@@ -1,8 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CartItem } from '@/types/cart';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/contexts/CartContext';
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -45,12 +46,12 @@ const Checkout = () => {
       <div key={item.id} className="flex items-center justify-between py-2">
         <div className="flex items-center space-x-4">
           <img
-            src={item.image || (item.product?.images ? item.product.images[0] : '/placeholder.png')}
-            alt={item.name || (item.product?.name || "Product")}
+            src={item.image || '/placeholder.png'}
+            alt={item.name || "Product"}
             className="w-16 h-16 object-cover rounded"
           />
           <div>
-            <h3 className="font-medium">{item.name || (item.product?.name || "Product")}</h3>
+            <h3 className="font-medium">{item.name}</h3>
             <p className="text-sm text-muted-foreground">
               Quantity: {item.quantity}
               {item.color && ` · Color: ${item.color}`}

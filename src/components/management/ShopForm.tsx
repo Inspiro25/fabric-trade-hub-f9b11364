@@ -211,4 +211,7 @@ const ShopForm = ({
   );
 };
 
+// Re-export the ShopFormValues interface for use in other components
+export { ShopFormValues };
+
 export default ShopForm;

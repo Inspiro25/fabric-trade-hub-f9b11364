@@ -1,7 +1,7 @@
 
 export interface ProductShowcaseProps {
   title: string;
-  subtitle?: string; // Make subtitle optional
+  subtitle?: string;
   products: any[];
   linkTo?: string;
   isLoaded?: boolean;
@@ -22,6 +22,6 @@ export interface ProductGridProps {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   showFilters?: boolean;
-  paginationClassName?: string; // Add missing property
+  paginationClassName?: string;
   isLoading?: boolean;
 }

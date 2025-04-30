@@ -10,7 +10,9 @@ export interface CartItem {
   color?: string;
   size?: string;
   product?: any; // Allow both productId and product to be used
-  // Add other fields as needed
+  stock?: number; // Add stock property
+  total?: number; // Add total property
+  shopId?: string; // Add shopId property
 }
 
 export interface CartContextProps {
