@@ -1,92 +1,106 @@
+import * as React from "react"
 
-import React from 'react';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { cn } from "@/lib/utils"
 
-interface AnimatedGradientProps {
-  className?: string;
-  children: React.ReactNode;
-  hue?: 'blue' | 'blue' | 'green' | 'purple';
-  intensity?: 'soft' | 'medium' | 'strong';
-  speed?: 'slow' | 'medium' | 'fast';
+interface GradientProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: "default" | "primary" | "secondary" | "destructive" | "success" | "warning" | "info" | "blue" | "green" | "red" | "yellow" | "purple" | "orange";
 }
 
-export function AnimatedGradient({
-  className,
-  children,
-  hue = 'blue',
-  intensity = 'medium',
-  speed = 'medium',
-}: AnimatedGradientProps) {
-  // Calculate colors based on hue
-  const getGradientColors = () => {
-    switch (hue) {
-      case 'blue':
-        return {
-          soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
-          medium: { from: 'from-blue-100', via: 'via-blue-200/60', to: 'to-blue-50' },
-          strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
-        };
-      case 'blue':
-        return {
-          soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
-          medium: { from: 'from-blue-100', via: 'via-blue-200/60', to: 'to-blue-50' },
-          strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
-        };
-      case 'green':
-        return {
-          soft: { from: 'from-green-50', via: 'via-green-100/40', to: 'to-white' },
-          medium: { from: 'from-green-100', via: 'via-green-200/60', to: 'to-green-50' },
-          strong: { from: 'from-green-200', via: 'via-green-300/70', to: 'to-green-100' },
-        };
-      case 'purple':
-        return {
-          soft: { from: 'from-purple-50', via: 'via-purple-100/40', to: 'to-white' },
-          medium: { from: 'from-purple-100', via: 'via-purple-200/60', to: 'to-purple-50' },
-          strong: { from: 'from-purple-200', via: 'via-purple-300/70', to: 'to-purple-100' },
-        };
-      default:
-        return {
-          soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
-          medium: { from: 'from-blue-100', via: 'via-blue-200/60', to: 'to-blue-50' },
-          strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
-        };
-    }
-  };
+const AnimatedGradient = React.forwardRef<HTMLSpanElement, GradientProps>(
+  ({ className, variant = "default", ...props }, ref) => {
+    const gradientClasses = () => {
+      switch (variant) {
+        case 'default':
+          return {
+            soft: { from: 'from-gray-50', via: 'via-gray-100/40', to: 'to-white' },
+            strong: { from: 'from-gray-200', via: 'via-gray-300/70', to: 'to-gray-100' },
+          };
+        case 'primary':
+          return {
+            soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
+            strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
+          };
+        case 'secondary':
+          return {
+            soft: { from: 'from-green-50', via: 'via-green-100/40', to: 'to-white' },
+            strong: { from: 'from-green-200', via: 'via-green-300/70', to: 'to-green-100' },
+          };
+        case 'destructive':
+          return {
+            soft: { from: 'from-red-50', via: 'via-red-100/40', to: 'to-white' },
+            strong: { from: 'from-red-200', via: 'via-red-300/70', to: 'to-red-100' },
+          };
+        case 'success':
+          return {
+            soft: { from: 'from-green-50', via: 'via-green-100/40', to: 'to-white' },
+            strong: { from: 'from-green-200', via: 'via-green-300/70', to: 'to-green-100' },
+          };
+        case 'warning':
+          return {
+            soft: { from: 'from-yellow-50', via: 'via-yellow-100/40', to: 'to-white' },
+            strong: { from: 'from-yellow-200', via: 'via-yellow-300/70', to: 'to-yellow-100' },
+          };
+        case 'info':
+          return {
+            soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
+            strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
+          };
+        case 'blue':
+          return {
+            soft: { from: 'from-blue-50', via: 'via-blue-100/40', to: 'to-white' },
+            strong: { from: 'from-blue-200', via: 'via-blue-300/70', to: 'to-blue-100' },
+          };
+        case 'green':
+          return {
+            soft: { from: 'from-green-50', via: 'via-green-100/40', to: 'to-white' },
+            strong: { from: 'from-green-200', via: 'via-green-300/70', to: 'to-green-100' },
+          };
+        case 'red':
+          return {
+            soft: { from: 'from-red-50', via: 'via-red-100/40', to: 'to-white' },
+            strong: { from: 'from-red-200', via: 'via-red-300/70', to: 'to-red-100' },
+          };
+        case 'yellow':
+          return {
+            soft: { from: 'from-yellow-50', via: 'via-yellow-100/40', to: 'to-white' },
+            strong: { from: 'from-yellow-200', via: 'via-yellow-300/70', to: 'to-yellow-100' },
+          };
+        case 'purple':
+          return {
+            soft: { from: 'from-purple-50', via: 'via-purple-100/40', to: 'to-white' },
+            strong: { from: 'from-purple-200', via: 'via-purple-300/70', to: 'to-purple-100' },
+          };
+        case 'orange':
+          return {
+            soft: { from: 'from-orange-50', via: 'via-orange-100/40', to: 'to-white' },
+            strong: { from: 'from-orange-200', via: 'via-orange-300/70', to: 'to-orange-100' },
+          };
+        default:
+          return {
+            soft: { from: 'from-gray-50', via: 'via-gray-100/40', to: 'to-white' },
+            strong: { from: 'from-gray-200', via: 'via-gray-300/70', to: 'to-gray-100' },
+          };
+      }
+    };
 
-  // Calculate animation duration based on speed
-  const getDuration = () => {
-    switch (speed) {
-      case 'slow': return 8;
-      case 'medium': return 5;
-      case 'fast': return 3;
-      default: return 5;
-    }
-  };
+    const { soft, strong } = gradientClasses();
 
-  const colors = getGradientColors()[intensity];
-  const duration = getDuration();
-
-  return (
-    <div className={cn("relative overflow-hidden", className)}>
-      <motion.div
+    return (
+      <span
+        ref={ref}
         className={cn(
-          "absolute inset-0 bg-gradient-to-r",
-          colors.from,
-          colors.via,
-          colors.to
+          "bg-gradient-to-r",
+          soft.from,
+          soft.via,
+          soft.to,
+          "animate-gradient",
+          className
         )}
-        animate={{
-          backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-        }}
-        transition={{
-          duration: duration,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "reverse",
-        }}
+        {...props}
       />
-      <div className="relative z-10">{children}</div>
-    </div>
-  );
-}
+    )
+  }
+)
+AnimatedGradient.displayName = "AnimatedGradient"
+
+export { AnimatedGradient }

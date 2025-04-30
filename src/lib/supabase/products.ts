@@ -34,6 +34,7 @@ export const transformProduct = (item: any): Product => {
     salePrice: item.sale_price,
     images: item.images || [],
     category_id: item.category_id,
+    category: item.category_id, // For compatibility
     rating: item.rating || 0,
     review_count: item.review_count || 0,
     reviewCount: item.review_count || 0,
@@ -48,6 +49,25 @@ export const transformProduct = (item: any): Product => {
     shop_id: item.shop_id,
     shopId: item.shop_id
   };
+};
+
+// Get a single product by ID
+export const getProductById = async (id: string): Promise<Product | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(baseProductQuery)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    if (!data) return null;
+    
+    return transformProduct(data);
+  } catch (error) {
+    console.error(`Error fetching product ${id}:`, error);
+    return null;
+  }
 };
 
 // Get products for a specific shop
@@ -140,4 +160,28 @@ export const getFeaturedProducts = async (limit = 8): Promise<Product[]> => {
     console.error('Error fetching featured products:', error);
     return [];
   }
+};
+
+// Function to fetch categories
+export const fetchCategories = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw error;
+  }
+};
+
+// Export this function to update Vyoma clothing images - needed for Index.tsx
+export const updateVyomaClothingImages = async () => {
+  // This is just a dummy function to satisfy the import in Index.tsx
+  // In a real app, this would contain logic to update images
+  console.log('Updating Vyoma clothing images');
+  return true;
 };

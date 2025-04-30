@@ -1,16 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Check, ChevronsUpDown, Plus, X, Loader2, ImagePlus, Tag, Palette, Ruler } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, X, Loader2, ImagePlus, Tag as TagIcon, Palette, Ruler, Save, Upload } from "lucide-react";
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { FormDescription } from "@/components/ui/form";
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { debounce } from 'lodash';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '@/lib/utils';
+import { Product } from '@/lib/products/types';
+import { createProduct, updateProduct, fetchCategories } from '@/lib/supabase/products';
 
 // Validation schema
 const formSchema = z.object({
@@ -997,6 +1018,20 @@ const ProductEditor: React.FC<ProductEditorProps> = ({ mode, product, shopId, on
           </TabsContent>
         </Tabs>
       </CardContent>
+      <CardFooter>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            <Save className="mr-2 h-4 w-4" />
+            {isSubmitting 
+              ? (mode === 'add' ? 'Creating...' : 'Saving...') 
+              : (mode === 'add' ? 'Add Product' : 'Save Changes')
+            }
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
 };
