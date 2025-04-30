@@ -1,80 +1,31 @@
-
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
-export function formatPrice(price: number | string, opts: { currency?: string; notation?: Intl.NumberFormatOptions['notation'] } = {}) {
-  const { currency = 'USD', notation = 'compact' } = opts;
-  
+/**
+ * Format a currency into a string with the format "$0.00"
+ */
+export function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency,
-    notation,
-  }).format(typeof price === 'string' ? parseFloat(price) : price);
-}
-
-export function formatCurrency(amount: number, currencyCode: string = 'INR') {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: currencyCode,
-    maximumFractionDigits: 2
+    currency: 'USD'
   }).format(amount);
 }
 
-export function formatDate(date: string | Date, options: Intl.DateTimeFormatOptions = {}): string {
-  const defaultOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
+/**
+ * Format a date into a string with the format "MMM DD, YYYY"
+ */
+export function formatDate(date: Date | string): string {
+  if (!date) return '';
+  
+  const d = typeof date === 'string' ? new Date(date) : date;
+  
+  return d.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    ...options
-  };
-  
-  const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
-  // Check if date is valid before formatting
-  if (isNaN(dateObject.getTime())) {
-    return 'Invalid date';
-  }
-  
-  return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObject);
-}
-
-export function categoryToSlug(category: string): string {
-  return category.toLowerCase().replace(/\s+/g, '-');
-}
-
-export function slugToCategory(slug: string): string {
-  return slug.split('-').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
-}
-
-export function truncateText(text: string, maxLength: number): string {
-  if (!text || text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-}
-
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
-  
-  return function(...args: Parameters<T>) {
-    if (timeout !== null) {
-      clearTimeout(timeout);
-    }
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
-export function getRandomId(): string {
-  return Math.random().toString(36).substring(2, 15);
-}
-
-export function removeHtmlTags(text: string): string {
-  return text.replace(/<[^>]*>?/gm, '');
+    year: 'numeric'
+  });
 }
