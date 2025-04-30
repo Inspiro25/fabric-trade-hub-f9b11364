@@ -31,6 +31,7 @@ import {
 import { Input } from '../ui/input';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { DeliveryAddressDropdown } from '@/components/delivery/DeliveryAddressDropdown';
 
 const categories = [
   "All Categories",
@@ -177,13 +178,9 @@ export function Navigation() {
               )}
 
               {/* Delivery Location - Mobile */}
-              <button className="lg:hidden flex items-center gap-1 hover:text-blue-200">
-                <MapPin className="h-5 w-5" />
-                <div className="hidden sm:flex flex-col items-start">
-                  <span className="text-xs text-gray-300">Deliver to</span>
-                  <span className="text-sm font-semibold">Mattannur</span>
-                </div>
-              </button>
+              <div className="lg:hidden">
+                <DeliveryAddressDropdown />
+              </div>
 
               {/* Desktop Navigation Items */}
               <div className="hidden lg:flex items-center space-x-6">
@@ -245,13 +242,9 @@ export function Navigation() {
           {/* Search Bar Row */}
           <div className="flex items-center gap-4">
             {/* Delivery Location - Desktop */}
-            <button className="hidden lg:flex items-center space-x-1 text-sm hover:text-blue-200 min-w-[140px]">
-              <MapPin className="h-5 w-5" />
-              <div className="flex flex-col items-start">
-                <span className="text-gray-300 text-xs">Deliver to</span>
-                <span className="font-bold">Mattannur 670702</span>
-              </div>
-            </button>
+            <div className="hidden lg:block">
+              <DeliveryAddressDropdown />
+            </div>
 
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="flex flex-1">

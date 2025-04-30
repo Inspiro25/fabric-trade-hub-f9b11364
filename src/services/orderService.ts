@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/contexts/CartContext';
 import { toast } from '@/components/ui/use-toast';
@@ -57,6 +58,27 @@ export const createOrder = async (
     if (!productData?.shop_id) {
       console.error('No shop_id found for product');
       throw new Error('Product not associated with any shop');
+    }
+
+    // Get user's default address if no shipping address provided
+    if (!shippingAddress || !shippingAddress.street) {
+      const { data: addressData, error: addressError } = await supabase
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_default', true)
+        .single();
+      
+      if (!addressError && addressData) {
+        shippingAddress = {
+          name: addressData.name || 'No Name',
+          street: addressData.address_line1 || '',
+          city: addressData.city || '',
+          state: addressData.state || '',
+          pincode: addressData.postal_code || '',
+          phone: addressData.phone_number || ''
+        };
+      }
     }
 
     // Create the order with shop information
@@ -260,7 +282,8 @@ export const getOrderById = async (orderId: string): Promise<Order> => {
       items:order_items (
         *,
         product:products (*)
-      )
+      ),
+      shipping_address:user_addresses!shipping_address_id (*)
     `)
     .eq('id', orderId)
     .single();

@@ -8,9 +8,10 @@ import { WishlistProvider } from '@/contexts/WishlistContext';
 import { OrderProvider } from '@/contexts/OrderContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Wishlist from '@/pages/Wishlist';
-import Notifications from './components/Notifications'; // Add this import
-import Help from '@/pages/Help'; // Add this import
-import Partner from '@/pages/Partner'; // Add this import
+import Notifications from './components/Notifications'; 
+import Help from '@/pages/Help';
+import Partner from '@/pages/Partner';
+import AddressManagement from '@/pages/AddressManagement'; // Import the new page
 
 // Layout components
 import MainLayout from '@/components/layout/MainLayout';
@@ -82,6 +83,7 @@ function App() {
         <Route path="orders" element={<MyOrders />} />
         <Route path="wishlist" element={<AccountWishlist />} />
         <Route path="settings" element={<AccountSettings />} />
+        <Route path="addresses" element={<AddressManagement />} /> {/* Add new route */}
       </Route>
 
       <Route path="/management" element={<DashboardLayout />}>

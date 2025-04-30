@@ -1,576 +1,467 @@
-import { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, CheckCircle, CreditCard, MapPin, Phone, User, Mail } from 'lucide-react';
-import { toast } from 'sonner';
-import { RazorpayResponse } from '@/lib/razorpay';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Card, CardContent } from '@/components/ui/card';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { createOrder } from '@/services/orderService';
-import { useAuth } from '@/hooks/useAuth';
+import { DeliveryAddressDropdown } from '@/components/delivery/DeliveryAddressDropdown';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MapPin, Plus, Check, ArrowRight } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Address } from '@/types/address';
 
-const Checkout = () => {
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const { isDarkMode } = useTheme();
-  const { cartItems, clearCart, getCartTotal } = useCart();
+export default function Checkout() {
+  const { cart, total, clearCart } = useCart();
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [showAddressDialog, setShowAddressDialog] = useState(false);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    address_line1: '',
+    address_line2: '',
     city: '',
     state: '',
-    pincode: ''
+    postal_code: '',
+    country: 'India',
+    phone_number: '',
+    is_default: false
   });
 
-  const [paymentStep, setPaymentStep] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Calculate cart total
-  const cartTotal = useMemo(() => getCartTotal(), [getCartTotal]);
-  
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCustomerInfo(prev => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/auth/login', { state: { returnUrl: '/checkout' } });
+    } else {
+      fetchAddresses();
+    }
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      navigate('/cart');
+    }
+  }, [cart, navigate]);
+
+  const fetchAddresses = async () => {
+    if (!currentUser) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('is_default', { ascending: false });
+
+      if (error) throw error;
+
+      setAddresses(data);
+      const defaultAddress = data.find(addr => addr.is_default);
+      if (defaultAddress) {
+        setSelectedAddress(defaultAddress);
+      }
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+    }
   };
-  
-  const handleContinueToPayment = (e: React.FormEvent) => {
+
+  const handleAddressSelect = (address: Address) => {
+    setSelectedAddress(address);
+    setShowAddressDialog(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerInfo.name || !customerInfo.email || !customerInfo.phone || 
-        !customerInfo.address || !customerInfo.city || !customerInfo.state || !customerInfo.pincode) {
-      toast.error("Please fill all required fields");
+    if (!currentUser) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_addresses')
+        .insert({
+          user_id: currentUser.id,
+          name: formData.full_name,
+          address_line1: formData.address_line1,
+          address_line2: formData.address_line2 || null,
+          city: formData.city,
+          state: formData.state,
+          postal_code: formData.postal_code,
+          country: formData.country,
+          phone_number: formData.phone_number,
+          is_default: addresses.length === 0 ? true : formData.is_default
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update addresses list
+      fetchAddresses();
+      setSelectedAddress(data);
+      setIsAddingNew(false);
+      resetForm();
+      toast({
+        title: "Address added",
+        description: "Your delivery address has been added successfully",
+      });
+    } catch (error) {
+      console.error('Error adding address:', error);
+      toast({
+        title: "Failed to add address",
+        description: "There was an error saving your address",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      full_name: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: '',
+      postal_code: '',
+      country: 'India',
+      phone_number: '',
+      is_default: false
+    });
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!currentUser) {
+      navigate('/auth/login', { state: { returnUrl: '/checkout' } });
       return;
     }
-    setPaymentStep(true);
-  };
-  
-  const handlePaymentSuccess = async (response: RazorpayResponse) => {
-    if (!currentUser?.uid) {
-      toast.error("Please log in to complete your purchase");
+
+    if (!selectedAddress) {
+      toast({
+        title: "No delivery address",
+        description: "Please select a delivery address",
+        variant: "destructive"
+      });
+      setShowAddressDialog(true);
       return;
     }
 
     setIsProcessing(true);
     try {
-      // Format order items
-      const orderItems = cartItems.map(item => ({
+      const orderItems = cart.map(item => ({
         productId: item.product.id,
         quantity: item.quantity,
-        price: item.product.sale_price || item.product.price,
+        price: item.product.salePrice || item.product.price,
         color: item.color,
         size: item.size
       }));
 
-      // Create shipping address object
       const shippingAddress = {
-        name: customerInfo.name,
-        street: customerInfo.address,
-        city: customerInfo.city,
-        state: customerInfo.state,
-        pincode: customerInfo.pincode,
-        phone: customerInfo.phone
+        name: selectedAddress.name,
+        street: selectedAddress.address_line1,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        pincode: selectedAddress.postal_code,
+        phone: selectedAddress.phone_number
       };
 
-      // Create the order
+      const paymentId = `PAY-${Math.random().toString(36).substr(2, 9)}`;
       const orderId = await createOrder(
-        currentUser.uid,
-        orderItems,
-        shippingAddress,
-        'razorpay',
-        response.razorpay_payment_id,
-        cartTotal
+        currentUser.id, 
+        orderItems, 
+        shippingAddress, 
+        paymentMethod, 
+        paymentId, 
+        total
       );
 
-      if (!orderId) {
+      if (orderId) {
+        clearCart();
+        navigate('/order-success', { state: { orderId } });
+      } else {
         throw new Error('Failed to create order');
       }
-
-      // Clear the cart
-      await clearCart();
-
-      // Navigate to success page
-      navigate('/order-success', { 
-        state: { 
-          orderId,
-          customerInfo,
-          cart: {
-            items: cartItems,
-            total: cartTotal
-          }
-        } 
-      });
-
-      toast.success("Order placed successfully!");
     } catch (error) {
-      console.error('Error processing order:', error);
-      toast.error("Error processing your order. Please contact support.");
+      console.error('Error creating order:', error);
+      toast({
+        title: "Failed to place order",
+        description: "There was an error processing your order, please try again",
+        variant: "destructive"
+      });
     } finally {
       setIsProcessing(false);
     }
   };
-  
-  const initiateRazorpayPayment = () => {
-    if (isProcessing) return;
-    
-    import('@/lib/razorpay').then(({ initializeRazorpay }) => {
-      initializeRazorpay({
-        amount: cartTotal * 100, 
-        currency: 'INR',
-        name: 'Vyoma',
-        description: 'Payment for your order',
-        image: '/logo.png',
-        prefill: {
-          name: customerInfo.name,
-          email: customerInfo.email,
-          contact: customerInfo.phone,
-        },
-        theme: {
-          color: isDarkMode ? '#FE7235' : '#FE7235',
-        },
-        handler: handlePaymentSuccess,
-        modal: {
-          ondismiss: () => {
-            toast("Payment cancelled");
-          },
-        },
-      });
-    });
-  };
-  
+
   return (
-    <div className={cn(
-      "min-h-screen",
-      isDarkMode 
-        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30"
-    )}>
-      <main className="container mx-auto px-4 py-8 pb-24 max-w-6xl">
-        <div className="flex items-center gap-2 mb-6">
-          <Link to="/cart" className={cn(
-            "inline-flex items-center text-sm",
-            isDarkMode ? "text-gray-400 hover:text-blue-400" : "text-gray-600 hover:text-kutuku-primary"
-          )}>
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to cart
-          </Link>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - Billing Form */}
-          <div className="lg:col-span-2">
-            <Card className={cn(
-              "border-none shadow-lg",
-              isDarkMode ? "bg-gray-800" : "bg-white shadow-blue-100/50"
-            )}>
-              <CardContent className="p-6">
-                {!paymentStep ? (
-                  <>
-                    <div className={cn(
-                      "p-4 rounded-lg mb-4",
-                      isDarkMode 
-                        ? "bg-gray-800/50 border border-gray-700" 
-                        : "bg-blue-50/80 border border-blue-100"
-                    )}>
-                      <h2 className={cn(
-                        "text-lg font-semibold flex items-center gap-2 mb-4",
-                        isDarkMode ? "text-blue-400" : "text-kutuku-primary"
-                      )}>
-                        <User className="h-5 w-5" /> Billing Information
-                      </h2>
-                      <form className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="name" className={cn(
-                              "text-sm font-medium",
-                              isDarkMode ? "text-gray-300" : "text-gray-700"
-                            )}>Full Name</Label>
-                            <Input 
-                              id="name" 
-                              name="name" 
-                              value={customerInfo.name}
-                              onChange={handleInputChange}
-                              placeholder="John Doe"
-                              className={cn(
-                                "h-10 text-sm",
-                                isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                  : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                              )}
-                              required
-                            />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="email" className={cn(
-                              "text-sm font-medium flex items-center gap-1",
-                              isDarkMode ? "text-gray-300" : "text-gray-700"
-                            )}>
-                              <Mail className="h-4 w-4" /> Email
-                            </Label>
-                            <Input 
-                              id="email" 
-                              name="email" 
-                              type="email"
-                              value={customerInfo.email}
-                              onChange={handleInputChange}
-                              placeholder="john@example.com"
-                              className={cn(
-                                "h-10 text-sm",
-                                isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                  : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                              )}
-                              required
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="phone" className={cn(
-                            "text-sm font-medium flex items-center gap-1",
-                            isDarkMode ? "text-gray-300" : "text-gray-700"
-                          )}>
-                            <Phone className="h-4 w-4" /> Phone Number
-                          </Label>
-                          <Input 
-                            id="phone" 
-                            name="phone" 
-                            value={customerInfo.phone}
-                            onChange={handleInputChange}
-                            placeholder="+91 9876543210"
-                            className={cn(
-                              "h-10 text-sm",
-                              isDarkMode 
-                                ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                            )}
-                            required
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="address" className={cn(
-                            "text-sm font-medium flex items-center gap-1",
-                            isDarkMode ? "text-gray-300" : "text-gray-700"
-                          )}>
-                            <MapPin className="h-4 w-4" /> Street Address
-                          </Label>
-                          <Input 
-                            id="address" 
-                            name="address" 
-                            value={customerInfo.address}
-                            onChange={handleInputChange}
-                            placeholder="123 Main St, Apartment 4B"
-                            className={cn(
-                              "h-10 text-sm",
-                              isDarkMode 
-                                ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                            )}
-                            required
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="city" className={cn(
-                              "text-sm font-medium",
-                              isDarkMode ? "text-gray-300" : "text-gray-700"
-                            )}>City</Label>
-                            <Input 
-                              id="city" 
-                              name="city" 
-                              value={customerInfo.city}
-                              onChange={handleInputChange}
-                              placeholder="Mumbai"
-                              className={cn(
-                                "h-10 text-sm",
-                                isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                  : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                              )}
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="state" className={cn(
-                              "text-sm font-medium",
-                              isDarkMode ? "text-gray-300" : "text-gray-700"
-                            )}>State</Label>
-                            <Input 
-                              id="state" 
-                              name="state" 
-                              value={customerInfo.state}
-                              onChange={handleInputChange}
-                              placeholder="Maharashtra"
-                              className={cn(
-                                "h-10 text-sm",
-                                isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                  : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                              )}
-                              required
-                            />
-                          </div>
-                          <div className="space-y-2 col-span-2 sm:col-span-1">
-                            <Label htmlFor="pincode" className={cn(
-                              "text-sm font-medium",
-                              isDarkMode ? "text-gray-300" : "text-gray-700"
-                            )}>PIN Code</Label>
-                            <Input 
-                              id="pincode" 
-                              name="pincode" 
-                              value={customerInfo.pincode}
-                              onChange={handleInputChange}
-                              placeholder="400001"
-                              className={cn(
-                                "h-10 text-sm",
-                                isDarkMode 
-                                  ? "bg-gray-700 border-gray-600 focus:border-blue-500 text-white" 
-                                  : "bg-white border-gray-200 focus-visible:ring-kutuku-primary shadow-sm"
-                              )}
-                              required
-                            />
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-4">
-                    <h2 className={cn(
-                      "text-lg font-semibold flex items-center gap-2 mb-4",
-                      isDarkMode ? "text-blue-400" : "text-kutuku-primary"
-                    )}>
-                      <CreditCard className="h-5 w-5" /> Payment Information
-                    </h2>
-                    
-                    <div className={cn(
-                      "rounded-lg overflow-hidden mb-4",
-                      isDarkMode 
-                        ? "bg-gray-800/50 border border-gray-700" 
-                        : "bg-blue-50/80 border border-blue-100"
-                    )}>
-                      <div className={cn(
-                        "p-3",
-                        isDarkMode ? "bg-gray-700" : "bg-blue-100/80"
-                      )}>
-                        <h3 className={cn(
-                          "text-sm font-medium flex items-center gap-1",
-                          isDarkMode ? "text-blue-400" : "text-kutuku-primary"
-                        )}>
-                          <MapPin className="h-4 w-4" /> Billing Address
-                        </h3>
-                      </div>
-                      <div className="p-4">
-                        <p className={cn(
-                          "text-sm",
-                          isDarkMode ? "text-gray-300" : "text-gray-600"
-                        )}>
-                          {customerInfo.name}<br />
-                          {customerInfo.address}<br />
-                          {customerInfo.city}, {customerInfo.state} {customerInfo.pincode}<br />
-                          {customerInfo.phone}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <Card 
-                        className={cn(
-                          "p-4 flex items-center gap-3 cursor-pointer transition-colors",
-                          isDarkMode 
-                            ? "border border-gray-700 hover:bg-gray-700" 
-                            : "border border-blue-200 hover:bg-blue-50/80 shadow-sm"
-                        )}
-                        onClick={initiateRazorpayPayment}
-                      >
-                        <div className="flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#072654" className="w-6 h-6">
-                            <path d="M8.584 18.368c-.995.58-2.39.58-3.38 0L.595 15.08a2.09 2.09 0 0 1-.594-2.95L7.41.59C8.005-.17 9.198-.18 9.802.58l8.41 11.66c.6.82.37 1.97-.494 2.53l-9.134 3.598Z" />
-                          </svg>
-                        </div>
-                        <div className="flex-grow">
-                          <p className={cn(
-                            "text-sm font-medium",
-                            isDarkMode ? "text-gray-200" : "text-gray-800"
-                          )}>Razorpay</p>
-                          <p className={cn(
-                            "text-xs",
-                            isDarkMode ? "text-gray-400" : "text-gray-500"
-                          )}>Pay securely via Razorpay</p>
-                        </div>
-                      </Card>
-                    </div>
-                    
-                    <div className="pt-4">
-                      <Button 
-                        type="button"
-                        className={cn(
-                          "w-full h-11 text-sm rounded-full",
-                          isDarkMode 
-                            ? "bg-blue-600 hover:bg-blue-700" 
-                            : "bg-kutuku-primary hover:bg-kutuku-secondary shadow-md"
-                        )}
-                        onClick={initiateRazorpayPayment}
-                      >
-                        Pay ₹{cartTotal.toFixed(2)}
-                      </Button>
-                    </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-8">Checkout</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Delivery Address</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddressDialog(true)}
+                >
+                  Change
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedAddress ? (
+                <div className="flex space-x-4">
+                  <div className="bg-blue-100 p-3 rounded-full h-fit">
+                    <MapPin className="h-6 w-6 text-blue-600" />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Right column - Order Summary */}
-          <div className="lg:col-span-1">
-            <Card className={cn(
-              "border-none shadow-lg sticky top-24",
-              isDarkMode ? "bg-gray-800" : "bg-white shadow-blue-100/50"
-            )}>
-              <CardContent className="p-6">
-                <h2 className={cn(
-                  "text-lg font-semibold mb-4",
-                  isDarkMode ? "text-blue-400" : "text-kutuku-primary"
-                )}>Order Summary</h2>
-                
-                <div className={cn(
-                  "space-y-3 mb-4",
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
-                )}>
-                  {cartItems.map(item => (
-                    <div key={item.product.id} className="flex justify-between text-sm">
-                      <span className="truncate flex-1">{item.product.name} (x{item.quantity})</span>
-                      <span className="font-medium">₹{(item.product.sale_price || item.product.price * item.quantity).toFixed(2)}</span>
+                  <div>
+                    <div className="font-semibold">{selectedAddress.name}</div>
+                    <div className="text-gray-600">
+                      {selectedAddress.address_line1}
+                      {selectedAddress.address_line2 && `, ${selectedAddress.address_line2}`}
                     </div>
-                  ))}
+                    <div className="text-gray-600">
+                      {selectedAddress.city}, {selectedAddress.state} {selectedAddress.postal_code}
+                    </div>
+                    <div className="text-gray-600">{selectedAddress.country}</div>
+                    <div className="text-gray-600 mt-1">Phone: {selectedAddress.phone_number}</div>
+                  </div>
                 </div>
-                
-                <Separator className={cn(
-                  "my-4",
-                  isDarkMode ? "bg-gray-700" : "bg-blue-100"
-                )} />
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className={isDarkMode ? "text-gray-400" : "text-gray-600"}>Subtotal</span>
-                    <span className={isDarkMode ? "text-gray-200" : "text-gray-800"}>₹{cartTotal.toFixed(2)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className={isDarkMode ? "text-gray-400" : "text-gray-600"}>Shipping</span>
-                    <span className={isDarkMode ? "text-gray-200" : "text-gray-800"}>₹{4.99.toFixed(2)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <span className={isDarkMode ? "text-gray-400" : "text-gray-600"}>Tax</span>
-                    <span className={isDarkMode ? "text-gray-200" : "text-gray-800"}>₹{(cartTotal * 0.18).toFixed(2)}</span>
-                  </div>
-                  
-                  <Separator className={cn(
-                    "my-2",
-                    isDarkMode ? "bg-gray-700" : "bg-blue-100"
-                  )} />
-                  
-                  <div className="flex justify-between font-bold">
-                    <span className={isDarkMode ? "text-gray-200" : "text-gray-800"}>Total</span>
-                    <span className={isDarkMode ? "text-blue-400" : "text-kutuku-primary"}>
-                      ₹{(cartTotal + 4.99 + cartTotal * 0.18).toFixed(2)}
+              ) : (
+                <div className="text-center py-6">
+                  <MapPin className="mx-auto h-12 w-12 text-gray-400" />
+                  <p className="mt-4 text-gray-500">No delivery address selected</p>
+                  <Button 
+                    className="mt-2 bg-blue-600 hover:bg-blue-700" 
+                    onClick={() => setShowAddressDialog(true)}
+                  >
+                    Add Delivery Address
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Method</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup 
+                defaultValue={paymentMethod} 
+                onValueChange={setPaymentMethod}
+                className="space-y-4"
+              >
+                <div className="flex items-center space-x-2 border p-4 rounded-md">
+                  <RadioGroupItem value="card" id="card" />
+                  <Label htmlFor="card" className="flex-1 cursor-pointer">Credit/Debit Card</Label>
+                </div>
+                <div className="flex items-center space-x-2 border p-4 rounded-md">
+                  <RadioGroupItem value="cod" id="cod" />
+                  <Label htmlFor="cod" className="flex-1 cursor-pointer">Cash on Delivery</Label>
+                </div>
+                <div className="flex items-center space-x-2 border p-4 rounded-md">
+                  <RadioGroupItem value="upi" id="upi" />
+                  <Label htmlFor="upi" className="flex-1 cursor-pointer">UPI</Label>
+                </div>
+              </RadioGroup>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                {cart.map((item) => (
+                  <div key={`${item.product.id}-${item.color}-${item.size}`} className="flex justify-between">
+                    <span className="text-gray-600 truncate max-w-[70%]">
+                      {item.product.name} ({item.quantity})
+                    </span>
+                    <span>
+                      ₹{((item.product.salePrice || item.product.price) * item.quantity).toFixed(2)}
                     </span>
                   </div>
-                  
-                  {!paymentStep && (
-                    <div className="pt-4">
-                      <Button 
-                        type="button"
-                        onClick={handleContinueToPayment}
-                        className={cn(
-                          "w-full h-11 text-sm rounded-full",
-                          isDarkMode 
-                            ? "bg-blue-600 hover:bg-blue-700" 
-                            : "bg-kutuku-primary hover:bg-kutuku-secondary shadow-md"
-                        )}
-                      >
-                        Continue to Payment
-                      </Button>
-                    </div>
-                  )}
+                ))}
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>₹{total.toFixed(2)}</span>
                 </div>
-                
-                {/* Order Security Details */}
-                <div className={cn(
-                  "mt-6 p-4 rounded-lg",
-                  isDarkMode ? "bg-gray-700/50" : "bg-blue-50/80"
-                )}>
-                  <h3 className={cn(
-                    "text-sm font-medium mb-3",
-                    isDarkMode ? "text-blue-400" : "text-kutuku-primary"
-                  )}>Order Protection</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <div className={cn(
-                        "h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-                        isDarkMode ? "bg-green-900/40" : "bg-green-100"
-                      )}>
-                        <CheckCircle className={cn(
-                          "h-2.5 w-2.5",
-                          isDarkMode ? "text-green-400" : "text-green-600"
-                        )} />
-                      </div>
-                      <p className={cn(
-                        "text-xs",
-                        isDarkMode ? "text-gray-400" : "text-gray-600"
-                      )}>Secure 256-bit SSL encryption</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className={cn(
-                        "h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-                        isDarkMode ? "bg-green-900/40" : "bg-green-100"
-                      )}>
-                        <CheckCircle className={cn(
-                          "h-2.5 w-2.5",
-                          isDarkMode ? "text-green-400" : "text-green-600"
-                        )} />
-                      </div>
-                      <p className={cn(
-                        "text-xs",
-                        isDarkMode ? "text-gray-400" : "text-gray-600"
-                      )}>Data privacy protection</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className={cn(
-                        "h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-                        isDarkMode ? "bg-green-900/40" : "bg-green-100"
-                      )}>
-                        <CheckCircle className={cn(
-                          "h-2.5 w-2.5",
-                          isDarkMode ? "text-green-400" : "text-green-600"
-                        )} />
-                      </div>
-                      <p className={cn(
-                        "text-xs",
-                        isDarkMode ? "text-gray-400" : "text-gray-600"
-                      )}>100% money-back guarantee</p>
-                    </div>
-                  </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Delivery</span>
+                  <span>Free</span>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="flex justify-between font-bold mt-4 text-lg">
+                  <span>Total</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                onClick={handlePlaceOrder}
+                disabled={isProcessing || !selectedAddress}
+              >
+                {isProcessing ? "Processing..." : "Place Order"} 
+                {!isProcessing && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
-      </main>
+      </div>
+
+      {/* Address Selection Dialog */}
+      <Dialog open={showAddressDialog} onOpenChange={setShowAddressDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Delivery Address</DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-4">
+            {!isAddingNew ? (
+              <div className="space-y-4">
+                {addresses.length > 0 ? (
+                  addresses.map((address) => (
+                    <div
+                      key={address.id}
+                      className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                        selectedAddress?.id === address.id
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 dark:border-blue-600'
+                          : 'hover:border-blue-200 dark:hover:border-blue-700'
+                      }`}
+                      onClick={() => handleAddressSelect(address)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-semibold">{address.name}</div>
+                          <div>{address.address_line1}</div>
+                          {address.address_line2 && <div>{address.address_line2}</div>}
+                          <div>{`${address.city}, ${address.state} ${address.postal_code}`}</div>
+                          <div>{address.country}</div>
+                          <div className="text-sm text-gray-500 mt-1">{address.phone_number}</div>
+                        </div>
+                        {selectedAddress?.id === address.id && (
+                          <Check className="h-5 w-5 text-green-600" />
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">
+                    <p>You don't have any saved addresses.</p>
+                  </div>
+                )}
+
+                <Button
+                  onClick={() => setIsAddingNew(true)}
+                  className="w-full flex items-center justify-center bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Add New Address
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  placeholder="Full Name"
+                  value={formData.full_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                  required
+                />
+                <Input
+                  placeholder="Address Line 1"
+                  value={formData.address_line1}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address_line1: e.target.value }))}
+                  required
+                />
+                <Input
+                  placeholder="Address Line 2 (Optional)"
+                  value={formData.address_line2}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address_line2: e.target.value }))}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    placeholder="City"
+                    value={formData.city}
+                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    required
+                  />
+                  <Input
+                    placeholder="State"
+                    value={formData.state}
+                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    placeholder="Postal Code"
+                    value={formData.postal_code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                    required
+                  />
+                  <Input
+                    placeholder="Country"
+                    value={formData.country}
+                    onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                    required
+                  />
+                </div>
+                <Input
+                  placeholder="Phone Number"
+                  value={formData.phone_number}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                  required
+                />
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_default"
+                    checked={formData.is_default}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_default: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <label htmlFor="is_default">Set as default address</label>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  >
+                    Save Address
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsAddingNew(false);
+                      resetForm();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default Checkout;
+}

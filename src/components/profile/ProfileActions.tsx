@@ -1,77 +1,61 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { LogOut, ShoppingBag, HelpCircle, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import { MapPin, Clock, CreditCard, Settings, Heart, ShoppingCart, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
-type ProfileActionsProps = {
-  onLogout: () => Promise<void>;
-};
+interface ProfileActionsProps {
+  className?: string;
+}
 
-const ProfileActions = ({ onLogout }: ProfileActionsProps) => {
-  const { isDarkMode } = useTheme();
-  
-  const actions = [
-    {
-      id: 'orders',
-      label: 'My Orders',
-      icon: <ShoppingBag className="h-4 w-4 mr-2" />,
-      href: '/account/orders', // Updated from /orders to /account/orders
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: <Settings className="h-4 w-4 mr-2" />,
-      href: '/account/settings', // Updated from /settings to /account/settings
-    },
-    {
-      id: 'help',
-      label: 'Help & Support',
-      icon: <HelpCircle className="h-4 w-4 mr-2" />,
-      href: '/help',
-    },
-  ];
+export default function ProfileActions({ className }: ProfileActionsProps) {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
-    <div className="space-y-3 mb-6">
-      <div className="grid grid-cols-3 gap-3">
-        {actions.map((action) => (
-          <Link key={action.id} to={action.href} className="col-span-1">
-            <Button 
-              variant="outline" 
-              className={cn(
-                "w-full h-auto py-2 px-3 justify-start text-xs",
-                isDarkMode 
-                  ? "bg-gray-800 border-gray-700 hover:bg-gray-700 text-gray-200" 
-                  : "bg-white hover:bg-gray-50"
-              )}
-            >
-              <span className={isDarkMode ? "text-blue-400" : "text-blue-500"}>
-                {action.icon}
-              </span>
-              {action.label}
-            </Button>
-          </Link>
-        ))}
-      </div>
+    <div className={`space-y-2 ${className}`}>
+      <Link to="/account/orders">
+        <Button variant="outline" className="w-full justify-start text-left" size="lg">
+          <Clock className="mr-2 h-5 w-5" /> My Orders
+        </Button>
+      </Link>
+      
+      <Link to="/account/addresses">
+        <Button variant="outline" className="w-full justify-start text-left" size="lg">
+          <MapPin className="mr-2 h-5 w-5" /> Manage Addresses
+        </Button>
+      </Link>
+      
+      <Link to="/account/wishlist">
+        <Button variant="outline" className="w-full justify-start text-left" size="lg">
+          <Heart className="mr-2 h-5 w-5" /> Wishlist
+        </Button>
+      </Link>
+      
+      <Link to="/cart">
+        <Button variant="outline" className="w-full justify-start text-left" size="lg">
+          <ShoppingCart className="mr-2 h-5 w-5" /> Cart
+        </Button>
+      </Link>
+      
+      <Link to="/account/settings">
+        <Button variant="outline" className="w-full justify-start text-left" size="lg">
+          <Settings className="mr-2 h-5 w-5" /> Settings
+        </Button>
+      </Link>
       
       <Button 
         variant="outline" 
-        onClick={onLogout}
-        className={cn(
-          "w-full justify-start text-sm",
-          isDarkMode 
-            ? "bg-gray-800 border-gray-700 hover:bg-gray-700 text-red-400 hover:text-red-300" 
-            : "bg-white hover:bg-gray-50 text-red-600 hover:text-red-700"
-        )}
+        className="w-full justify-start text-left text-red-600 hover:text-red-700 hover:bg-red-50" 
+        size="lg"
+        onClick={handleLogout}
       >
-        <LogOut className="h-4 w-4 mr-2" />
-        Sign Out
+        <LogOut className="mr-2 h-5 w-5" /> Logout
       </Button>
     </div>
   );
-};
-
-export default ProfileActions;
+}
