@@ -21,7 +21,7 @@ const testimonials = [
     id: 3,
     name: 'Lisa Thompson',
     role: 'Loyal Customer',
-    comment: 'The app is so easy to use and I always find exactly what I'm looking for. Highly recommended!',
+    comment: 'The app is so easy to use and I always find exactly what I\'m looking for. Highly recommended!',
     avatar: '/lovable-uploads/5eed8a9b-3a94-4525-a3c6-5030ad09eb22.png',
   }
 ];
