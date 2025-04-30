@@ -141,7 +141,7 @@ export async function createProduct(productData: Partial<Product>): Promise<stri
       tags: productData.tags || [],
       is_new: productData.isNew || productData.is_new || false,
       is_trending: productData.isTrending || productData.is_trending || false,
-      shop_id: productData.shopId || productData.shop_id,
+      shop_id: productData.shop_id,
       created_at: new Date().toISOString(),
     };
 

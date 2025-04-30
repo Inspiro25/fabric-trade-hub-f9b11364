@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CartItem {
@@ -16,7 +17,7 @@ interface CartItem {
 
 const useCartStorage = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const { session: supabaseSession } = useSession();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const storedCart = localStorage.getItem('cart');
@@ -28,10 +29,10 @@ const useCartStorage = () => {
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
 		syncCartWithDatabase();
-  }, [cart, supabaseSession]);
+  }, [cart, currentUser]);
 
   const syncCartWithDatabase = useCallback(async () => {
-    if (!supabaseSession) return;
+    if (!currentUser) return;
     
     try {
       // Fetch products for each cart item
@@ -70,7 +71,7 @@ const useCartStorage = () => {
     } catch (error) {
       console.error('Error syncing cart data:', error);
     }
-  }, [cart, setCart, supabaseSession, supabase]);
+  }, [cart, setCart, currentUser]);
 
   const addToCart = (productId: string, productName: string, productImage: string, price: number, stock: number, shopId: string, salePrice: number | null) => {
     const existingItemIndex = cart.findIndex(item => item.productId === productId);

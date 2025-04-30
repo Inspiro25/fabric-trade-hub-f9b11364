@@ -1,13 +1,7 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  useCallback,
-} from 'react';
+
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
-import { useSessionContext } from '@/contexts/SessionContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Address, AddressFormData, AddressContextType } from '@/types/address';
 import { toast } from 'sonner';
 
@@ -20,13 +14,13 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { session } = useSessionContext();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    if (session && session.user) {
+    if (currentUser) {
       fetchAddresses();
     }
-  }, [session]);
+  }, [currentUser]);
 
   const fetchAddresses = async () => {
     try {
@@ -36,7 +30,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
       const { data, error } = await supabase
         .from('user_addresses')
         .select('*')
-        .eq('user_id', session?.user?.id || '')
+        .eq('user_id', currentUser?.id || '')
         .order('is_default', { ascending: false });
 
       if (error) {
@@ -47,7 +41,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
       const mappedAddresses = data.map(address => ({
         id: address.id,
         user_id: address.user_id,
-        name: address.name || address.full_name || '', // Use name if available, fall back to full_name
+        name: address.name || address.full_name || '', 
         full_name: address.full_name,
         address_line1: address.address_line1,
         address_line2: address.address_line2,
@@ -79,7 +73,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addAddress = async (addressData: AddressFormData) => {
-    if (!session?.user?.id) {
+    if (!currentUser?.id) {
       toast.error('You need to be logged in to add an address.');
       return;
     }
@@ -93,7 +87,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // Map to database structure
       const newAddressData = {
-        user_id: session.user.id,
+        user_id: currentUser.id,
         name: addressData.name,
         full_name: addressData.full_name || addressData.name,
         address_line1: addressData.address_line1,
@@ -138,7 +132,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
           .from('user_addresses')
           .update({ is_default: false })
           .neq('id', data.id)
-          .eq('user_id', session.user.id);
+          .eq('user_id', currentUser.id);
           
         // Update local state for other addresses
         setAddresses(prev => 
@@ -225,7 +219,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
           .from('user_addresses')
           .update({ is_default: false })
           .neq('id', id)
-          .eq('user_id', session?.user?.id || '');
+          .eq('user_id', currentUser?.id || '');
           
         // Update state
         setAddresses(prev => 
@@ -302,7 +296,7 @@ export const AddressProvider: React.FC<{ children: React.ReactNode }> = ({
         .from('user_addresses')
         .update({ is_default: false })
         .neq('id', id)
-        .eq('user_id', session?.user?.id || '');
+        .eq('user_id', currentUser?.id || '');
       
       // Update state
       setAddresses(prev => 

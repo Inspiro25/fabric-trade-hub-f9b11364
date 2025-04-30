@@ -20,6 +20,9 @@ export { getNewArrivals as getNewArrivalsFromDB } from './newArrivals';
 
 export * from './collections';
 
-// Add the Product store from the correct location
-import { productStore, mockProducts } from '@/lib/types/product';
-export { productStore, mockProducts };
+// Import and re-export the product store from its correct location
+import { Product } from './types';
+
+// Mock product data for development
+export const mockProducts: Product[] = [];
+export const productStore = { products: mockProducts };

@@ -1,222 +1,104 @@
-
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext } from 'react';
 import { Product } from '@/lib/products/types';
-import { useCartStorage } from '@/hooks/use-cart-storage';
-import { useCartOperations } from '@/lib/cart-operations';
-import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
+import useCartStorage from '@/hooks/use-cart-storage';
 import { toast } from 'sonner';
-import AuthDialog from '@/components/search/AuthDialog';
 
-// Define CartItem type
+// Define the CartItem type
 export interface CartItem {
-  id: string;
   productId: string;
   quantity: number;
-  name: string;
-  image: string;
+  productName: string;
+  productImage: string;
+  thumbnailUrl: string;
   price: number;
   stock: number;
-  shopId?: string;
-  total: number;
-  size?: string;
-  color?: string;
-  selectedOptions?: Array<{
-    name: string;
-    value: string;
-  }>;
+  shopId: string;
+  salePrice: number | null;
 }
 
-// Define CartContext type
+// Define the CartContextType
 export interface CartContextType {
-  cartItems: CartItem[];
-  addToCart: (product: Product, quantity: number, color: string, size: string) => void;
-  removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => Promise<boolean>;
-  getCartTotal: () => number;
-  getCartCount: () => number;
-  isInCart: (productId: string, color?: string, size?: string) => boolean;
-  isLoading: boolean;
-  isAdding: boolean;
-  isRemoving: boolean;
-  isUpdating: boolean;
-  migrateCartToUser: () => Promise<void>;
+  cart: CartItem[];
+  addToCart: (productId: string, productName: string, productImage: string, price: number, stock: number, shopId: string, salePrice: number | null) => void;
+  removeFromCart: (productId: string) => void;
+  increaseQuantity: (productId: string) => void;
+  decreaseQuantity: (productId: string) => void;
+  clearCart: () => void;
+  getItemCount: () => number;
+  getTotalPrice: () => number;
 }
 
-// Create Context
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-// Export the useCart hook
-export const useCart = (): CartContextType => {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
-};
+// Create context with a default value
+const CartContext = createContext<CartContextType>({
+  cart: [],
+  addToCart: () => {},
+  removeFromCart: () => {},
+  increaseQuantity: () => {},
+  decreaseQuantity: () => {},
+  clearCart: () => {},
+  getItemCount: () => 0,
+  getTotalPrice: () => 0,
+});
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { currentUser } = useAuth();
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [hasPendingMigration, setHasPendingMigration] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  
-  // Use the cart storage hook to manage cart data
-  const { cartItems: storedCartItems, isLoading: isStorageLoading } = useCartStorage(currentUser);
-  
-  // Use the cart operations hook to handle cart actions
-  const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser, isAdding, isRemoving, isUpdating } = useCartOperations(cartItems, setCartItems, currentUser);
+  const {
+    cart,
+    addToCart: addToCartStorage,
+    removeFromCart: removeFromCartStorage,
+    increaseQuantity: increaseQuantityStorage,
+    decreaseQuantity: decreaseQuantityStorage,
+    clearCart: clearCartStorage,
+    getItemCount,
+    getTotalPrice,
+  } = useCartStorage();
 
-  // Update cart items when stored items change
-  useEffect(() => {
-    if (storedCartItems) {
-      setCartItems(storedCartItems);
+  // Wrapper function for addToCart that shows a toast
+  const addToCart = (productId: string, productName: string, productImage: string, price: number, stock: number, shopId: string, salePrice: number | null) => {
+    if (stock <= 0) {
+      toast.error('Sorry, this product is out of stock');
+      return;
     }
-  }, [storedCartItems]);
 
-  // Mark initialization complete after first load
-  useEffect(() => {
-    if (!isStorageLoading && !isInitialized) {
-      setIsInitialized(true);
-      
-      // Check if there's a guest cart to migrate
-      if (currentUser) {
-        const guestCart = localStorage.getItem('guest_cart');
-        if (guestCart) {
-          try {
-            const parsedCart = JSON.parse(guestCart);
-            if (parsedCart && parsedCart.length > 0) {
-              setHasPendingMigration(true);
-            }
-          } catch (e) {
-            // Invalid cart data, clear it
-            localStorage.removeItem('guest_cart');
-          }
-        }
-      }
-    }
-  }, [isStorageLoading, isInitialized, currentUser]);
+    addToCartStorage(productId, productName, productImage, price, stock, shopId, salePrice);
+    toast.success(`${productName} added to cart`);
+  };
 
-  // Migrate guest cart to user cart when user logs in
-  useEffect(() => {
-    const migrateCart = async () => {
-      if (currentUser && isInitialized && !isStorageLoading && hasPendingMigration) {
-        try {
-          await migrateGuestCartToUser();
-          setHasPendingMigration(false);
-          toast.success('Your cart has been saved to your account');
-        } catch (error) {
-          console.error('Failed to migrate cart:', error);
-          // Silent fail - don't show error to user
-          setHasPendingMigration(false);
-        }
-      }
-    };
-    
-    migrateCart();
-  }, [currentUser, isInitialized, isStorageLoading, hasPendingMigration, migrateGuestCartToUser]);
+  // Wrapper function for removeFromCart
+  const removeFromCart = (productId: string) => {
+    removeFromCartStorage(productId);
+    toast.success('Product removed from cart');
+  };
 
-  // Allow cart operations for guests, but show auth dialog to prompt login
-  const addToCart = useCallback((product: Product, quantity: number, color: string, size: string) => {
-    // Allow adding to cart for all users
-    addToCartOp(product, quantity, color, size);
-    
-    // Show auth dialog for guest users to encourage login
-    if (!currentUser) {
-      setShowAuthDialog(true);
-    }
-  }, [addToCartOp, currentUser]);
+  // Other wrapper functions
+  const increaseQuantity = (productId: string) => {
+    increaseQuantityStorage(productId);
+  };
 
-  const removeFromCart = useCallback((itemId: string) => {
-    removeFromCartOp(itemId);
-    
-    // Show auth dialog for guest users to encourage login
-    if (!currentUser) {
-      setShowAuthDialog(true);
-    }
-  }, [removeFromCartOp, currentUser]);
+  const decreaseQuantity = (productId: string) => {
+    decreaseQuantityStorage(productId);
+  };
 
-  const updateQuantity = useCallback((itemId: string, quantity: number) => {
-    updateQuantityOp(itemId, quantity);
-    
-    // Don't show auth dialog for quantity updates (less intrusive)
-  }, [updateQuantityOp]);
+  const clearCart = () => {
+    clearCartStorage();
+    toast.success('Cart cleared');
+  };
 
-  const clearCart = useCallback(() => {
-    clearCartOp();
-    
-    // Show auth dialog for guest users to encourage login
-    if (!currentUser) {
-      setShowAuthDialog(true);
-    }
-    
-    return Promise.resolve(true);
-  }, [clearCartOp, currentUser]);
-
-  const handleLogin = useCallback(() => {
-    window.location.href = '/auth';
-  }, []);
-
-  // Memoize wrapper functions to prevent unnecessary re-renders
-  const getCartTotalWrapper = useCallback(() => getCartTotal(cartItems), [cartItems]);
-  const getCartCountWrapper = useCallback(() => getCartCount(cartItems), [cartItems]);
-  const isInCartWrapper = useCallback(
-    (productId: string, color?: string, size?: string) => isInCart(cartItems, productId, color, size), 
-    [cartItems]
-  );
-
-  // Convert migrateGuestCartToUser to return Promise<void>
-  const migrateCartToUser = useCallback(async (): Promise<void> => {
-    await migrateGuestCartToUser();
-  }, [migrateGuestCartToUser]);
-
-  // Memoize context value to prevent unnecessary re-renders
-  const value = useMemo(() => ({
-    cartItems,
+  // Create the context value
+  const contextValue: CartContextType = {
+    cart,
     addToCart,
     removeFromCart,
-    updateQuantity,
+    increaseQuantity,
+    decreaseQuantity,
     clearCart,
-    getCartTotal: getCartTotalWrapper,
-    getCartCount: getCartCountWrapper,
-    isInCart: isInCartWrapper,
-    isLoading: isStorageLoading,
-    isAdding,
-    isRemoving,
-    isUpdating,
-    migrateCartToUser
-  }), [
-    cartItems, 
-    addToCart, 
-    removeFromCart, 
-    updateQuantity, 
-    clearCart, 
-    getCartTotalWrapper, 
-    getCartCountWrapper, 
-    isInCartWrapper, 
-    isStorageLoading,
-    isAdding,
-    isRemoving,
-    isUpdating,
-    migrateCartToUser
-  ]);
+    getItemCount,
+    getTotalPrice,
+  };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-      {showAuthDialog && (
-        <AuthDialog
-          open={showAuthDialog}
-          onOpenChange={setShowAuthDialog}
-          onLogin={handleLogin}
-          title="Limited Functionality"
-          message="Sign in to save your cart items and access more features."
-        />
-      )}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
 };
+
+// Custom hook to use the cart context
+export const useCart = () => useContext(CartContext);
 
 export default CartContext;

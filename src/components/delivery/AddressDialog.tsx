@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { MapPin, Plus, Check } from 'lucide-react';
-import { useAddress } from '@/contexts/AddressContext';
+import { MapPin, Plus } from 'lucide-react';
+import { useAddressContext } from '@/contexts/AddressContext';
 import { Address, AddressFormData } from '@/types/address';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export function AddressDialog() {
   const { currentUser } = useAuth();
@@ -20,11 +21,12 @@ export function AddressDialog() {
     setDefaultAddress,
     selectAddress,
     fetchAddresses 
-  } = useAddress();
+  } = useAddressContext();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [formData, setFormData] = useState<AddressFormData>({
+    name: '',
     full_name: '',
     address_line1: '',
     address_line2: '',
@@ -59,33 +61,31 @@ export function AddressDialog() {
   }, [currentUser, fetchAddresses]);
 
   useEffect(() => {
-    if (address) {
+    if (selectedAddress) {
       setFormData({
-        name: address.name || '',
-        full_name: address.full_name || address.name || '',
-        address_line1: address.address_line1,
-        address_line2: address.address_line2 || '',
-        city: address.city,
-        state: address.state,
-        postal_code: address.postal_code,
-        country: address.country,
-        phone_number: address.phone_number,
-        is_default: address.is_default
+        name: selectedAddress.name || '',
+        full_name: selectedAddress.full_name || selectedAddress.name || '',
+        address_line1: selectedAddress.address_line1,
+        address_line2: selectedAddress.address_line2 || '',
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        postal_code: selectedAddress.postal_code,
+        country: selectedAddress.country,
+        phone_number: selectedAddress.phone_number,
+        is_default: selectedAddress.is_default
       });
     } else {
       clearForm();
     }
-  }, [address, open]);
+  }, [selectedAddress, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await addAddress({
-        ...formData,
-        is_default: addresses.length === 0
-      });
+      await addAddress(formData);
       setIsAddingNew(false);
       setFormData({
+        name: '',
         full_name: '',
         address_line1: '',
         address_line2: '',
@@ -224,7 +224,7 @@ export function AddressDialog() {
                     <Input
                       placeholder="Full Name"
                       value={formData.full_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value, full_name: e.target.value }))}
                       required
                     />
                     <Input
