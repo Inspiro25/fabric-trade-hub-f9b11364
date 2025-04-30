@@ -32,15 +32,10 @@ export interface CartContextType {
 // Create the context
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Create and export the useCart hook
-export const useCart = (): CartContextType => {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
-};
-
-// Export the context and CartProvider
-export { CartProvider } from './CartContext.tsx';
+// Export default context
 export default CartContext;
+
+// Export the CartProvider (but no useCart, that's defined and exported in CartContext.tsx)
+export { CartProvider } from './CartContext.tsx';
+
+// We do NOT export useCart hook here anymore to avoid circular dependency

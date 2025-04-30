@@ -12,6 +12,15 @@ import { CartItem, CartContextType } from './CartContext';
 // Re-using the context from CartContext.ts
 import CartContext from './CartContext';
 
+// Export the useCart hook directly from this file for consistency
+export const useCart = (): CartContextType => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
