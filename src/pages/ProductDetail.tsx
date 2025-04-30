@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Heart, Star, ShoppingCart, ArrowLeft, ArrowRight, Send, Share2, Package, Truck, RefreshCw, Shield, ChevronDown, ChevronUp, Info, Clock, Tag, Users, ThumbsUp, MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import ProductCard from '@/components/ui/ProductCard';
-import CompactProductCard from '@/components/ui/CompactProductCard';
+import { CompactProductCard } from '@/components/ui/CompactProductCard';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/contexts/CartContext';
 import {
@@ -547,6 +547,7 @@ const ProductDetail: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left column - Images & Product Highlights */}
           <div>
             <Carousel
               opts={{
@@ -699,6 +700,7 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
 
+          {/* Right column - Product Information */}
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline">{product?.category}</Badge>
@@ -905,3 +907,118 @@ const ProductDetail: React.FC = () => {
                 <TabsTrigger value="description">Description</TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="specs">Specifications</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="description" className="pt-4">
+                <div className={cn(
+                  "prose max-w-none",
+                  isDarkMode ? "prose-invert" : ""
+                )}>
+                  <p>{product.description}</p>
+                </div>
+                <MinimalReviewForm productId={product.id} />
+              </TabsContent>
+              
+              <TabsContent value="details" className="pt-4">
+                <div className={cn(
+                  "prose max-w-none",
+                  isDarkMode ? "prose-invert" : ""
+                )}>
+                  <h3>Product Details</h3>
+                  <ul>
+                    <li>SKU: {product.sku || 'N/A'}</li>
+                    <li>Category: {product.category}</li>
+                    <li>Available in stock: {product.stock}</li>
+                    <li>Tags: {product.tags?.join(', ') || 'N/A'}</li>
+                  </ul>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="specs" className="pt-4">
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="dimensions">
+                    <AccordionTrigger>Dimensions & Weight</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm">Dimensions and weight information not available.</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="materials">
+                    <AccordionTrigger>Materials & Composition</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm">Materials information not available.</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="care">
+                    <AccordionTrigger>Care Instructions</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm">Care instructions not available.</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="reviews" className="pt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className={cn(
+                      "text-lg font-medium",
+                      isDarkMode ? "text-white" : "text-gray-900"
+                    )}>Customer Reviews</h3>
+                    <Badge variant="outline">{product.reviewCount} reviews</Badge>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-5 w-5 ${i < Math.floor(product.rating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-500">{product.rating} out of 5</span>
+                  </div>
+                  
+                  <MinimalReviewForm productId={product.id} />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+        
+        {/* Recommended Products */}
+        {similarProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className={cn(
+              "text-xl font-semibold mb-6",
+              isDarkMode ? "text-white" : "text-gray-900"
+            )}>Similar Products</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {similarProducts.slice(0, 4).map(product => (
+                <CompactProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Recently Viewed */}
+        {recentlyViewed.length > 0 && (
+          <div className="mt-16">
+            <h2 className={cn(
+              "text-xl font-semibold mb-6",
+              isDarkMode ? "text-white" : "text-gray-900"
+            )}>Recently Viewed</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentlyViewed.map(product => (
+                <CompactProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProductDetail;
