@@ -14,9 +14,10 @@ import { MapPin, Plus, Check, ArrowRight } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Address } from '@/types/address';
+import { formatCurrency } from '@/lib/utils';
 
 export default function Checkout() {
-  const { cart, total, clearCart } = useCart();
+  const { cartItems, total, clearCart } = useCart();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   
@@ -47,10 +48,10 @@ export default function Checkout() {
   }, [currentUser, navigate]);
 
   useEffect(() => {
-    if (cart.length === 0) {
+    if (cartItems.length === 0) {
       navigate('/cart');
     }
-  }, [cart, navigate]);
+  }, [cartItems, navigate]);
 
   const fetchAddresses = async () => {
     if (!currentUser) return;
@@ -154,7 +155,7 @@ export default function Checkout() {
 
     setIsProcessing(true);
     try {
-      const orderItems = cart.map(item => ({
+      const orderItems = cartItems.map(item => ({
         productId: item.product.id,
         quantity: item.quantity,
         price: item.product.salePrice || item.product.price,

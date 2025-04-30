@@ -4,7 +4,7 @@ import { Product } from '@/lib/products/types';
 export interface ProductShowcaseProps {
   products: Product[];
   title: string;
-  subtitle?: string; // Make sure subtitle is defined here
+  subtitle?: string;
   linkTo?: string;
   isLoaded?: boolean;
   layout?: string;
@@ -24,7 +24,7 @@ export interface ProductGridProps {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   showFilters?: boolean;
-  paginationClassName?: string; // Make sure this prop is defined
+  paginationClassName?: string;
   isLoading?: boolean;
 }
 

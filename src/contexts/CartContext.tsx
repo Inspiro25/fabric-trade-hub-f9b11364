@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -19,7 +20,7 @@ export interface CartItem {
   size?: string;
   shopId?: string;
   stock: number;
-  total: number; // Make sure this property exists
+  total: number;
 }
 
 interface CartContextProps {
@@ -41,6 +42,15 @@ interface CartContextProps {
   getItemQuantity: (productId: string) => number;
   getTotalItems: () => number;
   getTotalPrice: () => number;
+  // Add missing properties being used in components
+  updateQuantity: (id: string, quantity: number) => void;
+  increaseQuantity: (id: string) => void;
+  decreaseQuantity: (id: string) => void;
+  getCartCount: () => number;
+  getCartTotal: () => number;
+  isLoading: boolean;
+  cart: CartItem[];
+  total: number;
 }
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);
@@ -69,12 +79,19 @@ const setLocalCartItems = (cartItems: CartItem[]) => {
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [state, setState] = useState({
     cartItems: getLocalCartItems(),
+    isLoading: true,
   });
 
   useEffect(() => {
     const storedCartItems = localStorage.getItem('cartItems');
     if (storedCartItems) {
-      setState({ cartItems: JSON.parse(storedCartItems) });
+      setState(prevState => ({ 
+        ...prevState, 
+        cartItems: JSON.parse(storedCartItems),
+        isLoading: false 
+      }));
+    } else {
+      setState(prevState => ({ ...prevState, isLoading: false }));
     }
   }, []);
 
@@ -164,6 +181,23 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setState(prev => ({ ...prev, cartItems: updatedItems }));
   };
 
+  // Add alias functions with same implementation
+  const updateQuantity = updateCartItemQuantity;
+
+  const increaseQuantity = (id: string) => {
+    const item = state.cartItems.find(item => item.id === id);
+    if (item) {
+      updateCartItemQuantity(id, item.quantity + 1);
+    }
+  };
+
+  const decreaseQuantity = (id: string) => {
+    const item = state.cartItems.find(item => item.id === id);
+    if (item && item.quantity > 1) {
+      updateCartItemQuantity(id, item.quantity - 1);
+    }
+  };
+
   const clearCart = () => {
     setLocalCartItems([]);
     setState(prev => ({ ...prev, cartItems: [] }));
@@ -182,6 +216,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return state.cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   }, [state.cartItems]);
 
+  // Add alias for getTotalItems
+  const getCartCount = getTotalItems;
+
+  // Add alias for getTotalPrice
+  const getCartTotal = getTotalPrice;
+
+  // Calculate total for checkout
+  const total = getTotalPrice();
+
   const value: CartContextProps = {
     cartItems: state.cartItems,
     addToCart,
@@ -191,6 +234,15 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     getItemQuantity,
     getTotalItems,
     getTotalPrice,
+    // Add the missing properties
+    updateQuantity,
+    increaseQuantity,
+    decreaseQuantity,
+    getCartCount,
+    getCartTotal,
+    isLoading: state.isLoading,
+    cart: state.cartItems,
+    total,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

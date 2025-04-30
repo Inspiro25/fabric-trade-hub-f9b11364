@@ -1,14 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useUser, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useSupabaseClient } from '@supabase/supabase-js';
 import { ExtendedUser } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
+
+// Define user type if not using next.js auth helpers
+type User = {
+  id: string;
+  email: string;
+};
 
 export function useAuthProvider() {
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<ExtendedUser | null>(null);
-  const user = useUser();
-	const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
   const supabase = useSupabaseClient();
 
   const fetchUserProfile = async (userId: string) => {
@@ -23,7 +29,7 @@ export function useAuthProvider() {
       if (error) throw error;
       
       if (data) {
-        const userProfile = {
+        const userProfile: ExtendedUser = {
           id: data.id,
           display_name: data.display_name || '',
           email: data.email || '',
@@ -31,7 +37,7 @@ export function useAuthProvider() {
           address: data.address || '',
           preferences: data.preferences || {},
           avatarUrl: data.avatar_url || '',
-          savedAddresses: data.saved_addresses || []
+          email_confirmed_at: data.email_confirmed_at
         };
         
         return userProfile;
@@ -94,7 +100,7 @@ export function useAuthProvider() {
         throw res.error;
       }
 			
-			router.push('/auth/verify-otp');
+			navigate('/auth/verify-otp');
       toast({
         title: "Sign Up Successful",
         description: "Please check your email to verify your account.",
@@ -232,7 +238,7 @@ export function useAuthProvider() {
 				title: "Email Verified",
 				description: "Your email has been verified successfully.",
 			});
-			router.push('/');
+			navigate('/');
 		} catch (error: any) {
 			toast({
 				title: "Email Verification Failed",
@@ -272,6 +278,7 @@ export function useAuthProvider() {
     handleUpdateProfile,
     handleResetPassword,
     handleUpdatePassword,
-		verifyOTP,
+    verifyOTP,
+    fetchUserProfile,
   };
 }

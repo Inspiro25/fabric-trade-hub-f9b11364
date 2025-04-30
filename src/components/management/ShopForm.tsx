@@ -8,24 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ShopStatus } from '@/lib/shops/types';
 import { ShopFormValues } from '@/types/shop';
-
-// Export the ShopFormValues interface so it can be imported by other components
-export interface ShopFormValues {
-  name: string;
-  description?: string;
-  shopId?: string;
-  phoneNumber?: string;
-  address?: string;
-  password?: string;
-  logo?: string;
-  coverImage?: string;
-  isVerified?: boolean;
-  ownerName?: string;
-  ownerEmail?: string;
-  status?: "active" | "pending" | "suspended";
-}
 
 const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),
@@ -55,7 +38,6 @@ const ShopForm = ({
   submitLabel,
   isSubmitting = false
 }: ShopFormProps) => {
-  // Define the default values with all required fields
   const formDefaults: ShopFormValues = {
     name: defaultValues.name || '',
     description: defaultValues.description || '',

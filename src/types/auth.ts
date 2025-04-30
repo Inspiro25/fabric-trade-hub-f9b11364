@@ -1,7 +1,9 @@
+
 // Add or modify the ExtendedUser type to include phone and address properties
 
 export interface ExtendedUser {
   id: string;
+  uid?: string; // Add this for OrderContext
   email: string;
   display_name?: string;
   avatarUrl?: string;

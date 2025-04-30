@@ -37,7 +37,10 @@ export interface CartContextType {
   isRemoving?: boolean;
   isUpdating?: boolean;
   migrateCartToUser: () => Promise<void>;
-  total?: number; // Add this for Checkout.tsx compatibility
+  total: number;
+  cart: CartItem[];
+  increaseQuantity: (itemId: string) => void;
+  decreaseQuantity: (itemId: string) => void;
 }
 
 // Create the context
