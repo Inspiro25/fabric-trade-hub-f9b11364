@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { Product } from '@/lib/products/types';
@@ -7,6 +8,7 @@ import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
 import AuthDialog from '@/components/search/AuthDialog';
 import { CartItem } from '@/types/cart';
+import { CartContext } from './CartContext';
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -20,8 +22,6 @@ interface CartContextType {
   isLoading: boolean;
   migrateCartToUser: () => Promise<void>;
 }
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -158,7 +158,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ]);
 
   return (
-    <CartContext.Provider value={value}>
+    <CartContext.Provider value={value as any}>
       {children}
       {showAuthDialog && (
         <AuthDialog
@@ -173,6 +173,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// Export hook for easy usage
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {

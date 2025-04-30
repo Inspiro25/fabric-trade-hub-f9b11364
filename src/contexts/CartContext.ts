@@ -1,6 +1,6 @@
 
 import { createContext, useContext } from 'react';
-import { Product } from '@/types/product';
+import { Product } from '@/lib/products/types';
 
 // Define the CartItem type
 export interface CartItem {
@@ -39,5 +39,11 @@ export const useCart = () => {
   }
   return context;
 };
+
+export { CartContext };
+export type { CartContextType };
+
+// Re-export the CartProvider from CartContext.tsx for backward compatibility
+export { CartProvider } from './CartContext.tsx';
 
 export default CartContext;
