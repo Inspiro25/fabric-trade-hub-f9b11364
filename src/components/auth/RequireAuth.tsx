@@ -2,12 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
-import { ExtendedUser } from '@/types/auth';
+import { ExtendedUser } from '@/contexts/AuthContext';
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -22,7 +21,7 @@ const RequireAuth = ({
   shopAdminOnly = false,
   redirectTo = '/auth/login' 
 }: RequireAuthProps) => {
-  const { currentUser, userProfile, loading } = useAuth();
+  const { currentUser, isLoading } = useAuth();
   const [localLoading, setLocalLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,17 +31,15 @@ const RequireAuth = ({
   const hasRequiredRole = () => {
     if (!adminOnly && !shopAdminOnly) return true;
     
-    const user = currentUser as ExtendedUser | null;
-    
     // Admin-only routes
     if (adminOnly) {
-      return user?.preferences?.role === 'admin';
+      return currentUser?.role === 'admin' || currentUser?.preferences?.role === 'admin';
     }
     
     // Shop admin routes
     if (shopAdminOnly) {
-      return user?.preferences?.role === 'shop_admin' ||
-             user?.preferences?.role === 'admin';
+      return currentUser?.role === 'shop_admin' || currentUser?.preferences?.role === 'shop_admin' ||
+             currentUser?.role === 'admin' || currentUser?.preferences?.role === 'admin';
     }
     
     return false;
@@ -51,10 +48,7 @@ const RequireAuth = ({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Double-check Supabase session
-        const { data: sessionData } = await supabase.auth.getSession();
-        
-        if (!loading) {
+        if (!isLoading) {
           // No current user, redirect to login
           if (!currentUser) {
             navigate(redirectTo, { state: { from: location.pathname } });
@@ -81,10 +75,10 @@ const RequireAuth = ({
     };
 
     checkAuth();
-  }, [currentUser, loading, navigate, location.pathname, redirectTo]);
+  }, [currentUser, isLoading, navigate, location.pathname, redirectTo]);
 
   // Show loading state
-  if (loading || localLoading) {
+  if (isLoading || localLoading) {
     return (
       <div className={cn(
         "flex items-center justify-center min-h-screen",

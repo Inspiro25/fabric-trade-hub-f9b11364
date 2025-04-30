@@ -1,81 +1,88 @@
 
 import React from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import HomeHero from './HomeHero';
+import ProductSection from '@/components/features/ProductSection';
 import FeaturedCategories from './FeaturedCategories';
 import HomeProductShowcase from './HomeProductShowcase';
 import HeroCarousel from '@/components/ui/HeroCarousel';
-import ProductSection from '@/components/features/ProductSection';
-import DealOfTheDay from '@/components/features/DealOfTheDay';
+import CategorySlider from './CategorySlider';
+import FlashSaleTimer from './FlashSaleTimer';
 import BrandsShowcase from '@/components/features/BrandsShowcase';
 import NewCollectionBanner from '@/components/features/NewCollectionBanner';
 import CustomerTestimonials from '@/components/features/CustomerTestimonials';
 import Newsletter from '@/components/forms/Newsletter';
-import { AllCategories, FeaturedProducts, PopularProducts } from '@/data/demo-products';
+import { Product } from '@/lib/types/product';
 
-const DesktopHome = () => {
-  const { isDarkMode } = useTheme();
-  
+// Mock data for demo products
+const demoProducts: Product[] = Array(8).fill(null).map((_, i) => ({
+  id: `product-${i}`,
+  name: `Product ${i + 1}`,
+  description: `Description for product ${i + 1}`,
+  price: 29.99 + i * 10,
+  discount_price: i % 3 === 0 ? 19.99 + i * 8 : undefined,
+  images: [`https://placehold.co/300x300?text=Product${i+1}`],
+  category: 'category-1',
+  reviewCount: 15 + i,
+  rating: 4.5,
+  stock: 10 + i,
+  shop_id: `shop-${i % 3}`
+}));
+
+const DesktopHome: React.FC = () => {
   return (
-    <div
-      className={cn(
-        "w-full min-h-screen flex flex-col",
-        isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-      )}
-    >
-      <HeroCarousel />
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
-        <FeaturedCategories categories={AllCategories} />
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
-        <ProductSection
-          title="Featured Products"
-          subtitle="Handpicked selection just for you"
-          viewAllLink="/products/featured"
-          products={FeaturedProducts.slice(0, 6)}
+    <div>
+      <HomeHero />
+
+      <div className="container mx-auto px-4 py-8">
+        <FeaturedCategories />
+        
+        <ProductSection 
+          title="New Arrivals" 
+          linkTo="/new-arrivals"
+          viewAllLink="/new-arrivals"
+          subtitle="Check out our latest products"
+          products={demoProducts.slice(0, 4)}
         />
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
-        <DealOfTheDay />
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
+        
+        <div className="my-10">
+          <HeroCarousel />
+        </div>
+        
+        <CategorySlider />
+        
+        <FlashSaleTimer />
+        
         <ProductSection
-          title="Popular Products"
-          subtitle="Best selling items this month"
-          viewAllLink="/products/popular"
-          products={PopularProducts.slice(0, 6)}
+          title="Trending Now" 
+          linkTo="/trending-now"
+          viewAllLink="/trending-now"
+          subtitle="Popular products this season"
+          products={demoProducts.slice(4, 8)}
           titlePosition="right"
         />
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
-        <NewCollectionBanner />
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
-        <HomeProductShowcase />
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-8">
-        <BrandsShowcase />
-      </section>
-      
-      <section className={cn(
-        "py-16",
-        isDarkMode ? 'bg-gray-800' : 'bg-blue-50'
-      )}>
-        <div className="container mx-auto px-4 md:px-8">
+        
+        <div className="my-12">
+          <BrandsShowcase />
+        </div>
+        
+        <HomeProductShowcase
+          title="Popular Products"
+          products={demoProducts}
+          isLoaded={true}
+        />
+        
+        <div className="my-12">
+          <NewCollectionBanner />
+        </div>
+        
+        <div className="my-16">
           <CustomerTestimonials />
         </div>
-      </section>
-      
-      <section className="container mx-auto px-4 md:px-8 py-16">
-        <Newsletter />
-      </section>
+        
+        <div className="my-16">
+          <Newsletter />
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,32 +1,72 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { 
+  auth, 
+  loginWithEmail, 
+  registerWithEmail, 
+  logoutUser, 
+  resetPassword, 
+  loginWithGoogle, 
+  loginWithFacebook,
+  db,
+  doc,
+  getDoc,
+  setDoc
+} from '@/lib/firebase';
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { toast } from 'sonner';
 
-// Define the User type
-export interface User {
+// Define the User interface with extended properties
+export interface User extends FirebaseUser {
+  displayName: string | null;
+  photoURL: string | null;
+  uid: string;
+  email: string | null;
+  role?: string;
+}
+
+// Define our ExtendedUser type that will include properties from Firebase User and custom fields
+export interface ExtendedUser {
   id: string;
-  email?: string;
-  displayName?: string;
-  photoURL?: string;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+  avatarUrl?: string | null;
   uid?: string;
   role?: string;
+  preferences?: {
+    role?: 'user' | 'shop_admin' | 'admin';
+    theme?: string;
+    currency?: string;
+    language?: string;
+    notifications?: {
+      email: boolean;
+      sms: boolean;
+      push: boolean;
+    };
+  };
 }
 
 // Define the context type
 export interface AuthContextType {
-  currentUser: User | null;
+  currentUser: ExtendedUser | null;
   isLoading: boolean;
-  user?: User | null; // For backward compatibility
+  user?: ExtendedUser | null; // For backward compatibility
   loading?: boolean; // For backward compatibility
-  userProfile?: User | null; // For backward compatibility
-  signIn: (email: string, password: string) => Promise<{ user: User | null; error: any | null }>;
-  signUp: (email: string, password: string, userData?: any) => Promise<{ user: User | null; error: any | null }>;
+  userProfile?: ExtendedUser | null; // For backward compatibility
+  signIn: (email: string, password: string) => Promise<{ user: ExtendedUser | null; error: any | null }>;
+  signUp: (email: string, password: string, userData?: any) => Promise<{ user: ExtendedUser | null; error: any | null }>;
   signOut: () => Promise<void>;
   logout?: () => Promise<void>; // For backward compatibility
   resetPassword: (email: string) => Promise<{ error: any | null }>;
-  updateUserProfile?: (data: Partial<User>) => Promise<void>;
+  updateUserProfile?: (data: Partial<ExtendedUser>) => Promise<void>;
   isSupabaseAuthenticated?: boolean; // For backward compatibility
+  loginWithGoogle?: () => Promise<ExtendedUser | null>;
+  loginWithFacebook?: () => Promise<ExtendedUser | null>;
+  register?: (email: string, password: string) => Promise<ExtendedUser | null>;
+  login?: (email: string, password: string) => Promise<ExtendedUser | null>;
+  forgotPassword?: (email: string) => Promise<void>;
+  updateProfile?: (data: Partial<ExtendedUser>) => Promise<void>;
 }
 
 // Create the context
@@ -41,119 +81,88 @@ export const useAuth = () => {
   return context;
 };
 
+// Helper function to convert Firebase User to our ExtendedUser
+const convertToExtendedUser = (firebaseUser: FirebaseUser | null, userProfile?: any): ExtendedUser | null => {
+  if (!firebaseUser) return null;
+  
+  return {
+    id: firebaseUser.uid,
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    displayName: userProfile?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0],
+    photoURL: userProfile?.photoURL || firebaseUser.photoURL,
+    avatarUrl: userProfile?.avatarUrl || userProfile?.photoURL || firebaseUser.photoURL,
+    role: userProfile?.role || 'user',
+    preferences: {
+      role: userProfile?.role || 'user',
+      theme: userProfile?.preferences?.theme || 'system',
+      currency: userProfile?.preferences?.currency || 'USD',
+      language: userProfile?.preferences?.language || 'en',
+      notifications: userProfile?.preferences?.notifications || {
+        email: true,
+        sms: false,
+        push: true
+      }
+    }
+  };
+};
+
 // Create the provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<ExtendedUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch user profile from Firestore
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (userDoc.exists()) {
+        return userDoc.data();
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
 
   // Check for existing session on mount
   useEffect(() => {
-    const checkSession = async () => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         setIsLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
         
-        if (session) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (error) throw error;
-          
-          setCurrentUser({
-            id: session.user.id,
-            email: session.user.email,
-            uid: session.user.id, // For compatibility
-            displayName: profile?.display_name || session.user.email?.split('@')[0],
-            photoURL: profile?.avatar_url,
-            role: profile?.role || 'user'
-          });
+        if (firebaseUser) {
+          const userProfile = await fetchUserProfile(firebaseUser.uid);
+          const extendedUser = convertToExtendedUser(firebaseUser, userProfile);
+          setCurrentUser(extendedUser);
         } else {
           setCurrentUser(null);
         }
       } catch (error) {
-        console.error('Error checking auth session:', error);
+        console.error('Error in auth state change:', error);
         setCurrentUser(null);
       } finally {
         setIsLoading(false);
       }
-    };
+    });
     
-    checkSession();
-    
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session) {
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (error) throw error;
-            
-            setCurrentUser({
-              id: session.user.id,
-              email: session.user.email,
-              uid: session.user.id, // For compatibility
-              displayName: profile?.display_name || session.user.email?.split('@')[0],
-              photoURL: profile?.avatar_url,
-              role: profile?.role || 'user'
-            });
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-          }
-        } else {
-          setCurrentUser(null);
-        }
-        setIsLoading(false);
-      }
-    );
-    
-    return () => {
-      subscription.unsubscribe();
-    };
+    // Clean up subscription
+    return () => unsubscribe();
   }, []);
 
   // Sign in with email and password
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (error) throw error;
-      
-      if (data.user) {
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-          
-        if (!profileError && profile) {
-          const user: User = {
-            id: data.user.id,
-            email: data.user.email,
-            uid: data.user.id, // For compatibility
-            displayName: profile.display_name || data.user.email?.split('@')[0],
-            photoURL: profile.avatar_url,
-            role: profile.role || 'user'
-          };
-          
-          setCurrentUser(user);
-          return { user, error: null };
-        }
-      }
-      
-      return { user: null, error: new Error('Failed to get user profile') };
+      const firebaseUser = await loginWithEmail(email, password);
+      const userProfile = await fetchUserProfile(firebaseUser.uid);
+      const extendedUser = convertToExtendedUser(firebaseUser, userProfile);
+      setCurrentUser(extendedUser);
+      toast.success('Signed in successfully');
+      return { user: extendedUser, error: null };
     } catch (error) {
       console.error('Sign in error:', error);
+      toast.error('Failed to sign in');
       return { user: null, error };
     }
   };
@@ -161,54 +170,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sign up with email and password
   const signUp = async (email: string, password: string, userData?: any) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password
-      });
+      const firebaseUser = await registerWithEmail(email, password);
       
-      if (error) throw error;
+      // User profile is created in the registerWithEmail function
+      const userProfile = await fetchUserProfile(firebaseUser.uid);
+      const extendedUser = convertToExtendedUser(firebaseUser, userProfile);
       
-      if (data.user) {
-        // Create a profile for the new user
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            display_name: userData?.displayName || data.user.email?.split('@')[0],
-            avatar_url: userData?.photoURL || null,
-            role: 'user',
-            created_at: new Date().toISOString()
-          });
-          
-        if (profileError) throw profileError;
-        
-        const user: User = {
-          id: data.user.id,
-          email: data.user.email,
-          uid: data.user.id, // For compatibility
-          displayName: userData?.displayName || data.user.email?.split('@')[0],
-          photoURL: userData?.photoURL || null,
-          role: 'user'
-        };
-        
-        setCurrentUser(user);
-        return { user, error: null };
-      }
-      
-      return { user: null, error: new Error('Failed to create user') };
+      setCurrentUser(extendedUser);
+      toast.success('Account created successfully');
+      return { user: extendedUser, error: null };
     } catch (error) {
       console.error('Sign up error:', error);
+      toast.error('Failed to create account');
       return { user: null, error };
     }
   };
 
   // Sign out
-  const signOut = async () => {
+  const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await logoutUser();
       setCurrentUser(null);
+      toast.success('Signed out successfully');
     } catch (error) {
       console.error('Sign out error:', error);
       toast.error('Failed to sign out');
@@ -216,14 +199,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Reset password
-  const resetPassword = async (email: string) => {
+  const handleResetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-      
-      if (error) throw error;
-      
+      await resetPassword(email);
       toast.success('Password reset email sent');
       return { error: null };
     } catch (error) {
@@ -233,21 +211,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Add required methods for profile updates
-  const updateUserProfile = useCallback(async (data: Partial<User>) => {
+  // Update user profile
+  const updateUserProfile = useCallback(async (data: Partial<ExtendedUser>) => {
     try {
       if (!currentUser) throw new Error('Not authenticated');
       
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          display_name: data.displayName,
-          avatar_url: data.photoURL,
-          // Add other fields as needed
-        })
-        .eq('id', currentUser.id);
+      const userRef = doc(db, 'users', currentUser.id);
       
-      if (error) throw error;
+      // Update profile in Firestore
+      await setDoc(userRef, {
+        displayName: data.displayName || currentUser.displayName,
+        photoURL: data.photoURL || currentUser.photoURL,
+        role: data.role || currentUser.role || 'user',
+        preferences: {
+          ...currentUser.preferences,
+          ...(data.preferences || {})
+        }
+      }, { merge: true });
       
       // Update local state
       setCurrentUser(prev => prev ? { ...prev, ...data } : null);
@@ -259,7 +239,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [currentUser]);
 
-  // Add values needed for backward compatibility
+  // Handle Google login
+  const handleGoogleLogin = async () => {
+    try {
+      const firebaseUser = await loginWithGoogle();
+      const userProfile = await fetchUserProfile(firebaseUser.uid);
+      const extendedUser = convertToExtendedUser(firebaseUser, userProfile);
+      setCurrentUser(extendedUser);
+      toast.success('Signed in with Google successfully');
+      return extendedUser;
+    } catch (error) {
+      console.error('Google login error:', error);
+      toast.error('Failed to sign in with Google');
+      return null;
+    }
+  };
+
+  // Handle Facebook login
+  const handleFacebookLogin = async () => {
+    try {
+      const firebaseUser = await loginWithFacebook();
+      const userProfile = await fetchUserProfile(firebaseUser.uid);
+      const extendedUser = convertToExtendedUser(firebaseUser, userProfile);
+      setCurrentUser(extendedUser);
+      toast.success('Signed in with Facebook successfully');
+      return extendedUser;
+    } catch (error) {
+      console.error('Facebook login error:', error);
+      toast.error('Failed to sign in with Facebook');
+      return null;
+    }
+  };
+
+  // Value object for the context provider, including backward compatibility aliases
   const value = {
     currentUser,
     isLoading,
@@ -268,11 +280,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     userProfile: currentUser, // For backward compatibility
     signIn,
     signUp,
-    signOut,
-    logout: signOut, // For backward compatibility
-    resetPassword,
+    signOut: handleSignOut,
+    logout: handleSignOut, // For backward compatibility
+    resetPassword: handleResetPassword,
     updateUserProfile,
-    isSupabaseAuthenticated: !!currentUser // For backward compatibility
+    isSupabaseAuthenticated: !!currentUser, // For backward compatibility
+    loginWithGoogle: handleGoogleLogin,
+    loginWithFacebook: handleFacebookLogin,
+    register: async (email: string, password: string) => {
+      const result = await signUp(email, password);
+      return result.user;
+    },
+    login: async (email: string, password: string) => {
+      const result = await signIn(email, password);
+      return result.user;
+    },
+    forgotPassword: async (email: string) => {
+      await handleResetPassword(email);
+    },
+    updateProfile: updateUserProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

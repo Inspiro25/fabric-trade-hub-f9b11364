@@ -35,6 +35,16 @@ facebookProvider.setCustomParameters({
 export const registerWithEmail = async (email: string, password: string) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
+    // Create a user profile document in Firestore
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      email: userCredential.user.email,
+      displayName: email.split('@')[0],
+      photoURL: null,
+      createdAt: new Date(),
+      role: 'user'
+    });
+    
     return userCredential.user;
   } catch (error) {
     console.error('Error in registerWithEmail:', error);
@@ -55,6 +65,19 @@ export const loginWithEmail = async (email: string, password: string) => {
 export const loginWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    
+    // Check if user document exists, if not create it
+    const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+    if (!userDoc.exists()) {
+      await setDoc(doc(db, 'users', result.user.uid), {
+        email: result.user.email,
+        displayName: result.user.displayName || result.user.email?.split('@')[0],
+        photoURL: result.user.photoURL,
+        createdAt: new Date(),
+        role: 'user'
+      });
+    }
+    
     return result.user;
   } catch (error) {
     console.error('Error in loginWithGoogle:', error);
@@ -65,6 +88,19 @@ export const loginWithGoogle = async () => {
 export const loginWithFacebook = async () => {
   try {
     const result = await signInWithPopup(auth, facebookProvider);
+    
+    // Check if user document exists, if not create it
+    const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+    if (!userDoc.exists()) {
+      await setDoc(doc(db, 'users', result.user.uid), {
+        email: result.user.email,
+        displayName: result.user.displayName || result.user.email?.split('@')[0],
+        photoURL: result.user.photoURL,
+        createdAt: new Date(),
+        role: 'user'
+      });
+    }
+    
     return result.user;
   } catch (error) {
     console.error('Error in loginWithFacebook:', error);

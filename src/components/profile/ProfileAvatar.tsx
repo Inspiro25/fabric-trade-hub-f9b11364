@@ -1,169 +1,90 @@
-import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2, X } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface ProfileAvatarProps {
-  className?: string;
-  editable?: boolean;
-  photoURL?: string;
-  displayName?: string;
-  email?: string;
+export interface ProfileAvatarProps {
+  avatarUrl?: string;
+  displayName: string;
+  email: string;
   phoneNumber?: string;
-  editMode?: boolean;
+  editMode: boolean;
 }
 
-export function ProfileAvatar({ 
-  className, 
-  editable = true, 
-  photoURL,
-  displayName: propDisplayName,
-  email: propEmail,
-  editMode 
-}: ProfileAvatarProps) {
-  const { currentUser, updateUserProfile } = useAuth();
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
-  const displayName = propDisplayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
-  const initials = displayName.substring(0, 2).toUpperCase();
-  const avatarUrl = previewUrl || photoURL || currentUser?.photoURL;
+const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
+  avatarUrl,
+  displayName,
+  email,
+  phoneNumber,
+  editMode
+}) => {
+  const [uploading, setUploading] = useState(false);
+  const { updateProfile } = useAuth();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !currentUser) return;
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-    
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
-      return;
-    }
-    
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      setIsUploading(true);
+      if (!e.target.files || e.target.files.length === 0) {
+        return;
+      }
       
-      // Create preview
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      const file = e.target.files[0];
+      setUploading(true);
       
-      // Upload to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      // Create a mock URL for the uploaded file
+      // In a real app, you would upload this to a storage service
+      const mockAvatarUrl = URL.createObjectURL(file);
       
-      const { error: uploadError } = await supabase.storage
-        .from('user-content')
-        .upload(filePath, file);
-        
-      if (uploadError) throw uploadError;
-      
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('user-content')
-        .getPublicUrl(filePath);
-        
-      if (urlData) {
-        // Update user profile with new avatar URL
-        await updateUserProfile?.({
-          photoURL: urlData.publicUrl
-        });
-        
-        toast.success('Profile picture updated');
+      if (updateProfile) {
+        await updateProfile({ photoURL: mockAvatarUrl });
+        toast.success("Profile picture updated");
       }
     } catch (error) {
-      console.error('Avatar upload error:', error);
+      console.error('Error uploading avatar:', error);
       toast.error('Failed to update profile picture');
-      // Reset preview on error
-      setPreviewUrl(null);
     } finally {
-      setIsUploading(false);
-    }
-  };
-  
-  const handleRemoveAvatar = async () => {
-    if (!currentUser) return;
-    
-    try {
-      setIsUploading(true);
-      
-      // Update profile with no avatar
-      await updateUserProfile?.({
-        photoURL: null
-      });
-      
-      setPreviewUrl(null);
-      toast.success('Profile picture removed');
-    } catch (error) {
-      console.error('Error removing avatar:', error);
-      toast.error('Failed to remove profile picture');
-    } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
   };
 
   return (
-    <div className={cn("relative flex flex-col items-center", className)}>
-      <Avatar className="h-24 w-24 border-2 border-white shadow-md">
-        <AvatarImage src={avatarUrl || undefined} alt={displayName} />
-        <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
-      
-      {editable && !isUploading && (
-        <div className="mt-2 flex gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="text-xs"
-            asChild
-          >
-            <label>
-              <Upload className="mr-1 h-3 w-3" />
-              Change
-              <input 
-                type="file" 
-                className="hidden" 
-                accept="image/*"
-                onChange={handleFileChange}
-              />
+    <div className="flex flex-col items-center w-full">
+      <div className="relative">
+        <Avatar className="h-24 w-24 border-2 border-blue-500 cursor-pointer">
+          <AvatarImage src={avatarUrl || ''} alt={displayName} />
+          <AvatarFallback className="text-2xl">
+            {displayName ? displayName.charAt(0).toUpperCase() : email?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+
+        {editMode && (
+          <div className="absolute -bottom-1 -right-1">
+            <input
+              type="file"
+              id="avatar-upload"
+              className="hidden"
+              accept="image/*"
+              onChange={handleUpload}
+              disabled={uploading}
+            />
+            <label htmlFor="avatar-upload">
+              <Button size="sm" variant="secondary" className="h-8 w-8 rounded-full p-0" asChild>
+                <div>
+                  <Pencil className="h-4 w-4" />
+                </div>
+              </Button>
             </label>
-          </Button>
-          
-          {avatarUrl && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="text-xs text-destructive hover:text-destructive"
-              onClick={handleRemoveAvatar}
-            >
-              <X className="mr-1 h-3 w-3" />
-              Remove
-            </Button>
-          )}
-        </div>
-      )}
-      
-      {isUploading && (
-        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Updating...
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+
+      <h3 className="text-xl font-semibold mt-4">{displayName}</h3>
+      <p className="text-gray-500 text-sm">{email}</p>
+      {phoneNumber && <p className="text-gray-500 text-sm">{phoneNumber}</p>}
     </div>
   );
-}
+};
 
 export default ProfileAvatar;
