@@ -11,11 +11,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useCart } from '@/contexts/CartContext';
 
 const AuthenticatedView: React.FC = () => {
-  const { currentUser, isLoading } = useAuth();
+  const { currentUser, isLoading, logout } = useAuth();
+  const { getCartCount } = useCart();
   const [editMode, setEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Save user profile logic would go here
+    setEditMode(false);
+  };
 
   if (isLoading) {
     return (
@@ -39,15 +59,27 @@ const AuthenticatedView: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <ProfileHeader
-        title="My Profile"
-        description="Manage your account details and preferences"
+        isLoggedIn={!!currentUser}
         editMode={editMode}
-        onEditToggle={() => setEditMode(!editMode)}
+        setEditMode={setEditMode}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
         <div className="md:col-span-1">
-          <ProfileCard>
+          <ProfileCard
+            editMode={editMode}
+            displayName={displayName}
+            setDisplayName={setDisplayName}
+            email={email}
+            setEmail={setEmail}
+            phoneNumber={phoneNumber}
+            setPhoneNumber={setPhoneNumber}
+            address={address}
+            setAddress={setAddress}
+            isLoading={false}
+            handleSubmit={handleSubmit}
+            currentUser={currentUser}
+          >
             <ProfileAvatar 
               avatarUrl={currentUser.photoURL || currentUser.avatarUrl || ''}
               displayName={currentUser.displayName || 'User'}
@@ -55,8 +87,8 @@ const AuthenticatedView: React.FC = () => {
               phoneNumber=""
               editMode={editMode} 
             />
-            <ProfileStats orders={18} reviews={5} following={12} />
-            <ProfileActions />
+            <ProfileStats cartCount={getCartCount()} />
+            <ProfileActions onLogout={handleLogout} />
           </ProfileCard>
         </div>
 
@@ -71,9 +103,26 @@ const AuthenticatedView: React.FC = () => {
             
             <TabsContent value="profile" className="p-0">
               {editMode ? (
-                <ProfileForm />
+                <ProfileForm
+                  displayName={displayName}
+                  setDisplayName={setDisplayName}
+                  email={email}
+                  setEmail={setEmail}
+                  phoneNumber={phoneNumber}
+                  setPhoneNumber={setPhoneNumber}
+                  address={address}
+                  setAddress={setAddress}
+                  isLoading={false}
+                  handleSubmit={handleSubmit}
+                  emailDisabled={!!currentUser.email}
+                />
               ) : (
-                <ProfileInfo />
+                <ProfileInfo
+                  displayName={displayName}
+                  email={email}
+                  phoneNumber={phoneNumber}
+                  address={address}
+                />
               )}
             </TabsContent>
             

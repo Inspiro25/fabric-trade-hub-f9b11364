@@ -1,14 +1,14 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
-type ProfileFormProps = {
+export interface ProfileFormProps {
   displayName: string;
   setDisplayName: (value: string) => void;
   email: string;
@@ -20,9 +20,9 @@ type ProfileFormProps = {
   isLoading: boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   emailDisabled?: boolean;
-};
+}
 
-const ProfileForm = ({
+const ProfileForm: React.FC<ProfileFormProps> = ({
   displayName,
   setDisplayName,
   email,
@@ -33,101 +33,71 @@ const ProfileForm = ({
   setAddress,
   isLoading,
   handleSubmit,
-  emailDisabled = false,
-}: ProfileFormProps) => {
+  emailDisabled = false
+}) => {
   const { isDarkMode } = useTheme();
   
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="displayName" className={isDarkMode ? "text-gray-300" : ""}>
-          Display Name
-        </Label>
-        <Input
+        <Label htmlFor="displayName">Display Name</Label>
+        <Input 
           id="displayName"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="Your name"
-          className={cn(
-            isDarkMode 
-              ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400" 
-              : "bg-white"
-          )}
+          className={isDarkMode ? "bg-gray-700 border-gray-600" : ""}
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="email" className={isDarkMode ? "text-gray-300" : ""}>
-          Email
-        </Label>
-        <Input
+        <Label htmlFor="email">Email</Label>
+        <Input 
           id="email"
-          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Your email"
+          placeholder="your.email@example.com"
           disabled={emailDisabled}
           className={cn(
-            isDarkMode 
-              ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400" 
-              : "bg-white",
-            emailDisabled && isDarkMode && "bg-gray-800 text-gray-400"
+            isDarkMode ? "bg-gray-700 border-gray-600" : "",
+            emailDisabled && "opacity-50"
           )}
         />
+        {emailDisabled && (
+          <p className="text-xs text-gray-500">Email cannot be changed</p>
+        )}
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="phoneNumber" className={isDarkMode ? "text-gray-300" : ""}>
-          Phone Number
-        </Label>
-        <Input
+        <Label htmlFor="phoneNumber">Phone Number</Label>
+        <Input 
           id="phoneNumber"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
           placeholder="Your phone number"
-          className={cn(
-            isDarkMode 
-              ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400" 
-              : "bg-white"
-          )}
+          className={isDarkMode ? "bg-gray-700 border-gray-600" : ""}
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="address" className={isDarkMode ? "text-gray-300" : ""}>
-          Address
-        </Label>
-        <Textarea
+        <Label htmlFor="address">Address</Label>
+        <Textarea 
           id="address"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           placeholder="Your address"
-          className={cn(
-            isDarkMode 
-              ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400" 
-              : "bg-white"
-          )}
+          rows={3}
+          className={isDarkMode ? "bg-gray-700 border-gray-600" : ""}
         />
       </div>
       
-      <Button 
-        type="submit" 
-        disabled={isLoading}
-        className={cn(
-          "w-full mt-4",
-          isDarkMode 
-            ? "bg-blue-600 hover:bg-blue-700 text-white" 
-            : "bg-blue-500 hover:bg-blue-600 text-white"
-        )}
-      >
+      <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Saving...
           </>
-        ) : (
-          'Save Changes'
-        )}
+        ) : 'Save Profile'}
       </Button>
     </form>
   );

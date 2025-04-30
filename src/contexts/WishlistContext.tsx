@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +23,7 @@ export interface WishlistContextType {
   removeFromWishlist: (productId: string) => void;
   clearWishlist: () => void;
   isInWishlist: (productId: string) => boolean;
+  isLoading?: boolean;
   isAddingToWishlist?: boolean;
 }
 
@@ -31,7 +33,8 @@ export const WishlistContext = createContext<WishlistContextType>({
   addToWishlist: () => {},
   removeFromWishlist: () => {},
   clearWishlist: () => {},
-  isInWishlist: () => false
+  isInWishlist: () => false,
+  isLoading: false
 });
 
 // Export the hook for using the context
@@ -41,6 +44,7 @@ export const useWishlist = () => useContext(WishlistContext);
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { currentUser } = useAuth();
 
   // Function to check if an item is in the wishlist
@@ -51,6 +55,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Load wishlist from local storage or database
   useEffect(() => {
     const loadWishlist = async () => {
+      setIsLoading(true);
       try {
         // If user is authenticated, load from database
         if (currentUser?.id) {
@@ -82,6 +87,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       } catch (error) {
         console.error('Error loading wishlist:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -202,7 +209,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       removeFromWishlist, 
       clearWishlist, 
       isInWishlist,
-      isAddingToWishlist
+      isAddingToWishlist,
+      isLoading
     }}>
       {children}
     </WishlistContext.Provider>

@@ -5,14 +5,20 @@ import { Product } from '@/lib/products/types';
 // Define the CartItem type
 export interface CartItem {
   id: string;
-  product: Product;
+  productId: string;
   quantity: number;
+  name: string;
+  image: string;
+  price: number;
+  stock: number;
+  shopId?: string;
+  total: number;
   size?: string;
   color?: string;
-  price?: number;
-  total?: number;
-  created_at?: string;
-  updated_at?: string;
+  selectedOptions?: Array<{
+    name: string;
+    value: string;
+  }>;
 }
 
 // Define the CartContext type
@@ -26,6 +32,9 @@ export interface CartContextType {
   getCartCount: () => number;
   isInCart: (productId: string, color?: string, size?: string) => boolean;
   isLoading: boolean;
+  isAdding?: boolean;
+  isRemoving?: boolean;
+  isUpdating?: boolean;
   migrateCartToUser: () => Promise<void>;
 }
 

@@ -1,4 +1,3 @@
-
 import { CartItem } from "@/types/cart";
 import { Product } from "@/lib/types/product";
 import { useState, useCallback } from "react";
@@ -394,3 +393,6 @@ export const useCartOperations = (
     isUpdating
   };
 };
+
+// Make sure to export the hook
+export { useCartOperations };

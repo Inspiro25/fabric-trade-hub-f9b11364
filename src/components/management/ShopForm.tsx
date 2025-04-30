@@ -26,7 +26,7 @@ export interface ShopFormValues {
   phoneNumber: string;
 }
 
-const shopSchema = yup.object().shape({
+const shopSchema = yup.object({
   name: yup.string().required('Shop name is required'),
   description: yup.string().required('Description is required'),
   logo: yup.string().required('Logo URL is required'),
@@ -39,7 +39,7 @@ const shopSchema = yup.object().shape({
   status: yup.string().oneOf(['active', 'pending', 'suspended']).required('Status is required'),
   password: yup.string().required('Password is required'),
   phoneNumber: yup.string().required('Phone number is required'),
-});
+}).required();
 
 interface ShopFormProps {
   defaultValues?: Partial<ShopFormValues>;

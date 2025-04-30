@@ -29,7 +29,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { cartItems: storedCartItems, isLoading: isStorageLoading } = useCartStorage(currentUser);
   
   // Use the cart operations hook to handle cart actions
-  const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser } = useCartOperations(cartItems, setCartItems, currentUser);
+  const { addToCart: addToCartOp, removeFromCart: removeFromCartOp, updateQuantity: updateQuantityOp, clearCart: clearCartOp, migrateGuestCartToUser, isAdding, isRemoving, isUpdating } = useCartOperations(cartItems, setCartItems, currentUser);
 
   // Update cart items when stored items change
   useEffect(() => {
@@ -127,6 +127,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [cartItems]
   );
 
+  // Convert migrateGuestCartToUser to return Promise<void>
+  const migrateCartToUser = useCallback(async (): Promise<void> => {
+    await migrateGuestCartToUser();
+  }, [migrateGuestCartToUser]);
+
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     cartItems,
@@ -138,7 +143,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getCartCount: getCartCountWrapper,
     isInCart: isInCartWrapper,
     isLoading: isStorageLoading,
-    migrateCartToUser: migrateGuestCartToUser
+    isAdding,
+    isRemoving,
+    isUpdating,
+    migrateCartToUser
   }), [
     cartItems, 
     addToCart, 
@@ -148,8 +156,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     getCartTotalWrapper, 
     getCartCountWrapper, 
     isInCartWrapper, 
-    isStorageLoading, 
-    migrateGuestCartToUser
+    isStorageLoading,
+    isAdding,
+    isRemoving,
+    isUpdating,
+    migrateCartToUser
   ]);
 
   return (

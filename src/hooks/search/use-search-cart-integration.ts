@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { SearchPageProduct } from './types';
+import { Product } from '@/lib/products/types';
 
 export const useSearchCartIntegration = () => {
   const { addToCart, isAdding: isAddingToCart } = useCart();
@@ -10,73 +11,59 @@ export const useSearchCartIntegration = () => {
   
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   
-  // Handler for adding a product to cart
-  const handleAddToCart = useCallback((product: SearchPageProduct) => {
-    if (!product) return;
-    
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      salePrice: product.salePrice || product.sale_price,
-      quantity: 1,
-      image: product.images?.[0] || '',
-      color: product.colors?.[0] || '',
-      size: product.sizes?.[0] || '',
-      // Use shop_id if available, fallback to shopId
-      shopId: product.shop_id || product.shopId || '',
-      shop_id: product.shop_id || product.shopId || '',
-      stock: product.stock || 0
+  // Helper to convert SearchPageProduct to Product
+  const convertToProduct = (searchProduct: SearchPageProduct): Product => {
+    return {
+      id: searchProduct.id,
+      name: searchProduct.name,
+      description: searchProduct.description || '',
+      price: searchProduct.price,
+      salePrice: searchProduct.salePrice,
+      sale_price: searchProduct.salePrice,
+      images: searchProduct.images || [],
+      category: searchProduct.category,
+      category_id: searchProduct.category_id,
+      rating: searchProduct.rating,
+      reviewCount: searchProduct.reviewCount,
+      review_count: searchProduct.reviewCount,
+      stock: searchProduct.stock || 10,
+      shop_id: searchProduct.shop_id || searchProduct.shopId,
+      colors: searchProduct.colors || [],
+      sizes: searchProduct.sizes || [],
+      tags: searchProduct.tags || []
     };
-    
-    addToCart(cartItem);
+  };
+  
+  // Handler for adding to cart
+  const handleAddToCart = useCallback((product: SearchPageProduct) => {
+    const fullProduct = convertToProduct(product);
+    addToCart(fullProduct, 1, '', '');
   }, [addToCart]);
   
-  // Handler for adding a product to wishlist
+  // Handler for adding to wishlist
   const handleAddToWishlist = useCallback((product: SearchPageProduct) => {
-    if (!product) return;
-    
-    const wishlistItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      salePrice: product.salePrice || product.sale_price,
-      image: product.images?.[0] || '',
-      category: product.category || '',
-      rating: product.rating || 0,
-      // Use shop_id if available, fallback to shopId
-      shopId: product.shop_id || product.shopId || '',
-      shop_id: product.shop_id || product.shopId || '',
-    };
-    
-    addToWishlist(wishlistItem);
+    const fullProduct = convertToProduct(product);
+    addToWishlist(fullProduct);
   }, [addToWishlist]);
   
-  // Handler for sharing a product
+  // Handler for sharing product
   const handleShareProduct = useCallback((product: SearchPageProduct) => {
-    if (!product) return '';
-    
-    const shareableLink = `${window.location.origin}/product/${product.id}`;
-    
-    // Copy to clipboard
-    navigator.clipboard.writeText(shareableLink)
-      .then(() => {
-        setCopiedLink(shareableLink);
-        setTimeout(() => setCopiedLink(null), 3000);
-      })
-      .catch(err => {
-        console.error('Failed to copy link: ', err);
-      });
-    
-    return shareableLink;
+    try {
+      const url = `${window.location.origin}/product/${product.id}`;
+      navigator.clipboard.writeText(url);
+      setCopiedLink(product.id);
+      setTimeout(() => setCopiedLink(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+    }
   }, []);
   
   return {
-    isAddingToCart,
-    isAddingToWishlist,
-    copiedLink,
     handleAddToCart,
     handleAddToWishlist,
-    handleShareProduct
+    handleShareProduct,
+    isAddingToCart,
+    isAddingToWishlist,
+    copiedLink
   };
 };

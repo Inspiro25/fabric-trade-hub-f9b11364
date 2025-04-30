@@ -1,68 +1,55 @@
+
 import React from 'react';
-import { Separator } from '@/components/ui/separator';
-import { User, AtSign, Phone, Home } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
+import { Mail, Phone, MapPin } from 'lucide-react';
 
-type ProfileInfoProps = {
+export interface ProfileInfoProps {
   displayName: string;
   email: string;
   phoneNumber: string;
   address: string;
-};
+}
 
-const ProfileInfo = ({ displayName, email, phoneNumber, address }: ProfileInfoProps) => {
+const ProfileInfo: React.FC<ProfileInfoProps> = ({
+  displayName,
+  email,
+  phoneNumber,
+  address
+}) => {
   const { isDarkMode } = useTheme();
   
   return (
-    <div className="space-y-4">
-      <InfoItem 
-        icon={<User className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
-        label="Display Name" 
-        value={displayName || 'Not provided'} 
-      />
+    <div className={cn(
+      "space-y-4 p-4 rounded-lg",
+      isDarkMode ? "bg-gray-800" : "bg-white"
+    )}>
+      <h2 className="text-xl font-semibold mb-4">{displayName}'s Profile</h2>
       
-      <Separator className={isDarkMode ? "bg-gray-700" : ""} />
-      
-      <InfoItem 
-        icon={<AtSign className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
-        label="Email" 
-        value={email || 'Not provided'} 
-      />
-      
-      <Separator className={isDarkMode ? "bg-gray-700" : ""} />
-      
-      <InfoItem 
-        icon={<Phone className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
-        label="Phone Number" 
-        value={phoneNumber || 'Not provided'} 
-      />
-      
-      <Separator className={isDarkMode ? "bg-gray-700" : ""} />
-      
-      <InfoItem 
-        icon={<Home className={isDarkMode ? "text-blue-400" : "text-blue-500"} />} 
-        label="Address" 
-        value={address || 'Not provided'} 
-      />
-    </div>
-  );
-};
-
-const InfoItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => {
-  const { isDarkMode } = useTheme();
-  
-  return (
-    <div className="flex items-start">
-      <div className="mr-3 mt-0.5">{icon}</div>
-      <div>
-        <p className={cn(
-          "text-sm font-medium",
-          isDarkMode ? "text-gray-400" : "text-gray-500"
-        )}>
-          {label}
-        </p>
-        <p className={isDarkMode ? "text-white" : "text-gray-900"}>{value}</p>
+      <div className="space-y-3">
+        <div className="flex items-center">
+          <Mail className="w-5 h-5 mr-3 text-gray-500" />
+          <div>
+            <p className="text-sm text-gray-500">Email</p>
+            <p className="font-medium">{email || 'Not provided'}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center">
+          <Phone className="w-5 h-5 mr-3 text-gray-500" />
+          <div>
+            <p className="text-sm text-gray-500">Phone</p>
+            <p className="font-medium">{phoneNumber || 'Not provided'}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center">
+          <MapPin className="w-5 h-5 mr-3 text-gray-500" />
+          <div>
+            <p className="text-sm text-gray-500">Address</p>
+            <p className="font-medium">{address || 'Not provided'}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -25,9 +25,11 @@ type ProfileCardProps = {
   isLoading: boolean;
   handleSubmit: (e: React.FormEvent) => Promise<void>;
   currentUser: any | null;
+  children: React.ReactNode;
 };
 
 const ProfileCard = ({
+  children,
   editMode,
   displayName,
   setDisplayName,
@@ -48,47 +50,8 @@ const ProfileCard = ({
       "overflow-hidden border-none shadow-md",
       isDarkMode ? "bg-gray-800" : "bg-white"
     )}>
-      <CardHeader className={cn(
-        "p-4",
-        isDarkMode 
-          ? "bg-gradient-to-r from-gray-800 to-gray-700" 
-          : "bg-gradient-to-r from-blue-50 to-indigo-50"
-      )}>
-        <CardTitle className={cn(
-          "text-lg",
-          isDarkMode ? "text-white" : ""
-        )}>
-          Personal Information
-        </CardTitle>
-        {!editMode && (
-          <CardDescription className={isDarkMode ? "text-gray-300" : ""}>
-            Your basic information
-          </CardDescription>
-        )}
-      </CardHeader>
       <CardContent className="p-4">
-        {editMode ? (
-          <ProfileForm
-            displayName={displayName}
-            setDisplayName={setDisplayName}
-            email={email}
-            setEmail={setEmail}
-            phoneNumber={phoneNumber}
-            setPhoneNumber={setPhoneNumber}
-            address={address}
-            setAddress={setAddress}
-            isLoading={isLoading}
-            handleSubmit={handleSubmit}
-            emailDisabled={!!currentUser?.email}
-          />
-        ) : (
-          <ProfileInfo
-            displayName={displayName}
-            email={email}
-            phoneNumber={phoneNumber}
-            address={address}
-          />
-        )}
+        {children}
       </CardContent>
     </Card>
   );
