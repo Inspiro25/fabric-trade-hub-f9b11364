@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/products/types';
-import { productStore } from '@/lib/products';
+import { productStore } from '@/lib/types/product';
 
 export interface DealProduct extends Omit<Product, 'created_at'> {
   discountPercentage: number;
@@ -110,8 +110,8 @@ const getFallbackDeal = (): DealProduct | null => {
       review_count: 128,
       stock: 50,
       tags: ["cotton", "casual", "summer"],
-      shopId: "shop-1",
       shop_id: "shop-1",
+      shopId: "shop-1",
       discountPercentage: 33,
       endTime: new Date(Date.now() + 24 * 60 * 60 * 1000)
     };

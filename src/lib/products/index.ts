@@ -21,9 +21,11 @@ export { getNewArrivals } from './newArrivals';
 
 export * from './collections';
 
+// Re-export productStore from types/product.ts
+export { productStore } from '@/lib/types/product';
+
 // Import Product type for mockProducts
 import { Product } from './types';
 
 // Mock product data for development
 export const mockProducts: Product[] = [];
-export const productStore = { products: mockProducts };
