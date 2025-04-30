@@ -1,10 +1,8 @@
 
-import { Product } from '@/lib/products/types';
-
 export interface ProductShowcaseProps {
-  products: Product[];
   title: string;
-  subtitle?: string;
+  subtitle?: string; // Make subtitle optional
+  products: any[];
   linkTo?: string;
   isLoaded?: boolean;
   layout?: string;
@@ -14,7 +12,7 @@ export interface ProductShowcaseProps {
 }
 
 export interface ProductGridProps {
-  products: Product[];
+  products: any[];
   title?: string;
   subtitle?: string;
   columns?: number;
@@ -24,10 +22,6 @@ export interface ProductGridProps {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   showFilters?: boolean;
-  paginationClassName?: string;
+  paginationClassName?: string; // Add missing property
   isLoading?: boolean;
-}
-
-export interface DealOfTheDayProps {
-  product?: Product;
 }

@@ -24,6 +24,24 @@ export function formatCurrency(amount: number, currencyCode: string = 'INR') {
   }).format(amount);
 }
 
+export function formatDate(date: string | Date, options: Intl.DateTimeFormatOptions = {}): string {
+  const defaultOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    ...options
+  };
+  
+  const dateObject = typeof date === 'string' ? new Date(date) : date;
+  
+  // Check if date is valid before formatting
+  if (isNaN(dateObject.getTime())) {
+    return 'Invalid date';
+  }
+  
+  return new Intl.DateTimeFormat('en-US', defaultOptions).format(dateObject);
+}
+
 export function categoryToSlug(category: string): string {
   return category.toLowerCase().replace(/\s+/g, '-');
 }
