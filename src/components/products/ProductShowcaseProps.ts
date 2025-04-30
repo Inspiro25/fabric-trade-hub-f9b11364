@@ -29,6 +29,5 @@ export interface ProductGridProps {
 }
 
 export interface DealOfTheDayProps {
-  product: Product;
-  // Add other required properties
+  product?: Product;
 }

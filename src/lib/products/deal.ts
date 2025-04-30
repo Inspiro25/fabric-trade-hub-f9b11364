@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/products/types';
-import { productStore } from '@/lib/types/product';
+import { productStore } from '@/lib/products';
 
 export interface DealProduct extends Omit<Product, 'created_at'> {
   discountPercentage: number;
@@ -25,7 +25,7 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
     
     if (error) {
       console.error('Error fetching deal products:', error);
-      throw error;
+      return getFallbackDeal();
     }
     
     if (!products || products.length === 0) {
@@ -71,7 +71,7 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
     // Sort by discount percentage (highest first)
     productsWithDiscounts.sort((a, b) => b.discountPercentage - a.discountPercentage);
     
-    return productsWithDiscounts[0] || null;
+    return productsWithDiscounts[0] || getFallbackDeal();
   } catch (error) {
     console.error('Error getting deal of the day:', error);
     
@@ -85,16 +85,46 @@ export const getDealOfTheDay = async (): Promise<DealProduct | null> => {
  */
 const getFallbackDeal = (): DealProduct | null => {
   // Get products from local store that have both regular price and sale price
-  const productsWithDiscount = productStore.products.filter(p => p.price && p.salePrice);
+  const productsWithDiscount = productStore.products.filter(p => p.price && p.sale_price);
   
-  if (productsWithDiscount.length === 0) return null;
+  if (productsWithDiscount.length === 0) {
+    // Create a default product as last resort
+    const defaultProduct: DealProduct = {
+      id: "default-deal-1",
+      name: "Premium Cotton T-Shirt",
+      description: "Made from 100% organic cotton, this premium t-shirt offers exceptional comfort and durability.",
+      price: 29.99,
+      sale_price: 19.99,
+      salePrice: 19.99,
+      images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2080"],
+      category: "T-Shirts",
+      category_id: "t-shirts",
+      colors: ["White", "Black", "Navy", "Gray"],
+      sizes: ["S", "M", "L", "XL", "XXL"],
+      isNew: true,
+      is_new: true,
+      isTrending: false,
+      is_trending: false,
+      rating: 4.5,
+      reviewCount: 128,
+      review_count: 128,
+      stock: 50,
+      tags: ["cotton", "casual", "summer"],
+      shopId: "shop-1",
+      shop_id: "shop-1",
+      discountPercentage: 33,
+      endTime: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    };
+    
+    return defaultProduct;
+  }
   
   // Calculate discount and find best deal
   const productsWithDiscounts = productsWithDiscount.map(product => {
-    const discountPercentage = Math.round(((product.price - (product.salePrice || 0)) / product.price) * 100);
+    const discountPercentage = Math.round(((product.price - (product.sale_price || 0)) / product.price) * 100);
     return {
       ...product,
-      sale_price: product.salePrice,
+      sale_price: product.sale_price,
       category_id: product.category || '',
       is_new: product.isNew,
       is_trending: product.isTrending,
