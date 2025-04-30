@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; 
-import { Shop } from '@/lib/shops/types';
+import { Shop, convertToDisplayShop } from '@/lib/shops/types';
 import { toast } from 'sonner';
 
 interface ShopAdminHeaderProps {
@@ -14,6 +14,7 @@ interface ShopAdminHeaderProps {
 
 const ShopAdminHeader: React.FC<ShopAdminHeaderProps> = ({ shop, isMobile = false }) => {
   const navigate = useNavigate();
+  const displayShop = convertToDisplayShop(shop);
   
   const handleLogout = () => {
     sessionStorage.removeItem('adminShopId');
@@ -42,7 +43,7 @@ const ShopAdminHeader: React.FC<ShopAdminHeaderProps> = ({ shop, isMobile = fals
           
           <div>
             <h1 className={`font-semibold ${isMobile ? 'text-base' : 'text-xl'}`}>
-              {shop.name} {shop.isVerified && '✓'}
+              {shop.name} {displayShop.isVerified && '✓'}
             </h1>
             <p className="text-xs text-muted-foreground">Shop Admin Panel</p>
           </div>

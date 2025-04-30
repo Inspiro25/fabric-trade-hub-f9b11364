@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from 'react-hook-form';
 import { updateShop } from '@/lib/supabase/shops';
-import { Shop } from '@/lib/shops/types';
+import { Shop, convertToDisplayShop } from '@/lib/shops/types';
 import { toast } from 'sonner';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -22,8 +22,9 @@ interface ShopSettingsProps {
 
 const ShopSettings: React.FC<ShopSettingsProps> = ({ shop, onUpdateSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const displayShop = convertToDisplayShop(shop);
   const [logo, setLogo] = useState<string>(shop.logo || '');
-  const [coverImage, setCoverImage] = useState<string>(shop.coverImage || '');
+  const [coverImage, setCoverImage] = useState<string>(displayShop.coverImage || '');
   const { isDarkMode } = useTheme();
   const isMobile = useIsMobile();
   
@@ -32,11 +33,11 @@ const ShopSettings: React.FC<ShopSettingsProps> = ({ shop, onUpdateSuccess }) =>
       name: shop.name,
       description: shop.description,
       address: shop.address,
-      phoneNumber: shop.phoneNumber || '',
-      ownerName: shop.ownerName,
-      ownerEmail: shop.ownerEmail,
+      phoneNumber: displayShop.phoneNumber || '',
+      ownerName: displayShop.ownerName,
+      ownerEmail: displayShop.ownerEmail,
       password: '',
-      isVerified: shop.isVerified
+      isVerified: displayShop.isVerified
     }
   });
 
@@ -47,7 +48,11 @@ const ShopSettings: React.FC<ShopSettingsProps> = ({ shop, onUpdateSuccess }) =>
       const updateData = {
         ...data,
         logo,
-        coverImage
+        cover_image: coverImage,
+        phone_number: data.phoneNumber,
+        owner_name: data.ownerName,
+        owner_email: data.ownerEmail,
+        is_verified: data.isVerified
       };
       
       const success = await updateShop(shop.id, updateData);

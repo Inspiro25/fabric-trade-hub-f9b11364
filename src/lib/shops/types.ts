@@ -34,19 +34,29 @@ export interface ShopWithProducts extends Shop {
   }>;
 }
 
-// Alias properties for frontend convenience
-export interface ShopDisplay extends Omit<Shop, 'cover_image' | 'is_verified' | 'owner_name' | 'owner_email' | 'phone_number' | 'review_count' | 'followers_count' | 'created_at'> {
+// Alias properties for frontend convenience with camelCase naming
+export interface ShopDisplay {
+  id: string;
+  name: string;
+  description: string;
+  logo: string;
   coverImage: string;
+  address: string;
   isVerified: boolean;
+  shopId: string;
   ownerName: string;
   ownerEmail: string;
+  status: ShopStatus;
+  password: string;
   phoneNumber: string;
+  rating: number;
   reviewCount: number;
   followers: number;
   createdAt: string;
+  updated_at?: string;
 }
 
-// Conversion helper
+// Conversion helper function for clean conversion between snake_case and camelCase
 export const convertToDisplayShop = (shop: Shop): ShopDisplay => {
   return {
     id: shop.id,
@@ -56,7 +66,7 @@ export const convertToDisplayShop = (shop: Shop): ShopDisplay => {
     coverImage: shop.cover_image,
     address: shop.address,
     isVerified: shop.is_verified,
-    shop_id: shop.shop_id,
+    shopId: shop.shop_id,
     ownerName: shop.owner_name,
     ownerEmail: shop.owner_email,
     status: shop.status,
@@ -69,3 +79,24 @@ export const convertToDisplayShop = (shop: Shop): ShopDisplay => {
     updated_at: shop.updated_at
   };
 };
+
+// Export Product type to be used across the application
+export interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  sale_price?: number;
+  images: string[];
+  category_id: string;
+  shop_id?: string;
+  rating: number;
+  review_count: number;
+  stock: number;
+  colors?: string[];
+  sizes?: string[];
+  tags?: string[];
+  is_new?: boolean;
+  is_trending?: boolean;
+  created_at: string;
+}

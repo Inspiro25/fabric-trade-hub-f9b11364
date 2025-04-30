@@ -8,8 +8,8 @@ import { getCartTotal, getCartCount, isInCart } from '@/lib/cart-utils';
 import { toast } from 'sonner';
 import AuthDialog from '@/components/search/AuthDialog';
 import { CartItem } from '@/types/cart';
-import { CartContext } from './CartContext';
 
+// Create the context with proper typing
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product, quantity: number, color: string, size: string) => void;
@@ -22,6 +22,8 @@ interface CartContextType {
   isLoading: boolean;
   migrateCartToUser: () => Promise<void>;
 }
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
@@ -158,7 +160,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ]);
 
   return (
-    <CartContext.Provider value={value as any}>
+    <CartContext.Provider value={value}>
       {children}
       {showAuthDialog && (
         <AuthDialog

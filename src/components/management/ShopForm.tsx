@@ -10,9 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ShopStatus } from '@/lib/shops/types';
 
-// Update status to match the database schema
-export type ShopStatus = 'active' | 'pending' | 'suspended';
-
 export interface ShopFormValues {
   name: string;
   description: string;

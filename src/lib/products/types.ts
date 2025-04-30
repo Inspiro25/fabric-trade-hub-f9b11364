@@ -1,19 +1,39 @@
 
+// Export the Product interface
 export interface Product {
   id: string;
   name: string;
+  description?: string;
   price: number;
-  sale_price?: number | null;
+  sale_price?: number;
   images: string[];
-  description: string;
   category_id: string;
-  colors: string[];
-  sizes: string[];
-  stock: number;
+  shop_id?: string;
   rating: number;
   review_count: number;
-  shop_id: string | null;
-  is_new: boolean;
-  is_trending: boolean;
-  tags: string[];
+  stock: number;
+  colors?: string[];
+  sizes?: string[];
+  tags?: string[];
+  is_new?: boolean;
+  is_trending?: boolean;
+  created_at: string;
+}
+
+// Add any additional product-related types here
+export interface ProductCategory {
+  id: string;
+  name: string;
+  description?: string;
+  image?: string;
+}
+
+export interface ProductReview {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  images?: string[];
 }

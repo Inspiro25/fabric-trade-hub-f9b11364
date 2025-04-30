@@ -3,7 +3,7 @@ import React from 'react';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash } from 'lucide-react';
-import { Shop } from '@/lib/shops/types';
+import { Shop, convertToDisplayShop } from '@/lib/shops/types';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -57,68 +57,71 @@ const ShopTable: React.FC<ShopTableProps> = ({
             </TableCell>
           </TableRow>
         ) : (
-          shops.map((shop) => (
-            <TableRow key={shop.id}>
-              <TableCell className="font-medium">
-                {shop.name}
-              </TableCell>
-              
-              {!isMobile && (
-                <TableCell>
-                  {shop.ownerName || "No owner assigned"}
+          shops.map((shop) => {
+            const displayShop = convertToDisplayShop(shop);
+            return (
+              <TableRow key={shop.id}>
+                <TableCell className="font-medium">
+                  {shop.name}
                 </TableCell>
-              )}
-              
-              <TableCell>
-                <Badge 
-                  variant={
-                    shop.status === 'active' 
-                      ? 'success' 
-                      : shop.status === 'pending' 
-                        ? 'warning' 
-                        : 'destructive'
-                  }
-                >
-                  {shop.status}
-                </Badge>
-              </TableCell>
-              
-              {!isMobile && (
+                
+                {!isMobile && (
+                  <TableCell>
+                    {displayShop.ownerName || "No owner assigned"}
+                  </TableCell>
+                )}
+                
                 <TableCell>
-                  {shop.isVerified ? 
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      Verified
-                    </Badge> : 
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                      Unverified
-                    </Badge>
-                  }
+                  <Badge 
+                    variant={
+                      shop.status === 'active' 
+                        ? 'success' 
+                        : shop.status === 'pending' 
+                          ? 'warning' 
+                          : 'destructive'
+                    }
+                  >
+                    {shop.status}
+                  </Badge>
                 </TableCell>
-              )}
-              
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => onEdit(shop)}
-                    title="Edit shop"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => onDelete(shop.id)}
-                    title="Delete shop"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
+                
+                {!isMobile && (
+                  <TableCell>
+                    {displayShop.isVerified ? 
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        Verified
+                      </Badge> : 
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                        Unverified
+                      </Badge>
+                    }
+                  </TableCell>
+                )}
+                
+                <TableCell>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => onEdit(shop)}
+                      title="Edit shop"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => onDelete(shop.id)}
+                      title="Delete shop"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })
         )}
       </TableBody>
     </Table>

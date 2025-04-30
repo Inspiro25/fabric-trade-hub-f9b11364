@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Shop } from '@/lib/shops/types';
+import { Shop, convertToDisplayShop } from '@/lib/shops/types';
 import { toast } from 'sonner';
 import { Check, Save } from 'lucide-react';
 import FileUpload from '@/components/ui/file-upload';
@@ -28,9 +28,10 @@ interface ShopDetailsEditorProps {
 }
 
 const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
+  const displayShop = convertToDisplayShop(shop);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logo, setLogo] = useState(shop.logo);
-  const [coverImage, setCoverImage] = useState(shop.coverImage);
+  const [coverImage, setCoverImage] = useState(displayShop.coverImage);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -48,7 +49,7 @@ const ShopDetailsEditor: React.FC<ShopDetailsEditorProps> = ({ shop }) => {
       const updateData = {
         ...data,
         logo,
-        coverImage
+        cover_image: coverImage
       };
       
       const success = await updateShop(shop.id, updateData);

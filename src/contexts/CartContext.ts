@@ -40,9 +40,6 @@ export const useCart = () => {
   return context;
 };
 
-export { CartContext };
-export type { CartContextType };
-
 // Re-export the CartProvider from CartContext.tsx for backward compatibility
 export { CartProvider } from './CartContext.tsx';
 
