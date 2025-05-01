@@ -10,28 +10,27 @@ export interface ExtendedUser {
   photoURL?: string | null;
   avatarUrl?: string | null;
   email_confirmed_at?: string;
-  uid?: string; // Added for compatibility with existing code
-  display_name?: string; // Added for backward compatibility
-  preferences?: Record<string, any>; // Added for compatibility with existing code
-  // Required properties from User that might be used
+  uid?: string;
+  display_name?: string;
+  preferences?: Record<string, any>;
+  // Required properties from User
   app_metadata: any;
   user_metadata: any;
   aud: string;
   created_at: string;
-  // Add other custom properties as needed
 }
 
 // Add other auth related types here
 export interface UserProfile {
   id: string;
   display_name: string;
-  displayName?: string; // Added for compatibility
+  displayName?: string;
   email: string;
   phone?: string;
   address?: string;
   preferences?: Record<string, any>;
   avatar_url?: string;
-  avatarUrl?: string; // Added for compatibility
+  avatarUrl?: string;
   email_confirmed_at?: string;
   savedAddresses?: Array<{
     id: string;

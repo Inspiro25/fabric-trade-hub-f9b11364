@@ -50,10 +50,10 @@ export interface ProductReview {
   images?: string[];
 }
 
-// Add ProductShowcaseProps definition
+// Update ProductShowcaseProps definition with subtitle
 export interface ProductShowcaseProps {
   title: string;
-  subtitle?: string;  // Make subtitle available
+  subtitle?: string;
   products: Product[];
   linkTo?: string;
   isLoaded?: boolean;
@@ -63,7 +63,7 @@ export interface ProductShowcaseProps {
   highlight?: boolean;
 }
 
-// Add ProductGridProps definition
+// Update ProductGridProps definition with paginationClassName
 export interface ProductGridProps {
   products: Product[];
   title?: string;
@@ -75,6 +75,6 @@ export interface ProductGridProps {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   showFilters?: boolean;
-  paginationClassName?: string; // Added this property
+  paginationClassName?: string;
   isLoading?: boolean;
 }

@@ -59,7 +59,7 @@ const Settings = () => {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Notification settings state
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -70,62 +70,39 @@ const Settings = () => {
   const [language, setLanguage] = useState('English');
   
   useEffect(() => {
-    if (userProfile) {
-      setDisplayName(userProfile.displayName || '');
-      setEmail(userProfile.email || '');
-      setPhoneNumber(userProfile.phone || '');
-      setAddress(userProfile.address || '');
-      
-      if (userProfile.preferences?.notifications) {
-        setEmailNotifications(userProfile.preferences.notifications.email);
-        setPushNotifications(userProfile.preferences.notifications.push);
-        setSmsNotifications(userProfile.preferences.notifications.sms);
-      }
-      
-      if (userProfile.preferences?.language) {
-        setLanguage(userProfile.preferences.language);
-      }
+    if (currentUser) {
+      setDisplayName(currentUser.displayName || '');
+      setEmail(currentUser.email || '');
+      setPhoneNumber(currentUser.phone || currentUser.user_metadata?.phone || '');
+      setAddress(currentUser.address || currentUser.user_metadata?.address || '');
     }
-  }, [userProfile]);
+  }, [currentUser]);
   
   const handleLogout = async () => {
     await logout();
     navigate('/');
   };
   
-  const handleProfileSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsProfileLoading(true);
-    
+    setIsLoading(true);
+
     try {
       await updateUserProfile({
         displayName,
-        phone: phoneNumber,
-        address,
-        preferences: {
-          ...(userProfile?.preferences || {}),
-          notifications: {
-            email: emailNotifications,
-            push: pushNotifications,
-            sms: smsNotifications
-          },
-          language
+        email,
+        user_metadata: {
+          phone: phoneNumber,
+          address: address
         }
       });
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
-      });
+
+      toast.success('Profile updated successfully');
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your profile.",
-        variant: "destructive",
-      });
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
     } finally {
-      setIsProfileLoading(false);
+      setIsLoading(false);
     }
   };
   
@@ -280,8 +257,8 @@ const Settings = () => {
                   setPhoneNumber={setPhoneNumber}
                   address={address}
                   setAddress={setAddress}
-                  isLoading={isProfileLoading}
-                  handleSubmit={handleProfileSubmit}
+                  isLoading={isLoading}
+                  handleSubmit={handleSubmit}
                   emailDisabled={true}
                 />
               </div>

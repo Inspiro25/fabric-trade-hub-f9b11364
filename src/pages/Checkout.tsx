@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,8 +17,8 @@ const Checkout = () => {
   useEffect(() => {
     if (currentUser) {
       // Get address and phone from user_metadata if available
-      setAddress(currentUser.user_metadata?.address || '');
-      setPhone(currentUser.user_metadata?.phone || '');
+      setAddress(currentUser.address || currentUser.user_metadata?.address || '');
+      setPhone(currentUser.phone || currentUser.user_metadata?.phone || '');
     }
   }, [currentUser]);
 

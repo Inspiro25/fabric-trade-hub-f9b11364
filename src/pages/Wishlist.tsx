@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2, Heart } from 'lucide-react';
-import { Product } from '@/lib/types/product';
+import { Product } from '@/lib/products/types';
 import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/ui/ProductCard';
 import EmptyWishlist from '@/components/cart/EmptyWishlist';
@@ -42,14 +42,14 @@ const Wishlist = () => {
       return;
     }
 
-    const fetchWishlistItems = async () => {
-      if (!currentUser || wishlist.length === 0) {
-        setWishlistItems([]);
-        setIsLoaded(true);
-        return;
-      }
-
+    const loadWishlistItems = async () => {
       try {
+        if (!currentUser || wishlist.length === 0) {
+          setWishlistItems([]);
+          setIsLoaded(true);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('products')
           .select(`
@@ -95,7 +95,7 @@ const Wishlist = () => {
       }
     };
 
-    fetchWishlistItems();
+    loadWishlistItems();
   }, [currentUser, wishlist, authLoading]);
 
   if (isLoading || authLoading) {

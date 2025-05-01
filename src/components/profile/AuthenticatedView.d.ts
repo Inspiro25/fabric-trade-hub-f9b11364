@@ -1,6 +1,6 @@
 
-import { Dispatch, SetStateAction } from 'react';
 import { ExtendedUser } from '@/types/auth';
+import { Dispatch, SetStateAction } from 'react';
 
 export interface AuthenticatedViewProps {
   isLoaded: boolean;

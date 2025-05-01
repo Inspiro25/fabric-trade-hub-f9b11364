@@ -9,11 +9,11 @@ export interface CartItem {
   quantity: number;
   color?: string;
   size?: string;
-  product?: any; // Allow both productId and product to be used
-  stock?: number; // Add stock property
-  total?: number; // Add total property
-  shopId?: string; // Add shopId property
-  selectedOptions?: Record<string, any>; // Add selectedOptions property
+  product?: any;
+  stock?: number;
+  total?: number;
+  shopId?: string;
+  selectedOptions?: Record<string, any>;
 }
 
 export interface CartContextProps {

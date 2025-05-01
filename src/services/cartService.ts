@@ -1,312 +1,294 @@
-import { supabase } from '@/lib/supabase';
-import { CartItem } from '@/contexts/CartContext';
-import { Product } from '@/lib/products/types';
-import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { CartItem } from '@/types/cart';
 
-// Fetch cart items from Supabase
-export const fetchUserCart = async (userId: string): Promise<CartItem[]> => {
+export const getCartItems = async (userId: string): Promise<CartItem[]> => {
   try {
-    // Get cart items for user
-    const { data: cartItems, error } = await supabase
-      .from('user_cart_items')
-      .select('*, product:products(*)')
-      .eq('user_id', userId)
-      .eq('saved_for_later', false);
-    
+    const { data, error } = await supabase
+      .from('cart_items')
+      .select(`
+        *,
+        product:products (
+          id,
+          name,
+          description,
+          price,
+          salePrice: sale_price,
+          images,
+          category,
+          colors,
+          sizes,
+          isNew,
+          isTrending,
+          rating,
+          reviewCount: review_count,
+          stock,
+          tags,
+          shopId: shop_id
+        )
+      `)
+      .eq('user_id', userId);
+
     if (error) {
-      console.error('Error fetching cart:', error);
+      console.error('Error fetching cart items:', error);
       return [];
     }
-    
-    // Transform data to CartItem format
-    return cartItems.map(item => {
-      const product = item.product as any;
-      return {
-        id: item.product_id,
-        product: {
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: product.price,
-          salePrice: product.sale_price,
-          images: product.images || [],
-          category: product.category_id || '',
-          colors: product.colors || [],
-          sizes: product.sizes || [],
-          isNew: product.is_new || false,
-          isTrending: product.is_trending || false,
-          rating: product.rating || 0,
-          reviewCount: product.review_count || 0,
-          stock: product.stock || 0,
-          tags: product.tags || [],
-          shopId: product.shop_id || '',
-        },
-        quantity: item.quantity,
-        color: item.color || '',
-        size: item.size || '',
-      };
-    });
+
+    if (!data) {
+      console.log('No cart items found for user:', userId);
+      return [];
+    }
+
+    const cartItems: CartItem[] = data.map(item => ({
+      id: item.id,
+      productId: item.product.id,
+      name: item.product.name,
+      image: item.product.images[0] || '',
+      price: item.product.price,
+      salePrice: item.product.salePrice,
+      quantity: item.quantity,
+      color: item.color,
+      size: item.size,
+      product: item.product,
+      stock: item.product.stock,
+      shopId: item.product.shopId
+    }));
+
+    return cartItems;
   } catch (error) {
-    console.error('Error fetching cart:', error);
+    console.error('Error in getCartItems:', error);
     return [];
   }
 };
 
-// Add or update cart item
-export const upsertCartItem = async (item: {
-  user_id: string;
-  product_id: string;
-  quantity: number;
-  color?: string;
-  size?: string;
-}): Promise<boolean> => {
+export const addCartItem = async (userId: string, productId: string, quantity: number = 1, color: string = '', size: string = ''): Promise<CartItem | null> => {
   try {
-    // Check if item already exists
-    const { data: existingItem, error: fetchError } = await supabase
-      .from('user_cart_items')
-      .select('*')
-      .eq('user_id', item.user_id)
-      .eq('product_id', item.product_id)
-      .eq('color', item.color || '')
-      .eq('size', item.size || '')
-      .eq('saved_for_later', false)
-      .maybeSingle();
-    
-    if (fetchError) {
-      console.error('Error checking existing cart item:', fetchError);
-      return false;
-    }
-    
-    if (existingItem) {
-      // Update existing item
-      const { error: updateError } = await supabase
-        .from('user_cart_items')
-        .update({ 
-          quantity: item.quantity,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingItem.id);
-      
-      if (updateError) {
-        console.error('Error updating cart item:', updateError);
-        return false;
-      }
-    } else {
-      // Insert new item
-      const { error: insertError } = await supabase
-        .from('user_cart_items')
-        .insert({
-          user_id: item.user_id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          color: item.color || '',
-          size: item.size || '',
-          saved_for_later: false
-        });
-      
-      if (insertError) {
-        console.error('Error adding item to cart:', insertError);
-        return false;
-      }
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error upserting cart item:', error);
-    return false;
-  }
-};
+    // Fetch the product details
+    const { data: productData, error: productError } = await supabase
+      .from('products')
+      .select(`
+        id,
+        name,
+        description,
+        price,
+        salePrice: sale_price,
+        images,
+        category,
+        colors,
+        sizes,
+        isNew,
+        isTrending,
+        rating,
+        reviewCount: review_count,
+        stock,
+        tags,
+        shopId: shop_id
+      `)
+      .eq('id', productId)
+      .single();
 
-// Remove item from cart
-export const removeCartItem = async (
-  userId: string,
-  productId: string,
-  size: string = '',
-  color: string = ''
-): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('user_cart_items')
-      .delete()
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .eq('color', color)
-      .eq('size', size)
-      .eq('saved_for_later', false);
-    
+    if (productError) {
+      console.error('Error fetching product details:', productError);
+      return null;
+    }
+
+    if (!productData) {
+      console.log('Product not found with ID:', productId);
+      return null;
+    }
+
+    // Insert the cart item
+    const { data, error } = await supabase
+      .from('cart_items')
+      .insert([
+        {
+          user_id: userId,
+          product_id: productId,
+          quantity: quantity,
+          color: color,
+          size: size
+        }
+      ])
+      .select(`
+        *,
+        product:products (
+          id,
+          name,
+          description,
+          price,
+          salePrice: sale_price,
+          images,
+          category,
+          colors,
+          sizes,
+          isNew,
+          isTrending,
+          rating,
+          reviewCount: review_count,
+          stock,
+          tags,
+          shopId: shop_id
+        )
+      `)
+      .single();
+
     if (error) {
-      console.error('Error removing item from cart:', error);
-      return false;
+      console.error('Error adding cart item:', error);
+      return null;
     }
-    
-    return true;
+
+    if (!data) {
+      console.log('Failed to add cart item for user:', userId, 'and product:', productId);
+      return null;
+    }
+
+    // Transform the data to match CartItem
+    const cartItem: CartItem = {
+      id: data.id,
+      productId: data.product_id,
+      name: data.product.name,
+      image: data.product.images[0] || '',
+      price: data.product.price,
+      salePrice: data.product.salePrice,
+      quantity: data.quantity,
+      color: data.color,
+      size: data.size,
+      product: data.product,
+      stock: data.product.stock,
+      shopId: data.product.shopId
+    };
+
+    return cartItem;
   } catch (error) {
-    console.error('Error removing cart item:', error);
-    return false;
+    console.error('Error in addCartItem:', error);
+    return null;
   }
 };
 
-// Update cart item quantity
-export const updateCartItemQuantity = async (
-  userId: string,
-  productId: string,
-  size: string = '',
-  color: string = '',
-  quantity: number
-): Promise<boolean> => {
+export const removeCartItem = async (itemId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
-      .from('user_cart_items')
-      .update({ 
-        quantity,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .eq('color', color)
-      .eq('size', size)
-      .eq('saved_for_later', false);
-    
-    if (error) {
-      console.error('Error updating cart item quantity:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error updating cart item quantity:', error);
-    return false;
-  }
-};
-
-// Clear cart
-export const clearUserCart = async (userId: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('user_cart_items')
+      .from('cart_items')
       .delete()
-      .eq('user_id', userId)
-      .eq('saved_for_later', false);
-    
+      .eq('id', itemId);
+
+    if (error) {
+      console.error('Error removing cart item:', error);
+      return false;
+    }
+
+    console.log('Cart item removed successfully:', itemId);
+    return true;
+  } catch (error) {
+    console.error('Error in removeCartItem:', error);
+    return false;
+  }
+};
+
+export const clearCart = async (userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('cart_items')
+      .delete()
+      .eq('user_id', userId);
+
     if (error) {
       console.error('Error clearing cart:', error);
       return false;
     }
-    
+
+    console.log('Cart cleared successfully for user:', userId);
     return true;
   } catch (error) {
-    console.error('Error clearing cart:', error);
+    console.error('Error in clearCart:', error);
     return false;
   }
 };
 
-// Move item to saved for later
-export const moveToSavedForLater = async (
-  userId: string,
-  productId: string,
-  size: string = '',
-  color: string = ''
-): Promise<boolean> => {
+export const updateCartItemQuantity = async (itemId: string, quantity: number): Promise<CartItem | null> => {
   try {
-    const { error } = await supabase
-      .from('user_cart_items')
-      .update({ 
-        saved_for_later: true,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .eq('color', color)
-      .eq('size', size);
-    
+    const { data, error } = await supabase
+      .from('cart_items')
+      .update({ quantity: quantity })
+      .eq('id', itemId)
+      .select(`
+        *,
+        product:products (
+          id,
+          name,
+          description,
+          price,
+          salePrice: sale_price,
+          images,
+          category,
+          colors,
+          sizes,
+          isNew,
+          isTrending,
+          rating,
+          reviewCount: review_count,
+          stock,
+          tags,
+          shopId: shop_id
+        )
+      `)
+      .single();
+
     if (error) {
-      console.error('Error moving item to saved for later:', error);
-      return false;
+      console.error('Error updating cart item quantity:', error);
+      return null;
     }
-    
-    return true;
+
+    if (!data) {
+      console.log('Cart item not found with ID:', itemId);
+      return null;
+    }
+
+    const cartItem: CartItem = {
+      id: data.id,
+      productId: data.product_id,
+      name: data.product.name,
+      image: data.product.images[0] || '',
+      price: data.product.price,
+      salePrice: data.product.salePrice,
+      quantity: data.quantity,
+      color: data.color,
+      size: data.size,
+      product: data.product,
+      stock: data.product.stock,
+      shopId: data.product.shopId
+    };
+
+    return cartItem;
   } catch (error) {
-    console.error('Error moving item to saved for later:', error);
-    return false;
+    console.error('Error in updateCartItemQuantity:', error);
+    return null;
   }
 };
 
-// Move item from saved for later back to cart
-export const moveToCart = async (
-  userId: string,
-  productId: string,
-  size: string = '',
-  color: string = ''
-): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('user_cart_items')
-      .update({ 
-        saved_for_later: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .eq('color', color)
-      .eq('size', size);
-    
-    if (error) {
-      console.error('Error moving item to cart:', error);
-      return false;
+export const getCartTotal = async (userId: string): Promise<number> => {
+    try {
+        const cartItems = await getCartItems(userId);
+        let total = 0;
+        for (const item of cartItems) {
+            total += (item.salePrice || item.price) * item.quantity;
+        }
+        return total;
+    } catch (error) {
+        console.error("Error calculating cart total:", error);
+        return 0;
     }
-    
-    return true;
-  } catch (error) {
-    console.error('Error moving item to cart:', error);
-    return false;
-  }
 };
 
-// Fetch saved for later items
-export const fetchSavedForLater = async (userId: string): Promise<CartItem[]> => {
-  try {
-    // Get saved items for user
-    const { data: savedItems, error } = await supabase
-      .from('user_cart_items')
-      .select('*, product:products(*)')
-      .eq('user_id', userId)
-      .eq('saved_for_later', true);
-    
-    if (error) {
-      console.error('Error fetching saved items:', error);
-      return [];
+export const getCartCount = async (userId: string): Promise<number> => {
+    try {
+        const cartItems = await getCartItems(userId);
+        let count = 0;
+        for (const item of cartItems) {
+            count += item.quantity;
+        }
+        return count;
+    } catch (error) {
+        console.error("Error calculating cart count:", error);
+        return 0;
     }
-    
-    // Transform data to CartItem format
-    return savedItems.map(item => {
-      const product = item.product as any;
-      return {
-        id: item.product_id,
-        product: {
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: product.price,
-          salePrice: product.sale_price,
-          images: product.images || [],
-          category: product.category_id || '',
-          colors: product.colors || [],
-          sizes: product.sizes || [],
-          isNew: product.is_new || false,
-          isTrending: product.is_trending || false,
-          rating: product.rating || 0,
-          reviewCount: product.review_count || 0,
-          stock: product.stock || 0,
-          tags: product.tags || [],
-          shopId: product.shop_id || '',
-        },
-        quantity: item.quantity,
-        color: item.color || '',
-        size: item.size || '',
-      };
-    });
-  } catch (error) {
-    console.error('Error fetching saved items:', error);
-    return [];
-  }
 };
