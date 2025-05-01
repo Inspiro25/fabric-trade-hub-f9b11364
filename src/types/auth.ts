@@ -17,6 +17,7 @@ export interface ExtendedUser {
   app_metadata: any;
   aud: string;
   created_at: string;
+  metadata?: any;
 }
 
 // Add other auth related types here

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,8 +34,8 @@ const ProfilePage = () => {
     if (currentUser) {
       setDisplayName(currentUser.displayName || userProfile?.displayName || '');
       setEmail(currentUser.email || userProfile?.email || '');
-      setPhoneNumber(currentUser.phone || (currentUser.user_metadata?.phone) || userProfile?.phone || '');
-      setAddress(currentUser.address || (currentUser.user_metadata?.address) || userProfile?.address || '');
+      setPhoneNumber(currentUser?.phone || (currentUser?.user_metadata?.phone) || userProfile?.phone || '');
+      setAddress(currentUser?.address || (currentUser?.user_metadata?.address) || userProfile?.address || '');
     }
     
     // Set animation state after a short delay
@@ -73,11 +72,8 @@ const ProfilePage = () => {
       await updateUserProfile({
         displayName,
         email,
-        // Update metadata to include phone and address
-        metadata: {
-          phone: phoneNumber,
-          address: address
-        }
+        phone: phoneNumber,
+        address: address
       });
       
       setEditMode(false);

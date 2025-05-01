@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { CartItem } from '@/types/cart';
 import { useCart } from '@/hooks/use-cart';
 import { formatCurrency } from '@/lib/utils';
@@ -18,8 +18,8 @@ const Checkout = () => {
   useEffect(() => {
     if (currentUser) {
       // Get address and phone from user metadata if available
-      setAddress(currentUser.address || (currentUser.user_metadata?.address || ''));
-      setPhone(currentUser.phone || (currentUser.user_metadata?.phone || ''));
+      setAddress(currentUser?.address || (currentUser?.user_metadata?.address || ''));
+      setPhone(currentUser?.phone || (currentUser?.user_metadata?.phone || ''));
     }
   }, [currentUser]);
 

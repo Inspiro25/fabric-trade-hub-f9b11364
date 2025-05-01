@@ -1,3 +1,4 @@
+
 import { Product } from '@/lib/types/product';
 import { 
   getProductById as supabaseGetProductById,
@@ -7,6 +8,7 @@ import {
   fetchProducts as supabaseFetchProducts
 } from '@/lib/supabase/products';
 import { productStore } from '@/lib/types/product';
+import { supabase } from '@/lib/supabase';
 
 // Function to fetch all products
 export const fetchProducts = async (): Promise<Product[]> => {
@@ -66,7 +68,7 @@ export const getProductsByIds = async (ids: string[]): Promise<Product[]> => {
     }
     
     if (data && data.length > 0) {
-      return data;
+      return data as Product[];
     }
     
     // Fallback to local cache

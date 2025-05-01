@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,20 +19,21 @@ import {
   Lock, 
   User, 
   ArrowRight,
-  Smartphone,
   AlertTriangle
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/lib/supabase";
 
+// Login form schema
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
+// Sign up form schema
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -52,6 +54,8 @@ const Authentication = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("login");
   const [authError, setAuthError] = useState<{message: string; isConfigError?: boolean} | null>(null);
+  const [loginCompleted, setLoginCompleted] = useState(false);
+  
   const navigate = useNavigate();
   const location = useLocation();
   const { login, register, loginWithGoogle, loginWithFacebook } = useAuth();
@@ -68,7 +72,7 @@ const Authentication = () => {
       const hasConfirmedEmail = currentUser.user_metadata?.email_confirmed_at;
       
       if (hasConfirmedEmail) {
-        setLoginStep("COMPLETE");
+        setLoginCompleted(true);
         navigate(redirectUrl || "/", { replace: true });
       }
     }

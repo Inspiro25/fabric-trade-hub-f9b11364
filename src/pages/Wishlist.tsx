@@ -8,7 +8,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -61,20 +60,16 @@ const WishlistPage = () => {
           isNew: product.is_new || false,
           isTrending: product.is_trending || false,
           shopId: product.shop_id || '',
-          shopName: product.shopName || '',
+          shopName: product.shop_id || '',
           colors: product.colors || [],
           sizes: product.sizes || [],
           tags: product.tags || []
-        }));
-        setWishlistProducts(formattedProducts as Product[]);
+        } as Product));
+        setWishlistProducts(formattedProducts);
       }
     } catch (error) {
       console.error("Error fetching wishlist:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load your wishlist",
-        variant: "destructive",
-      });
+      toast.error("Failed to load your wishlist");
     } finally {
       setLoading(false);
     }
@@ -86,10 +81,8 @@ const WishlistPage = () => {
 
   const handleRemoveFromWishlist = async (productId: string) => {
     if (!currentUser) {
-      toast({
-        title: "Not logged in",
-        description: "You must be logged in to manage your wishlist.",
-        variant: "destructive",
+      toast.error("Not logged in", {
+        description: "You must be logged in to manage your wishlist."
       });
       return;
     }
@@ -99,17 +92,10 @@ const WishlistPage = () => {
       setWishlistProducts(prevProducts =>
         prevProducts.filter(product => product.id !== productId)
       );
-      toast({
-        title: "Removed",
-        description: "Product removed from your wishlist.",
-      });
+      toast.success("Removed from wishlist");
     } catch (error) {
       console.error("Error removing from wishlist:", error);
-      toast({
-        title: "Error",
-        description: "Failed to remove product from wishlist.",
-        variant: "destructive",
-      });
+      toast.error("Failed to remove product from wishlist");
     }
   };
 
