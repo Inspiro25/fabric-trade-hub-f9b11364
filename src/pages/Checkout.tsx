@@ -17,8 +17,9 @@ const Checkout = () => {
 
   useEffect(() => {
     if (currentUser) {
-      setAddress(currentUser.address || '');
-      setPhone(currentUser.phone || '');
+      // Get address and phone from user_metadata if available
+      setAddress(currentUser.user_metadata?.address || '');
+      setPhone(currentUser.user_metadata?.phone || '');
     }
   }, [currentUser]);
 

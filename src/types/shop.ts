@@ -1,4 +1,3 @@
-
 import { ShopStatus } from "@/lib/shops/types";
 
 // Define ShopFormValues interface to be used in ShopForm and related components
@@ -16,5 +15,8 @@ export interface ShopFormValues {
   ownerEmail: string; // Required per shopSchema
   phoneNumber: string; // Required per shopSchema
 }
+
+// Export the interface explicitly
+export type { ShopFormValues };
 
 // Other shop related types can be added here as needed

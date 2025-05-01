@@ -12,12 +12,19 @@ import { createProduct, updateProduct } from '@/lib/supabase/products';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-interface ProductFormProps {
+export interface ProductFormProps {
   product?: Product;
   isEdit?: boolean;
+  onSubmit?: (productData: any) => Promise<any>;
+  categories?: any[];
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, isEdit = false }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ 
+  product, 
+  isEdit = false, 
+  onSubmit: externalOnSubmit,
+  categories = []
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   
@@ -48,7 +55,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, isEdit = false }) =>
         tags: [data.category],
       };
       
-      if (isEdit && product) {
+      if (externalOnSubmit) {
+        await externalOnSubmit(productData);
+      } else if (isEdit && product) {
         await updateProduct(product.id, productData);
         toast.success('Product updated successfully');
       } else {

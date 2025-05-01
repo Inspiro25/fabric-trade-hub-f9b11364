@@ -7,6 +7,7 @@ export interface ExtendedUser {
   phone?: string;
   address?: string;
   displayName?: string | null;
+  photoURL?: string | null;
   avatarUrl?: string | null;
   email_confirmed_at?: string;
   uid?: string; // Added for compatibility with existing code
@@ -24,11 +25,13 @@ export interface ExtendedUser {
 export interface UserProfile {
   id: string;
   display_name: string;
+  displayName?: string; // Added for compatibility
   email: string;
   phone?: string;
   address?: string;
   preferences?: Record<string, any>;
   avatar_url?: string;
+  avatarUrl?: string; // Added for compatibility
   email_confirmed_at?: string;
   savedAddresses?: Array<{
     id: string;

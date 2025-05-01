@@ -33,10 +33,10 @@ const ProfilePage = () => {
     
     // Populate form fields with user data
     if (currentUser) {
-      setDisplayName(currentUser.displayName || userProfile?.display_name || '');
+      setDisplayName(currentUser.displayName || userProfile?.displayName || '');
       setEmail(currentUser.email || userProfile?.email || '');
-      setPhoneNumber(currentUser.phone || userProfile?.phone || '');
-      setAddress(currentUser.address || userProfile?.address || '');
+      setPhoneNumber(userProfile?.phone || '');
+      setAddress(userProfile?.address || '');
     }
     
     // Set animation state after a short delay
@@ -73,8 +73,11 @@ const ProfilePage = () => {
       await updateUserProfile({
         displayName,
         email,
-        user_metadata: { phone: phoneNumber, address },
-        // Use user_metadata instead of directly assigning phone and address
+        // Store phone and address in user metadata
+        user_metadata: { 
+          phone: phoneNumber,
+          address: address
+        }
       });
       
       setEditMode(false);

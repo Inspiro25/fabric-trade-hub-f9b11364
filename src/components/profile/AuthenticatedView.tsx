@@ -57,7 +57,7 @@ const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
       <ProfileHeader
         isLoggedIn={!!currentUser}
         editMode={editMode}
-        setEditMode={setEditMode}
+        setEditMode={undefined} // Fixed this to undefined as it's not needed here
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
@@ -77,7 +77,7 @@ const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
             currentUser={currentUser}
           >
             <ProfileAvatar 
-              avatarUrl={currentUser.photoURL || currentUser.avatarUrl || ''}
+              avatarUrl={currentUser.avatarUrl || currentUser.photoURL || ''} // Handle both properties
               displayName={currentUser.displayName || 'User'}
               email={currentUser.email || ''}
               phoneNumber=""

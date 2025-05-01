@@ -53,7 +53,7 @@ export interface ProductReview {
 // Add ProductShowcaseProps definition
 export interface ProductShowcaseProps {
   title: string;
-  subtitle?: string;  // Make subtitle optional
+  subtitle?: string;  // Make subtitle available
   products: Product[];
   linkTo?: string;
   isLoaded?: boolean;
@@ -75,6 +75,6 @@ export interface ProductGridProps {
   currentPage?: number;
   onPageChange?: (page: number) => void;
   showFilters?: boolean;
-  paginationClassName?: string;
+  paginationClassName?: string; // Added this property
   isLoading?: boolean;
 }

@@ -3,12 +3,6 @@ import ProductForm from '@/components/admin/ProductForm';
 import { useCategories } from '@/hooks/use-categories';
 import { supabase } from '@/lib/supabase';
 
-// Define ProductFormProps interface to match the component's expected props
-interface ProductFormProps {
-  onSubmit: (productData: any) => Promise<any>;
-  categories: any[];
-}
-
 export default function AdminProducts() {
   const { categories } = useCategories();
 
