@@ -30,7 +30,7 @@ export const getProductsByIds = async (productIds: string[]): Promise<Product[]>
       salePrice: product.sale_price,
       sale_price: product.sale_price,
       images: product.images || [],
-      category: product.category,
+      category: product.category || '',
       category_id: product.category_id,
       categoryId: product.category_id,
       shop_id: product.shop_id,
@@ -59,12 +59,18 @@ export const getProductsByIds = async (productIds: string[]): Promise<Product[]>
 // Get a product by its ID
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {
+    // First, check if products table has views column
+    const hasViewsColumn = await checkProductViewsColumn();
+    
+    // Basic query without views
+    let query = `
+      *,
+      shop:shop_id(name, logo)
+    `;
+    
     const { data, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        shop:shop_id(name, logo)
-      `)
+      .select(query)
       .eq('id', id)
       .single();
       
@@ -85,7 +91,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
       salePrice: data.sale_price,
       sale_price: data.sale_price,
       images: data.images || [],
-      category: data.category,
+      category: data.category || '',
       category_id: data.category_id,
       categoryId: data.category_id,
       shop_id: data.shop_id,
@@ -109,4 +115,23 @@ export const getProductById = async (id: string): Promise<Product | null> => {
     console.error('Error in getProductById:', error);
     return null;
   }
+};
+
+// Helper function to check if products table has views column
+const checkProductViewsColumn = async (): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('products')
+      .select('views')
+      .limit(1);
+    
+    return !error; // If no error, views column exists
+  } catch {
+    return false; // If error, views column doesn't exist
+  }
+};
+
+// Add a function to fetch products for Offers page
+export const fetchProductsByIds = async (ids: string[]): Promise<Product[]> => {
+  return getProductsByIds(ids);
 };

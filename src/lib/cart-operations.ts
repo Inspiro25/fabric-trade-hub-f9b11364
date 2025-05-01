@@ -1,174 +1,170 @@
-
-import { toast } from 'sonner';
-import { CartItem } from '@/types/cart';
+import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/products/types';
-import { useCart } from '@/contexts/CartContext';
-import { 
-  addCartItem,
-  clearCart as clearCartService,
-  fetchUserCart, 
-  upsertCartItem,
-  removeCartItem
-} from '@/services/cartService';
+import { CartItem } from '@/types/cart';
 
-// Function to add a product to the cart
 export const addToCart = async (
-  userId: string | undefined,
+  userId: string,
   product: Product,
   quantity: number = 1,
   color?: string,
   size?: string
-): Promise<boolean> => {
+) => {
   try {
-    if (!userId) {
-      // Handle guest user case - use local storage
-      const cartItem: CartItem = {
-        id: `guest-${Date.now()}`,
-        productId: product.id,
-        name: product.name,
-        price: product.salePrice || product.price,
-        image: product.images[0] || '/placeholder.png',
-        quantity,
-        color,
-        size,
-        stock: product.stock,
-        total: (product.salePrice || product.price) * quantity
-      };
-      
-      // Use the CartContext to update local storage
-      const { addToCart } = useCart();
-      addToCart(cartItem);
-      
-      toast.success('Added to cart');
-      return true;
+    // Check if the product is already in the cart
+    const { data: cartItem, error: fetchError } = await supabase
+      .from('user_cart_items')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('product_id', product.id)
+      .eq('color', color || '')
+      .eq('size', size || '')
+      .maybeSingle();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error checking cart:', fetchError);
+      throw fetchError;
     }
-    
-    // If logged in, use the service to add to the database
-    const success = await addCartItem({
-      userId,
-      productId: product.id,
-      quantity,
-      price: product.salePrice || product.price,
-      color,
-      size
-    });
-    
-    if (success) {
-      toast.success('Added to cart');
-      return true;
+
+    if (cartItem) {
+      // Update quantity if product already exists
+      const newQuantity = cartItem.quantity + quantity;
+      const { error: updateError } = await supabase
+        .from('user_cart_items')
+        .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
+        .eq('id', cartItem.id);
+
+      if (updateError) {
+        console.error('Error updating cart item:', updateError);
+        throw updateError;
+      }
+    } else {
+      // Add new item to cart
+      const { error: insertError } = await supabase
+        .from('user_cart_items')
+        .insert({
+          user_id: userId,
+          product_id: product.id,
+          quantity,
+          color: color || null,
+          size: size || null,
+          added_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (insertError) {
+        console.error('Error adding item to cart:', insertError);
+        throw insertError;
+      }
     }
-    
-    throw new Error('Failed to add to cart');
+
+    return true;
   } catch (error) {
-    console.error('Error adding to cart:', error);
-    toast.error('Failed to add to cart');
+    console.error('Error in addToCart:', error);
+    throw error;
+  }
+};
+
+// ... Add other cart service functions here
+export const clearCart = async (userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('user_cart_items')
+      .delete()
+      .eq('user_id', userId);
+      
+    if (error) {
+      console.error('Error clearing cart:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in clearCart:', error);
     return false;
   }
 };
 
-// Function to clear the cart
-export const clearUserCart = async (userId: string | undefined): Promise<boolean> => {
+export const fetchUserCart = async (userId: string): Promise<CartItem[]> => {
   try {
-    if (!userId) {
-      // Handle guest user case - clear local storage
-      const { clearCart } = useCart();
-      clearCart();
-      toast.success('Cart cleared');
-      return true;
+    const { data, error } = await supabase
+      .from('user_cart_items')
+      .select(`
+        *,
+        product:product_id (*)
+      `)
+      .eq('user_id', userId);
+      
+    if (error) {
+      console.error('Error fetching cart:', error);
+      return [];
     }
     
-    // If logged in, use the service to clear the database
-    const success = await clearCartService(userId);
-    
-    if (success) {
-      toast.success('Cart cleared');
-      return true;
-    }
-    
-    throw new Error('Failed to clear cart');
+    // Transform the Supabase response into CartItem objects
+    return data.map(item => ({
+      id: item.id,
+      productId: item.product_id,
+      name: item.product.name,
+      price: item.product.sale_price || item.product.price,
+      image: item.product.images?.[0] || '/placeholder.png',
+      quantity: item.quantity,
+      color: item.color,
+      size: item.size,
+      stock: item.product.stock,
+      shopId: item.product.shop_id,
+      total: (item.product.sale_price || item.product.price) * item.quantity
+    }));
   } catch (error) {
-    console.error('Error clearing cart:', error);
-    toast.error('Failed to clear cart');
-    return false;
-  }
-};
-
-// Function to fetch the cart items
-export const fetchCart = async (userId: string | undefined): Promise<CartItem[]> => {
-  try {
-    if (!userId) {
-      // Handle guest user case - get from local storage
-      const { cartItems } = useCart();
-      return cartItems;
-    }
-    
-    // If logged in, use the service to fetch from the database
-    const cartItems = await fetchUserCart(userId);
-    return cartItems;
-  } catch (error) {
-    console.error('Error fetching cart:', error);
-    toast.error('Failed to fetch cart');
+    console.error('Error in fetchUserCart:', error);
     return [];
   }
 };
 
-// Function to update the quantity of a cart item
-export const updateCartItemQuantity = async (
-  userId: string | undefined,
-  itemId: string,
+export const upsertCartItem = async (
+  userId: string, 
+  productId: string, 
   quantity: number
 ): Promise<boolean> => {
   try {
-    if (!userId) {
-      // Handle guest user case - update local storage
-      const { updateQuantity } = useCart();
-      updateQuantity(itemId, quantity);
-      toast.success('Cart updated');
-      return true;
+    const { error } = await supabase
+      .from('user_cart_items')
+      .update({ 
+        quantity,
+        updated_at: new Date().toISOString() 
+      })
+      .eq('user_id', userId)
+      .eq('product_id', productId);
+      
+    if (error) {
+      console.error('Error updating cart item:', error);
+      return false;
     }
     
-    // If logged in, use the service to update the database
-    const success = await upsertCartItem(userId, itemId, quantity);
-    
-    if (success) {
-      toast.success('Cart updated');
-      return true;
-    }
-    
-    throw new Error('Failed to update cart');
+    return true;
   } catch (error) {
-    console.error('Error updating cart:', error);
-    toast.error('Failed to update cart');
+    console.error('Error in upsertCartItem:', error);
     return false;
   }
 };
 
-// Function to remove an item from the cart
-export const removeFromCart = async (
-  userId: string | undefined,
+export const removeCartItem = async (
+  userId: string,
   itemId: string
 ): Promise<boolean> => {
   try {
-    if (!userId) {
-      // Handle guest user case - remove from local storage
-      const { removeFromCart } = useCart();
-      removeFromCart(itemId);
-      toast.success('Item removed from cart');
-      return true;
+    const { error } = await supabase
+      .from('user_cart_items')
+      .delete()
+      .eq('user_id', userId)
+      .eq('id', itemId);
+      
+    if (error) {
+      console.error('Error removing cart item:', error);
+      return false;
     }
     
-    // If logged in, use the service to remove from the database
-    const success = await removeCartItem(userId, itemId);
-    
-    if (success) {
-      toast.success('Item removed from cart');
-      return true;
-    }
-    
-    throw new Error('Failed to remove item from cart');
+    return true;
   } catch (error) {
-    console.error('Error removing from cart:', error);
-    toast.error('Failed to remove item from cart');
+    console.error('Error in removeCartItem:', error);
     return false;
   }
 };

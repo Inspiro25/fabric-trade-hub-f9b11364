@@ -8,8 +8,8 @@ export interface Product {
   sale_price?: number;
   salePrice?: number;
   images: string[];
+  category: string;
   category_id?: string;
-  category?: string;
   shop_id?: string;
   shopId?: string;
   shopName?: string; 
@@ -31,6 +31,7 @@ export interface Product {
   updated_at?: string;
   // Add these for compatibility with Wishlist.tsx
   categoryId?: string;
+  views?: number;
 }
 
 // Add any additional product-related types here

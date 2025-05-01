@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import ProductCard from '@/components/ui/ProductCard';
+import ProductCard from '@/components/ProductCard';
 import { Product } from '@/lib/products/types';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export interface ProductShowcaseProps {

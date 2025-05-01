@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ProductReviews from '@/components/reviews/ProductReviews';
 import { isProductInWishlist } from '@/lib/supabase/wishlist';
 import { addToCart } from '@/lib/cart-operations';
+import { CartItem } from '@/types/cart';
 
 // Type definition for similar product
 interface SimilarProduct {
@@ -127,6 +128,8 @@ const ProductDetail = () => {
           selectedColor || undefined,
           selectedSize || undefined
         );
+        
+        toast.success('Added to cart');
       } else {
         // Create the cart item object for the context function
         const cartItem: CartItem = {
@@ -167,17 +170,22 @@ const ProductDetail = () => {
           selectedSize || undefined
         );
       } else {
-        addToCartContext(
-          product.id,
-          product.name,
-          product.images[0] || '/placeholder.png',
-          product.salePrice || product.price,
+        // Create cart item for context
+        const cartItem: CartItem = {
+          id: `guest-${Date.now()}`,
+          productId: product.id,
+          name: product.name,
+          image: product.images[0] || '/placeholder.png',
+          price: product.salePrice || product.price,
           quantity,
-          product.shop_id,
-          undefined,
-          selectedColor || undefined,
-          selectedSize || undefined
-        );
+          color: selectedColor || undefined,
+          size: selectedSize || undefined,
+          stock: product.stock,
+          shopId: product.shop_id,
+          total: (product.salePrice || product.price) * quantity
+        };
+        
+        addToCartContext(cartItem);
       }
       
       // Navigate to checkout immediately
@@ -303,7 +311,7 @@ const ProductDetail = () => {
               <div 
                 key={index}
                 className={`w-16 h-16 border rounded cursor-pointer ${mainImage === image ? 'border-blue-500 border-2' : 'border-gray-200'}`}
-                onClick={() => handleImageClick(image)}
+                onClick={() => setMainImage(image)}
               >
                 <img 
                   src={image} 
@@ -559,22 +567,22 @@ const ProductDetail = () => {
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4">Similar Products</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {similarProducts.map((product) => (
+              {similarProducts.map((similarProduct) => (
                 <Link 
-                  key={product.id} 
-                  to={`/product/${product.id}`}
+                  key={similarProduct.id} 
+                  to={`/product/${similarProduct.id}`}
                   className="border rounded-lg p-3 hover:shadow-md transition-shadow"
                 >
                   <img 
-                    src={product.image} 
-                    alt={product.name}
+                    src={similarProduct.image} 
+                    alt={similarProduct.name}
                     className="w-full h-32 object-contain mb-2" 
                   />
-                  <h4 className="font-medium truncate">{product.name}</h4>
+                  <h4 className="font-medium truncate">{similarProduct.name}</h4>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="font-bold">{formatCurrency(product.price)}</span>
+                    <span className="font-bold">{formatCurrency(similarProduct.price)}</span>
                     <div className="flex items-center bg-green-600 text-white text-xs px-1 py-0.5 rounded">
-                      {product.rating}
+                      {similarProduct.rating}
                       <Star className="h-2 w-2 ml-0.5 fill-current" />
                     </div>
                   </div>

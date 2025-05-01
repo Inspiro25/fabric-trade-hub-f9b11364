@@ -7,8 +7,8 @@ export interface Product {
   sale_price?: number; // Add this to ensure compatibility with Supabase data
   images: string[];
   category: string;
-  colors: string[];
-  sizes: string[];
+  colors?: string[];
+  sizes?: string[];
   isNew?: boolean;
   is_new?: boolean; // Add for compatibility 
   isTrending?: boolean;
@@ -17,13 +17,14 @@ export interface Product {
   reviewCount: number;
   review_count?: number; // Add for compatibility
   stock: number;
-  tags: string[];
+  tags?: string[];
   shopId?: string;
   shop_id?: string; // Add for compatibility
   category_id?: string; // Add for compatibility
   sku?: string; // Add SKU property
   brand?: string; // Add brand property
   specifications?: Record<string, string>; // Add specifications property
+  views?: number; // Add views property for analytics
 }
 
 // Export mock products to be used as fallback

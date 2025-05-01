@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -33,7 +34,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             {product.name}
           </h3>
           <div className="space-y-2">
-            <span className="text-lg font-bold text-gray-900">
+            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
               ₹{product.price}
             </span>
             <div className="flex items-center gap-2">
@@ -52,3 +53,5 @@ export function ProductCard({ product, className }: ProductCardProps) {
     </div>
   );
 }
+
+export default ProductCard;

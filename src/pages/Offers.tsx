@@ -8,8 +8,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ProductCard from '@/components/ui/ProductCard';
 import { Offer, getActiveOffers } from '@/lib/supabase/offers';
 import { useQuery } from '@tanstack/react-query';
-import { fetchProducts } from '@/lib/products/base';
-import { Product } from '@/lib/types/product';
+import { fetchProductsByIds } from '@/lib/products/base';
+import { Product } from '@/lib/products/types';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
@@ -36,7 +36,7 @@ const Offers = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const products = await fetchProducts();
+        const products = await fetchProductsByIds([1, 2, 3, 4, 5, 6, 7, 8]);
         // Filter products with sale price for the featured deals section
         const discounted = products.filter(product => product.salePrice).slice(0, 8);
         setDiscountedProducts(discounted);
