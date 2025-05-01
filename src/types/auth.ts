@@ -10,6 +10,11 @@ export interface ExtendedUser extends User {
   uid?: string; // Added for compatibility with existing code
   display_name?: string; // Added for backward compatibility
   preferences?: Record<string, any>; // Added for compatibility with existing code
+  // Required properties from User that might be used
+  app_metadata?: any;
+  user_metadata?: any;
+  aud?: string;
+  created_at?: string;
   // Add other custom properties as needed
 }
 
@@ -23,4 +28,15 @@ export interface UserProfile {
   preferences?: Record<string, any>;
   avatar_url?: string;
   email_confirmed_at?: string;
+  savedAddresses?: Array<{
+    id: string;
+    name: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    isDefault: boolean;
+  }>;
 }

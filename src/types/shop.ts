@@ -3,7 +3,7 @@ import { ShopStatus } from "@/lib/shops/types";
 
 // Define ShopFormValues interface to be used in ShopForm and related components
 export interface ShopFormValues {
-  name: string; // Making this required as per the build error
+  name: string; // Required property
   description?: string;
   address?: string;
   status?: ShopStatus;

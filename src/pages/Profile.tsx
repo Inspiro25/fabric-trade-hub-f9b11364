@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,8 +35,8 @@ const ProfilePage = () => {
     if (currentUser) {
       setDisplayName(currentUser.displayName || userProfile?.displayName || '');
       setEmail(currentUser.email || userProfile?.email || '');
-      setPhoneNumber(userProfile?.phone || '');
-      setAddress(userProfile?.address || '');
+      setPhoneNumber(currentUser.phone || userProfile?.phone || '');
+      setAddress(currentUser.address || userProfile?.address || '');
     }
     
     // Set animation state after a short delay

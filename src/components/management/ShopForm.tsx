@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ShopFormValues } from '@/types/shop';
+import type { ShopFormValues } from '@/types/shop';
 
 const shopSchema = yup.object().shape({
   name: yup.string().required('Shop name is required'),
@@ -212,6 +213,6 @@ const ShopForm = ({
 };
 
 // Re-export the ShopFormValues interface for use in other components
-export { ShopFormValues };
+export type { ShopFormValues };
 
 export default ShopForm;

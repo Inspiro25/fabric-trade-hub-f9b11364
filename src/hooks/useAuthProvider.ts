@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ExtendedUser, UserProfile } from '@/types/auth';
@@ -37,7 +38,12 @@ export function useAuthProvider() {
           address: data.address || '',
           preferences: data.preferences || {},
           avatarUrl: data.avatar_url || '',
-          email_confirmed_at: data.email_confirmed_at
+          email_confirmed_at: data.email_confirmed_at,
+          // Add base User properties
+          app_metadata: {},
+          user_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString()
         };
         
         return userProfile;
