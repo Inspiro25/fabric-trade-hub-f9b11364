@@ -55,27 +55,43 @@ const SettingsPage = () => {
   const { isDarkMode, toggleDarkMode } = useTheme();
   
   // Profile form state
-  const [displayName, setDisplayName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   // Notification settings state
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [smsEnabled, setSmsEnabled] = useState(false);
   
   // Language state
   const [language, setLanguage] = useState('English');
   
   useEffect(() => {
-    // Populate form fields with user data
     if (currentUser) {
-      setDisplayName(currentUser.displayName || userProfile?.displayName || '');
-      setEmail(currentUser.email || userProfile?.email || '');
-      setPhoneNumber(currentUser.phone || (currentUser.user_metadata?.phone) || userProfile?.phone || '');
-      setAddress(currentUser.address || (currentUser.user_metadata?.address) || userProfile?.address || '');
+      setName(currentUser?.displayName || userProfile?.display_name || '');
+      setEmail(currentUser?.email || userProfile?.email || '');
+      setPhone(
+        currentUser.phone || 
+        (currentUser.user_metadata?.phone) || 
+        userProfile?.phone || 
+        ''
+      );
+      setAddress(
+        currentUser.address || 
+        (currentUser.user_metadata?.address) || 
+        userProfile?.address || 
+        ''
+      );
+      
+      // Initialize notification preferences
+      if (userProfile?.preferences) {
+        setPushEnabled(userProfile.preferences.pushNotifications || false);
+        setEmailEnabled(userProfile.preferences.emailNotifications || false);
+        setSmsEnabled(userProfile.preferences.smsNotifications || false);
+      }
     }
   }, [currentUser, userProfile]);
   
@@ -97,12 +113,14 @@ const SettingsPage = () => {
     
     try {
       await updateUserProfile({
-        displayName,
+        displayName: name,
         email,
-        // Update metadata to include phone and address
-        metadata: {
-          phone: phoneNumber,
-          address: address
+        phone,
+        address,
+        preferences: {
+          pushNotifications: pushEnabled,
+          emailNotifications: emailEnabled,
+          smsNotifications: smsEnabled,
         }
       });
       
@@ -116,17 +134,17 @@ const SettingsPage = () => {
   };
   
   const togglePushNotifications = async () => {
-    const newValue = !pushNotifications;
-    setPushNotifications(newValue);
+    const newValue = !pushEnabled;
+    setPushEnabled(newValue);
     
     try {
       await updateUserProfile({
         preferences: {
           ...(userProfile?.preferences || {}),
           notifications: {
-            email: emailNotifications,
+            email: emailEnabled,
             push: newValue,
-            sms: smsNotifications
+            sms: smsEnabled
           }
         }
       });
@@ -136,7 +154,7 @@ const SettingsPage = () => {
         description: `You will ${newValue ? 'now' : 'no longer'} receive push notifications.`,
       });
     } catch (error) {
-      setPushNotifications(!newValue);
+      setPushEnabled(!newValue);
       toast({
         title: "Update Failed",
         description: "There was an error updating your notification settings.",
@@ -146,8 +164,8 @@ const SettingsPage = () => {
   };
   
   const toggleEmailNotifications = async () => {
-    const newValue = !emailNotifications;
-    setEmailNotifications(newValue);
+    const newValue = !emailEnabled;
+    setEmailEnabled(newValue);
     
     try {
       await updateUserProfile({
@@ -155,8 +173,8 @@ const SettingsPage = () => {
           ...(userProfile?.preferences || {}),
           notifications: {
             email: newValue,
-            push: pushNotifications,
-            sms: smsNotifications
+            push: pushEnabled,
+            sms: smsEnabled
           }
         }
       });
@@ -166,7 +184,7 @@ const SettingsPage = () => {
         description: `You will ${newValue ? 'now' : 'no longer'} receive email notifications.`,
       });
     } catch (error) {
-      setEmailNotifications(!newValue);
+      setEmailEnabled(!newValue);
       toast({
         title: "Update Failed",
         description: "There was an error updating your notification settings.",
@@ -176,16 +194,16 @@ const SettingsPage = () => {
   };
 
   const toggleSmsNotifications = async () => {
-    const newValue = !smsNotifications;
-    setSmsNotifications(newValue);
+    const newValue = !smsEnabled;
+    setSmsEnabled(newValue);
     
     try {
       await updateUserProfile({
         preferences: {
           ...(userProfile?.preferences || {}),
           notifications: {
-            email: emailNotifications,
-            push: pushNotifications,
+            email: emailEnabled,
+            push: pushEnabled,
             sms: newValue
           }
         }
@@ -196,7 +214,7 @@ const SettingsPage = () => {
         description: `You will ${newValue ? 'now' : 'no longer'} receive SMS notifications.`,
       });
     } catch (error) {
-      setSmsNotifications(!newValue);
+      setSmsEnabled(!newValue);
       toast({
         title: "Update Failed",
         description: "There was an error updating your notification settings.",
@@ -214,9 +232,9 @@ const SettingsPage = () => {
           ...(userProfile?.preferences || {}),
           language: newLanguage,
           notifications: {
-            email: emailNotifications,
-            push: pushNotifications,
-            sms: smsNotifications
+            email: emailEnabled,
+            push: pushEnabled,
+            sms: smsEnabled
           }
         }
       });
@@ -258,12 +276,12 @@ const SettingsPage = () => {
               </SheetHeader>
               <div className="py-6">
                 <ProfileForm
-                  displayName={displayName}
-                  setDisplayName={setDisplayName}
+                  displayName={name}
+                  setDisplayName={setName}
                   email={email}
                   setEmail={setEmail}
-                  phoneNumber={phoneNumber}
-                  setPhoneNumber={setPhoneNumber}
+                  phoneNumber={phone}
+                  setPhoneNumber={setPhone}
                   address={address}
                   setAddress={setAddress}
                   isLoading={isLoading}
@@ -286,21 +304,21 @@ const SettingsPage = () => {
               icon={<Bell size={18} />}
               title="Push Notifications"
               description="Get notified about order updates and promotions"
-              action={<Switch checked={pushNotifications} onCheckedChange={togglePushNotifications} />}
+              action={<Switch checked={pushEnabled} onCheckedChange={togglePushNotifications} />}
             />
             
             <SettingItem
               icon={<Bell size={18} />}
               title="Email Notifications"
               description="Receive notifications via email"
-              action={<Switch checked={emailNotifications} onCheckedChange={toggleEmailNotifications} />}
+              action={<Switch checked={emailEnabled} onCheckedChange={toggleEmailNotifications} />}
             />
             
             <SettingItem
               icon={<Bell size={18} />}
               title="SMS Notifications"
               description="Receive notifications via SMS"
-              action={<Switch checked={smsNotifications} onCheckedChange={toggleSmsNotifications} />}
+              action={<Switch checked={smsEnabled} onCheckedChange={toggleSmsNotifications} />}
             />
           </div>
         </div>

@@ -26,7 +26,6 @@ export interface Product {
   brand?: string;
   specifications?: Record<string, string>;
   sku?: string;
-  created_at?: string;
   // Add these for compatibility with Wishlist.tsx
   categoryId?: string;
   shopName?: string;

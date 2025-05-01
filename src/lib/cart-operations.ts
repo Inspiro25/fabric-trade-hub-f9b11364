@@ -1,10 +1,11 @@
+
 import { toast } from 'sonner';
 import { CartItem } from '@/types/cart';
 import { Product } from '@/lib/products/types';
 import { useCart } from '@/contexts/CartContext';
 import { 
   addCartItem,
-  clearCart,
+  clearCart as clearCartService,
   fetchUserCart, 
   upsertCartItem,
   removeCartItem
@@ -36,17 +37,7 @@ export const addToCart = async (
       
       // Use the CartContext to update local storage
       const { addToCart } = useCart();
-      addToCart(
-        product.id,
-        product.name,
-        product.images[0] || '/placeholder.png',
-        product.salePrice || product.price,
-        product.stock,
-        product.shopId,
-        product.salePrice,
-        color,
-        size
-      );
+      addToCart(cartItem);
       
       toast.success('Added to cart');
       return true;
@@ -86,7 +77,7 @@ export const clearUserCart = async (userId: string | undefined): Promise<boolean
     }
     
     // If logged in, use the service to clear the database
-    const success = await clearCart(userId);
+    const success = await clearCartService(userId);
     
     if (success) {
       toast.success('Cart cleared');

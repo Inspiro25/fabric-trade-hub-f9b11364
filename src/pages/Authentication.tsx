@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -185,11 +184,21 @@ const Authentication = () => {
       if (user) {
         console.log("User created successfully, id:", user.id);
         
+        const userData = {
+          displayName: values.name || values.email?.split('@')[0] || '',
+          email: values.email,
+          // Store additional user data
+          user_metadata: {
+            phone: values.phone || '',
+            address: values.address || '',
+          }
+        };
+        
         try {
           // Try to update the user profile with the name from the form
           const { error: updateError } = await supabase
             .from('user_profiles')
-            .update({ display_name: values.name })
+            .update(userData)
             .eq('id', user.id);
             
           if (updateError) {
@@ -207,7 +216,8 @@ const Authentication = () => {
         });
         
         // If email confirmation is required, show a special message
-        if (!user.email_confirmed_at) {
+        const emailVerified = user?.email_confirmed_at ? true : false;
+        if (!emailVerified) {
           toast.info("Please check your email", {
             description: "A confirmation link has been sent to your email address"
           });

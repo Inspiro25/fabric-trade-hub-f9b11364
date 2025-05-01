@@ -1,92 +1,66 @@
+
+// Import types from other modules if needed
+import { z } from 'zod';
+
+// Basic Shop interface
 export interface Shop {
   id: string;
   name: string;
   description?: string;
   logo?: string;
   coverImage?: string;
-  address?: string;
-  phoneNumber?: string;
-  email?: string;
-  website?: string;
-  socialMedia?: {
-    facebook?: string;
-    twitter?: string;
-    instagram?: string;
-    pinterest?: string;
-  };
-  rating?: number;
-  reviewCount?: number;
-  isVerified?: boolean;
-  status: 'active' | 'pending' | 'suspended';
-  createdAt: string;
-  updatedAt?: string;
-  ownerId: string;
-  ownerName?: string;
-  categories?: string[];
-  tags?: string[];
-  productCount?: number;
+  rating: number;
+  reviewCount: number;
   followers?: number;
-  location?: {
-    latitude: number;
-    longitude: number;
+  followersCount?: number;
+  address?: string;
+  isVerified?: boolean;
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
   };
-  businessHours?: {
-    monday?: { open: string; close: string };
-    tuesday?: { open: string; close: string };
-    wednesday?: { open: string; close: string };
-    thursday?: { open: string; close: string };
-    friday?: { open: string; close: string };
-    saturday?: { open: string; close: string };
-    sunday?: { open: string; close: string };
-  };
+  status?: 'active' | 'pending' | 'suspended';
 }
 
+// Form values for shop creation/editing
 export interface ShopFormValues {
   name: string;
   description?: string;
+  shopId?: string;
   address?: string;
-  phoneNumber?: string;
-  status?: 'active' | 'pending' | 'suspended';
   logo?: string;
   coverImage?: string;
   isVerified?: boolean;
-  shopId?: string;
-  password?: string;
   ownerName?: string;
   ownerEmail?: string;
+  status?: 'active' | 'pending' | 'suspended';
+  password?: string;
+  phoneNumber?: string;
 }
 
-export interface ShopStats {
-  totalSales: number;
-  totalOrders: number;
-  totalProducts: number;
-  totalCustomers: number;
-  averageOrderValue: number;
-  salesByDay: {
-    date: string;
-    sales: number;
-  }[];
-  topProducts: {
+// Schema for shop form validation
+export const shopFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  description: z.string().optional(),
+  shopId: z.string().optional(),
+  address: z.string().optional(),
+  logo: z.string().optional(),
+  coverImage: z.string().optional(),
+  isVerified: z.boolean().optional(),
+  ownerName: z.string().optional(),
+  ownerEmail: z.string().email("Invalid email address").optional(),
+  status: z.enum(['active', 'pending', 'suspended']).optional(),
+  password: z.string().optional(),
+  phoneNumber: z.string().optional(),
+});
+
+// Extended shop interface with additional fields
+export interface ExtendedShop extends Shop {
+  productsCount?: number;
+  followers?: number;
+  categories?: {
     id: string;
     name: string;
-    sales: number;
-    revenue: number;
   }[];
-  recentOrders: {
-    id: string;
-    date: string;
-    customer: string;
-    amount: number;
-    status: string;
-  }[];
-}
-
-export interface ShopFilter {
-  search?: string;
-  category?: string;
-  rating?: number;
-  isVerified?: boolean;
-  sortBy?: 'name' | 'rating' | 'newest' | 'oldest';
-  page?: number;
-  limit?: number;
 }
