@@ -36,7 +36,7 @@ const Offers = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const products = await fetchProductsByIds([1, 2, 3, 4, 5, 6, 7, 8]);
+        const products = await fetchProductsByIds(['1', '2', '3', '4', '5', '6', '7', '8']);
         // Filter products with sale price for the featured deals section
         const discounted = products.filter(product => product.salePrice).slice(0, 8);
         setDiscountedProducts(discounted);
@@ -53,7 +53,9 @@ const Offers = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
   
-  const offeredProducts = [1, 2, 3, 4, 5, 6, 7, 8].map((id) => ({
+  const productIds = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
+  const offeredProducts = productIds.map((id) => ({
     id: id.toString(),  // Convert number to string
     name: `Special Offer Product ${id}`,
     price: 99.99 - (id * 5),
@@ -126,7 +128,11 @@ const Offers = () => {
                 {discountedProducts.length > 0 ? (
                   <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-2 lg:grid-cols-4 gap-4'}`}>
                     {discountedProducts.slice(0, isMobile ? 2 : 4).map((product) => (
-                      <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        className="h-full"
+                      />
                     ))}
                   </div>
                 ) : (
@@ -320,7 +326,11 @@ const Offers = () => {
               {discountedProducts.length > 0 ? (
                 <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'md:grid-cols-3 lg:grid-cols-4 gap-4'}`}>
                   {discountedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} variant={isMobile ? "compact" : undefined} />
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      className="h-full"
+                    />
                   ))}
                 </div>
               ) : (

@@ -87,6 +87,13 @@ export const getProductById = async (id: string): Promise<Product | null> => {
       return null;
     }
     
+    // Convert data to Product type
+    // Ensure we handle the case where data might be a string error
+    if (typeof data === 'string') {
+      console.error('Unexpected string data:', data);
+      return null;
+    }
+    
     return {
       id: data.id,
       name: data.name,

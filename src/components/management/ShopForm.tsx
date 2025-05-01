@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +9,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ShopFormValues, shopFormSchema } from '@/types/shop';
+
+export interface ShopFormProps {
+  defaultValues?: Partial<ShopFormValues>;
+  onSubmit: (data: ShopFormValues) => void;
+  submitLabel: string;
+  isSubmitting?: boolean;
+}
 
 const ShopForm = ({
   defaultValues = {},

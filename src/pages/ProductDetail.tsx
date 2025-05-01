@@ -94,7 +94,7 @@ const ProductDetail = () => {
             setSimilarProducts(mockSimilar);
             
             // Check if product is in wishlist
-            if (currentUser) {
+            if (currentUser && id) {
               const wishlistStatus = await isProductInWishlist(currentUser.id, id);
               setInWishlist(wishlistStatus);
             }
@@ -552,9 +552,9 @@ const ProductDetail = () => {
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4">Ratings & Reviews</h3>
             <ProductReviews 
-              productId={product.id} 
-              rating={product.rating} 
-              reviewCount={product.reviewCount || 0}
+              productId={id || ''} 
+              rating={product?.rating} 
+              reviewCount={product?.reviewCount} 
             />
           </div>
           

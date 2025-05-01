@@ -29,7 +29,6 @@ export interface Product {
   sku?: string;
   created_at?: string;
   updated_at?: string;
-  // Add these for compatibility with Wishlist.tsx
   categoryId?: string;
   views?: number;
 }

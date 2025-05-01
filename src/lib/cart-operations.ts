@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/products/types';
 import { CartItem } from '@/types/cart';
