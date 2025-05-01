@@ -1,13 +1,12 @@
-
 import { CartItem } from "@/types/cart";
-import { Product } from "@/lib/types/product";
+import { Product } from "@/lib/products/types";
 import { useState, useCallback } from "react";
 import { 
-  fetchUserCart, 
-  upsertCartItem, 
+  getCartItems, 
+  addCartItem, 
   removeCartItem as removeCartItemService, 
   updateCartItemQuantity as updateCartItemService,
-  clearUserCart
+  clearCart
 } from "@/services/cartService";
 
 // Add a product to the cart with the given quantity
@@ -154,7 +153,6 @@ export const deserializeCart = (serialized: string): CartItem[] => {
 };
 
 // Add the useCartOperations hook
-// Note: Removed the duplicate export here to fix the error
 export const useCartOperations = (
   cartItems: CartItem[], 
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>,
@@ -188,7 +186,7 @@ export const useCartOperations = (
       
       // If user is logged in, save to database
       if (currentUser?.id) {
-        await upsertCartItem({
+        await addCartItem({
           user_id: currentUser.id,
           product_id: product.id,
           quantity,
@@ -330,11 +328,11 @@ export const useCartOperations = (
   }, [cartItems, currentUser, setCartItems]);
   
   // Clear cart
-  const clearCart = useCallback(async () => {
+  const clearCartFn = useCallback(async () => {
     try {
       // If user is logged in, clear in database
       if (currentUser?.id) {
-        await clearUserCart(currentUser.id);
+        await clearCart(currentUser.id);
       }
       
       // Update local state
@@ -365,7 +363,7 @@ export const useCartOperations = (
       
       // Add each guest cart item to user cart
       for (const item of guestCart) {
-        await upsertCartItem({
+        await addCartItem({
           user_id: currentUser.id,
           product_id: item.productId,
           quantity: item.quantity,
@@ -388,7 +386,7 @@ export const useCartOperations = (
     addToCart,
     removeFromCart,
     updateQuantity,
-    clearCart,
+    clearCart: clearCartFn,
     migrateGuestCartToUser,
     isAdding,
     isRemoving,

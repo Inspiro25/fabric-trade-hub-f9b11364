@@ -1,197 +1,207 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Heart } from 'lucide-react';
-import { Product } from '@/lib/products/types';
-import { useWishlist } from '@/contexts/WishlistContext';
-import ProductCard from '@/components/ui/ProductCard';
-import EmptyWishlist from '@/components/cart/EmptyWishlist';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import AuthDialog from '@/components/search/AuthDialog';
-import { CartSection } from '@/components/cart/CartSection';
+import { toast } from 'sonner';
+import { Product } from '@/lib/products/types';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Heart } from 'lucide-react';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Skeleton } from '@/components/ui/skeleton';
+import { getWishlistItems } from '@/lib/supabase/wishlist';
+import { getProductsByIds } from '@/lib/products/base';
 
-const Wishlist = () => {
-  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const { wishlist, isLoading } = useWishlist();
-  const { currentUser, loading: authLoading } = useAuth();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const isMobile = useIsMobile();
+const WishlistPage = () => {
+  const { currentUser } = useAuth();
+  const { removeFromWishlist } = useWishlist();
   const { isDarkMode } = useTheme();
+  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set isLoaded after a short delay to trigger animations
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 300);
+    fetchWishlistProducts();
+  }, [fetchWishlistProducts]);
 
-    return () => clearTimeout(timer);
-  }, []);
+  const fetchWishlistProducts = useCallback(async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const wishlistItems = await getWishlistItems(currentUser.id);
+      const productIds = wishlistItems.map(item => item.product_id);
+      
+      if (productIds.length === 0) {
+        setWishlistProducts([]);
+        setLoading(false);
+        return;
+      }
+      
+      const products = await getProductsByIds(productIds);
+      if (products) {
+        const formattedProducts = products.map(product => ({
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          salePrice: product.sale_price,
+          images: product.images,
+          category: product.category || product.category_id,
+          categoryId: product.category_id,
+          rating: product.rating || 0,
+          reviewCount: product.review_count || 0,
+          stock: product.stock || 0,
+          isNew: product.is_new,
+          isTrending: product.is_trending,
+          shopId: product.shop_id,
+          shopName: product.shopName || '',
+          colors: product.colors || [],
+          sizes: product.sizes || [],
+          tags: product.tags || []
+        }));
+        setWishlistProducts(formattedProducts as any);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load your wishlist",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser, toast]);
 
-  const handleLogin = () => {
-    window.location.href = '/authentication';
-  };
-
-  useEffect(() => {
-    if (!authLoading && !currentUser) {
-      setShowAuthDialog(true);
+  const handleRemoveFromWishlist = async (productId: string) => {
+    if (!currentUser) {
+      toast({
+        title: "Not logged in",
+        description: "You must be logged in to manage your wishlist.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const loadWishlistItems = async () => {
-      try {
-        if (!currentUser || wishlist.length === 0) {
-          setWishlistItems([]);
-          setIsLoaded(true);
-          return;
-        }
+    try {
+      await removeFromWishlist(productId);
+      setWishlistProducts(prevProducts =>
+        prevProducts.filter(product => product.id !== productId)
+      );
+      toast({
+        title: "Removed",
+        description: "Product removed from your wishlist.",
+      });
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove product from wishlist.",
+        variant: "destructive",
+      });
+    }
+  };
 
-        const { data, error } = await supabase
-          .from('products')
-          .select(`
-            *,
-            shop:shops(id, name),
-            category:categories(id, name)
-          `)
-          .in('id', wishlist);
-        
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          const mappedProducts = data.map(item => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            price: item.price,
-            salePrice: item.sale_price,
-            images: item.images || [],
-            category: item.category?.name || '',
-            categoryId: item.category?.id || '',
-            reviewCount: item.review_count || 0,
-            isNew: item.is_new || false,
-            isTrending: item.is_trending || false,
-            shopId: item.shop?.id || null,
-            shopName: item.shop?.name || ''
-          }));
-          
-          setWishlistItems(mappedProducts);
-        } else {
-          setWishlistItems([]);
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        // Fallback to mock data if needed
-        const { mockProducts } = await import('@/lib/products');
-        const productsInWishlist = mockProducts.filter(product => 
-          wishlist.includes(product.id)
-        );
-        setWishlistItems(productsInWishlist);
-      } finally {
-        setIsLoaded(true);
-      }
-    };
-
-    loadWishlistItems();
-  }, [currentUser, wishlist, authLoading]);
-
-  if (isLoading || authLoading) {
+  if (loading) {
     return (
       <div className={cn(
-        "container mx-auto px-4 py-12 flex items-center justify-center",
-        isDarkMode 
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-          : "bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30"
+        "min-h-screen py-6",
+        isDarkMode ? "bg-gray-900" : "bg-gray-50"
       )}>
-        <Loader2 className={cn(
-          "h-8 w-8 animate-spin",
-          isDarkMode ? "text-blue-400" : "text-primary"
-        )} />
-        <p className={cn(
-          "ml-2",
-          isDarkMode ? "text-gray-300" : "text-muted-foreground"
-        )}>Loading your wishlist...</p>
+        <div className="container mx-auto px-4">
+          <h1 className={cn(
+            "text-2xl font-semibold mb-4",
+            isDarkMode ? "text-white" : "text-gray-900"
+          )}>Wishlist</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="space-y-3">
+                <Skeleton className="h-40 w-full rounded-md" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-8 w-1/3" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className={cn(
-      "animate-in fade-in min-h-screen",
-      isDarkMode 
-        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
-        : "bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30"
+      "min-h-screen py-6",
+      isDarkMode ? "bg-gray-900" : "bg-gray-50"
     )}>
-      <main className="pt-4 pb-24 px-4 md:pt-8 md:pb-20">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex items-center justify-between mb-3 md:mb-4">
-            <div className="flex items-center gap-2">
-              <div className={cn(
-                "p-1.5 rounded-full md:hidden",
-                isDarkMode ? "bg-gray-800" : "bg-blue-50/80"
-              )}>
-                <Heart className={cn(
-                  "h-4 w-4",
-                  isDarkMode ? "text-blue-400" : "text-blue-600"
-                )} />
-              </div>
-              <h1 className={cn(
-                "text-lg md:text-2xl font-bold",
-                isDarkMode ? "text-white" : "text-gray-900"
-              )}>Your Wishlist</h1>
-            </div>
-            <CartSection />
+      <div className="container mx-auto px-4">
+        <h1 className={cn(
+          "text-2xl font-semibold mb-4",
+          isDarkMode ? "text-white" : "text-gray-900"
+        )}>Wishlist</h1>
+        
+        {wishlistProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className={cn(
+              "text-gray-500 text-lg",
+              isDarkMode ? "text-gray-400" : ""
+            )}>Your wishlist is empty.</p>
+            <Button asChild variant="link" className="mt-4">
+              <Link to="/">Explore Products</Link>
+            </Button>
           </div>
-
-          {wishlistItems.length === 0 ? (
-            <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <EmptyWishlist />
-            </div>
-          ) : (
-            <div className={`transition-all duration-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <div className={cn(
-                "rounded-xl shadow-sm overflow-hidden mb-6",
-                isDarkMode ? "bg-gray-800" : "bg-white"
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {wishlistProducts.map((product) => (
+              <Card key={product.id} className={cn(
+                "bg-white shadow-md rounded-md overflow-hidden",
+                isDarkMode ? "bg-gray-800 border border-gray-700" : ""
               )}>
-                <div className={cn(
-                  "p-3",
-                  isDarkMode ? "border-b border-gray-700" : "border-b border-gray-100"
-                )}>
-                  <p className={cn(
-                    "text-sm font-medium",
-                    isDarkMode && "text-gray-200"
-                  )}>
-                    {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved
-                  </p>
+                <div className="relative aspect-w-4 aspect-h-3">
+                  <img
+                    src={product.images?.[0] || '/placeholder.png'}
+                    alt={product.name}
+                    className="object-cover w-full h-full"
+                  />
                 </div>
-                <div className={cn(
-                  isMobile ? 'grid-cols-2 gap-3 p-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6',
-                  "grid"
-                )}>
-                  {wishlistItems.map((product) => (
-                    <ProductCard key={product.id} product={product} variant="compact" />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {showAuthDialog && (
-            <AuthDialog
-              open={showAuthDialog}
-              onOpenChange={setShowAuthDialog}
-              onLogin={handleLogin}
-              title="Authentication Required"
-              message="You need to be logged in to view your wishlist."
-            />
-          )}
-        </div>
-      </main>
+                <CardContent className="p-4">
+                  <CardTitle className={cn(
+                    "text-lg font-semibold mb-2 truncate",
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  )}>{product.name}</CardTitle>
+                  <CardDescription className={cn(
+                    "text-gray-500 truncate",
+                    isDarkMode ? "text-gray-400" : ""
+                  )}>{product.description}</CardDescription>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className={cn(
+                      "text-xl font-bold",
+                      isDarkMode ? "text-blue-400" : "text-gray-900"
+                    )}>₹{product.price}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveFromWishlist(product.id)}
+                    >
+                      <Heart className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-export default Wishlist;
+export default WishlistPage;

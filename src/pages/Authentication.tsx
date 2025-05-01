@@ -58,10 +58,19 @@ const Authentication = () => {
   const { isDarkMode } = useTheme();
   
   const from = location.state?.from?.pathname || "/";
+  const redirectUrl = location.state?.redirectUrl || "/";
+  
+  const currentUser = useAuth().user;
   
   useEffect(() => {
-    if (location.state?.tab === "signup") {
-      setActiveTab("signup");
+    // Check if user is already authenticated
+    if (currentUser?.id) {
+      const hasConfirmedEmail = currentUser.user_metadata?.email_confirmed_at;
+      
+      if (hasConfirmedEmail) {
+        setLoginStep("COMPLETE");
+        navigate(redirectUrl || "/", { replace: true });
+      }
     }
     
     const timer = setTimeout(() => {
@@ -69,7 +78,7 @@ const Authentication = () => {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [location.state?.tab]);
+  }, [currentUser, navigate, redirectUrl]);
   
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),

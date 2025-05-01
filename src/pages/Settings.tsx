@@ -49,7 +49,7 @@ const SettingItem = ({
   </div>
 );
 
-const Settings = () => {
+const SettingsPage = () => {
   const navigate = useNavigate();
   const { currentUser, userProfile, logout, updateUserProfile } = useAuth();
   const { isDarkMode, toggleDarkMode } = useTheme();
@@ -70,13 +70,14 @@ const Settings = () => {
   const [language, setLanguage] = useState('English');
   
   useEffect(() => {
+    // Populate form fields with user data
     if (currentUser) {
-      setDisplayName(currentUser.displayName || '');
-      setEmail(currentUser.email || '');
-      setPhoneNumber(currentUser.phone || currentUser.user_metadata?.phone || '');
-      setAddress(currentUser.address || currentUser.user_metadata?.address || '');
+      setDisplayName(currentUser.displayName || userProfile?.displayName || '');
+      setEmail(currentUser.email || userProfile?.email || '');
+      setPhoneNumber(currentUser.phone || (currentUser.user_metadata?.phone) || userProfile?.phone || '');
+      setAddress(currentUser.address || (currentUser.user_metadata?.address) || userProfile?.address || '');
     }
-  }, [currentUser]);
+  }, [currentUser, userProfile]);
   
   const handleLogout = async () => {
     await logout();
@@ -85,21 +86,29 @@ const Settings = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentUser) {
+      toast.error('You need to log in to update your profile');
+      navigate('/auth');
+      return;
+    }
+    
     setIsLoading(true);
-
+    
     try {
       await updateUserProfile({
         displayName,
         email,
-        user_metadata: {
+        // Update metadata to include phone and address
+        metadata: {
           phone: phoneNumber,
           address: address
         }
       });
-
+      
       toast.success('Profile updated successfully');
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Profile update error:', error);
       toast.error('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
@@ -394,4 +403,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default SettingsPage;

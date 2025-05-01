@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CartItem } from '@/types/cart';
 
@@ -60,7 +61,18 @@ export const getCartItems = async (userId: string): Promise<CartItem[]> => {
   }
 };
 
-export const addCartItem = async (userId: string, productId: string, quantity: number = 1, color: string = '', size: string = ''): Promise<CartItem | null> => {
+// Alias these functions for compatibility with cart-operations
+export const fetchUserCart = getCartItems;
+export const upsertCartItem = addCartItem;
+export const clearUserCart = clearCart;
+
+export const addCartItem = async (cartData: { 
+  user_id: string, 
+  product_id: string, 
+  quantity: number, 
+  color?: string, 
+  size?: string 
+}): Promise<CartItem | null> => {
   try {
     // Fetch the product details
     const { data: productData, error: productError } = await supabase
@@ -83,7 +95,7 @@ export const addCartItem = async (userId: string, productId: string, quantity: n
         tags,
         shopId: shop_id
       `)
-      .eq('id', productId)
+      .eq('id', cartData.product_id)
       .single();
 
     if (productError) {
@@ -92,7 +104,7 @@ export const addCartItem = async (userId: string, productId: string, quantity: n
     }
 
     if (!productData) {
-      console.log('Product not found with ID:', productId);
+      console.log('Product not found with ID:', cartData.product_id);
       return null;
     }
 
@@ -101,11 +113,11 @@ export const addCartItem = async (userId: string, productId: string, quantity: n
       .from('cart_items')
       .insert([
         {
-          user_id: userId,
-          product_id: productId,
-          quantity: quantity,
-          color: color,
-          size: size
+          user_id: cartData.user_id,
+          product_id: cartData.product_id,
+          quantity: cartData.quantity,
+          color: cartData.color || '',
+          size: cartData.size || ''
         }
       ])
       .select(`
@@ -137,7 +149,7 @@ export const addCartItem = async (userId: string, productId: string, quantity: n
     }
 
     if (!data) {
-      console.log('Failed to add cart item for user:', userId, 'and product:', productId);
+      console.log('Failed to add cart item for user:', cartData.user_id, 'and product:', cartData.product_id);
       return null;
     }
 
@@ -164,19 +176,22 @@ export const addCartItem = async (userId: string, productId: string, quantity: n
   }
 };
 
-export const removeCartItem = async (itemId: string): Promise<boolean> => {
+export const removeCartItem = async (userId: string, productId: string, size: string = '', color: string = ''): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('cart_items')
       .delete()
-      .eq('id', itemId);
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .eq('size', size)
+      .eq('color', color);
 
     if (error) {
       console.error('Error removing cart item:', error);
       return false;
     }
 
-    console.log('Cart item removed successfully:', itemId);
+    console.log('Cart item removed successfully');
     return true;
   } catch (error) {
     console.error('Error in removeCartItem:', error);
@@ -204,12 +219,15 @@ export const clearCart = async (userId: string): Promise<boolean> => {
   }
 };
 
-export const updateCartItemQuantity = async (itemId: string, quantity: number): Promise<CartItem | null> => {
+export const updateCartItemQuantity = async (userId: string, productId: string, size: string = '', color: string = '', quantity: number): Promise<CartItem | null> => {
   try {
     const { data, error } = await supabase
       .from('cart_items')
       .update({ quantity: quantity })
-      .eq('id', itemId)
+      .eq('user_id', userId)
+      .eq('product_id', productId)
+      .eq('size', size)
+      .eq('color', color)
       .select(`
         *,
         product:products (
@@ -239,7 +257,7 @@ export const updateCartItemQuantity = async (itemId: string, quantity: number): 
     }
 
     if (!data) {
-      console.log('Cart item not found with ID:', itemId);
+      console.log('Cart item not found');
       return null;
     }
 

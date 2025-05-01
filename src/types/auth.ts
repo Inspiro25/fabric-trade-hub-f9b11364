@@ -13,9 +13,8 @@ export interface ExtendedUser {
   uid?: string;
   display_name?: string;
   preferences?: Record<string, any>;
-  // Required properties from User
-  app_metadata: any;
   user_metadata: any;
+  app_metadata: any;
   aud: string;
   created_at: string;
 }
