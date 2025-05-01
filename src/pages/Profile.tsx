@@ -33,7 +33,7 @@ const ProfilePage = () => {
     
     // Populate form fields with user data
     if (currentUser) {
-      setDisplayName(currentUser.displayName || userProfile?.displayName || '');
+      setDisplayName(currentUser.displayName || userProfile?.display_name || '');
       setEmail(currentUser.email || userProfile?.email || '');
       setPhoneNumber(currentUser.phone || userProfile?.phone || '');
       setAddress(currentUser.address || userProfile?.address || '');
@@ -73,8 +73,8 @@ const ProfilePage = () => {
       await updateUserProfile({
         displayName,
         email,
-        phone: phoneNumber,
-        address
+        user_metadata: { phone: phoneNumber, address },
+        // Use user_metadata instead of directly assigning phone and address
       });
       
       setEditMode(false);

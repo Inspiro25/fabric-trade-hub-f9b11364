@@ -1,20 +1,22 @@
 
 import { User } from '@supabase/supabase-js';
 
-export interface ExtendedUser extends User {
+export interface ExtendedUser {
+  id: string;
+  email?: string | null;
   phone?: string;
   address?: string;
-  displayName?: string;
-  avatarUrl?: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
   email_confirmed_at?: string;
   uid?: string; // Added for compatibility with existing code
   display_name?: string; // Added for backward compatibility
   preferences?: Record<string, any>; // Added for compatibility with existing code
   // Required properties from User that might be used
-  app_metadata?: any;
-  user_metadata?: any;
-  aud?: string;
-  created_at?: string;
+  app_metadata: any;
+  user_metadata: any;
+  aud: string;
+  created_at: string;
   // Add other custom properties as needed
 }
 

@@ -12,30 +12,26 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { AuthenticatedViewProps } from './AuthenticatedView.d';
 
-const AuthenticatedView: React.FC = () => {
-  const { currentUser, isLoading, logout } = useAuth();
-  const { getCartCount } = useCart();
-  const [editMode, setEditMode] = useState(false);
+const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({
+  isLoaded,
+  currentUser,
+  displayName,
+  setDisplayName,
+  email,
+  setEmail,
+  phoneNumber,
+  setPhoneNumber,
+  address,
+  setAddress,
+  editMode,
+  isLoading,
+  handleSubmit,
+  handleLogout,
+  getCartCount
+}) => {
   const [activeTab, setActiveTab] = useState('profile');
-  const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
-  const [email, setEmail] = useState(currentUser?.email || '');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Save user profile logic would go here
-    setEditMode(false);
-  };
 
   if (isLoading) {
     return (
@@ -112,7 +108,7 @@ const AuthenticatedView: React.FC = () => {
                   setPhoneNumber={setPhoneNumber}
                   address={address}
                   setAddress={setAddress}
-                  isLoading={false}
+                  isLoading={isLoading}
                   handleSubmit={handleSubmit}
                   emailDisabled={!!currentUser.email}
                 />

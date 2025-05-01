@@ -27,6 +27,9 @@ export interface Product {
   specifications?: Record<string, string>;
   sku?: string;
   created_at?: string;
+  // Add these for compatibility with Wishlist.tsx
+  categoryId?: string;
+  shopName?: string;
 }
 
 // Add any additional product-related types here
@@ -45,4 +48,33 @@ export interface ProductReview {
   comment?: string;
   created_at: string;
   images?: string[];
+}
+
+// Add ProductShowcaseProps definition
+export interface ProductShowcaseProps {
+  title: string;
+  subtitle?: string;  // Make subtitle optional
+  products: Product[];
+  linkTo?: string;
+  isLoaded?: boolean;
+  layout?: string;
+  tag?: string;
+  showViewAll?: boolean;
+  highlight?: boolean;
+}
+
+// Add ProductGridProps definition
+export interface ProductGridProps {
+  products: Product[];
+  title?: string;
+  subtitle?: string;
+  columns?: number;
+  showPagination?: boolean;
+  itemsPerPage?: number;
+  totalItems?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  showFilters?: boolean;
+  paginationClassName?: string;
+  isLoading?: boolean;
 }

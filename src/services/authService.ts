@@ -1,3 +1,5 @@
+
+// Only fixing the issue with displayName vs display_name
 import { ExtendedUser, UserProfile } from '@/types/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -30,12 +32,13 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfile | nu
     if (userProfile) {
       // Convert Supabase format to our UserProfile format
       return {
-        displayName: userProfile.display_name || 'Guest User',
+        id: userProfile.id,
+        display_name: userProfile.display_name || 'Guest User',
         email: userProfile.email,
         phone: userProfile.phone || undefined,
         address: userProfile.address || undefined,
         preferences: formatPreferences(userProfile.preferences),
-        avatarUrl: userProfile.avatar_url || undefined
+        avatar_url: userProfile.avatar_url || undefined
       };
     }
     
@@ -48,12 +51,13 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfile | nu
     
     if (addresses && addresses.length > 0) {
       const formattedProfile = {
-        displayName: userProfile?.display_name || 'Guest User',
+        id: userId,
+        display_name: userProfile?.display_name || 'Guest User',
         email: userProfile?.email || '',
         phone: userProfile?.phone || undefined,
         address: userProfile?.address || undefined,
         preferences: formatPreferences(userProfile?.preferences),
-        avatarUrl: userProfile?.avatar_url || undefined,
+        avatar_url: userProfile?.avatar_url || undefined,
         savedAddresses: addresses.map(addr => ({
           id: addr.id,
           name: addr.name,
@@ -90,8 +94,8 @@ export const updateUserProfile = async (
     // Convert our UserProfile format to Supabase format
     const supabaseData: any = {};
     
-    if (data.displayName !== undefined) {
-      supabaseData.display_name = data.displayName;
+    if (data.display_name !== undefined) {
+      supabaseData.display_name = data.display_name;
     }
     
     if (data.email !== undefined) {
@@ -110,8 +114,8 @@ export const updateUserProfile = async (
       supabaseData.preferences = data.preferences;
     }
     
-    if (data.avatarUrl !== undefined) {
-      supabaseData.avatar_url = data.avatarUrl;
+    if (data.avatar_url !== undefined) {
+      supabaseData.avatar_url = data.avatar_url;
     }
 
     // Update user profile in Supabase
