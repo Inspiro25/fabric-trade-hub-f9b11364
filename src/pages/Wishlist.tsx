@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,10 +27,6 @@ const WishlistPage = () => {
   const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchWishlistProducts();
-  }, [fetchWishlistProducts]);
-
   const fetchWishlistProducts = useCallback(async () => {
     if (!currentUser) {
       setLoading(false);
@@ -47,28 +44,29 @@ const WishlistPage = () => {
       }
       
       const products = await getProductsByIds(productIds);
-      if (products) {
+      
+      if (products && products.length > 0) {
         const formattedProducts = products.map(product => ({
           id: product.id,
           name: product.name,
-          description: product.description,
+          description: product.description || '',
           price: product.price,
           salePrice: product.sale_price,
-          images: product.images,
-          category: product.category || product.category_id,
+          images: product.images || [],
+          category: product.category || product.category_id || '',
           categoryId: product.category_id,
           rating: product.rating || 0,
           reviewCount: product.review_count || 0,
           stock: product.stock || 0,
-          isNew: product.is_new,
-          isTrending: product.is_trending,
-          shopId: product.shop_id,
+          isNew: product.is_new || false,
+          isTrending: product.is_trending || false,
+          shopId: product.shop_id || '',
           shopName: product.shopName || '',
           colors: product.colors || [],
           sizes: product.sizes || [],
           tags: product.tags || []
         }));
-        setWishlistProducts(formattedProducts as any);
+        setWishlistProducts(formattedProducts as Product[]);
       }
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -80,7 +78,11 @@ const WishlistPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUser, toast]);
+  }, [currentUser]);
+
+  useEffect(() => {
+    fetchWishlistProducts();
+  }, [fetchWishlistProducts]);
 
   const handleRemoveFromWishlist = async (productId: string) => {
     if (!currentUser) {

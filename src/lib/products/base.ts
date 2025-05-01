@@ -1,4 +1,3 @@
-
 import { Product } from '@/lib/types/product';
 import { 
   getProductById as supabaseGetProductById,
@@ -46,6 +45,36 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
   } catch (error) {
     console.error('Error fetching product:', error);
     return productStore.products.find(product => product.id === id);
+  }
+};
+
+// Get multiple products by their IDs
+export const getProductsByIds = async (ids: string[]): Promise<Product[]> => {
+  try {
+    if (ids.length === 0) return [];
+    
+    // Use Supabase to fetch products by their IDs
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .in('id', ids);
+      
+    if (error) {
+      console.error('Error fetching products by IDs:', error);
+      // Fallback to local cache if available
+      return productStore.products.filter(product => ids.includes(product.id));
+    }
+    
+    if (data && data.length > 0) {
+      return data;
+    }
+    
+    // Fallback to local cache
+    return productStore.products.filter(product => ids.includes(product.id));
+  } catch (error) {
+    console.error('Error in getProductsByIds:', error);
+    // Fallback to local cache
+    return productStore.products.filter(product => ids.includes(product.id));
   }
 };
 
