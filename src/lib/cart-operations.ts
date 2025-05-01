@@ -64,7 +64,6 @@ export const addToCart = async (
   }
 };
 
-// ... Add other cart service functions here
 export const clearCart = async (userId: string): Promise<boolean> => {
   try {
     const { error } = await supabase

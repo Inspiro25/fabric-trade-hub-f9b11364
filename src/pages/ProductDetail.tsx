@@ -132,21 +132,19 @@ const ProductDetail = () => {
         toast.success('Added to cart');
       } else {
         // Create the cart item object for the context function
-        const cartItem: CartItem = {
-          id: `guest-${Date.now()}`,
-          productId: product.id,
-          name: product.name,
-          image: product.images[0] || '/placeholder.png',
-          price: product.salePrice || product.price,
+        addToCartContext(
+          product.id,
+          product.name,
+          product.images[0] || '/placeholder.png',
+          product.salePrice || product.price,
+          product.stock,
+          product.shop_id || product.shopId || '',
+          product.salePrice,
           quantity,
-          color: selectedColor || undefined,
-          size: selectedSize || undefined,
-          stock: product.stock,
-          shopId: product.shop_id,
-          total: (product.salePrice || product.price) * quantity
-        };
+          selectedColor || undefined,
+          selectedSize || undefined
+        );
         
-        addToCartContext(cartItem);
         toast.success('Added to cart');
       }
     } catch (error) {
@@ -171,21 +169,18 @@ const ProductDetail = () => {
         );
       } else {
         // Create cart item for context
-        const cartItem: CartItem = {
-          id: `guest-${Date.now()}`,
-          productId: product.id,
-          name: product.name,
-          image: product.images[0] || '/placeholder.png',
-          price: product.salePrice || product.price,
+        addToCartContext(
+          product.id,
+          product.name,
+          product.images[0] || '/placeholder.png',
+          product.salePrice || product.price,
+          product.stock,
+          product.shop_id || product.shopId || '',
+          product.salePrice,
           quantity,
-          color: selectedColor || undefined,
-          size: selectedSize || undefined,
-          stock: product.stock,
-          shopId: product.shop_id,
-          total: (product.salePrice || product.price) * quantity
-        };
-        
-        addToCartContext(cartItem);
+          selectedColor || undefined,
+          selectedSize || undefined
+        );
       }
       
       // Navigate to checkout immediately

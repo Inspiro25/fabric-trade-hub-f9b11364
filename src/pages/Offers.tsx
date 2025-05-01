@@ -53,6 +53,15 @@ const Offers = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
   
+  const offeredProducts = [1, 2, 3, 4, 5, 6, 7, 8].map((id) => ({
+    id: id.toString(),  // Convert number to string
+    name: `Special Offer Product ${id}`,
+    price: 99.99 - (id * 5),
+    image: `/placeholder-${id}.jpg`,
+    rating: 4.5,
+    reviewCount: 10 + id
+  }));
+  
   return (
     <div className={cn(
       "min-h-screen",

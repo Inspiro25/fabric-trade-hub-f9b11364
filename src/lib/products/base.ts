@@ -22,6 +22,10 @@ export const getProductsByIds = async (productIds: string[]): Promise<Product[]>
       return [];
     }
     
+    if (!data) {
+      return [];
+    }
+    
     return data.map(product => ({
       id: product.id,
       name: product.name,

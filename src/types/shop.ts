@@ -26,33 +26,33 @@ export interface Shop {
 // Form values for shop creation/editing
 export interface ShopFormValues {
   name: string;
-  description?: string;
-  shopId?: string;
-  address?: string;
-  logo?: string;
-  coverImage?: string;
-  isVerified?: boolean;
-  ownerName?: string;
-  ownerEmail?: string;
-  status?: 'active' | 'pending' | 'suspended';
-  password?: string;
-  phoneNumber?: string;
+  description: string;
+  shopId: string;
+  address: string;
+  logo: string;
+  coverImage: string;
+  isVerified: boolean;
+  ownerName: string;
+  ownerEmail: string;
+  status: 'active' | 'pending' | 'suspended';
+  password: string;
+  phoneNumber: string;
 }
 
 // Schema for shop form validation
 export const shopFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  description: z.string().optional(),
-  shopId: z.string().optional(),
-  address: z.string().optional(),
-  logo: z.string().optional(),
-  coverImage: z.string().optional(),
-  isVerified: z.boolean().optional(),
-  ownerName: z.string().optional(),
-  ownerEmail: z.string().email("Invalid email address").optional(),
-  status: z.enum(['active', 'pending', 'suspended']).optional(),
-  password: z.string().optional(),
-  phoneNumber: z.string().optional(),
+  description: z.string(),
+  shopId: z.string(),
+  address: z.string(),
+  logo: z.string(),
+  coverImage: z.string(),
+  isVerified: z.boolean(),
+  ownerName: z.string(),
+  ownerEmail: z.string().email("Invalid email address"),
+  status: z.enum(['active', 'pending', 'suspended']),
+  password: z.string(),
+  phoneNumber: z.string(),
 });
 
 // Extended shop interface with additional fields

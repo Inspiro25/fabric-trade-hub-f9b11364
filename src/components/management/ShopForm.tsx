@@ -1,37 +1,13 @@
-
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { ShopFormValues } from '@/types/shop';
-
-const shopSchema = yup.object().shape({
-  name: yup.string().required('Shop name is required'),
-  description: yup.string().required('Description is required'),
-  logo: yup.string().required('Logo URL is required'),
-  coverImage: yup.string().required('Cover image URL is required'),
-  address: yup.string().required('Address is required'),
-  isVerified: yup.boolean().required(),
-  shopId: yup.string().required('Shop ID is required'),
-  ownerName: yup.string().required('Owner name is required'),
-  ownerEmail: yup.string().email('Invalid email format').required('Owner email is required'),
-  status: yup.string().oneOf(['active', 'pending', 'suspended'] as const).required('Status is required'),
-  password: yup.string().required('Password is required'),
-  phoneNumber: yup.string().required('Phone number is required'),
-});
-
-interface ShopFormProps {
-  defaultValues?: Partial<ShopFormValues>;
-  onSubmit: (data: ShopFormValues) => void;
-  submitLabel: string;
-  isSubmitting?: boolean;
-}
+import { ShopFormValues, shopFormSchema } from '@/types/shop';
 
 const ShopForm = ({
   defaultValues = {},
@@ -55,7 +31,7 @@ const ShopForm = ({
   };
 
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema as any),
+    resolver: zodResolver(shopFormSchema),
     defaultValues: formDefaults
   });
 
