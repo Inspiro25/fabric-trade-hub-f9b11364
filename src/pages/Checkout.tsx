@@ -17,15 +17,15 @@ const Checkout = () => {
 
   useEffect(() => {
     if (currentUser) {
-      // Get address and phone from user or profile data
+      // Safely access properties that might not exist
       setAddress(
         currentUser.address || 
-        (currentUser.user_metadata?.address) || 
+        (currentUser.user_metadata && currentUser.user_metadata.address) || 
         ''
       );
       setPhone(
         currentUser.phone || 
-        (currentUser.user_metadata?.phone) || 
+        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
         ''
       );
     }

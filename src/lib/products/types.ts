@@ -9,16 +9,17 @@ export interface Product {
   salePrice?: number;
   images: string[];
   category_id?: string;
-  category: string;
+  category?: string;
   shop_id?: string;
   shopId?: string;
+  shopName?: string; 
   rating: number;
   review_count?: number;
   reviewCount: number;
   stock: number;
-  colors: string[];
-  sizes: string[];
-  tags: string[];
+  colors?: string[];
+  sizes?: string[];
+  tags?: string[];
   is_new?: boolean;
   isNew?: boolean;
   is_trending?: boolean;
@@ -26,9 +27,10 @@ export interface Product {
   brand?: string;
   specifications?: Record<string, string>;
   sku?: string;
+  created_at?: string;
+  updated_at?: string;
   // Add these for compatibility with Wishlist.tsx
   categoryId?: string;
-  shopName?: string;
 }
 
 // Add any additional product-related types here
@@ -76,4 +78,10 @@ export interface ProductGridProps {
   showFilters?: boolean;
   paginationClassName?: string;
   isLoading?: boolean;
+}
+
+export interface ProductReviewsProps {
+  productId: string;
+  rating?: number;
+  reviewCount?: number;
 }

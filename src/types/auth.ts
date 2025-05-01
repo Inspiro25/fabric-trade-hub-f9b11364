@@ -7,17 +7,17 @@ export interface ExtendedUser {
   phone?: string;
   address?: string;
   displayName?: string | null;
+  display_name?: string | null;
   photoURL?: string | null;
   avatarUrl?: string | null;
   email_confirmed_at?: string;
   uid?: string;
-  display_name?: string;
-  preferences?: Record<string, any>;
-  user_metadata: any;
-  app_metadata: any;
+  user_metadata?: any;
+  app_metadata?: any;
   aud: string;
   created_at: string;
   metadata?: any;
+  preferences?: Record<string, any>;
 }
 
 // Add other auth related types here

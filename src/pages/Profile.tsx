@@ -35,15 +35,18 @@ const ProfilePage = () => {
     if (currentUser) {
       setDisplayName(currentUser.displayName || userProfile?.displayName || '');
       setEmail(currentUser.email || userProfile?.email || '');
+      
+      // Safely access properties that might not exist
       setPhoneNumber(
         currentUser.phone || 
-        (currentUser.user_metadata?.phone) || 
+        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
         userProfile?.phone || 
         ''
       );
+      
       setAddress(
         currentUser.address || 
-        (currentUser.user_metadata?.address) || 
+        (currentUser.user_metadata && currentUser.user_metadata.address) || 
         userProfile?.address || 
         ''
       );
@@ -83,8 +86,11 @@ const ProfilePage = () => {
       await updateUserProfile({
         displayName,
         email,
-        phone: phoneNumber,
-        address
+        // Use properties that are defined in ExtendedUser
+        user_metadata: {
+          phone: phoneNumber,
+          address: address
+        }
       });
       
       setEditMode(false);
@@ -110,7 +116,7 @@ const ProfilePage = () => {
       ) : (
         <AuthenticatedView
           isLoaded={isLoaded}
-          currentUser={currentUser}
+          currentUser={currentUser as any}
           displayName={displayName}
           setDisplayName={setDisplayName}
           email={email}

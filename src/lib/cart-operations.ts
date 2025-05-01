@@ -44,16 +44,17 @@ export const addToCart = async (
     }
     
     // If logged in, use the service to add to the database
-    const success = await addCartItem(
+    const success = await addCartItem({
       userId,
-      product.id,
+      productId: product.id,
       quantity,
-      product.salePrice || product.price,
+      price: product.salePrice || product.price,
       color,
       size
-    );
+    });
     
     if (success) {
+      toast.success('Added to cart');
       return true;
     }
     

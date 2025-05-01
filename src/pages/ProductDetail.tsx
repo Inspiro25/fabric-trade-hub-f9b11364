@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -129,17 +128,22 @@ const ProductDetail = () => {
           selectedSize || undefined
         );
       } else {
-        addToCartContext(
-          product.id,
-          product.name,
-          product.images[0] || '/placeholder.png',
-          product.salePrice || product.price,
+        // Create the cart item object for the context function
+        const cartItem: CartItem = {
+          id: `guest-${Date.now()}`,
+          productId: product.id,
+          name: product.name,
+          image: product.images[0] || '/placeholder.png',
+          price: product.salePrice || product.price,
           quantity,
-          product.shop_id,
-          undefined,
-          selectedColor || undefined,
-          selectedSize || undefined
-        );
+          color: selectedColor || undefined,
+          size: selectedSize || undefined,
+          stock: product.stock,
+          shopId: product.shop_id,
+          total: (product.salePrice || product.price) * quantity
+        };
+        
+        addToCartContext(cartItem);
         toast.success('Added to cart');
       }
     } catch (error) {
@@ -544,7 +548,11 @@ const ProductDetail = () => {
           {/* Reviews section */}
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4">Ratings & Reviews</h3>
-            <ProductReviews productId={product.id} />
+            <ProductReviews 
+              productId={product.id} 
+              rating={product.rating} 
+              reviewCount={product.reviewCount || 0}
+            />
           </div>
           
           {/* Similar products */}

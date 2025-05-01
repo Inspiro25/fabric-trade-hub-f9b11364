@@ -55,7 +55,7 @@ const ShopForm = ({
   };
 
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
-    resolver: yupResolver(shopSchema),
+    resolver: yupResolver(shopSchema as any),
     defaultValues: formDefaults
   });
 

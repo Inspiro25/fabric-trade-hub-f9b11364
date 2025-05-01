@@ -71,27 +71,30 @@ const SettingsPage = () => {
   
   useEffect(() => {
     if (currentUser) {
-      setName(currentUser?.displayName || userProfile?.display_name || '');
-      setEmail(currentUser?.email || userProfile?.email || '');
-      setPhone(
+      // Use displayName instead of display_name
+      setDisplayName(currentUser.displayName || '');
+      
+      // Safely access properties that might not exist
+      setPhoneNumber(
         currentUser.phone || 
-        (currentUser.user_metadata?.phone) || 
+        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
         userProfile?.phone || 
         ''
       );
+      
       setAddress(
         currentUser.address || 
-        (currentUser.user_metadata?.address) || 
+        (currentUser.user_metadata && currentUser.user_metadata.address) || 
         userProfile?.address || 
         ''
       );
-      
-      // Initialize notification preferences
-      if (userProfile?.preferences) {
-        setPushEnabled(userProfile.preferences.pushNotifications || false);
-        setEmailEnabled(userProfile.preferences.emailNotifications || false);
-        setSmsEnabled(userProfile.preferences.smsNotifications || false);
-      }
+
+      // Access notifications correctly from preferences
+      const userPrefs = userProfile?.preferences || {};
+      const notificationPrefs = userPrefs.notifications || {};
+      setPushNotificationsEnabled(notificationPrefs.push || false);
+      setEmailNotificationsEnabled(notificationPrefs.email || false);
+      setSmsNotificationsEnabled(notificationPrefs.sms || false);
     }
   }, [currentUser, userProfile]);
   
@@ -250,6 +253,38 @@ const SettingsPage = () => {
         description: "There was an error updating your language preference.",
         variant: "destructive",
       });
+    }
+  };
+  
+  const handleSavePreferences = async () => {
+    if (!currentUser) {
+      toast.error('You need to log in to update your preferences');
+      navigate('/auth');
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      await updateUserProfile({
+        preferences: {
+          theme: theme || 'system',
+          currency: currency || 'USD',
+          language: language || 'en',
+          notifications: {
+            push: pushEnabled,
+            email: emailEnabled,
+            sms: smsEnabled
+          }
+        }
+      });
+      
+      toast.success('Preferences updated successfully');
+    } catch (error) {
+      console.error('Preferences update error:', error);
+      toast.error('Failed to update preferences. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
   
