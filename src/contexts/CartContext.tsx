@@ -3,7 +3,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { Product } from '@/lib/products/types';
 import { CartItem, CartContextType } from './CartContext';
 
-// Create a new context for the cart
+// Create a context instance
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

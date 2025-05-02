@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getDealOfTheDay } from '@/lib/products/deal';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface DealOfTheDayProps {
   product?: Product;
@@ -19,7 +20,20 @@ interface DealOfTheDayProps {
 
 const DealOfTheDayContent: React.FC<{product: Product}> = ({ product }) => {
   const [isTimerExpired, setIsTimerExpired] = useState(false);
-  const { addToCart } = useCart();
+  // Add error handling to useCart to prevent the app from crashing
+  let addToCart = (product: Product) => {
+    console.error('Cart provider not available');
+    toast.error('Cannot add to cart. Cart provider not available.');
+  };
+  
+  try {
+    const cartContext = useCart();
+    if (cartContext) {
+      addToCart = cartContext.addToCart;
+    }
+  } catch (error) {
+    console.error('Error accessing cart context:', error);
+  }
   
   // Calculate the time remaining until the end of the day
   const getTimeRemaining = () => {
@@ -65,7 +79,7 @@ const DealOfTheDayContent: React.FC<{product: Product}> = ({ product }) => {
         </Badge>
         <Link to={`/product/${product.id}`}>
           <img
-            src={product.images[0] || '/placeholder.png'}
+            src={product.images?.[0] || '/placeholder.png'}
             alt={product.name}
             className="mt-3 h-32 w-32 rounded-md object-cover"
           />
