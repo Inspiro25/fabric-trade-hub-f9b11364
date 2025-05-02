@@ -1,6 +1,7 @@
 
 import { createContext } from 'react';
 import { Product } from '@/lib/products/types';
+import { useCart as useCartHook } from './CartContext.tsx';
 
 // Define the CartItem type
 export interface CartItem {
@@ -25,7 +26,7 @@ export interface CartItem {
 // Define the CartContext type
 export interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity: number, color?: string, size?: string) => void;
+  addToCart: (product: Product, quantity: number, options?: Record<string, any>) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -49,5 +50,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 // Export default context
 export default CartContext;
 
-// Export the CartProvider and useCart from CartContext.tsx
-export { CartProvider, useCart } from './CartContext.tsx';
+// Export the CartProvider and useCart
+export { CartProvider } from './CartContext.tsx';
+export const useCart = useCartHook;

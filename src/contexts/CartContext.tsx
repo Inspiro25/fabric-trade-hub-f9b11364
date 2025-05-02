@@ -17,11 +17,11 @@ interface CartContextType {
   clearCart: () => void;
   getCartCount: () => number;
   getCartTotal: () => number;
-  increaseQuantity?: (itemId: string) => void;
-  decreaseQuantity?: (itemId: string) => void;
-  isInCart?: (productId: string, color?: string, size?: string) => boolean;
+  increaseQuantity: (itemId: string) => void;
+  decreaseQuantity: (itemId: string) => void;
+  isInCart: (productId: string, color?: string, size?: string) => boolean;
   isLoading?: boolean;
-  cartItems?: any[];
+  cartItems?: CartItem[];
   migrateCartToUser?: () => Promise<void>;
   total?: number;
   isAdding?: boolean;

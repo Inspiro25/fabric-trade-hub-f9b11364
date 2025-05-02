@@ -1,7 +1,7 @@
 
 import { User } from '@supabase/supabase-js';
 
-export interface ExtendedUser extends User {
+export interface ExtendedUser extends Omit<User, 'user_metadata'> {
   user_metadata?: {
     first_name?: string;
     last_name?: string;
@@ -14,6 +14,47 @@ export interface ExtendedUser extends User {
   phone?: string;
   address?: string;
   email_confirmed_at?: string;
+  displayName?: string;
+  photoURL?: string;
+  avatarUrl?: string;
+  uid?: string;
+  preferences?: UserPreferences;
+  savedAddresses?: Address[];
+  role?: string;
+}
+
+export interface Address {
+  id: string;
+  userId: string;
+  name: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+  phone?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UserPreferences {
+  theme?: string;
+  notifications?: {
+    email?: boolean;
+    push?: boolean;
+    sms?: boolean;
+  };
+  language?: string;
+  role?: string;
+  [key: string]: any;
+}
+
+export enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system'
 }
 
 export interface AuthContextType {
