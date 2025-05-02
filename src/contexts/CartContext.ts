@@ -16,7 +16,7 @@ export interface CartItem {
   total: number;
   size?: string;
   color?: string;
-  product?: Product; // Add this for compatibility with Checkout.tsx
+  product?: Product;
   selectedOptions?: Array<{
     name: string;
     value: string;

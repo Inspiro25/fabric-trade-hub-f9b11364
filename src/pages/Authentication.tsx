@@ -45,7 +45,7 @@ const AuthenticationPage = () => {
   }, [currentUser, navigate]);
 
   const toggleTheme = () => {
-    const newTheme: Theme = theme === "light" ? "dark" : "light";
+    const newTheme = theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
     setTheme(newTheme);
   };
 

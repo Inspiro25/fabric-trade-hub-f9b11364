@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { SearchPageProduct } from './types';
 import { Product } from '@/lib/products/types';
@@ -37,15 +37,7 @@ export const useSearchCartIntegration = () => {
   
   const handleAddToCart = (product: SearchPageProduct) => {
     const convertedProduct = convertToProduct(product);
-    addToCart(
-      convertedProduct.id,
-      convertedProduct.name,
-      convertedProduct.images[0] || '',
-      convertedProduct.sale_price || convertedProduct.price,
-      convertedProduct.stock,
-      convertedProduct.shop_id || '',
-      convertedProduct.sale_price || null
-    );
+    addToCart(convertedProduct, 1);
   };
   
   // Handler for adding to wishlist

@@ -1,7 +1,7 @@
 
 import { User } from '@supabase/supabase-js';
 
-export interface ExtendedUser extends Omit<User, 'user_metadata'> {
+export interface ExtendedUser extends User {
   user_metadata?: {
     first_name?: string;
     last_name?: string;

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { cn } from '@/lib/utils';
 import { Timer, ShoppingCart } from 'lucide-react';
 import { Product } from '@/lib/products/types';
@@ -62,15 +62,7 @@ const DealOfTheDay: React.FC<DealOfTheDayProps> = ({ product: propProduct }) => 
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(
-        product.id,
-        product.name,
-        product.images[0],
-        product.sale_price || product.price,
-        product.stock,
-        product.shop_id || '',
-        product.sale_price || null
-      );
+      addToCart(product, 1);
     }
   };
 
