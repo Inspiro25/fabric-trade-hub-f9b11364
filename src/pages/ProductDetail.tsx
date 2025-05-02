@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Product } from '@/lib/products/types';
@@ -24,12 +25,8 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProducts } from '@/hooks/use-products';
 
-interface Params {
-  productId: string;
-}
-
 const ProductDetail: React.FC = () => {
-  const { productId } = useParams<Params>();
+  const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const { data: product, isLoading } = useProducts({ id: productId || '' });
   const { addToCart } = useCart();
@@ -76,7 +73,7 @@ const ProductDetail: React.FC = () => {
   // Fix the addToCart calls
   const handleAddToCart = () => {
     if (product) {
-      // Fix: Pass the correct arguments to addToCart
+      // Pass the correct arguments to addToCart
       addToCart(product, selectedQuantity, {
         color: selectedColor,
         size: selectedSize
@@ -87,7 +84,7 @@ const ProductDetail: React.FC = () => {
   
   const handleBuyNow = () => {
     if (product) {
-      // Fix: Pass the correct arguments to addToCart
+      // Pass the correct arguments to addToCart
       addToCart(product, selectedQuantity, {
         color: selectedColor,
         size: selectedSize
@@ -206,7 +203,7 @@ const ProductDetail: React.FC = () => {
       {/* Related Products */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Related Products</h2>
-        <RelatedProducts currentProductId={product.id} categoryId={product.categoryId} />
+        <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
       </div>
     </div>
   );
