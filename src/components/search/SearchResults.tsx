@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { SearchProductCard, SearchProductCardSkeleton } from './SearchProductCard';
 import { SearchPageProduct } from '@/hooks/search/types';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useSearchDialogs } from '@/hooks/search/use-search-dialogs';
 import { Grid, ListFilter, LayoutGrid, LayoutList } from 'lucide-react';

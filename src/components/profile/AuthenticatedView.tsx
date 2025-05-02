@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ProfileHeader from './ProfileHeader';
 import ProfileForm from './ProfileForm';
@@ -11,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { AuthenticatedViewProps } from './AuthenticatedView.d';
 
 const AuthenticatedView: React.FC<AuthenticatedViewProps> = ({

@@ -1,9 +1,9 @@
-
 // Only fixing the issue with displayName vs display_name
 import { ExtendedUser, UserPreferences } from '@/types/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { formatPreferences } from '@/utils/dataHelpers';
+import { Address } from '@/types/auth';
 
 // Fetch user profile from Supabase
 export const fetchUserProfile = async (userId: string): Promise<ExtendedUser | null> => {
@@ -71,7 +71,7 @@ export const fetchUserProfile = async (userId: string): Promise<ExtendedUser | n
           id: addr.id,
           name: addr.name,
           addressLine1: addr.address_line1,
-          addressLine2: addr.address_line2,
+          addressLine2: addr.addressLine2,
           city: addr.city,
           state: addr.state,
           postalCode: addr.postal_code,
@@ -358,6 +358,38 @@ export const setDefaultAddress = async (
   } catch (error) {
     console.error('Error setting default address:', error);
     throw error;
+  }
+};
+
+export const getUserAddresses = async (userId: string): Promise<Address[]> => {
+  try {
+    const { data: addresses } = await supabase
+      .from('user_addresses')
+      .select('*')
+      .eq('user_id', userId)
+      .order('is_default', { ascending: false });
+    
+    if (addresses && addresses.length > 0) {
+      // Make sure to add userId to each address
+      return addresses.map(address => ({
+        ...address,
+        userId: userId, // Add this line to ensure userId is included
+        id: address.id,
+        name: address.name,
+        addressLine1: address.addressLine1,
+        addressLine2: address.addressLine2,
+        city: address.city,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
+        isDefault: address.isDefault
+      }));
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error fetching user addresses:", error);
+    return [];
   }
 };
 

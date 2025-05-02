@@ -22,8 +22,26 @@ export interface CartItem {
   }>;
 }
 
-// Export the CartContextType
-export type { CartContextType } from './CartContext.tsx';
+// Define and export CartContextType
+export interface CartContextType {
+  cart: CartItem[];
+  addToCart: (product: Product, quantity?: number, options?: Record<string, any>) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  getCartCount: () => number;
+  getCartTotal: () => number;
+  increaseQuantity: (itemId: string) => void;
+  decreaseQuantity: (itemId: string) => void;
+  isInCart: (productId: string, color?: string, size?: string) => boolean;
+  isLoading?: boolean;
+  cartItems?: CartItem[];
+  migrateCartToUser?: () => Promise<void>;
+  total?: number;
+  isAdding?: boolean;
+  isRemoving?: boolean;
+  isUpdating?: boolean;
+}
 
 // Create the context
 const CartContext = createContext<CartContextType | undefined>(undefined);

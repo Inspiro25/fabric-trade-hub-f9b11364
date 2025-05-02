@@ -30,7 +30,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { motion } from 'framer-motion';
 
 const SearchSuggestions = ({ 

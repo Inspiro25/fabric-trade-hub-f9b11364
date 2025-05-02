@@ -1,7 +1,7 @@
 
 import { User } from '@supabase/supabase-js';
 
-export interface ExtendedUser extends User {
+export interface ExtendedUser {
   user_metadata?: {
     first_name?: string;
     last_name?: string;
@@ -21,6 +21,8 @@ export interface ExtendedUser extends User {
   preferences?: UserPreferences;
   savedAddresses?: Address[];
   role?: string;
+  email?: string | null;
+  id?: string;
 }
 
 export interface Address {

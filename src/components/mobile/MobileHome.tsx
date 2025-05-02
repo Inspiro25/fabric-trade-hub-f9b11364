@@ -15,7 +15,7 @@ import 'swiper/css/autoplay';
 import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { useWishlist } from '@/contexts/WishlistContext';
 
 const MobileHome = () => {
