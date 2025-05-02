@@ -1,459 +1,364 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, Lock, Globe, Moon, CreditCard, Monitor, LogOut, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
+import { Theme, UserPreferences } from '@/types/auth';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
 import { useTheme } from '@/contexts/ThemeContext';
-import { toast } from '@/components/ui/use-toast';
-import ProfileForm from '@/components/profile/ProfileForm';
-import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
 
-const SettingItem = ({ 
-  icon, 
-  title, 
-  description, 
-  action,
-  onClick 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  action: React.ReactNode;
-  onClick?: () => void;
-}) => (
-  <div 
-    className={cn(
-      "flex items-center justify-between py-4 px-4 md:px-6",
-      onClick && "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
-    )}
-    onClick={onClick}
-  >
-    <div className="flex items-start gap-3 flex-1">
-      <div className="mt-0.5 text-gray-500 dark:text-gray-400">{icon}</div>
-      <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-medium dark:text-white truncate">{title}</h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>
-      </div>
-    </div>
-    <div className="ml-4 flex-shrink-0">{action}</div>
-  </div>
-);
-
-const SettingsPage = () => {
-  const navigate = useNavigate();
-  const { currentUser, userProfile, logout, updateUserProfile } = useAuth();
-  const { isDarkMode, toggleDarkMode } = useTheme();
+const Settings = () => {
+  const { currentUser, updateProfile } = useAuth();
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
+    theme: 'light',
+    currency: 'USD', 
+    language: 'en',
+    notifications: {
+      email: true,
+      sms: false,
+      push: true
+    }
+  });
   
-  // Profile form state
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  // Extract these values for use in the component
+  const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [emailNotifications, setEmailNotificationsEnabled] = useState(true);
+  const [pushNotifications, setPushNotificationsEnabled] = useState(true);
+  const [smsNotifications, setSmsNotificationsEnabled] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<Theme>('light');
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   
-  // Notification settings state
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [emailEnabled, setEmailEnabled] = useState(false);
-  const [smsEnabled, setSmsEnabled] = useState(false);
-  
-  // Language state
-  const [language, setLanguage] = useState('English');
-  
+  // Load user data
   useEffect(() => {
     if (currentUser) {
-      // Use displayName instead of display_name
-      setDisplayName(currentUser.displayName || '');
+      // Handle display name
+      setDisplayName(currentUser.user_metadata?.full_name || '');
       
-      // Safely access properties that might not exist
-      setPhoneNumber(
-        currentUser.phone || 
-        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
-        userProfile?.phone || 
-        ''
-      );
+      // Handle phone
+      const phone = currentUser.phone || currentUser.user_metadata?.phone || '';
+      setPhoneNumber(phone);
       
-      setAddress(
-        currentUser.address || 
-        (currentUser.user_metadata && currentUser.user_metadata.address) || 
-        userProfile?.address || 
-        ''
-      );
-
-      // Access notifications correctly from preferences
-      const userPrefs = userProfile?.preferences || {};
-      const notificationPrefs = userPrefs.notifications || {};
-      setPushNotificationsEnabled(notificationPrefs.push || false);
-      setEmailNotificationsEnabled(notificationPrefs.email || false);
-      setSmsNotificationsEnabled(notificationPrefs.sms || false);
+      // Handle address
+      const address = currentUser.address || currentUser.user_metadata?.address || '';
+      setAddress(address);
+      
+      // Handle notifications
+      const notifications = currentUser.user_metadata?.notifications || {
+        email: true,
+        push: true,
+        sms: false
+      };
+      
+      setEmailNotificationsEnabled(notifications.email);
+      setPushNotificationsEnabled(notifications.push);
+      setSmsNotificationsEnabled(notifications.sms);
+      
+      // Handle theme and currency
+      setSelectedTheme((currentUser.user_metadata?.theme as Theme) || 'light');
+      setSelectedCurrency(userPreferences.currency || 'USD');
     }
-  }, [currentUser, userProfile]);
+  }, [currentUser]);
   
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!currentUser) {
-      toast.error('You need to log in to update your profile');
-      navigate('/auth');
-      return;
-    }
-    
-    setIsLoading(true);
+  const saveSettings = async (event: React.FormEvent) => {
+    event.preventDefault();
     
     try {
-      await updateUserProfile({
-        displayName: name,
-        email,
-        phone,
-        address,
-        preferences: {
-          pushNotifications: pushEnabled,
-          emailNotifications: emailEnabled,
-          smsNotifications: smsEnabled,
-        }
-      });
-      
-      toast.success('Profile updated successfully');
-    } catch (error) {
-      console.error('Profile update error:', error);
-      toast.error('Failed to update profile. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  const togglePushNotifications = async () => {
-    const newValue = !pushEnabled;
-    setPushEnabled(newValue);
-    
-    try {
-      await updateUserProfile({
-        preferences: {
-          ...(userProfile?.preferences || {}),
+      // Organize user data for update
+      const userData = {
+        user_metadata: {
+          full_name: displayName,
+          phone: phoneNumber,
+          address: address,
+          theme: selectedTheme,
+          currency: selectedCurrency,
           notifications: {
-            email: emailEnabled,
-            push: newValue,
-            sms: smsEnabled
+            email: emailNotifications,
+            push: pushNotifications,
+            sms: smsNotifications
           }
         }
-      });
+      };
       
-      toast({
-        title: `Push Notifications ${newValue ? 'Enabled' : 'Disabled'}`,
-        description: `You will ${newValue ? 'now' : 'no longer'} receive push notifications.`,
-      });
-    } catch (error) {
-      setPushEnabled(!newValue);
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your notification settings.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const toggleEmailNotifications = async () => {
-    const newValue = !emailEnabled;
-    setEmailEnabled(newValue);
-    
-    try {
-      await updateUserProfile({
-        preferences: {
-          ...(userProfile?.preferences || {}),
-          notifications: {
-            email: newValue,
-            push: pushEnabled,
-            sms: smsEnabled
-          }
-        }
-      });
+      // Call the update function
+      const { success, message } = await updateProfile(userData);
       
-      toast({
-        title: `Email Notifications ${newValue ? 'Enabled' : 'Disabled'}`,
-        description: `You will ${newValue ? 'now' : 'no longer'} receive email notifications.`,
-      });
+      if (success) {
+        toast.success('Settings updated successfully!');
+      } else {
+        toast.error(`Failed to update settings: ${message}`);
+      }
     } catch (error) {
-      setEmailEnabled(!newValue);
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your notification settings.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const toggleSmsNotifications = async () => {
-    const newValue = !smsEnabled;
-    setSmsEnabled(newValue);
-    
-    try {
-      await updateUserProfile({
-        preferences: {
-          ...(userProfile?.preferences || {}),
-          notifications: {
-            email: emailEnabled,
-            push: pushEnabled,
-            sms: newValue
-          }
-        }
-      });
-      
-      toast({
-        title: `SMS Notifications ${newValue ? 'Enabled' : 'Disabled'}`,
-        description: `You will ${newValue ? 'now' : 'no longer'} receive SMS notifications.`,
-      });
-    } catch (error) {
-      setSmsEnabled(!newValue);
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your notification settings.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const handleLanguageChange = async (newLanguage: string) => {
-    setLanguage(newLanguage);
-    
-    try {
-      await updateUserProfile({
-        preferences: {
-          ...(userProfile?.preferences || {}),
-          language: newLanguage,
-          notifications: {
-            email: emailEnabled,
-            push: pushEnabled,
-            sms: smsEnabled
-          }
-        }
-      });
-      
-      toast({
-        title: "Language Updated",
-        description: `Your language preference has been updated to ${newLanguage}.`,
-      });
-    } catch (error) {
-      setLanguage(language);
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your language preference.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  const handleSavePreferences = async () => {
-    if (!currentUser) {
-      toast.error('You need to log in to update your preferences');
-      navigate('/auth');
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      await updateUserProfile({
-        preferences: {
-          theme: theme || 'system',
-          currency: currency || 'USD',
-          language: language || 'en',
-          notifications: {
-            push: pushEnabled,
-            email: emailEnabled,
-            sms: smsEnabled
-          }
-        }
-      });
-      
-      toast.success('Preferences updated successfully');
-    } catch (error) {
-      console.error('Preferences update error:', error);
-      toast.error('Failed to update preferences. Please try again.');
-    } finally {
-      setIsLoading(false);
+      console.error('Error updating settings:', error);
+      toast.error('Failed to update settings');
     }
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Settings Content */}
-      <div className="divide-y divide-gray-200 dark:divide-gray-700 pb-20">
-        {/* Profile Section */}
-        <div className="bg-white dark:bg-gray-800">
-          <Sheet>
-            <SheetTrigger asChild>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
+      
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="preferences">Preferences</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="profile">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profile Information</CardTitle>
+              <CardDescription>
+                Update your personal information and how others see you on the platform.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4 items-start">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage src={currentUser?.user_metadata?.avatar_url || ''} />
+                  <AvatarFallback>{displayName?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Label htmlFor="displayName">Full Name</Label>
+                  <Input 
+                    id="displayName" 
+                    value={displayName} 
+                    onChange={(e) => setDisplayName(e.target.value)} 
+                    placeholder="Your full name"
+                  />
+                </div>
+              </div>
+              
               <div>
-                <SettingItem
-                  icon={<User size={18} />}
-                  title="Profile"
-                  description={userProfile?.displayName || currentUser?.email || "Update your profile information"}
-                  action={<ArrowLeft size={16} className="rotate-180" />}
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  value={currentUser?.email || ''} 
+                  disabled 
+                  placeholder="Your email address"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Email cannot be changed. Contact support for assistance.
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input 
+                  id="phone" 
+                  value={phoneNumber} 
+                  onChange={(e) => setPhoneNumber(e.target.value)} 
+                  placeholder="Your phone number"
                 />
               </div>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-lg">
-              <SheetHeader>
-                <SheetTitle>Edit Profile</SheetTitle>
-              </SheetHeader>
-              <div className="py-6">
-                <ProfileForm
-                  displayName={name}
-                  setDisplayName={setName}
-                  email={email}
-                  setEmail={setEmail}
-                  phoneNumber={phone}
-                  setPhoneNumber={setPhone}
-                  address={address}
-                  setAddress={setAddress}
-                  isLoading={isLoading}
-                  handleSubmit={handleSubmit}
-                  emailDisabled={true}
+              
+              <div>
+                <Label htmlFor="address">Address</Label>
+                <Textarea 
+                  id="address" 
+                  value={address} 
+                  onChange={(e) => setAddress(e.target.value)} 
+                  placeholder="Your address"
+                  rows={3}
                 />
               </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-
-        {/* Notifications Section */}
-        <div className="bg-white dark:bg-gray-800">
-          <div className="py-2">
-            <div className="px-4 md:px-6 py-3">
-              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Notifications</h2>
-            </div>
-            
-            <SettingItem
-              icon={<Bell size={18} />}
-              title="Push Notifications"
-              description="Get notified about order updates and promotions"
-              action={<Switch checked={pushEnabled} onCheckedChange={togglePushNotifications} />}
-            />
-            
-            <SettingItem
-              icon={<Bell size={18} />}
-              title="Email Notifications"
-              description="Receive notifications via email"
-              action={<Switch checked={emailEnabled} onCheckedChange={toggleEmailNotifications} />}
-            />
-            
-            <SettingItem
-              icon={<Bell size={18} />}
-              title="SMS Notifications"
-              description="Receive notifications via SMS"
-              action={<Switch checked={smsEnabled} onCheckedChange={toggleSmsNotifications} />}
-            />
-          </div>
-        </div>
-
-        {/* Appearance Section */}
-        <div className="bg-white dark:bg-gray-800">
-          <div className="py-2">
-            <div className="px-4 md:px-6 py-3">
-              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Appearance</h2>
-            </div>
-            
-            <SettingItem
-              icon={<Moon size={18} />}
-              title="Dark Mode"
-              description="Toggle between light and dark theme"
-              action={<Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />}
-            />
-            
-            <SettingItem
-              icon={<Globe size={18} />}
-              title="Language"
-              description="Change your preferred language"
-              action={
-                <select
-                  value={language}
-                  onChange={(e) => handleLanguageChange(e.target.value)}
-                  className="text-sm bg-transparent border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 dark:text-gray-300"
+            </CardContent>
+            <CardFooter>
+              <Button onClick={saveSettings}>Save Changes</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="preferences">
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferences</CardTitle>
+              <CardDescription>
+                Customize your experience on the platform.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="theme">Theme</Label>
+                <Select 
+                  value={selectedTheme} 
+                  onValueChange={(value) => setSelectedTheme(value as Theme)}
                 >
-                  <option value="English">English</option>
-                  <option value="Spanish">Spanish</option>
-                  <option value="French">French</option>
-                  <option value="German">German</option>
-                  <option value="Japanese">Japanese</option>
-                </select>
-              }
-            />
-          </div>
-        </div>
-
-        {/* Security Section */}
-        <div className="bg-white dark:bg-gray-800">
-          <div className="py-2">
-            <div className="px-4 md:px-6 py-3">
-              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Security</h2>
-            </div>
-            
-            <SettingItem
-              icon={<Lock size={18} />}
-              title="Change Password"
-              description="Update your account password"
-              action={
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-sm"
-                  onClick={() => navigate('/auth')}
+                  <SelectTrigger id="theme">
+                    <SelectValue placeholder="Select theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="currency">Currency</Label>
+                <Select 
+                  value={selectedCurrency} 
+                  onValueChange={setSelectedCurrency}
                 >
-                  Change
-                </Button>
-              }
-            />
-          </div>
-        </div>
-
-        {/* Payment Section */}
-        <div className="bg-white dark:bg-gray-800">
-          <div className="py-2">
-            <div className="px-4 md:px-6 py-3">
-              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">Payment</h2>
-            </div>
-            
-            <SettingItem
-              icon={<CreditCard size={18} />}
-              title="Payment Methods"
-              description="Manage your payment options"
-              action={
-                <Button variant="ghost" size="sm" className="text-sm">
-                  Manage
-                </Button>
-              }
-            />
-          </div>
-        </div>
-
-        {/* Account Section */}
-        <div className="bg-white dark:bg-gray-800">
-          <div className="p-4 md:p-6">
-            <Button 
-              variant="destructive" 
-              className="w-full" 
-              onClick={handleLogout}
-            >
-              <LogOut size={16} className="mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </div>
+                  <SelectTrigger id="currency">
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="EUR">EUR (€)</SelectItem>
+                    <SelectItem value="GBP">GBP (£)</SelectItem>
+                    <SelectItem value="INR">INR (₹)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="language">Language</Label>
+                <Select 
+                  value={userPreferences.language} 
+                  onValueChange={(value) => setUserPreferences({...userPreferences, language: value})}
+                >
+                  <SelectTrigger id="language">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Spanish</SelectItem>
+                    <SelectItem value="fr">French</SelectItem>
+                    <SelectItem value="de">German</SelectItem>
+                    <SelectItem value="hi">Hindi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={saveSettings}>Save Changes</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notification Settings</CardTitle>
+              <CardDescription>
+                Configure how you want to receive notifications.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Email Notifications</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications via email
+                  </p>
+                </div>
+                <Switch 
+                  checked={emailNotifications} 
+                  onCheckedChange={setEmailNotificationsEnabled} 
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Push Notifications</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications on your device
+                  </p>
+                </div>
+                <Switch 
+                  checked={pushNotifications} 
+                  onCheckedChange={setPushNotificationsEnabled} 
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">SMS Notifications</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications via text message
+                  </p>
+                </div>
+                <Switch 
+                  checked={smsNotifications} 
+                  onCheckedChange={setSmsNotificationsEnabled} 
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={saveSettings}>Save Changes</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>
+                Manage your account security and password.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-medium mb-2">Change Password</h3>
+                <div className="space-y-2">
+                  <div>
+                    <Label htmlFor="currentPassword">Current Password</Label>
+                    <Input id="currentPassword" type="password" />
+                  </div>
+                  <div>
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <Input id="newPassword" type="password" />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Input id="confirmPassword" type="password" />
+                  </div>
+                </div>
+                <Button className="mt-4">Update Password</Button>
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div>
+                <h3 className="font-medium mb-2">Two-Factor Authentication</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Add an extra layer of security to your account.
+                </p>
+                <Button variant="outline">Enable 2FA</Button>
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div>
+                <h3 className="font-medium text-destructive mb-2">Danger Zone</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Permanently delete your account and all of your data.
+                </p>
+                <Button variant="destructive">Delete Account</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
 
-export default SettingsPage;
+export default Settings;

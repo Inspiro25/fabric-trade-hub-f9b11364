@@ -1,46 +1,52 @@
 
 import { User } from '@supabase/supabase-js';
 
-export interface ExtendedUser {
-  id: string;
-  email?: string | null;
+// Extended user type with additional fields for user profile
+export interface ExtendedUser extends User {
+  user_metadata?: {
+    full_name?: string;
+    phone?: string;
+    address?: string;
+    avatar_url?: string;
+    preferred_language?: string;
+    theme?: string;
+    notifications?: {
+      email: boolean;
+      sms: boolean;
+      push: boolean;
+    };
+  };
   phone?: string;
   address?: string;
-  displayName?: string | null;
-  display_name?: string | null;
-  photoURL?: string | null;
-  avatarUrl?: string | null;
   email_confirmed_at?: string;
-  uid?: string;
-  user_metadata?: any;
-  app_metadata?: any;
-  aud: string;
-  created_at: string;
-  metadata?: any;
-  preferences?: Record<string, any>;
 }
 
-// Add other auth related types here
-export interface UserProfile {
-  id: string;
-  display_name: string;
-  displayName?: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  preferences?: Record<string, any>;
-  avatar_url?: string;
-  avatarUrl?: string;
-  email_confirmed_at?: string;
-  savedAddresses?: Array<{
-    id: string;
-    name: string;
-    addressLine1: string;
-    addressLine2?: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-    isDefault: boolean;
-  }>;
+export type UserRole = 'user' | 'shop_admin' | 'admin';
+
+export type Theme = 'light' | 'dark' | 'system';
+
+export interface AuthContextType {
+  currentUser: ExtendedUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  logout: () => Promise<void>;
+  signup: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  sendPasswordResetEmail: (email: string) => Promise<{ success: boolean; message: string }>;
+  updateProfile: (data: Partial<ExtendedUser>) => Promise<{ success: boolean; message: string }>;
+  updateTheme: (theme: Theme) => Promise<void>;
+  userRole: UserRole;
+}
+
+// Define the type for user preferences
+export interface UserPreferences {
+  role?: UserRole;
+  theme?: string;
+  currency?: string;
+  language?: string;
+  notifications?: {
+    email: boolean;
+    sms: boolean;
+    push: boolean;
+  };
 }

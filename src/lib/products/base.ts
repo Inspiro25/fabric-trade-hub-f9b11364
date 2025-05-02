@@ -94,33 +94,36 @@ export const getProductById = async (id: string): Promise<Product | null> => {
       return null;
     }
     
+    // Explicitly type cast the data to avoid TypeScript errors
+    const product = data as any;
+    
     return {
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      price: data.price,
-      salePrice: data.sale_price,
-      sale_price: data.sale_price,
-      images: data.images || [],
-      category: data.category || '',
-      category_id: data.category_id,
-      categoryId: data.category_id,
-      shop_id: data.shop_id,
-      shopId: data.shop_id,
-      shopName: data.shop?.name || '',
-      rating: data.rating || 0,
-      reviewCount: data.review_count || 0,
-      review_count: data.review_count || 0,
-      stock: data.stock || 0,
-      colors: data.colors || [],
-      sizes: data.sizes || [],
-      tags: data.tags || [],
-      isNew: data.is_new,
-      is_new: data.is_new,
-      isTrending: data.is_trending,
-      is_trending: data.is_trending,
-      created_at: data.created_at,
-      updated_at: data.updated_at
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      salePrice: product.sale_price,
+      sale_price: product.sale_price,
+      images: product.images || [],
+      category: product.category || '',
+      category_id: product.category_id,
+      categoryId: product.category_id,
+      shop_id: product.shop_id,
+      shopId: product.shop_id,
+      shopName: product.shop?.name || '',
+      rating: product.rating || 0,
+      reviewCount: product.review_count || 0,
+      review_count: product.review_count || 0,
+      stock: product.stock || 0,
+      colors: product.colors || [],
+      sizes: product.sizes || [],
+      tags: product.tags || [],
+      isNew: product.is_new,
+      is_new: product.is_new,
+      isTrending: product.is_trending,
+      is_trending: product.is_trending,
+      created_at: product.created_at,
+      updated_at: product.updated_at
     };
   } catch (error) {
     console.error('Error in getProductById:', error);

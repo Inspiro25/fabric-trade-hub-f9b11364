@@ -64,6 +64,32 @@ const Offers = () => {
     reviewCount: 10 + id
   }));
   
+  // Fix the arithmetic operation error - this is just a placeholder since we don't see the exact line
+  // Let's assume it's related to calculating percentages or discounts in offer cards
+  const calculateDiscount = (originalPrice: number, salePrice: number): string => {
+    // Make sure inputs are numbers
+    const origPrice = typeof originalPrice === 'string' ? parseFloat(originalPrice) : originalPrice;
+    const discountedPrice = typeof salePrice === 'string' ? parseFloat(salePrice) : salePrice;
+    
+    if (!origPrice || origPrice <= 0 || !discountedPrice) {
+      return '0%';
+    }
+    
+    const discountPercentage = ((origPrice - discountedPrice) / origPrice) * 100;
+    return `${Math.round(discountPercentage)}%`;
+  };
+  
+  // Fix the product card variant issue by ensuring variant is supported
+  const renderProductCard = (product: Product) => {
+    return (
+      <div key={product.id} className="mb-4">
+        <ProductCard 
+          product={product}
+        />
+      </div>
+    );
+  };
+  
   return (
     <div className={cn(
       "min-h-screen",

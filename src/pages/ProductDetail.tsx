@@ -136,13 +136,10 @@ const ProductDetail = () => {
           product.id,
           product.name,
           product.images[0] || '/placeholder.png',
-          product.salePrice || product.price,
+          product.price,
           product.stock,
           product.shop_id || product.shopId || '',
-          product.salePrice,
-          quantity,
-          selectedColor || undefined,
-          selectedSize || undefined
+          product.salePrice || product.sale_price
         );
         
         toast.success('Added to cart');
@@ -173,13 +170,10 @@ const ProductDetail = () => {
           product.id,
           product.name,
           product.images[0] || '/placeholder.png',
-          product.salePrice || product.price,
+          product.price,
           product.stock,
           product.shop_id || product.shopId || '',
-          product.salePrice,
-          quantity,
-          selectedColor || undefined,
-          selectedSize || undefined
+          product.salePrice || product.sale_price
         );
       }
       

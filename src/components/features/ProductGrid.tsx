@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { Product } from '@/lib/types/product';
+import { Product } from '@/lib/products/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -178,29 +178,41 @@ export const ProductGrid = ({
       )}
       
       <div className={`grid ${getGridCols()} gap-2 md:gap-4`}>
-        {displayedProducts.map((product, index) => (
-          <div 
-            key={product.id} 
-            className={`transition-all duration-500 ${
-              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-            } ${viewMode === 'list' ? 'col-span-full' : ''}`}
-            style={{ transitionDelay: `${index * 50}ms` }}
-          >
-            <ProductCard
-              id={product.id}
-              name={product.name}
-              price={product.price}
-              salePrice={product.salePrice}
-              image={product.images[0]}
-              category={product.category}
-              isNew={product.isNew}
-              isTrending={product.isTrending}
-              layout={viewMode === 'list' ? 'horizontal' : 'vertical'}
-              rating={product.rating}
-              reviewCount={product.reviewCount}
-            />
-          </div>
-        ))}
+        {displayedProducts.map((product, index) => {
+          // Create a product object for the ProductCard component
+          const productObj = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            stock: product.stock,
+            images: product.images && product.images.length > 0 ? [product.images[0]] : []
+          };
+          
+          return (
+            <div 
+              key={product.id} 
+              className={`transition-all duration-500 ${
+                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              } ${viewMode === 'list' ? 'col-span-full' : ''}`}
+              style={{ transitionDelay: `${index * 50}ms` }}
+            >
+              <ProductCard
+                product={productObj}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                salePrice={product.salePrice}
+                image={product.images?.[0]}
+                category={product.category}
+                isNew={product.isNew}
+                isTrending={product.isTrending}
+                layout={viewMode === 'list' ? 'horizontal' : 'vertical'}
+                rating={product.rating}
+                reviewCount={product.reviewCount}
+              />
+            </div>
+          );
+        })}
       </div>
       
       {showPagination && totalPages > 1 && (
