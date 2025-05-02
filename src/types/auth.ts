@@ -26,6 +26,7 @@ export interface ExtendedUser {
   role?: string;
   email?: string | null;
   id?: string;
+  aud?: string; // Add this property to fix authService issues
 }
 
 export interface Address {

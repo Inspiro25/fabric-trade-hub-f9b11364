@@ -3,6 +3,9 @@ import React, { createContext, useState, useEffect } from 'react';
 import { Product } from '@/lib/products/types';
 import { CartItem, CartContextType } from './CartContext';
 
+// Create a new context for the cart
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -129,9 +132,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <CartContext.Provider
-      value={cartContextValue}
-    >
+    <CartContext.Provider value={cartContextValue}>
       {children}
     </CartContext.Provider>
   );

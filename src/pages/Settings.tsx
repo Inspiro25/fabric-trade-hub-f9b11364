@@ -98,6 +98,18 @@ const Settings = () => {
     }
   };
   
+  const handleThemeChange = (newTheme: Theme) => {
+    setTheme(newTheme);
+    
+    if (currentUser) {
+      // Handle theme and currency
+      setSelectedTheme(newTheme);
+      setSelectedCurrency(userPreferences.currency || 'USD');
+    }
+  };
+  
+  handleThemeChange(Theme.LIGHT);
+  
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
