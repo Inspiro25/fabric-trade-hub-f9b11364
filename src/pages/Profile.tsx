@@ -36,19 +36,21 @@ const ProfilePage = () => {
       setEmail(currentUser.email || userProfile?.email || '');
       
       // Safely access properties that might not exist
-      setPhoneNumber(
-        currentUser.phone || 
-        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
-        userProfile?.phone || 
-        ''
-      );
+      if (currentUser.phone) {
+        setPhoneNumber(currentUser.phone);
+      } else if (currentUser.user_metadata?.phone) {
+        setPhoneNumber(currentUser.user_metadata.phone);
+      } else if (userProfile?.phone) {
+        setPhoneNumber(userProfile.phone);
+      }
       
-      setAddress(
-        currentUser.address || 
-        (currentUser.user_metadata && currentUser.user_metadata.address) || 
-        userProfile?.address || 
-        ''
-      );
+      if (currentUser.address) {
+        setAddress(currentUser.address);
+      } else if (currentUser.user_metadata?.address) {
+        setAddress(currentUser.user_metadata.address);
+      } else if (userProfile?.address) {
+        setAddress(userProfile.address);
+      }
     }
     
     // Set animation state after a short delay
@@ -85,9 +87,11 @@ const ProfilePage = () => {
       await updateUserProfile({
         displayName,
         email,
-        // Use properties that are defined in ExtendedUser
-        phone: phoneNumber,
-        address: address
+        user_metadata: {
+          ...currentUser.user_metadata,
+          phone: phoneNumber,
+          address
+        }
       });
       
       setEditMode(false);

@@ -15,17 +15,18 @@ const Checkout = () => {
 
   useEffect(() => {
     if (currentUser) {
-      // Safely access properties from our updated ExtendedUser type
-      setAddress(
-        currentUser.address || 
-        (currentUser.user_metadata && currentUser.user_metadata.address) || 
-        ''
-      );
-      setPhone(
-        currentUser.phone || 
-        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
-        ''
-      );
+      // Safely access properties from ExtendedUser type
+      if (currentUser.address) {
+        setAddress(currentUser.address);
+      } else if (currentUser.user_metadata?.address) {
+        setAddress(currentUser.user_metadata.address);
+      }
+      
+      if (currentUser.phone) {
+        setPhone(currentUser.phone);
+      } else if (currentUser.user_metadata?.phone) {
+        setPhone(currentUser.user_metadata.phone);
+      }
     }
   }, [currentUser]);
 

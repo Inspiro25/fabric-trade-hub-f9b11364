@@ -37,7 +37,7 @@ const AuthenticationPage = () => {
 
   useEffect(() => {
     if (currentUser) {
-      // Instead of using user_metadata directly, check for the property first
+      // Check for displayName or user_metadata
       const displayName = currentUser.displayName || 
         (currentUser.user_metadata && currentUser.user_metadata.full_name) || '';
       navigate('/');

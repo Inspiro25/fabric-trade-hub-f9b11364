@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Product } from '@/lib/products/types';
@@ -12,7 +11,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -70,25 +69,24 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  // Fix the addToCart calls
   const handleAddToCart = () => {
     if (product) {
-      // Pass the correct arguments to addToCart
-      addToCart(product, selectedQuantity, {
+      const options = {
         color: selectedColor,
         size: selectedSize
-      });
+      };
+      addToCart(product, selectedQuantity, options);
       toast.success(`${product.name} added to cart!`);
     }
   };
   
   const handleBuyNow = () => {
     if (product) {
-      // Pass the correct arguments to addToCart
-      addToCart(product, selectedQuantity, {
+      const options = {
         color: selectedColor,
         size: selectedSize
-      });
+      };
+      addToCart(product, selectedQuantity, options);
       navigate('/checkout');
     }
   };

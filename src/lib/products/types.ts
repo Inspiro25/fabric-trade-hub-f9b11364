@@ -10,6 +10,7 @@ export interface Product {
   images: string[];
   category: string;
   category_id?: string;
+  categoryId?: string;
   shop_id?: string;
   shopId?: string;
   shopName?: string; 
@@ -29,8 +30,8 @@ export interface Product {
   sku?: string;
   created_at?: string;
   updated_at?: string;
-  categoryId?: string;
   views?: number;
+  image?: string; // Adding image field for compatibility
 }
 
 // Add any additional product-related types here
