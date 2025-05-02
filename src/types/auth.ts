@@ -11,6 +11,9 @@ export interface ExtendedUser {
     address?: string;
     [key: string]: any;
   };
+  app_metadata?: {
+    [key: string]: any;
+  };
   phone?: string;
   address?: string;
   email_confirmed_at?: string;

@@ -1,35 +1,7 @@
+
 import React, { createContext, useState, useEffect } from 'react';
 import { Product } from '@/lib/products/types';
-import { CartItem as CartItemInterface } from './CartContext';
-
-export interface CartItem extends Product {
-  quantity: number;
-  color?: string;
-  size?: string;
-  options?: Record<string, any>;
-}
-
-export interface CartContextType {
-  cart: CartItem[];
-  addToCart: (product: Product, quantity?: number, options?: Record<string, any>) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  getCartCount: () => number;
-  getCartTotal: () => number;
-  increaseQuantity: (itemId: string) => void;
-  decreaseQuantity: (itemId: string) => void;
-  isInCart: (productId: string, color?: string, size?: string) => boolean;
-  isLoading?: boolean;
-  cartItems?: CartItem[];
-  migrateCartToUser?: () => Promise<void>;
-  total?: number;
-  isAdding?: boolean;
-  isRemoving?: boolean;
-  isUpdating?: boolean;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
+import { CartItem, CartContextType } from './CartContext';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -73,9 +45,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           {
             ...product,
             quantity,
+            productId: product.id,
+            name: product.name,
+            image: product.images?.[0] || '',
+            price: product.salePrice || product.price,
+            total: (product.salePrice || product.price) * quantity,
+            stock: product.stock || 0,
             color: options.color,
             size: options.size,
-            options
+            selectedOptions: options.selectedOptions
           }
         ];
       }
@@ -94,7 +72,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setCart((currentCart) =>
       currentCart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
+        item.id === productId ? { ...item, quantity, total: item.price * quantity } : item
       )
     );
   };
@@ -120,7 +98,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
-      const price = item.salePrice || item.price;
+      const price = item.price;
       return total + price * item.quantity;
     }, 0);
   };
@@ -134,23 +112,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  const cartContextValue: CartContextType = {
+    cart,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getCartCount,
+    getCartTotal,
+    increaseQuantity,
+    decreaseQuantity,
+    isInCart,
+    cartItems: cart,
+    total: getCartTotal(),
+    isLoading: false,
+  };
+
   return (
     <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getCartCount,
-        getCartTotal,
-        increaseQuantity,
-        decreaseQuantity,
-        isInCart,
-        cartItems: cart,
-        total: getCartTotal(),
-        isLoading: false,
-      }}
+      value={cartContextValue}
     >
       {children}
     </CartContext.Provider>

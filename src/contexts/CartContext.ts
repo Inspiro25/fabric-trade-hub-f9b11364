@@ -49,5 +49,5 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 // Export default context
 export default CartContext;
 
-// Export the CartProvider
-export { CartProvider } from './CartContext.tsx';
+// Export the CartProvider via type
+export type { CartProvider } from './CartContext.tsx';

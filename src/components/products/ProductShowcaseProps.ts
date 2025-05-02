@@ -3,7 +3,7 @@ import { Product } from '@/lib/products/types';
 
 export interface ProductShowcaseProps {
   title: string;
-  subtitle?: string; // Add subtitle property
+  subtitle?: string;
   products: Product[];
   linkTo?: string;
   isLoaded?: boolean;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,20 +17,10 @@ interface DealOfTheDayProps {
   product?: Product;
 }
 
-const DealOfTheDay: React.FC<DealOfTheDayProps> = ({ product: propProduct }) => {
+const DealOfTheDayContent: React.FC<{product: Product}> = ({ product }) => {
   const [isTimerExpired, setIsTimerExpired] = useState(false);
   const { addToCart } = useCart();
   
-  // Fetch deal of the day if not provided through props
-  const { data: dealProduct, isLoading, error } = useQuery({
-    queryKey: ['dealOfTheDay'],
-    queryFn: getDealOfTheDay,
-    enabled: !propProduct // Only fetch if no product prop is provided
-  });
-
-  // Use provided product prop or the fetched deal product
-  const product = propProduct || dealProduct;
-
   // Calculate the time remaining until the end of the day
   const getTimeRemaining = () => {
     const now = new Date();
@@ -65,6 +55,68 @@ const DealOfTheDay: React.FC<DealOfTheDayProps> = ({ product: propProduct }) => 
       addToCart(product, 1);
     }
   };
+
+  return (
+    <div className="flex items-start">
+      <div className="mr-4">
+        <Badge variant="secondary">
+          <Timer className="mr-2 h-4 w-4" />
+          Deal of the Day
+        </Badge>
+        <Link to={`/product/${product.id}`}>
+          <img
+            src={product.images[0] || '/placeholder.png'}
+            alt={product.name}
+            className="mt-3 h-32 w-32 rounded-md object-cover"
+          />
+        </Link>
+      </div>
+      <div>
+        <Link to={`/product/${product.id}`}>
+          <h3 className="font-semibold text-lg">{product.name}</h3>
+        </Link>
+        <p className="text-sm text-gray-500">{product.description}</p>
+        <div className="mt-2 flex items-center">
+          <span className="font-bold">
+            {formatCurrency(product.sale_price || product.price)}
+          </span>
+          {product.sale_price && (
+            <span className="ml-2 text-gray-500 line-through">
+              {formatCurrency(product.price)}
+            </span>
+          )}
+        </div>
+        {!isTimerExpired ? (
+          <div className="mt-3 text-xs text-gray-600">
+            Time remaining: {time.hours}h {time.minutes}m {time.seconds}s
+          </div>
+        ) : (
+          <div className="mt-3 text-xs text-red-600">Deal expired!</div>
+        )}
+        <Button
+          size="sm"
+          className={cn("mt-4 w-full md:w-auto", isTimerExpired && "disabled")}
+          onClick={handleAddToCart}
+          disabled={isTimerExpired}
+        >
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          Add to Cart
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const DealOfTheDay: React.FC<DealOfTheDayProps> = ({ product: propProduct }) => {
+  // Fetch deal of the day if not provided through props
+  const { data: dealProduct, isLoading, error } = useQuery({
+    queryKey: ['dealOfTheDay'],
+    queryFn: getDealOfTheDay,
+    enabled: !propProduct // Only fetch if no product prop is provided
+  });
+
+  // Use provided product prop or the fetched deal product
+  const product = propProduct || dealProduct;
 
   // Loading state
   if (isLoading) {
@@ -106,53 +158,9 @@ const DealOfTheDay: React.FC<DealOfTheDayProps> = ({ product: propProduct }) => 
   return (
     <Card className="w-full">
       <CardContent className="p-4">
-        <div className="flex items-start">
-          <div className="mr-4">
-            <Badge variant="secondary">
-              <Timer className="mr-2 h-4 w-4" />
-              Deal of the Day
-            </Badge>
-            <Link to={`/product/${product.id}`}>
-              <img
-                src={product.images[0] || '/placeholder.png'}
-                alt={product.name}
-                className="mt-3 h-32 w-32 rounded-md object-cover"
-              />
-            </Link>
-          </div>
-          <div>
-            <Link to={`/product/${product.id}`}>
-              <h3 className="font-semibold text-lg">{product.name}</h3>
-            </Link>
-            <p className="text-sm text-gray-500">{product.description}</p>
-            <div className="mt-2 flex items-center">
-              <span className="font-bold">
-                {formatCurrency(product.sale_price || product.price)}
-              </span>
-              {product.sale_price && (
-                <span className="ml-2 text-gray-500 line-through">
-                  {formatCurrency(product.price)}
-                </span>
-              )}
-            </div>
-            {!isTimerExpired ? (
-              <div className="mt-3 text-xs text-gray-600">
-                Time remaining: {time.hours}h {time.minutes}m {time.seconds}s
-              </div>
-            ) : (
-              <div className="mt-3 text-xs text-red-600">Deal expired!</div>
-            )}
-            <Button
-              size="sm"
-              className={cn("mt-4 w-full md:w-auto", isTimerExpired && "disabled")}
-              onClick={handleAddToCart}
-              disabled={isTimerExpired}
-            >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to Cart
-            </Button>
-          </div>
-        </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <DealOfTheDayContent product={product} />
+        </Suspense>
       </CardContent>
     </Card>
   );
