@@ -68,16 +68,17 @@ const Settings = () => {
     }
   }, [currentUser]);
   
+  // Replace the saveSettings function
   const saveSettings = async (event: React.FormEvent) => {
     event.preventDefault();
     
     try {
       // Organize user data for update
       const userData = {
-        user_metadata: {
-          full_name: displayName,
-          phone: phoneNumber,
-          address: address,
+        displayName: displayName,
+        phone: phoneNumber,
+        address: address,
+        preferences: {
           theme: selectedTheme,
           currency: selectedCurrency,
           notifications: {
@@ -89,13 +90,8 @@ const Settings = () => {
       };
       
       // Call the update function
-      const { success, message } = await updateProfile(userData);
-      
-      if (success) {
-        toast.success('Settings updated successfully!');
-      } else {
-        toast.error(`Failed to update settings: ${message}`);
-      }
+      await updateProfile(userData);
+      toast.success('Settings updated successfully!');
     } catch (error) {
       console.error('Error updating settings:', error);
       toast.error('Failed to update settings');

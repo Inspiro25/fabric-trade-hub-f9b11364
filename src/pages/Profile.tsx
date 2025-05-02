@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -87,10 +86,8 @@ const ProfilePage = () => {
         displayName,
         email,
         // Use properties that are defined in ExtendedUser
-        user_metadata: {
-          phone: phoneNumber,
-          address: address
-        }
+        phone: phoneNumber,
+        address: address
       });
       
       setEditMode(false);

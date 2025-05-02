@@ -11,7 +11,7 @@ export interface ExtendedUser extends Omit<User, 'user_metadata'> {
   avatarUrl?: string | null;
   phone?: string;
   address?: string;
-  user_metadata?: {
+  user_metadata: {
     full_name?: string;
     phone?: string;
     address?: string;

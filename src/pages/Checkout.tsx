@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +18,12 @@ const Checkout = () => {
       // Safely access properties from our updated ExtendedUser type
       setAddress(
         currentUser.address || 
-        (currentUser.user_metadata?.address) || 
+        (currentUser.user_metadata && currentUser.user_metadata.address) || 
         ''
       );
       setPhone(
         currentUser.phone || 
-        (currentUser.user_metadata?.phone) || 
+        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
         ''
       );
     }

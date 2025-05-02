@@ -26,7 +26,7 @@ interface LoginFormValues {
 }
 
 const AuthenticationPage = () => {
-  const { login, signup, currentUser, updateTheme } = useAuth();
+  const { login, signUp, currentUser } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -38,8 +38,8 @@ const AuthenticationPage = () => {
   useEffect(() => {
     if (currentUser) {
       // Instead of using user_metadata directly, check for the property first
-      const metadata = currentUser.user_metadata || {};
-      const displayName = currentUser.displayName || metadata.full_name || '';
+      const displayName = currentUser.displayName || 
+        (currentUser.user_metadata && currentUser.user_metadata.full_name) || '';
       navigate('/');
     }
   }, [currentUser, navigate]);
@@ -47,10 +47,6 @@ const AuthenticationPage = () => {
   const toggleTheme = () => {
     const newTheme: Theme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    // Use updateProfile to update theme preference if available
-    if (currentUser && updateTheme) {
-      updateTheme(newTheme);
-    }
   };
 
   const handleSignup = async (data: SignupFormValues) => {
@@ -77,7 +73,7 @@ const AuthenticationPage = () => {
       }
       
       // Call the signup function with the metadata
-      await signup(data.email || '', data.password || '', metadata);
+      await signUp(data.email || '', data.password || '', metadata);
       toast.success('Signup successful! Please check your email to verify.');
       navigate('/');
     } catch (error) {
@@ -105,7 +101,7 @@ const AuthenticationPage = () => {
   useEffect(() => {
     if (currentUser) {
       // Check if email_confirmed_at property exists before using it
-      const isEmailConfirmed = !!currentUser.email_confirmed_at;
+      const isEmailConfirmed = currentUser.email_confirmed_at !== undefined;
       // Redirect only if email is confirmed
       if (isEmailConfirmed) {
         navigate('/');
