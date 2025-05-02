@@ -1,27 +1,14 @@
 
+import { Product } from '@/lib/products/types';
+
 export interface ProductShowcaseProps {
   title: string;
   subtitle?: string;
-  products: any[];
+  products: Product[];
   linkTo?: string;
   isLoaded?: boolean;
-  layout?: string;
+  layout?: 'grid' | 'carousel' | 'featured';
+  highlight?: boolean;
   tag?: string;
   showViewAll?: boolean;
-  highlight?: boolean;
-}
-
-export interface ProductGridProps {
-  products: any[];
-  title?: string;
-  subtitle?: string;
-  columns?: number;
-  showPagination?: boolean;
-  itemsPerPage?: number;
-  totalItems?: number;
-  currentPage?: number;
-  onPageChange?: (page: number) => void;
-  showFilters?: boolean;
-  paginationClassName?: string;
-  isLoading?: boolean;
 }

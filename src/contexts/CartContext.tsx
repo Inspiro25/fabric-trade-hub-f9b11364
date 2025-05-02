@@ -17,6 +17,16 @@ interface CartContextType {
   clearCart: () => void;
   getCartCount: () => number;
   getCartTotal: () => number;
+  increaseQuantity?: (itemId: string) => void;
+  decreaseQuantity?: (itemId: string) => void;
+  isInCart?: (productId: string, color?: string, size?: string) => boolean;
+  isLoading?: boolean;
+  cartItems?: any[];
+  migrateCartToUser?: () => Promise<void>;
+  total?: number;
+  isAdding?: boolean;
+  isRemoving?: boolean;
+  isUpdating?: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -88,6 +98,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
     );
   };
+  
+  const increaseQuantity = (productId: string) => {
+    updateQuantity(productId, (cart.find(item => item.id === productId)?.quantity || 0) + 1);
+  };
+  
+  const decreaseQuantity = (productId: string) => {
+    const currentQuantity = cart.find(item => item.id === productId)?.quantity || 0;
+    if (currentQuantity > 1) {
+      updateQuantity(productId, currentQuantity - 1);
+    }
+  };
 
   const clearCart = () => {
     setCart([]);
@@ -103,6 +124,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return total + price * item.quantity;
     }, 0);
   };
+  
+  const isInCart = (productId: string, color?: string, size?: string) => {
+    return cart.some(
+      item => 
+        item.id === productId && 
+        (color === undefined || item.color === color) && 
+        (size === undefined || item.size === size)
+    );
+  };
 
   return (
     <CartContext.Provider
@@ -114,6 +144,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         getCartCount,
         getCartTotal,
+        increaseQuantity,
+        decreaseQuantity,
+        isInCart,
+        cartItems: cart,
+        total: getCartTotal(),
+        isLoading: false,
       }}
     >
       {children}
