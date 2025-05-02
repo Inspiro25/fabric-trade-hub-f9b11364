@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from '@/contexts/ThemeContext';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -26,7 +26,7 @@ interface LoginFormValues {
 }
 
 const AuthenticationPage = () => {
-  const { login, signUp, currentUser } = useAuth();
+  const { login, signup, currentUser, updateTheme } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -45,11 +45,11 @@ const AuthenticationPage = () => {
   }, [currentUser, navigate]);
 
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
+    const newTheme: Theme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     // Use updateProfile to update theme preference if available
-    if (currentUser && 'updateProfile' in useAuth()) {
-      (useAuth() as any).updateProfile({ preferences: { theme: newTheme } });
+    if (currentUser && updateTheme) {
+      updateTheme(newTheme);
     }
   };
 
@@ -77,7 +77,7 @@ const AuthenticationPage = () => {
       }
       
       // Call the signup function with the metadata
-      await signUp(data.email || '', data.password || '', metadata);
+      await signup(data.email || '', data.password || '', metadata);
       toast.success('Signup successful! Please check your email to verify.');
       navigate('/');
     } catch (error) {
@@ -105,7 +105,7 @@ const AuthenticationPage = () => {
   useEffect(() => {
     if (currentUser) {
       // Check if email_confirmed_at property exists before using it
-      const isEmailConfirmed = currentUser.email_confirmed_at !== undefined;
+      const isEmailConfirmed = !!currentUser.email_confirmed_at;
       // Redirect only if email is confirmed
       if (isEmailConfirmed) {
         navigate('/');
