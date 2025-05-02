@@ -39,7 +39,7 @@ const ProfilePage = () => {
       // Safely access properties that might not exist
       if (currentUser.phone) {
         setPhoneNumber(currentUser.phone);
-      } else if (currentUser.user_metadata?.phone) {
+      } else if (currentUser.user_metadata && currentUser.user_metadata.phone) {
         setPhoneNumber(currentUser.user_metadata.phone);
       } else if (userProfile?.phone) {
         setPhoneNumber(userProfile.phone);
@@ -47,7 +47,7 @@ const ProfilePage = () => {
       
       if (currentUser.address) {
         setAddress(currentUser.address);
-      } else if (currentUser.user_metadata?.address) {
+      } else if (currentUser.user_metadata && currentUser.user_metadata.address) {
         setAddress(currentUser.user_metadata.address);
       } else if (userProfile?.address) {
         setAddress(userProfile.address);
@@ -88,8 +88,10 @@ const ProfilePage = () => {
       await updateUserProfile({
         displayName,
         email,
+        phone: phoneNumber,
+        address,
         user_metadata: {
-          ...currentUser.user_metadata,
+          ...(currentUser.user_metadata || {}),
           phone: phoneNumber,
           address
         }

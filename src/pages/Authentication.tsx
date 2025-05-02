@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -100,7 +101,7 @@ const AuthenticationPage = () => {
 
   useEffect(() => {
     if (currentUser) {
-      // Check if email_confirmed_at property exists before using it
+      // Check if email is confirmed before redirecting
       const isEmailConfirmed = currentUser.email_confirmed_at !== undefined;
       // Redirect only if email is confirmed
       if (isEmailConfirmed) {

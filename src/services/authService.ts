@@ -1,3 +1,4 @@
+
 import { supabase } from '@/lib/supabase';
 import { ExtendedUser, Address } from '@/types/auth';
 
@@ -35,14 +36,14 @@ export const getUserProfile = async (userId: string) => {
       state: address.state,
       postalCode: address.postalCode,
       country: address.country,
-      isDefault: address.isDefault
+      isDefault: address.isDefault,
+      phone: address.phone
     })) as Address[];
 
     const userData: ExtendedUser = {
       id: user.id,
       email: user.email,
       user_metadata: {
-        ...user.user_metadata,
         first_name: user.first_name,
         last_name: user.last_name,
         full_name: `${user.first_name} ${user.last_name}`,
@@ -59,7 +60,7 @@ export const getUserProfile = async (userId: string) => {
       avatarUrl: user.avatar_url,
       uid: user.id,
       role: user.role,
-      savedAddresses: addresses,
+      savedAddresses: addresses
     };
 
     return userData;

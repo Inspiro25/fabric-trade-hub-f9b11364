@@ -16,6 +16,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 const Settings = () => {
   const { currentUser, updateProfile } = useAuth();
+  const { theme, setTheme } = useTheme();
+  
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     theme: 'light',
     currency: 'USD', 
@@ -34,21 +36,21 @@ const Settings = () => {
   const [emailNotifications, setEmailNotificationsEnabled] = useState(true);
   const [pushNotifications, setPushNotificationsEnabled] = useState(true);
   const [smsNotifications, setSmsNotificationsEnabled] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<Theme>('light');
+  const [selectedTheme, setSelectedTheme] = useState<Theme>(Theme.LIGHT);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   
   // Load user data
   useEffect(() => {
     if (currentUser) {
       // Handle display name
-      setDisplayName(currentUser.user_metadata?.full_name || '');
+      setDisplayName(currentUser.displayName || '');
       
       // Handle phone
-      const phone = currentUser.phone || currentUser.user_metadata?.phone || '';
+      const phone = currentUser.phone || (currentUser.user_metadata?.phone) || '';
       setPhoneNumber(phone);
       
       // Handle address
-      const address = currentUser.address || currentUser.user_metadata?.address || '';
+      const address = currentUser.address || (currentUser.user_metadata?.address) || '';
       setAddress(address);
       
       // Handle notifications
@@ -58,12 +60,12 @@ const Settings = () => {
         sms: false
       };
       
-      setEmailNotificationsEnabled(notifications.email);
-      setPushNotificationsEnabled(notifications.push);
-      setSmsNotificationsEnabled(notifications.sms);
+      setEmailNotificationsEnabled(notifications.email || true);
+      setPushNotificationsEnabled(notifications.push || true);
+      setSmsNotificationsEnabled(notifications.sms || false);
       
       // Handle theme and currency
-      setSelectedTheme((currentUser.user_metadata?.theme as Theme) || 'light');
+      setSelectedTheme((currentUser.user_metadata?.theme as Theme) || Theme.LIGHT);
       setSelectedCurrency(userPreferences.currency || 'USD');
     }
   }, [currentUser]);
@@ -100,12 +102,7 @@ const Settings = () => {
   
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
-    
-    if (currentUser) {
-      // Handle theme and currency
-      setSelectedTheme(newTheme);
-      setSelectedCurrency(userPreferences.currency || 'USD');
-    }
+    setSelectedTheme(newTheme);
   };
   
   handleThemeChange(Theme.LIGHT);
