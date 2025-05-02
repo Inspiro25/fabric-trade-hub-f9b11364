@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Theme } from '@/types/auth';
 
 const ThemeToggle: React.FC = () => {
   const { isDarkMode, toggleDarkMode, setTheme, currentTheme } = useTheme();
@@ -56,16 +57,16 @@ const ThemeToggle: React.FC = () => {
         isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white"
       )}>
         <DropdownMenuItem 
-          onClick={() => setTheme("light")}
+          onClick={() => setTheme(Theme.LIGHT)}
           className={cn(
             "flex items-center gap-2 cursor-pointer",
-            currentTheme === "light" && "font-medium",
+            currentTheme === Theme.LIGHT && "font-medium",
             isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
           )}
         >
           <Sun className="h-4 w-4" />
           <span>Light</span>
-          {currentTheme === "light" && (
+          {currentTheme === Theme.LIGHT && (
             <span className={cn(
               "ml-auto h-2 w-2 rounded-full",
               isDarkMode ? "bg-blue-400" : "bg-blue-500"
@@ -73,16 +74,16 @@ const ThemeToggle: React.FC = () => {
           )}
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={() => setTheme("dark")}
+          onClick={() => setTheme(Theme.DARK)}
           className={cn(
             "flex items-center gap-2 cursor-pointer",
-            currentTheme === "dark" && "font-medium",
+            currentTheme === Theme.DARK && "font-medium",
             isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
           )}
         >
           <Moon className="h-4 w-4" />
           <span>Dark</span>
-          {currentTheme === "dark" && (
+          {currentTheme === Theme.DARK && (
             <span className={cn(
               "ml-auto h-2 w-2 rounded-full",
               isDarkMode ? "bg-blue-400" : "bg-blue-500"
@@ -90,16 +91,16 @@ const ThemeToggle: React.FC = () => {
           )}
         </DropdownMenuItem>
         <DropdownMenuItem 
-          onClick={() => setTheme("system")}
+          onClick={() => setTheme(Theme.SYSTEM)}
           className={cn(
             "flex items-center gap-2 cursor-pointer",
-            currentTheme === "system" && "font-medium",
+            currentTheme === Theme.SYSTEM && "font-medium",
             isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
           )}
         >
           <SunMoon className="h-4 w-4" />
           <span>System</span>
-          {currentTheme === "system" && (
+          {currentTheme === Theme.SYSTEM && (
             <span className={cn(
               "ml-auto h-2 w-2 rounded-full",
               isDarkMode ? "bg-blue-400" : "bg-blue-500"

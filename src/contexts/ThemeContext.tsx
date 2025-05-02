@@ -7,6 +7,8 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  currentTheme: Theme; // Add currentTheme property
+  toggleTheme: () => void; // Add toggleTheme method
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -32,6 +34,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleDarkMode = () => {
     setTheme(isDarkMode ? Theme.LIGHT : Theme.DARK);
   };
+
+  const toggleTheme = () => {
+    setTheme(isDarkMode ? Theme.LIGHT : Theme.DARK);
+  };
   
   useEffect(() => {
     localStorage.setItem('theme', theme);
@@ -44,7 +50,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme, isDarkMode]);
   
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, isDarkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      setTheme, 
+      isDarkMode, 
+      toggleDarkMode, 
+      currentTheme: theme, 
+      toggleTheme 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
