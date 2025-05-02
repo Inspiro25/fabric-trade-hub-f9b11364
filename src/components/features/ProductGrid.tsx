@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { Product } from '@/lib/products/types';
@@ -25,6 +26,7 @@ interface ProductGridProps {
   highlightType?: 'new' | 'trending' | 'sale' | null;
   isLoading?: boolean;
   isDarkMode?: boolean;
+  paginationClassName?: string;
 }
 
 export const ProductGrid = ({
@@ -43,6 +45,7 @@ export const ProductGrid = ({
   highlightType = null,
   isLoading = false,
   isDarkMode = false,
+  paginationClassName,
 }: ProductGridProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -179,15 +182,6 @@ export const ProductGrid = ({
       
       <div className={`grid ${getGridCols()} gap-2 md:gap-4`}>
         {displayedProducts.map((product, index) => {
-          // Create a product object for the ProductCard component
-          const productObj = {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            stock: product.stock,
-            images: product.images && product.images.length > 0 ? [product.images[0]] : []
-          };
-          
           return (
             <div 
               key={product.id} 
@@ -197,18 +191,8 @@ export const ProductGrid = ({
               style={{ transitionDelay: `${index * 50}ms` }}
             >
               <ProductCard
-                product={productObj}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                salePrice={product.salePrice}
-                image={product.images?.[0]}
-                category={product.category}
-                isNew={product.isNew}
-                isTrending={product.isTrending}
+                product={product}
                 layout={viewMode === 'list' ? 'horizontal' : 'vertical'}
-                rating={product.rating}
-                reviewCount={product.reviewCount}
               />
             </div>
           );
@@ -216,7 +200,7 @@ export const ProductGrid = ({
       </div>
       
       {showPagination && totalPages > 1 && (
-        <div className="mt-6">
+        <div className={`mt-6 ${paginationClassName || ''}`}>
           <Pagination>
             <PaginationContent>
               <PaginationItem>

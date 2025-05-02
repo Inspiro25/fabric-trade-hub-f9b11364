@@ -1,4 +1,6 @@
 
+import { z } from 'zod';
+
 export interface Shop {
   id: string;
   name: string;
@@ -17,6 +19,21 @@ export interface Shop {
   shop_id?: string;
   created_at?: string;
 }
+
+export const shopFormSchema = z.object({
+  name: z.string().min(2, "Shop name must be at least 2 characters"),
+  description: z.string().optional(),
+  logo: z.string().optional(),
+  coverImage: z.string().optional(),
+  address: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  shopId: z.string().optional(),
+  ownerName: z.string().optional(),
+  ownerEmail: z.string().email("Please enter a valid email").optional(),
+  status: z.enum(['active', 'pending', 'suspended']).optional().default('pending'),
+  password: z.string().optional(),
+  isVerified: z.boolean().optional().default(false)
+});
 
 export interface ShopFormValues {
   name: string;

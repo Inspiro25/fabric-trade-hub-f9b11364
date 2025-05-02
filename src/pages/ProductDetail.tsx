@@ -51,7 +51,8 @@ const ProductDetail = () => {
       setLoading(true);
       try {
         if (id) {
-          const productData = await getProductById(id);
+          const productId = id as string;
+          const productData = await getProductById(productId);
           if (productData) {
             console.log('Product fetched:', productData);
             setProduct(productData);
@@ -114,42 +115,26 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id, currentUser, navigate]);
   
-  const handleAddToCart = async () => {
-    if (!product) return;
+  const handleAddToCart = () => {
+    addToCart(
+      product.id,
+      product.name,
+      product.images[0] || '',
+      product.price,
+      product.stock,
+      product.shopId || '',
+      product.salePrice,
+      quantity,
+      selectedColor,
+      selectedSize
+    );
     
+    toast.success(`${product.name} added to cart!`);
     setIsAddingToCart(true);
     
-    try {
-      if (currentUser) {
-        await addToCart(
-          currentUser.id,
-          product,
-          quantity,
-          selectedColor || undefined,
-          selectedSize || undefined
-        );
-        
-        toast.success('Added to cart');
-      } else {
-        // Create the cart item object for the context function
-        addToCartContext(
-          product.id,
-          product.name,
-          product.images[0] || '/placeholder.png',
-          product.price,
-          product.stock,
-          product.shop_id || product.shopId || '',
-          product.salePrice || product.sale_price
-        );
-        
-        toast.success('Added to cart');
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error('Failed to add to cart');
-    } finally {
+    setTimeout(() => {
       setIsAddingToCart(false);
-    }
+    }, 2000);
   };
   
   const handleBuyNow = async () => {

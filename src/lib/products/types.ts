@@ -1,5 +1,4 @@
 
-
 // Export the Product interface
 export interface Product {
   id: string;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getTrendingProducts } from '@/lib/products/trending';
@@ -160,18 +159,7 @@ const TrendingNow = () => {
                   key={product.id} 
                   className="transform transition hover:-translate-y-1"
                 >
-                  <ProductCard 
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    salePrice={product.salePrice}
-                    image={product.images[0]}
-                    category={product.category}
-                    isNew={product.isNew || false}
-                    isTrending={true}
-                    rating={product.rating}
-                    reviewCount={product.reviewCount}
-                  />
+                  <ProductCard product={product} />
                 </div>
               ))}
             </div>

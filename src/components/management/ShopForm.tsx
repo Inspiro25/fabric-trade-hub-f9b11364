@@ -8,34 +8,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ShopFormValues, shopFormSchema } from '@/types/shop';
-
-export interface ShopFormProps {
-  defaultValues?: Partial<ShopFormValues>;
-  onSubmit: (data: ShopFormValues) => void;
-  submitLabel: string;
-  isSubmitting?: boolean;
-}
+import { ShopFormValues, shopFormSchema, ShopFormProps } from '@/types/shop';
 
 const ShopForm = ({
-  defaultValues = {},
+  initialValues = {},
   onSubmit,
-  submitLabel,
-  isSubmitting = false
+  submitLabel = "Submit",
+  isLoading = false,
+  title
 }: ShopFormProps) => {
   const formDefaults: ShopFormValues = {
-    name: defaultValues.name || '',
-    description: defaultValues.description || '',
-    logo: defaultValues.logo || '',
-    coverImage: defaultValues.coverImage || '',
-    address: defaultValues.address || '',
-    isVerified: defaultValues.isVerified || false,
-    shopId: defaultValues.shopId || '',
-    ownerName: defaultValues.ownerName || '',
-    ownerEmail: defaultValues.ownerEmail || '',
-    status: defaultValues.status || 'pending',
-    password: defaultValues.password || '',
-    phoneNumber: defaultValues.phoneNumber || '',
+    name: initialValues.name || '',
+    description: initialValues.description || '',
+    logo: initialValues.logo || '',
+    coverImage: initialValues.coverImage || '',
+    address: initialValues.address || '',
+    isVerified: initialValues.isVerified || false,
+    shopId: initialValues.shopId || '',
+    ownerName: initialValues.ownerName || '',
+    ownerEmail: initialValues.ownerEmail || '',
+    status: initialValues.status || 'pending',
+    password: initialValues.password || '',
+    phoneNumber: initialValues.phoneNumber || '',
   };
 
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
@@ -45,6 +39,8 @@ const ShopForm = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {title && <h3 className="text-lg font-semibold">{title}</h3>}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Shop Name</Label>
@@ -189,14 +185,11 @@ const ShopForm = ({
         <Label htmlFor="isVerified">Verified Shop</Label>
       </div>
       
-      <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
-        {isSubmitting ? 'Submitting...' : submitLabel}
+      <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
+        {isLoading ? 'Submitting...' : submitLabel}
       </Button>
     </form>
   );
 };
-
-// Re-export the ShopFormValues interface for use in other components
-export type { ShopFormValues };
 
 export default ShopForm;

@@ -1,5 +1,5 @@
 
-import { UserProfile } from '@/types/auth';
+import { UserPreferences } from '@/types/auth';
 
 /**
  * Safely parses JSON data with proper type handling
@@ -28,8 +28,8 @@ export function safeParseJSON<T>(data: any, defaultValue: T): T {
  * @param preferences Raw preferences data from Supabase
  * @returns Properly typed preferences object
  */
-export function formatPreferences(preferences: any): UserProfile['preferences'] {
-  const defaultPreferences = {
+export function formatPreferences(preferences: any): UserPreferences {
+  const defaultPreferences: UserPreferences = {
     notifications: {
       email: true,
       sms: false,

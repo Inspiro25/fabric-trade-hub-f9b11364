@@ -1,12 +1,11 @@
-
 // Only fixing the issue with displayName vs display_name
-import { ExtendedUser, UserProfile } from '@/types/auth';
+import { ExtendedUser } from '@/types/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { formatPreferences } from '@/utils/dataHelpers';
 
 // Fetch user profile from Supabase
-export const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+export const fetchUserProfile = async (userId: string): Promise<ExtendedUser | null> => {
   try {
     if (!userId) return null;
     
@@ -82,9 +81,9 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfile | nu
 
 export const updateUserProfile = async (
   userId: string, 
-  userProfile: UserProfile | null, 
-  data: Partial<UserProfile>
-): Promise<UserProfile | null> => {
+  userProfile: ExtendedUser | null, 
+  data: Partial<ExtendedUser>
+): Promise<ExtendedUser | null> => {
   try {
     if (!userId) {
       console.error('No user ID provided for profile update');
@@ -139,7 +138,7 @@ export const updateUserProfile = async (
 
 export const addAddress = async (
   userId: string,
-  address: Omit<UserProfile['savedAddresses'][0], 'id'>
+  address: Omit<ExtendedUser['savedAddresses'][0], 'id'>
 ): Promise<string | undefined> => {
   try {
     if (!userId) {
@@ -194,7 +193,7 @@ export const addAddress = async (
 
 export const updateAddress = async (
   userId: string,
-  address: UserProfile['savedAddresses'][0]
+  address: ExtendedUser['savedAddresses'][0]
 ): Promise<void> => {
   try {
     if (!userId) {
