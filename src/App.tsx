@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from './components/ui/toaster';
 import { CartProvider } from './contexts/CartContext';

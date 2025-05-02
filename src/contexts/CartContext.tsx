@@ -10,7 +10,7 @@ export interface CartItem extends Product {
   options?: Record<string, any>;
 }
 
-interface CartContextType {
+export interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number, options?: Record<string, any>) => void;
   removeFromCart: (productId: string) => void;
