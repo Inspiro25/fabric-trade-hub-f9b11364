@@ -5,10 +5,10 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ShopFormValues } from '@/components/management/ShopForm';
 import ShopForm from '@/components/management/ShopForm';
 import { Shop } from '@/lib/shops/types';
 import { createShop, updateShop, getShopById } from '@/lib/supabase/shops';
+import { ShopFormValues } from '@/types/shop';
 
 const ShopManagement: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,7 +129,7 @@ const ShopManagement: React.FC = () => {
             ownerName: shopData.owner_name || '',
             ownerEmail: shopData.owner_email || '',
             status: shopData.status || 'pending',
-            password: shopData.password || '',
+            password: '',
             phoneNumber: shopData.phone_number || '',
           }}
           onSubmit={submitForm}

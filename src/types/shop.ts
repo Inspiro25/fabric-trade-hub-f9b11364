@@ -35,20 +35,7 @@ export const shopFormSchema = z.object({
   isVerified: z.boolean().optional().default(false)
 });
 
-export interface ShopFormValues {
-  name: string;
-  logo?: string;
-  description?: string;
-  shopId?: string;
-  address?: string;
-  password?: string;
-  phoneNumber?: string;
-  coverImage?: string;
-  isVerified?: boolean;
-  ownerName?: string;
-  ownerEmail?: string;
-  status?: 'active' | 'pending' | 'suspended';
-}
+export type ShopFormValues = z.infer<typeof shopFormSchema>;
 
 export interface ShopFormProps {
   initialValues?: Partial<ShopFormValues>;
@@ -56,4 +43,7 @@ export interface ShopFormProps {
   isLoading?: boolean;
   submitText?: string;
   title?: string;
+  defaultValues?: Partial<ShopFormValues>;
+  submitLabel?: string;
+  isSubmitting?: boolean;
 }

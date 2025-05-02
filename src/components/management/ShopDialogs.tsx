@@ -8,9 +8,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import ShopForm, { ShopFormValues } from './ShopForm';
+import ShopForm from './ShopForm';
 import { Shop } from '@/lib/shops/types';
 import { toast } from 'sonner';
+import { ShopFormValues } from '@/types/shop';
 
 interface ShopDialogsProps {
   addDialogOpen: boolean;
@@ -106,7 +107,7 @@ const ShopDialogs = ({
                 ownerName: selectedShop.owner_name || '',
                 ownerEmail: selectedShop.owner_email || '',
                 status: (selectedShop.status as any) || 'pending',
-                password: selectedShop.password || '',
+                password: '',
                 phoneNumber: selectedShop.phone_number || '',
               }}
               onSubmit={onEditShop}

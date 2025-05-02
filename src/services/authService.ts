@@ -1,5 +1,6 @@
+
 // Only fixing the issue with displayName vs display_name
-import { ExtendedUser } from '@/types/auth';
+import { ExtendedUser, UserPreferences } from '@/types/auth';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { formatPreferences } from '@/utils/dataHelpers';
@@ -32,12 +33,21 @@ export const fetchUserProfile = async (userId: string): Promise<ExtendedUser | n
       // Convert Supabase format to our UserProfile format
       return {
         id: userProfile.id,
-        display_name: userProfile.display_name || 'Guest User',
+        displayName: userProfile.display_name || 'Guest User',
         email: userProfile.email,
         phone: userProfile.phone || undefined,
         address: userProfile.address || undefined,
         preferences: formatPreferences(userProfile.preferences),
-        avatar_url: userProfile.avatar_url || undefined
+        avatarUrl: userProfile.avatar_url || undefined,
+        app_metadata: {},
+        user_metadata: {
+          full_name: userProfile.display_name,
+          phone: userProfile.phone,
+          address: userProfile.address,
+          avatar_url: userProfile.avatar_url
+        },
+        aud: 'authenticated',
+        created_at: new Date().toISOString()
       };
     }
     
@@ -49,14 +59,14 @@ export const fetchUserProfile = async (userId: string): Promise<ExtendedUser | n
       .order('is_default', { ascending: false });
     
     if (addresses && addresses.length > 0) {
-      const formattedProfile = {
+      const formattedProfile: ExtendedUser = {
         id: userId,
-        display_name: userProfile?.display_name || 'Guest User',
+        displayName: userProfile?.display_name || 'Guest User',
         email: userProfile?.email || '',
         phone: userProfile?.phone || undefined,
         address: userProfile?.address || undefined,
         preferences: formatPreferences(userProfile?.preferences),
-        avatar_url: userProfile?.avatar_url || undefined,
+        avatarUrl: userProfile?.avatar_url || undefined,
         savedAddresses: addresses.map(addr => ({
           id: addr.id,
           name: addr.name,
@@ -67,7 +77,11 @@ export const fetchUserProfile = async (userId: string): Promise<ExtendedUser | n
           postalCode: addr.postal_code,
           country: addr.country,
           isDefault: addr.is_default
-        }))
+        })),
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        created_at: new Date().toISOString()
       };
       return formattedProfile;
     }
@@ -93,8 +107,8 @@ export const updateUserProfile = async (
     // Convert our UserProfile format to Supabase format
     const supabaseData: any = {};
     
-    if (data.display_name !== undefined) {
-      supabaseData.display_name = data.display_name;
+    if (data.displayName !== undefined) {
+      supabaseData.display_name = data.displayName;
     }
     
     if (data.email !== undefined) {
@@ -113,8 +127,8 @@ export const updateUserProfile = async (
       supabaseData.preferences = data.preferences;
     }
     
-    if (data.avatar_url !== undefined) {
-      supabaseData.avatar_url = data.avatar_url;
+    if (data.avatarUrl !== undefined) {
+      supabaseData.avatar_url = data.avatarUrl;
     }
 
     // Update user profile in Supabase

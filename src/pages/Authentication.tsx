@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTheme } from '@/contexts/ThemeContext';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Theme } from '@/types/auth';
 
 interface SignupFormValues {
   name?: string;
@@ -25,7 +26,7 @@ interface LoginFormValues {
 }
 
 const AuthenticationPage = () => {
-  const { signup, login, currentUser, updateTheme } = useAuth();
+  const { login, signUp, currentUser } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
@@ -38,7 +39,7 @@ const AuthenticationPage = () => {
     if (currentUser) {
       // Instead of using user_metadata directly, check for the property first
       const metadata = currentUser.user_metadata || {};
-      const displayName = currentUser.displayName || metadata.name || '';
+      const displayName = currentUser.displayName || metadata.full_name || '';
       navigate('/');
     }
   }, [currentUser, navigate]);
@@ -46,7 +47,10 @@ const AuthenticationPage = () => {
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    updateTheme(newTheme);
+    // Use updateProfile to update theme preference if available
+    if (currentUser && 'updateProfile' in useAuth()) {
+      (useAuth() as any).updateProfile({ preferences: { theme: newTheme } });
+    }
   };
 
   const handleSignup = async (data: SignupFormValues) => {
@@ -55,7 +59,7 @@ const AuthenticationPage = () => {
 
       // Define user metadata with optional phone and address
       const metadata: Record<string, string> = {
-        name: data.name || ''
+        full_name: data.name || ''
       };
 
       // Only add these if they exist in the form data
@@ -73,7 +77,7 @@ const AuthenticationPage = () => {
       }
       
       // Call the signup function with the metadata
-      await signup(data.email || '', data.password || '', metadata);
+      await signUp(data.email || '', data.password || '', metadata);
       toast.success('Signup successful! Please check your email to verify.');
       navigate('/');
     } catch (error) {

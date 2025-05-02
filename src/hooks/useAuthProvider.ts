@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { ExtendedUser, UserProfile } from '@/types/auth';
+import { ExtendedUser, UserPreferences } from '@/types/auth';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +32,7 @@ export function useAuthProvider() {
       if (data) {
         const userProfile: ExtendedUser = {
           id: data.id,
-          display_name: data.display_name || '',
+          displayName: data.display_name || '',
           email: data.email || '',
           phone: data.phone || '',
           address: data.address || '',

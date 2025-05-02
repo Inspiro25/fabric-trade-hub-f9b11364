@@ -12,24 +12,27 @@ import { ShopFormValues, shopFormSchema, ShopFormProps } from '@/types/shop';
 
 const ShopForm = ({
   initialValues = {},
+  defaultValues = {},
   onSubmit,
+  submitText = "Submit",
   submitLabel = "Submit",
   isLoading = false,
+  isSubmitting = false,
   title
 }: ShopFormProps) => {
   const formDefaults: ShopFormValues = {
-    name: initialValues.name || '',
-    description: initialValues.description || '',
-    logo: initialValues.logo || '',
-    coverImage: initialValues.coverImage || '',
-    address: initialValues.address || '',
-    isVerified: initialValues.isVerified || false,
-    shopId: initialValues.shopId || '',
-    ownerName: initialValues.ownerName || '',
-    ownerEmail: initialValues.ownerEmail || '',
-    status: initialValues.status || 'pending',
-    password: initialValues.password || '',
-    phoneNumber: initialValues.phoneNumber || '',
+    name: initialValues.name || defaultValues.name || '',
+    description: initialValues.description || defaultValues.description || '',
+    logo: initialValues.logo || defaultValues.logo || '',
+    coverImage: initialValues.coverImage || defaultValues.coverImage || '',
+    address: initialValues.address || defaultValues.address || '',
+    isVerified: initialValues.isVerified || defaultValues.isVerified || false,
+    shopId: initialValues.shopId || defaultValues.shopId || '',
+    ownerName: initialValues.ownerName || defaultValues.ownerName || '',
+    ownerEmail: initialValues.ownerEmail || defaultValues.ownerEmail || '',
+    status: initialValues.status || defaultValues.status || 'pending',
+    password: initialValues.password || defaultValues.password || '',
+    phoneNumber: initialValues.phoneNumber || defaultValues.phoneNumber || '',
   };
 
   const { control, handleSubmit, formState: { errors } } = useForm<ShopFormValues>({
@@ -185,11 +188,12 @@ const ShopForm = ({
         <Label htmlFor="isVerified">Verified Shop</Label>
       </div>
       
-      <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
-        {isLoading ? 'Submitting...' : submitLabel}
+      <Button type="submit" disabled={isLoading || isSubmitting} className="w-full md:w-auto">
+        {isLoading || isSubmitting ? 'Submitting...' : (submitText || submitLabel)}
       </Button>
     </form>
   );
 };
 
 export default ShopForm;
+export type { ShopFormValues };

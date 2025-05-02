@@ -9,6 +9,8 @@ export interface ExtendedUser extends Omit<User, 'user_metadata'> {
   displayName?: string | null;
   photoURL?: string | null;
   avatarUrl?: string | null;
+  phone?: string;
+  address?: string;
   user_metadata?: {
     full_name?: string;
     phone?: string;
@@ -22,8 +24,6 @@ export interface ExtendedUser extends Omit<User, 'user_metadata'> {
       push: boolean;
     };
   };
-  phone?: string;
-  address?: string;
   email_confirmed_at?: string;
   role?: UserRole;
   preferences?: {
@@ -36,6 +36,20 @@ export interface ExtendedUser extends Omit<User, 'user_metadata'> {
       push: boolean;
     };
   };
+  savedAddresses?: Array<{
+    id: string;
+    name: string;
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    isDefault: boolean;
+  }>;
+  app_metadata: any;
+  aud: string;
+  created_at: string;
 }
 
 export type UserRole = 'user' | 'shop_admin' | 'admin';
@@ -44,9 +58,9 @@ export type Theme = 'light' | 'dark' | 'system';
 
 export interface UserProfile {
   id: string;
-  display_name?: string;
+  displayName?: string;
   email?: string;
-  avatar_url?: string;
+  avatarUrl?: string;
   phone?: string;
   address?: string;
   preferences?: {
@@ -73,6 +87,11 @@ export interface AuthContextType {
   updateProfile: (data: Partial<ExtendedUser>) => Promise<{ success: boolean; message: string }>;
   updateTheme: (theme: Theme) => Promise<void>;
   userRole: UserRole;
+  signIn?: (email: string, password: string) => Promise<{ user: ExtendedUser | null; error: any | null }>;
+  signUp?: (email: string, password: string, userData?: any) => Promise<{ user: ExtendedUser | null; error: any | null }>;
+  signOut?: () => Promise<void>;
+  resetPassword?: (email: string) => Promise<{ error: any | null }>;
+  forgotPassword?: (email: string) => Promise<void>;
 }
 
 // Define the type for user preferences

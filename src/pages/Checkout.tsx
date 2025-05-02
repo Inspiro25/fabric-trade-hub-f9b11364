@@ -1,8 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CartItem } from '@/types/cart';
 import { useCart } from '@/hooks/use-cart';
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,15 +15,15 @@ const Checkout = () => {
 
   useEffect(() => {
     if (currentUser) {
-      // Safely access properties that might not exist
+      // Safely access properties from our updated ExtendedUser type
       setAddress(
         currentUser.address || 
-        (currentUser.user_metadata && currentUser.user_metadata.address) || 
+        (currentUser.user_metadata?.address) || 
         ''
       );
       setPhone(
         currentUser.phone || 
-        (currentUser.user_metadata && currentUser.user_metadata.phone) || 
+        (currentUser.user_metadata?.phone) || 
         ''
       );
     }
