@@ -21,7 +21,7 @@ interface DealOfTheDayProps {
 const DealOfTheDayContent: React.FC<{product: Product}> = ({ product }) => {
   const [isTimerExpired, setIsTimerExpired] = useState(false);
   // Add error handling to useCart to prevent the app from crashing
-  let addToCart = (product: Product) => {
+  let addToCart: (product: Product, quantity?: number) => void = (product) => {
     console.error('Cart provider not available');
     toast.error('Cannot add to cart. Cart provider not available.');
   };
