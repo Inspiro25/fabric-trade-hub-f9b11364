@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import Footer from '@/components/layout/Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import CartToCheckout from '@/components/features/CartToCheckout';
 import EmptyCart from '@/components/cart/EmptyCart';
 import CartItemsList from '@/components/cart/CartItemsList';

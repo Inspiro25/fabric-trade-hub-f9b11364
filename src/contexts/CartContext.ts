@@ -1,7 +1,6 @@
 
 import { createContext } from 'react';
 import { Product } from '@/lib/products/types';
-import { CartContextType } from './CartContext.tsx';
 
 // Define the CartItem type
 export interface CartItem {
@@ -23,6 +22,9 @@ export interface CartItem {
   }>;
 }
 
+// Export the CartContextType
+export type { CartContextType } from './CartContext.tsx';
+
 // Create the context
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -30,4 +32,4 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export default CartContext;
 
 // Export the CartProvider
-export { CartProvider, CartContextType } from './CartContext.tsx';
+export { CartProvider } from './CartContext.tsx';

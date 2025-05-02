@@ -1,5 +1,6 @@
+
 import { ShoppingBag } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';

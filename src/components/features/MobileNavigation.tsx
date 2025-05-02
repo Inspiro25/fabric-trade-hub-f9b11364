@@ -1,8 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, ShoppingCart, Percent, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCart } from '@/contexts/CartContext';
+import { useCart } from '@/hooks/use-cart';
 import { useTheme } from '@/contexts/ThemeContext';
 import { motion } from 'framer-motion';
 
